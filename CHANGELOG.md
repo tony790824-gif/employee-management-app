@@ -1,5 +1,20 @@
 # Change Log
 
+## 2026-07-16 — Sprint 2: Formal Auth and Backend Migration Architecture Design
+
+### Added
+
+- **正式後端遷移設計 (ADR 0012)**：定義從 Google Sheets 遷移至正式關聯式資料庫 (PostgreSQL) 與身份驗證系統 (JWT + Refresh Token) 的架構規格。
+- **身分驗證流程定義**：包含短效 Access Token、長效 Refresh Token、Argon2id 雜湊、登出撤銷、停權禁止與跨裝置登入規則。
+- **角色與權限模型 (RBAC)**：明確定義老闆 (Full Access)、管理者 (Scoped) 與員工 (Personal + Team) 的資料讀寫邊界。
+- **多租戶隔離原則**：規定所有業務資料表必須包含 `workspace_id`，並透過資料庫 RLS 或 API Repository 層級強制隔離。
+- **遷移計畫**：定義從 A1 Snapshot 清洗、正規化到批次匯入新資料庫的五步驟流程。
+
+### Verified
+
+- 設計文件與既有 P0 止血 ADR (0001–0011) 保持一致，並符合 Project Constitution 工程原則。
+- 整體商業上線完成度由 58% 提升至 60%。
+
 ## 2026-07-16 — Payroll accuracy and logout functionality
 
 ### Fixed

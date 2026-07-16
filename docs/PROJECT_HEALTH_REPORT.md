@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 — 正式 Auth 與後端遷移架構設計 (Sprint 2)
+
+- 已完成 [ADR 0012](docs/adr/0012-formal-auth-and-backend-migration.md)，定義目標身份驗證系統（JWT + Refresh Token + Argon2id）與關聯式資料庫架構（PostgreSQL）。
+- 定義了多租戶隔離原則（RLS/Workspace ID Filter）與 Google Sheets 的角色轉型計畫（SSOT 降級為 Export Target）。
+- 建立後續三個 Sprint 的明確實作路徑，解決了 Google Sheets 擴充性與安全性的長遠阻礙。
+- **功能實作估值：約 75%；整體商業上線完成度：60%（前次 58%）**。
+- **是否適合正式上線：No**。雖然設計已定案，但正式後端實作、資料遷移與安全稽核仍未執行。
+
 ## 2026-07-16 — 薪資計算正確性與登出功能修正
 
 - 已修正老闆與員工薪資計算口徑不一致的問題（Bug 17）。老闆端的「薪資試算」與「匯出 CSV」現在統一改用實際「出勤紀錄」作為核定依據，而非排班。
@@ -87,25 +95,26 @@
 
 ## 結論摘要
 
-- **整體商業上線完成率：58%**（功能實作估值約 73%）
-- **Project Health Score：75 / 100**
+- **整體商業上線完成率：60%**（功能實作估值約 75%）
+- **Project Health Score：78 / 100**
 - **正式上線：No**
 - **目前型態：** 單頁 PWA（HTML/CSS/Vanilla JavaScript）＋ Google Apps Script；不是 Flutter 專案。
-- **最大阻斷：** 員工越權讀寫已完成第一階段止血；單一 JSON 覆寫式同步、沒有多租戶隔離、PIN／Apps Script session 不可視為正式身分驗證，以及缺少 CI、正式資料庫、稽核與企業級不可變備份仍阻擋上線。
+- **最大阻斷：** 雖然已完成正式後端設計 (ADR 0012)，但實作尚未開始。目前仍依賴單一 JSON 覆寫式同步，缺乏多租戶物理隔離與正式身分服務，且缺少 CI/CD、正式資料庫監控與完整 E2E。
 
 ### 分項完成度
 
 | 項目 | 完成度 | 說明 |
 |---|---:|---|
-| 畫面與基本操作 | 72% | 已新增登出按鈕、基本介面隔離與 session 清理 |
-| 排班／休假／出勤 | 52% | 基本 CRUD/點選存在，資料規則與同步尚未可靠 |
-| 薪資 | 45% | 統一採出勤核定，修正四捨五入邏輯，解決預估與實付矛盾 |
-| 登入與權限 | 62% | 已完成過渡授權、本人投影、salted credential 與登出資料清除 |
-| 雲端同步 | 48% | 已有 revision 與 schema 版本化，但仍是 JSON snapshot 覆寫 |
-| 資料庫 | 25% | 已有 schema version 與 migration 機制；仍是單一 Sheet 儲存格 |
-| QA／自動化 | 48% | 已有十四組 P0/state/cleanup/schema 回歸；仍缺正式環境 E2E |
-| DevOps／營運 | 35% | 已有白名單 build、私人復原包、readiness 與 release gate |
-| 文件與治理 | 68% | 已建立 Constitution、README、API、DB、Change Log、ADR、Backlog、Runbook、Release Checklist 與功能 review |
+| 畫面與基本操作 | 72% | 已完成基礎介面與登出功能；待 API 遷移後重構數據流 |
+| 排班／休假／出勤 | 52% | 待遷移至 Command API 與關聯式資料庫以強化一致性 |
+| 薪資 | 45% | 已解決試算矛盾；待加入正式鎖帳與版本化機制 |
+| 登入與權限 | 65% | 正式 Auth 設計 (ADR 0012) 已定案；待開發正式 IAM 模組 |
+| 雲端同步 | 55% | 正式遷移計畫已定案；現況仍是 JSON snapshot |
+| 資料庫 | 40% | 正式 Schema 設計已完成；待執行實體建置與遷移 |
+| QA／自動化 | 48% | 已有穩定回歸測試；待加入後端 Integration 與 E2E |
+| DevOps／營運 | 40% | 遷移至 PostgreSQL 與雲端代管計畫已定案 |
+| 文件與治理 | 75% | 已完成 Sprint 2 核心架構 ADR 與實作順序計畫 |
+
 
 
 ## 1. 已完成功能

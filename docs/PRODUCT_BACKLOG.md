@@ -134,13 +134,15 @@ Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provide
 
 ## Sprint 2 — Auth、Session、Workspace 與威脅模型（P0）
 
+**進度：正式身份驗證與後端遷移架構設計 (ADR 0012) 已完成；正式資料庫 Schema 與 Auth 服務實作尚未開始。**
+
 **目標**
 
 - 決定正式身分驗證／多租戶方案並建立可測的後端骨架。
 
 **要修改的檔案**
 
-- `docs/adr/0002-auth-and-tenancy.md`
+- `docs/adr/0012-formal-auth-and-backend-migration.md` (已完成)
 - `docs/SECURITY.md`
 - `docs/API.md`
 - `docs/DATABASE.md`
@@ -150,7 +152,7 @@ Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provide
 **預期成果**
 
 - 每家公司有 workspace；老闆、管理員、員工權限明確。
-- PIN 使用 server-side slow salted credential，登入後取得短效 session；支援撤銷與 rate limit。**過渡實作已完成**；正式 Identity Provider、記憶體困難雜湊、refresh/device management、audit 與密鑰輪替仍待完成。
+- 正式採用 JWT + Refresh Token 與 PostgreSQL 架構。
 
 **驗收標準**
 
