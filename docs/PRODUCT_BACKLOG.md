@@ -1,0 +1,355 @@
+# 班客邦 Product Backlog
+
+## 專案整理收尾（2026-07-16）
+
+已完成現有前端管理事件、雲端設定來源、Service Worker fallback 與備份還原入口的去重整理；未啟用 Firebase／Supabase 草稿已移除。12 組回歸、25 個發布資產與本機老闆／員工 smoke 通過。本次未新增產品功能，也未變更 API／資料結構。
+
+下一個工作仍是正式環境的 Apps Script 部署版本、設定與真實老闆／員工跨裝置 E2E；未通過前不得發布。
+
+## Sprint 2 進度（2026-07-15）
+
+已完成的 P0 過渡封堵：8 小時短效 session、登入限流、session revoke、credential response sanitization、單一 workspace 綁定、stored XSS sink 清除、snapshot optimistic concurrency、salted PIN credential、私人 Drive 復原包與發布前雙重閘門。
+
+Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provider／記憶體困難密碼雜湊、refresh/device management、audit log、正式 session store、密鑰輪替與安全監控。因此 Sprint 2 不得標示完成。下一個 P0 工作項目是正式身分服務、多租戶關聯式資料庫與 command API 的遷移 ADR／schema；不新增排班或薪資功能。
+
+原則：先止血與建立品質基線，再處理正式後端與核心流程，最後才做體驗與商業化。每個 Sprint 預設 2 週；未通過驗收不得進入下一 Sprint。
+
+## Sprint 0 — 治理、可重現基線與品質閘門（P0）
+
+**狀態：2026-07-15 已完成。產品仍不可上線；下一步為 Sprint 1。**
+
+**目標**
+
+- 將產品原則、健康報告、架構決策與驗證方式落地成專案檔案。
+- 建立 Git、可重現 build/check、最小 smoke test 與文件骨架。
+
+**要修改／新增的檔案**
+
+- `PROJECT_CONSTITUTION.md`
+- `README.md`
+- `CHANGELOG.md`
+- `docs/PROJECT_HEALTH_REPORT.md`
+- `docs/PRODUCT_BACKLOG.md`
+- `docs/API.md`
+- `docs/DATABASE.md`
+- `docs/adr/0001-product-platform.md`
+- `package.json`
+- `scripts/build.mjs`
+- `scripts/quality-check.mjs`
+- `.gitignore`
+
+**預期成果**
+
+- 任何工程師可在乾淨環境執行 build/check。
+- 已知問題、正式架構方向、文件責任與發布閘門可追蹤。
+
+**驗收標準**
+
+- Git repository 有效。
+- `npm run check` 與 `npm run build` 成功，輸出可部署靜態檔。
+- 建置不可包含 ZIP、未使用 Firebase/Supabase 或敏感開發檔。
+- README/API/Database/Change Log/ADR 均存在並與現況一致。
+
+**可能風險**
+
+- 目前程式耦合高，品質檢查只能先建立基線，不能代表功能正確。
+
+## Sprint 1 — P0 前端止血與單一 State Schema
+
+**進度：P0 介面載入穩定性、損壞 JSON 安全復原、登入前 DOM 隔離與員工雲端授權止血已完成；角色 UI、UTC 月份與完整 schema migration 尚未完成。**
+
+**目標**
+
+- 修復員工頁卡死、partial state、壞資料白畫面、錯誤角色 UI 與 UTC 月份問題。
+
+**要修改的檔案**
+
+- `employee-layout.js`
+- `boss-hours.js`
+- `app.js`
+- `access.js`
+- `login.js`
+- `access.css`
+- `index.html`
+- 新增 `src/state/*` 或等效模組
+- `tests/*`
+
+**預期成果**
+
+- 老闆與員工本機流程穩定載入；資料結構只有一個入口與版本。
+
+**驗收標準**
+
+- 100 次切換角色／月份不會 hang、reload loop 或 console error。
+- 空資料、舊版資料、缺欄位、無效 JSON 都能安全恢復並提示。
+- 老闆不顯示員工儲存面板；員工只顯示允許的 tabs。
+- Desktop、390px mobile、tablet smoke/E2E 通過。
+
+**可能風險**
+
+- 目前多個 script 依賴全域變數，移除重複 handler 可能影響既有按鈕。
+
+### 已完成的緊急授權止血
+
+- 員工全量 `save` 已由 Apps Script 拒絕。
+- 員工登入／pull 已縮成本人資料投影。
+- 本人排假、上班與下班改成明確命令，員工 ID 由伺服器身份決定。
+- 此修復不取代 Sprint 2 的正式 session/workspace，也不取代 Sprint 3 的 relational action API。
+
+### 已完成的首次帳號啟用止血
+
+- 空白雲端只能由 Script Property `SHIFT_APP_OWNER_PHONE` 登記的電話建立第一組老闆 PIN。
+- 新員工與 PIN 重設改用 8 碼一次性啟用碼；員工仍自行選擇 PIN，成功後啟用碼立即失效。
+- 舊資料中未設 PIN 且沒有啟用碼的員工不再允許第一位訪客直接認領，須由老闆重設 PIN 產生新碼。
+- 老闆新增／重設員工會等待 Google Sheets 寫入成功後才顯示成功，避免重新載入中斷同步。
+- 此流程已有過渡期 session、rate limit 與 salted credential；仍缺正式 Identity Provider、refresh/device management、audit、密鑰輪替與復原演練，必須在 Sprint 2 完成。
+
+## Sprint 2 — Auth、Session、Workspace 與威脅模型（P0）
+
+**目標**
+
+- 決定正式身分驗證／多租戶方案並建立可測的後端骨架。
+
+**要修改的檔案**
+
+- `docs/adr/0002-auth-and-tenancy.md`
+- `docs/SECURITY.md`
+- `docs/API.md`
+- `docs/DATABASE.md`
+- 新增 backend/auth/workspace migrations 與測試
+- `login.js`（改接正式 session）
+
+**預期成果**
+
+- 每家公司有 workspace；老闆、管理員、員工權限明確。
+- PIN 使用 server-side slow salted credential，登入後取得短效 session；支援撤銷與 rate limit。**過渡實作已完成**；正式 Identity Provider、記憶體困難雜湊、refresh/device management、audit 與密鑰輪替仍待完成。
+
+**驗收標準**
+
+- OWASP threat model 審核完成。
+- 員工無法列舉／讀取／修改其他員工資料。
+- 暴力登入、replay、過期 token、撤銷 session 測試通過。
+
+**可能風險**
+
+- 後端供應商與成本尚未正式決策；需先完成 ADR 與預算評估。
+
+## Sprint 3 — 正式資料模型、Action API 與遷移（P0/P1）
+
+**目標**
+
+- 以 relational schema 取代 Sheet A1 全量 JSON，建立 revision、transaction、audit 與 migration。
+
+**要修改的檔案**
+
+- `docs/DATABASE.md`
+- `docs/API.md`
+- database migrations
+- backend employee/shift/leave/attendance/payroll endpoints
+- `google-sheets-cloud.js`（降為 export adapter）
+- 資料遷移與 rollback scripts
+
+**預期成果**
+
+- 核心資料正規化；API 以 scoped command/query 操作，不接受全量 snapshot。
+
+**驗收標準**
+
+- 外鍵、unique phone per workspace、index、soft delete、audit、revision 完整。
+- stale write 回 409，不會靜默覆寫。
+- migration dry-run、rollback、資料筆數／checksum 驗證通過。
+
+**可能風險**
+
+- 現有 Google Sheet 資料可能結構不完整或超過單格限制，需要資料清洗。
+
+## Sprint 4 — 員工與權限生命週期（P1）
+
+**目標**
+
+- 完成邀請、啟用、停用、PIN reset、裝置/session、3 天保留與自動刪除。
+
+**要修改的檔案**
+
+- 員工管理 UI/modules
+- auth/workspace API
+- scheduled jobs
+- notification adapter
+- API/DB/README/Change Log
+
+**預期成果**
+
+- 老闆可安全管理員工；員工能在清楚流程完成啟用與恢復帳號。
+
+**驗收標準**
+
+- 電話正規化與唯一性完整。
+- 停用立即撤銷 session；3 天後由 server job 刪除，期間可恢復。
+- 所有操作有 audit log。
+
+**可能風險**
+
+- 簡訊成本、電話 ownership 與隱私法規需產品決策；可先用邀請連結＋一次性碼。
+
+## Sprint 5 — 排班、休假與衝突引擎（P1）
+
+**目標**
+
+- 完成班次 CRUD/發布、休假草稿/儲存、額度與衝突規則。
+
+**要修改的檔案**
+
+- 排班／休假 UI modules
+- shift/leave APIs、migrations、policy tests
+- calendar components
+- API/DB/README/Change Log
+
+**預期成果**
+
+- 老闆與員工看到同一份版本化班表；所有衝突可解釋、可稽核。
+
+**驗收標準**
+
+- 班次新增／編輯／刪除／發布與當月／次月休假流程通過。
+- 重疊、休假、跨日、時區、重複點擊、離線重送不產生重複資料。
+- 500 員工、12 個月資料的效能測試達標。
+
+**可能風險**
+
+- 「員工可直接決定休假」可能與不同企業制度衝突；應支援公司 policy，而非 hard-code。
+
+## Sprint 6 — 出勤與薪資正確性（P1）
+
+**目標**
+
+- 建立打卡、工時核定、加班／休息／跨日與薪資鎖帳的唯一口徑。
+
+**要修改的檔案**
+
+- attendance/payroll UI modules
+- timekeeping/payroll services、APIs、migrations
+- calculation tests
+- API/DB/README/Change Log
+
+**預期成果**
+
+- 員工收入、老闆出勤與薪資報表數字一致、可追溯。
+
+**驗收標準**
+
+- 所有金額以整數最小貨幣單位／decimal 計算，不用浮點累積。
+- 時區、跨日、休息、加班、補登、核定、鎖帳與重新開帳測試通過。
+- 薪資報表可重算且有版本與 audit。
+
+**可能風險**
+
+- 台灣勞動法規與各公司規則需由法律／薪酬專家確認；產品應標示「試算」直到合規驗證完成。
+
+## Sprint 7 — Security & Privacy Hardening（P0/P1）
+
+**目標**
+
+- 完成 XSS/CSP/CSRF、資料最小化、加密、audit、rate limit 與安全測試。
+
+**要修改的檔案**
+
+- 所有 render/input modules
+- server security middleware/policies
+- CSP/hosting headers
+- `docs/SECURITY.md`
+- security tests
+
+**預期成果**
+
+- OWASP Top 10 基線通過；敏感資料不落地到不必要的 localStorage。
+
+**驗收標準**
+
+- SAST、dependency audit、XSS payload、越權、CSRF、replay、rate-limit 測試通過。
+- Security review 沒有 open Critical/High。
+
+**可能風險**
+
+- 既有 PWA 離線需求與敏感資料最小化衝突，需加密離線 store 或縮減離線範圍。
+
+## Sprint 8 — UX、Accessibility、PWA 與弱網路（P2）
+
+**目標**
+
+- 讓第一次使用者、50 歲以上、手機／平板使用者都能完成核心任務。
+
+**要修改的檔案**
+
+- 全部 UI/CSS/components
+- manifest/service worker/offline outbox
+- UX copy與 accessibility tests
+- README/Change Log
+
+**預期成果**
+
+- 明確 loading/error/retry、安裝、登出、忘記 PIN、弱網路與離線狀態。
+
+**驗收標準**
+
+- WCAG 2.2 AA 核心流程、鍵盤、螢幕閱讀器與動態字級測試通過。
+- 320/390/768/1024px、iOS Safari、Android Chrome 測試通過。
+- Service Worker 只對 navigation 做 app-shell fallback；版本可更新與回滾。
+
+**可能風險**
+
+- PWA 在 iOS 的背景同步與安裝限制需清楚提示，不能承諾自動建立桌面捷徑。
+
+## Sprint 9 — Observability、CI/CD、DR 與 Beta Release（P1/P2）
+
+**目標**
+
+- 建立 staging/production、監控告警、備份還原、release gate 與封閉 beta。
+
+**要修改的檔案**
+
+- CI/CD workflows
+- hosting/environment configs
+- monitoring/logging/alerting configs
+- runbooks、README、Change Log、release checklist
+
+**預期成果**
+
+- 每次發布可追蹤、可回滾；故障可被發現並在 runbook 內處理。
+
+**驗收標準**
+
+- CI 包含 lint/test/build/security/E2E。
+- staging 與 production 資料、金鑰、網域分離。
+- 備份 restore drill 達成定義的 RPO/RTO。
+- 封閉 beta 兩週無 Critical、High error rate 達標後才可 release candidate。
+
+**可能風險**
+
+- 監控、簡訊、資料庫與錯誤追蹤會產生固定營運成本，需納入定價。
+
+## Sprint 10 — 商業化與平台決策（P3）
+
+**目標**
+
+- 完成方案、計費、用量限制、客服流程與 Flutter/原生 App ADR。
+
+**要修改的檔案**
+
+- billing/entitlement/admin modules
+- pricing/metrics documents
+- `docs/adr/0003-pwa-vs-flutter.md`
+- Roadmap/README/Change Log
+
+**預期成果**
+
+- 免費／付費界線與單位經濟清楚；是否投資 Flutter 有數據依據。
+
+**驗收標準**
+
+- entitlement server-side enforce。
+- 收入、雲端成本、客服成本、轉換與留存 metrics 可觀測。
+- Flutter 決策包含成本、風險、共用 API、遷移與商店維運計畫。
+
+**可能風險**
+
+- 太早建立多雲讓產品複雜度與客服成本暴增；正式版應由平台統一 primary cloud，客戶只選方案，不選底層資料庫。

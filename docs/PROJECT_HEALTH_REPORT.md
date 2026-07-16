@@ -1,0 +1,279 @@
+# 班客邦 Project Health Report
+
+## 2026-07-16 專案整理收尾
+
+- 合併員工、班次、出勤的重複事件處理與老闆資料提交入口；移除 `fallback-actions.js`。
+- 移除未啟用 Firebase／Supabase 草稿檔，Google Sheets API URL 改為唯一設定來源。
+- 修正 Service Worker 對非導覽資產錯誤回傳 app shell，以及匯入／薪資調整未等待雲端確認的回歸風險。
+- 品質檢查、12 組回歸、25 檔 build／release gate 與老闆／員工本機 smoke 通過，瀏覽器無 warning/error。
+- 本次沒有提升正式後端、資料庫或 IAM 完成度；整體完成率與上線判定維持不變，正式 Apps Script readiness 與跨裝置 E2E 仍未執行。
+
+## 2026-07-15 本 Sprint 更新
+
+- **目前完成率：67%**（前次 65%）
+- **Project Health Score：69 / 100**（前次 66）
+- **是否適合正式上線：No**
+- 已封堵：無限 PIN 線上猜測、PIN hash 長期重播、未驗證 session restore、登出／刪除員工未撤銷、credential hashes 回傳瀏覽器。
+- 已封堵：建立明確單一 workspace ID，綁定資料、session 與回應；client 無法指定或修改，mismatch 會停止同步。
+- 已封堵：authenticated scripts 不再將雲端文字資料交給 HTML 解析器，並以自動測試禁止 stored XSS sink 回歸。
+- 已封堵：老闆 snapshot 必須通過 revision compare-and-swap；stale、missing 與 replay save 不再覆蓋員工 action。
+- 已封堵：新 PIN／啟用碼不再把快速、無 salt SHA-256 直接存入 Sheet；改為每筆 salt、server-only pepper 與反覆 HMAC，舊 credential 在成功驗證時自動遷移。
+- 已封堵：可建立私人 Drive 復原包並驗證／回滾 Sheet＋必要 Script Properties；發布前具本機與 Apps Script 雙重閘門。
+- 仍屬 P0：這不是正式多租戶資料列隔離、正式 Identity Provider 或自動 PITR；老闆仍傳整份 JSON，且無正式 audit、CI/CD、不可變備份與定期 restore drill。
+- 下一個最高優先：完成正式身分服務、多租戶關聯式資料庫與 command API 的可遷移設計，停止繼續擴大 Google Sheets primary database。
+
+基準日期：2026-07-15  
+稽核範圍：專案根目錄全部原始碼、PWA 設定、Google Apps Script、Firebase/Supabase 殘留設定、本機老闆與員工預覽流程。  
+稽核原則：以正式商業產品、多人公司、多裝置同步、勞務與薪資敏感資料的標準評估。
+
+## 結論摘要
+
+- **整體完成率：67%**
+- **Project Health Score：69 / 100**
+- **正式上線：No**
+- **目前型態：** 單頁 PWA（HTML/CSS/Vanilla JavaScript）＋ Google Apps Script；不是 Flutter 專案。
+- **最大阻斷：** 員工越權讀寫已完成第一階段止血；單一 JSON 覆寫式同步、沒有多租戶隔離、PIN／Apps Script session 不可視為正式身分驗證，以及缺少 CI、正式資料庫、稽核與企業級不可變備份仍阻擋上線。
+
+### 分項完成度
+
+| 項目 | 完成度 | 說明 |
+|---|---:|---|
+| 畫面與基本操作 | 68% | 主要畫面存在，但角色切換與部分流程不穩定 |
+| 排班／休假／出勤 | 52% | 基本 CRUD/點選存在，資料規則與同步尚未可靠 |
+| 薪資 | 35% | 只有試算，排班工時與實際出勤口徑矛盾 |
+| 登入與權限 | 60% | 已完成登入前 DOM 隔離、本人資料投影、action 授權、短效 session、限流、撤銷、單一 workspace 邊界與過渡期 salted credential；仍缺正式 IAM、MFA／恢復、audit 與多租戶資料列授權 |
+| 雲端同步 | 42% | 員工命令不再全量覆寫；老闆 snapshot 已有 optimistic concurrency，但仍缺 command API 與正式資料庫 |
+| 資料庫 | 18% | 單一 Sheet 儲存格 JSON，不具正式資料庫能力 |
+| QA／自動化 | 44% | 已有十二組 P0/state/cleanup 回歸與老闆／員工瀏覽器 smoke；仍缺正式環境 E2E、弱網與負載測試 |
+| DevOps／營運 | 35% | 已有白名單 build、私人復原包、readiness 與 release gate；仍是手動部署，缺 CI、staging、監控、不可變備份與定期演練 |
+| 文件與治理 | 68% | 已建立 Constitution、README、API、DB、Change Log、ADR、Backlog、Runbook、Release Checklist 與功能 review；仍需正式威脅模型與演練證據 |
+
+## 1. 已完成功能
+
+下列功能「已有程式或畫面」，不代表已達正式上線品質：
+
+- 暖色系、繁體中文、基本響應式的管理介面。
+- 老闆／員工登入畫面、電話號碼＋6 位 PIN、PIN 顯示切換。
+- 老闆新增、編輯、移除、3 天保留、還原員工的介面與本機資料邏輯。
+- 員工月休額度、月份日曆、當月與次月限制、休假草稿與儲存按鈕。
+- 新增班次、重疊班次與休假衝突的基本提示。
+- 員工上下班打卡、老闆調整實際工時、員工本月收入顯示。
+- 出勤、薪資試算、薪資加扣項目、CSV 匯出、列印。
+- Google Apps Script Web App 端點與 Google Sheets 同步原型。
+- PWA manifest、Service Worker、安裝提示與本機角色預覽入口。
+- 未啟用 Firebase／Supabase 概念驗證檔已於 2026-07-16 移除；現況只保留 Google Sheets 過渡後端。
+
+## 2. 未完成功能
+
+- 穩定可用的員工介面與登入後導覽。
+- 多公司／多門市 workspace 與嚴格租戶隔離。
+- 正式帳號註冊、邀請、重設 PIN、裝置/session 管理、撤銷與登出。
+- 後端權限模型：員工只能讀寫自己的班表、休假、出勤與薪資可見資料。
+- 班次編輯、刪除、發布、草稿、版本與衝突處理。
+- 正式休假規則、額度結轉、跨月、部分天、鎖定與稽核。
+- 出勤異常、休息時間、跨日班、加班、國定假日、遲到早退與補登流程。
+- 以「核定實際工時」為唯一口徑的薪資計算、結算與鎖帳。
+- 通知、邀請連結、推播／Email／簡訊策略。
+- 自動 3 天刪除排程、資料匯出與法規保存政策。
+- 可靠離線佇列、弱網路重試、冪等操作、衝突解決。
+- 正式資料庫 migration、索引、外鍵、transaction、audit log、備份與還原演練。
+- 測試、CI/CD、staging、監控、告警、錯誤追蹤、版本與回滾。
+- 商業所需的方案／計費／用量限制／客服與營運後台。
+- Flutter 專案、Android/iOS 原生建置與商店上架流程（目前不存在）。
+
+## 3. Bug 清單
+
+### Critical / P0
+
+1. ~~`employee-layout.js` 與 `boss-hours.js` 的 MutationObserver 自我觸發，造成員工預覽逾時。~~ **2026-07-15 已修復並完成瀏覽器回歸測試。**
+2. ~~Google Apps Script 的 `employeeLogin`／`pull` 將整份公司資料回傳給員工。~~ **2026-07-15 已改成本人資料投影，並移除 PIN hash、access、封存與薪資調整。**
+3. ~~員工 `save` 可覆寫非本人資料。~~ **2026-07-15 已由伺服器拒絕員工全量 save，排假與打卡改為 server-derived identity 的明確命令。**
+4. ~~第一個知道員工電話的人可自行認領 PIN；空白雲端的第一個呼叫者也可認領老闆帳號。~~ **2026-07-15 已止血：老闆第一次初始化須符合 Apps Script 預登記電話；員工以 8 碼一次性啟用碼設定第一組 PIN。**
+5. ~~資料、session 與回應沒有 workspace 邊界。~~ **2026-07-15 已建立 server-generated 單一 workspace 綁定；同一部署仍無法服務多家公司，正式 row-level tenant isolation 尚未完成。**
+6. ~~全量 JSON snapshot 以最後寫入者覆蓋；多裝置同時操作會靜默遺失資料。~~ **2026-07-15 已加入 server revision／compare-and-swap；衝突會拒絕且保留本機修改。全量 snapshot 架構仍待取代。**
+
+### High / P1
+
+7. ~~登入前 `app.js` 已讀取並渲染 localStorage 公司資料；登入只是視覺遮罩。~~ **2026-07-15 已改為驗證成功後才載入管理程式，未登入 DOM 不再包含公司資料；本機儲存與正式授權風險仍待 Auth Sprint。**
+8. ~~本機預覽或舊資料缺少完整 schema，造成 `data.shifts.filter`、`attendance.filter` 出錯。~~ **2026-07-15 已加入啟動 schema 正規化。**
+9. ~~多個模組直接 `JSON.parse(localStorage)`，一筆壞資料可讓整個 APP 白畫面。~~ **2026-07-15 已建立共用 state store、損壞隔離、舊版遷移與安全復原。**
+10. ~~編輯員工會重建 record 且漏掉既有 `pinHash`，造成 PIN 被意外清除。~~ **已保留既有 credential 欄位。**
+11. ~~電話重複檢查用原字串，登入卻會移除非數字；格式不同的同一電話可建立重複員工。~~ **新增／編輯時已正規化並比對；正式資料庫 unique constraint 仍未建立。**
+12. ~~多處以 `innerHTML` 插入姓名、職稱、備註等使用者資料，存在 stored XSS。~~ **2026-07-15 已改為 DOM 純文字渲染，並建立 sink 掃描與惡意 payload 防回歸測試。**
+13. ~~6 位 PIN 只做無 salt 的 SHA-256，且 hash 直接保存。~~ **2026-07-15 已改為過渡期 server-side salted credential、server-only pepper 與登入時舊資料遷移；6 位 PIN 低熵與非正式 Identity Provider 仍是上線阻擋。**
+14. 沒有登入 rate limit、鎖定、session expiry、refresh、revoke、device list。
+15. ~~`google-sheets-cloud.js` 正在儲存時會直接丟棄後續 `push`，沒有 dirty queue。~~ **已改為 latest-state queue，並加入 revision conflict 防護。**
+16. 員工端不做 15 秒 pull；老闆更新後員工不會自動同步。
+17. 老闆薪資與統計使用排班工時，員工收入與工時調整使用出勤工時，數字互相矛盾。
+18. ~~`Service Worker` 對任何 GET 失敗都回 `index.html`，JS/CSS 可能收到 HTML。~~ **2026-07-16 已限制只有導覽請求可回退 app shell。**
+
+### Medium / P2
+
+19. 老闆模式的休假儲存面板 `hidden`，但 CSS `.leave-save-panel{display:flex}` 仍讓它顯示。
+20. 班表文字表示可點選編輯，但沒有班次編輯／刪除操作。
+21. 上下班時間差一律至少算 0.5 小時，即使誤觸立即下班也會產生薪資工時。
+22. 月份以 `toISOString()` 取 UTC，台灣每月 1 日凌晨可能顯示前一個月。
+23. 3 天永久刪除只在載入或 API 呼叫時清理，不是準時排程。
+24. 登出只清 session flag，不清本機敏感資料，也沒有明顯登出按鈕。
+25. CSV 未處理逗號、換行、引號與試算表公式注入。
+26. ~~全域 scripts 依載入順序互相攔截事件，`app.js` 與 `fallback-actions.js` 有重複 handler。~~ **2026-07-16 已集中至 `management-actions.js` 並加入回歸測試。**
+
+### Low / P3
+
+27. ~~Service Worker 快取未使用 Firebase 檔案。~~ **Sprint 0 已移除；版本自動化仍待 Sprint 9。**
+28. PWA 只有 SVG icon，iOS／Android 安裝圖示與 maskable 相容性不足。
+29. 整理前 ZIP 已由 `.gitignore` 排除；正式異地備份與不可變版本歷史仍待 DevOps Sprint。
+30. ~~Firebase/Supabase 檔案未使用，會誤導維護與安全稽核。~~ **2026-07-16 已移除。**
+
+## 4. 技術負債
+
+- 12 個全域 script 共享 DOM、localStorage 與全域變數，沒有模組邊界與型別。
+- `app.js`、`fallback-actions.js` 重複表單與資料寫入邏輯，靠 capture/`stopImmediatePropagation` 決定誰生效。
+- 主要 state 的 `read/write/normalize` 已集中至 `state-store.js`；`hash/money/month` 等規則仍分散。
+- 以 `location.reload()` 當狀態同步機制，無中央 state store。
+- Monkey-patch `localStorage.setItem` 觸發雲端同步，第三方或未來模組容易失效。
+- CSS 壓成單行，缺設計 token／元件規格／可維護命名。
+- 已建立本機 Git repository，但尚無正式 branch、tag、remote 與 release history；仍保留大量手工 ZIP。
+- 已有零依賴 package scripts、語法檢查、P0 防回歸測試與 build；formatter、完整 linter、E2E、coverage、CI 仍未建立。
+- README、Backlog、API、Database、Change Log、ADR 與 Constitution 已建立，仍需隨每個 Sprint 持續維護。
+
+## 5. 架構問題
+
+目前資料流：`DOM -> 多個全域 JS -> localStorage 全量 snapshot -> iframe/form -> Apps Script -> Sheet A1 JSON`。
+
+- UI、business logic、authorization、persistence 混在瀏覽器端。
+- Google Sheets 被當主資料庫，而不是報表／匯出整合。
+- 已為三個員工 mutation 建立過渡 command boundary；老闆與其餘 domain 仍缺完整 action API。
+- 已有過渡期單一 workspace identity 與全域 optimistic revision；仍沒有多租戶資料列模型、row revision、event 或 idempotency key。
+- 沒有資料 schema version 與 migration runner。
+- 沒有 server-side scheduled jobs、audit、notification、session service。
+- Supabase relational schema 仍把核心資料塞進 `jsonb app_data`，未解決正規化與權限問題。
+
+### 建議目標架構
+
+1. 保留 PWA 作短期前端，但逐步模組化；是否 Flutter 另做 ADR，不直接重寫。
+2. 建立多租戶 workspace，所有資料列含 `workspace_id`。
+3. 使用正式 relational database（建議 PostgreSQL 類型；供應商經 ADR 選定）。
+4. API 改為 action/command 與 scoped query，不允許客戶端全量覆寫 snapshot。
+5. 正式 auth/session、伺服器端 authorization、audit log、rate limit、revision conflict。
+6. Google Sheets 降為匯出／報表整合，不作 primary database。
+
+## 6. 安全性問題
+
+- Authentication：首次認領已用預登記 owner phone 與一次性啟用碼止血；PIN 已加入每筆 salt、server-only pepper 與反覆 KDF，但仍是低熵 6 位數、非記憶體困難雜湊，且無 MFA／正式恢復流程。
+- Authorization：員工可取得全公司資料並覆寫非本人 domain。
+- Tenant isolation：不存在。
+- XSS：多處 stored `innerHTML`；無 CSP。
+- Session：hash 為 bearer credential；無期限、撤銷、rotation、裝置管理。
+- Rate limit/replay：不存在。
+- Secrets/config：端點與雲端設定 hard-code；雖 Firebase public config 不是 secret，但環境沒有分離。
+- CSRF：Apps Script POST 沒有 anti-CSRF 或真正 session 綁定；目前靠 hash 權限。
+- Logging/audit：沒有登入、權限失敗、資料變更、刪除的不可竄改紀錄。
+- Privacy：薪資與電話仍可能留在 localStorage；Google Sheets 模式登出會清除主要敏感快取，credential 已不回傳或寫入前端 state，但其他本機模式與裝置遺失政策仍未完成。
+- Backup/DR：已具私人 Drive、checksum、workspace 驗證、rollback 與發布 readiness 的過渡復原流程；31 個本機 ZIP 仍不是正式備份，且仍缺不可變／獨立加密備份、PITR、保留政策與定期演練。
+
+## 7. UI/UX 問題
+
+- 員工介面已能穩定載入；但休假儲存按鈕位於第二頁、錯誤狀態與弱網體驗仍不符合正式產品要求。
+- ~~登入畫面後方仍有完整公司資料，只是用 overlay 遮住。~~ **2026-07-15 已完成登入前資料與管理畫面隔離。**
+- 老闆看到員工專用「儲存休假」面板。
+- 員工的休假儲存按鈕被搬到第二頁，與「選完立即儲存」心智模型不一致。
+- 重要操作大量使用原生 `alert/confirm/prompt`，錯誤不可追蹤且行動裝置體驗差。
+- 登入沒有 loading/disabled，容易重複點擊與重複請求。
+- 沒有明顯登出、切換帳號、忘記 PIN、支援入口。
+- 月份鎖定主要靠透明度與攔截，缺清楚原因與可用月份提示。
+- 日曆用色彩表達狀態，缺完整文字／ARIA；tabs 也缺 `aria-selected` 與鍵盤規格。
+- 手機 topbar 控制過密，50 歲以上與低數位熟悉度使用者容易迷失。
+- 無 tablet、深色模式、動態字級、觸控尺寸與 Apple HIG 驗證。
+
+## 8. 效能問題
+
+- ~~員工模式 MutationObserver 無限迴圈造成 CPU 100%、主執行緒阻塞。~~ **2026-07-15 已修復並加入防回歸檢查。**
+- ~~`boss-hours.js` 監聽整個 body subtree，每次 render 都全表掃描與 DOM 改寫。~~ **2026-07-15 已縮小監聽範圍並加入防回歸檢查。**
+- 每次小改動都序列化、保存並同步整份資料，資料量成長後成本線性上升。
+- 15 秒全量 pull，差異用整份 `JSON.stringify` 比對並 `location.reload()`。
+- 多處完整重建表格／日曆，沒有 keyed update、memoization 或 pagination。
+- Apps Script 每次 request 取得全域 lock，所有使用者互相阻塞。
+- Sheet 單一儲存格有內容大小限制，實際資料量很快撞限。
+- 無壓縮 build、bundle analysis、Core Web Vitals、memory/frame profiling。
+
+## 9. 資料庫問題
+
+- Google Sheet `_班表APP資料!A1` 儲存整份 JSON；沒有 table、index、foreign key、unique constraint。
+- Apps Script lock＋全域 revision 已阻止 stale snapshot overwrite；仍沒有 relational transaction boundary。
+- 沒有正式 schema validation、migration、row revision、soft delete policy、audit log。
+- 已加入不可由 client 修改的單一 `workspace.id`；仍沒有正式關聯式 `workspace_id` 外鍵與多租戶資料列隔離。
+- 電話沒有 canonical unique index。
+- 員工、班次、出勤、休假、薪資缺 referential integrity。
+- 3 天刪除沒有 server scheduler 與 legal retention 設計。
+- 已有私人 Drive 過渡復原包與手動 rollback；仍沒有不可變／獨立加密備份、PITR、定期 restore drill 與正式 RPO/RTO。
+- Supabase SQL 只是未使用草稿，且核心資料仍在單一 JSONB。
+
+## 10. API 問題
+
+- API 已由四個 action 增加三個員工明確命令，但仍沒有版本、正式資源模型與標準錯誤碼。
+- Request/response 沒有 schema validation、大小限制、欄位白名單。
+- 已有全域 snapshot revision 與 conflict response；仍沒有 command idempotency key、row ETag 與 HTTP 409 transport。
+- ~~沒有正式 session token，直接重播 `phone + pinHash`。~~ **已改為 8 小時 server session；正式 refresh/device management 仍未完成。**
+- ~~沒有 rate limit、lockout。~~ **已加入每電話失敗限流與暫時鎖定；仍缺 IP/device risk 與 request signing。**
+- ~~員工回應未做 field-level filtering。~~ **已完成本人 projection。**
+- 員工 `save` 已關閉；老闆 `save` 仍接受客戶端整份資料，是併發與 mass-assignment 風險。
+- 沒有 observability：request ID、structured log、latency、error rate、health endpoint。
+- Apps Script origin hard-code Netlify 網址；換 custom domain 會中斷。
+
+## 11. 優先修復順序
+
+### P0：停止資料外洩與無法使用
+
+1. ~~修復員工介面無限迴圈。~~ **已完成。**
+2. ~~建立主要 state 的集中正規化、舊版遷移與 corruption recovery。~~ **已完成第一階段；欄位級驗證與正式逐版 migration 留待後續。**
+3. ~~登入前不載入公司資料；Google Sheets 模式登出清除本機敏感快取。~~ **已完成前端隔離；正式 server session/revoke 仍列於 P0。**
+4. ~~凍結員工 Google Sheets 全量 `save`；員工只允許本人 action。~~ **已完成過渡期止血；老闆 snapshot 與正式 API 待後續。**
+5. ~~阻止空白雲端與未啟用員工遭第一位訪客搶先認領。~~ **已完成過渡期止血；Apps Script 部署仍須設定 `SHIFT_APP_OWNER_PHONE`。**
+6. ~~建立資料、session 與回應的明確單一 workspace 邊界。~~ **已完成過渡止血；正式多租戶資料列模型留在 Sprint 3。**
+7. ~~建立短效 session、撤銷、rate limit、replay 防護與過渡期 salted credential。~~ **已完成過渡止血；refresh/device management、正式 Identity Provider、密鑰輪替與正式 session store 仍未完成。**
+8. 決定正式 primary database 與 Identity Provider；Google Sheets 改為 export integration。
+9. 修正 Service Worker 與部署 cache/version drift。
+10. 建立 Git、build/check、最小 smoke/E2E 測試與 staging。
+
+### P1：核心營運正確性
+
+- 統一實際工時與薪資口徑、加班／休息／跨日／鎖帳。
+- 修復 PIN 遺失、電話正規化與唯一性、stored XSS。
+- 班次編輯／刪除／發布與 revision conflict。
+- Audit log、3 天刪除排程、企業級不可變備份與定期還原演練。
+- 員工即時／近即時同步、離線 outbox、API validation。
+
+### P2：可靠性與體驗
+
+- 修復休假按鈕位置、老闆錯誤面板、loading/error/retry/double-submit。
+- 登出／切換帳號／忘記 PIN／裝置管理。
+- 響應式、可及性、時區、打卡精度、CSV 安全、PWA icons/cache。
+- 監控、錯誤追蹤、客服診斷資訊與營運後台。
+
+### P3：維護與商業化
+
+- 清理 Firebase/Supabase 殘留與 31 份 ZIP。
+- 模組化、format/lint/type safety、設計系統。
+- 計費、方案、用量限制、通知、分析、管理報表。
+- 評估 Flutter／原生 App 的商業 ROI，再決定是否遷移。
+
+## 12. 是否適合正式上線
+
+**No。**
+
+主要原因不是功能數量，而是：
+
+1. 員工介面卡死已修復，但正式登入、弱網與跨裝置端到端驗收仍未完成。
+2. 員工跨資料讀寫、PIN hash 重播與無 workspace 邊界已完成過渡止血，但 Google Apps Script session 仍不是正式 IAM。
+3. 目前只保護「一個部署＝一家公司」，沒有資料列級多租戶隔離，不能以同一部署安全服務多家公司。
+4. 驗證與 session 不符合商業系統最低安全標準。
+5. 全量 snapshot 同步會在多人操作時遺失資料。
+6. Google Sheets 單一儲存格無法承擔排班／出勤／薪資正式主資料庫。
+7. 已有 P0 自動回歸、過渡備份與回滾，但仍沒有 CI、監控、不可變備份、定期演練、稽核與完整 E2E。
+
+在 P0 與 P1 完成、通過安全與資料遷移演練、至少一輪封閉 beta 後，才可重新評估上線。
+
+## 13. 剩餘工作量估算
+
+以 1 個資深全端工程師＋兼任 QA/DevOps 計算，達到可控 beta 約 **16–24 週**；達到可收費正式營運約 **28–40 週**。若由 3–4 人小隊平行開發，可縮短日曆時間，但安全、遷移與 beta 觀察期不能省略。

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>班表與薪資管理</title>
+    <meta name="theme-color" content="#a94f35" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="app-icon.svg" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="access.css" />
+    <link rel="stylesheet" href="login.css" />
+    <link rel="stylesheet" href="login-screen.css" />
+    <link rel="stylesheet" href="employee-calendar.css" />
+    <link rel="stylesheet" href="employee-layout.css" />
+    <style>.employee-mode #cloudConfigBtn{display:none!important}</style>
+    <script>
+      window.LOCAL_PREVIEW = new URLSearchParams(location.search).has('preview');
+      if (window.LOCAL_PREVIEW) {
+        document.documentElement.classList.add('local-preview');
+        navigator.serviceWorker?.getRegistrations?.().then(items => items.forEach(item => item.unregister()));
+      }
+    </script>
+    <style>html.local-preview #loginOverlay{display:none!important;visibility:hidden!important;pointer-events:none!important}</style>
+  </head>
+  <body>
+    <div class="login-overlay" id="loginOverlay"><section class="login-card"><span class="login-mark">✦</span><h1>班表管理</h1><p>請選擇登入身份</p><label>帳號（手機號碼）<input id="loginPhone" inputmode="tel" autocomplete="username" placeholder="例如：0912345678" /></label><label id="loginPinWrap">密碼（6 位數 PIN）<span class="pin-input"><input id="loginPin" inputmode="numeric" maxlength="6" type="password" autocomplete="current-password" placeholder="輸入 6 位數密碼" /><button id="togglePin" type="button">顯示 PIN</button></span></label><label id="loginActivationWrap" hidden>首次啟用碼<input id="loginActivation" inputmode="text" maxlength="8" autocomplete="one-time-code" autocapitalize="characters" placeholder="輸入老闆提供的 8 碼啟用碼" /></label><div id="recaptcha-container"></div><div class="login-actions"><button class="primary" id="bossLogin">老闆登入</button><button class="ghost" id="employeeLogin">員工登入</button></div><small id="loginHint">帳號一律是手機號碼，密碼一律是 6 位數 PIN；員工第一次登入另需一次性啟用碼。</small></section></div>
+    <header class="topbar">
+      <div><span class="brand-mark">✦</span><strong>班表管理</strong><small>出勤・薪資</small></div>
+      <div class="access-controls"><span id="cloudStatus" class="cloud-status">Google Sheets</span><button class="ghost" id="installAppBtn" hidden>安裝到手機</button><button class="ghost" id="cloudConfigBtn">雲端設定</button><label>登入身份<select id="roleSelect"><option value="boss">老闆登入</option><option value="employee">員工登入</option></select></label><label id="employeeModeWrap">選擇員工<select id="employeeModeSelect"></select></label><button class="ghost" id="employeeLeaveBtn" hidden>申請請假</button><button class="ghost" id="backupBtn">備份</button><button class="ghost" id="restoreBtn">還原</button><input id="restoreFile" type="file" accept="application/json" hidden /><button class="ghost" id="printBtn">列印／另存 PDF</button></div>
+    </header>
+    <main>
+      <section class="hero">
+        <div><p class="eyebrow">本月總覽</p><h1 id="monthTitle">2026 年 7 月</h1><p>管理員工、排班與薪資，一次完成。</p></div>
+        <input id="monthPicker" type="month" aria-label="選擇月份" />
+      </section>
+      <section class="stats" id="stats"></section>
+
+      <nav class="tabs" aria-label="主要功能">
+        <button class="active" data-tab="schedule">排班表</button>
+        <button data-tab="attendance">出勤／請假</button>
+        <button data-tab="employees">員工</button>
+        <button data-tab="payroll">薪資試算</button>
+      </nav>
+
+      <section id="schedule" class="panel tab-panel active">
+        <div class="panel-head"><div><h2>月班表</h2><p>點選班次即可編輯；資料會自動儲存。</p></div><button class="primary" id="addShift">＋ 新增班次</button></div>
+        <div class="calendar-box">
+          <div class="calendar-head"><div><h3>休假日曆</h3><p>選擇員工後，點日期設定或取消休假。</p></div><label class="calendar-select">選擇員工<select id="calendarEmployee"></select></label><div class="leave-count"><span>本月剩餘休假</span><strong id="leaveRemaining">8</strong><b>天</b></div></div>
+          <div class="weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+          <p class="calendar-note"><i></i> 已設定休假（再點一次可取消）</p>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>員工</th><th>職稱</th><th>時薪</th><th>已排工時</th><th>本月預估薪資</th><th>班次</th></tr></thead><tbody id="scheduleBody"></tbody></table></div>
+      </section>
+
+      <section id="attendance" class="panel tab-panel">
+        <div class="panel-head"><div><h2>出勤與請假</h2><p>記錄實際出勤狀況及請假資料。</p></div><button class="primary" id="addAttendance">＋ 新增紀錄</button></div>
+        <div class="table-wrap"><table><thead><tr><th>日期</th><th>員工</th><th>類型</th><th>時數</th><th>備註</th><th></th></tr></thead><tbody id="attendanceBody"></tbody></table></div>
+      </section>
+
+      <section id="employees" class="panel tab-panel">
+        <div class="panel-head"><div><h2>員工資料</h2><p>新增或調整員工的基本資訊。</p></div><button class="primary" id="addEmployee">＋ 新增員工</button></div>
+        <div class="cards" id="employeeCards"></div>
+        <section class="removed-employees" id="removedEmployees" hidden></section>
+      </section>
+
+      <section id="payroll" class="panel tab-panel">
+        <div class="panel-head"><div><h2>薪資試算</h2><p>以目前排定的班次及時薪計算；實際薪資請依公司規則確認。</p></div><button class="primary" id="exportBtn">匯出薪資資料</button></div>
+        <div class="table-wrap"><table><thead><tr><th>員工</th><th>時薪</th><th>正常工時</th><th>班次數</th><th>預估薪資</th></tr></thead><tbody id="payrollBody"></tbody></table></div>
+      </section>
+    </main>
+    <dialog id="employeeDialog"><form method="dialog" id="employeeForm"><div class="dialog-head"><h2 id="employeeDialogTitle">新增員工</h2><button class="icon" type="button" data-close-dialog>×</button></div><input type="hidden" id="employeeId" /><label>姓名<input id="employeeName" required placeholder="例如：王小明" /></label><label>電話號碼<input id="employeePhone" required inputmode="tel" placeholder="例如：0912345678" /></label><p class="cloud-help">新增員工後會產生一次性啟用碼。員工第一次登入時輸入啟用碼，再自行設定 6 位數 PIN；不會發送簡訊。</p><label>職稱<input id="employeeRole" required placeholder="例如：門市人員" /></label><label>時薪（元）<input id="employeeRate" required min="0" type="number" placeholder="190" /></label><label>每月休假額度（天）<input id="employeeLeaveQuota" required min="0" max="31" type="number" value="8" /></label><menu><button type="button" data-close-dialog>取消</button><button class="primary" value="default">儲存</button></menu></form></dialog>
+    <dialog id="shiftDialog"><form method="dialog" id="shiftForm"><div class="dialog-head"><h2>新增班次</h2><button class="icon" value="cancel">×</button></div><label>員工<select id="shiftEmployee" required></select></label><label>日期<input id="shiftDate" required type="date" /></label><div class="row"><label>開始<input id="shiftStart" required type="time" value="09:00" /></label><label>結束<input id="shiftEnd" required type="time" value="18:00" /></label></div><label>備註（選填）<input id="shiftNote" placeholder="例如：晚班、代班" /></label><menu><button value="cancel">取消</button><button class="primary" value="default">儲存班次</button></menu></form></dialog>
+    <dialog id="attendanceDialog"><form method="dialog" id="attendanceForm"><div class="dialog-head"><h2>新增出勤／請假</h2><button class="icon" value="cancel">×</button></div><label>員工<select id="attendanceEmployee" required></select></label><label>日期<input id="attendanceDate" required type="date" /></label><div class="row"><label>類型<select id="attendanceType"><option value="出勤">出勤</option><option value="事假">事假</option><option value="病假">病假</option><option value="特休">特休</option></select></label><label>時數<input id="attendanceHours" type="number" min="0.5" step="0.5" value="8" required /></label></div><label>備註（選填）<input id="attendanceNote" placeholder="例如：下午請假" /></label><menu><button value="cancel">取消</button><button class="primary" value="default">儲存紀錄</button></menu></form></dialog>
+    <dialog id="cloudDialog"><form method="dialog" id="cloudForm"><div class="dialog-head"><h2>Google Sheets 雲端設定</h2><button class="icon" value="cancel">×</button></div><p class="cloud-help">目前使用 Google Sheets＋Apps Script 免費雲端。老闆與員工會同步同一份班表資料，不發送簡訊。</p><label>雲端網址<input id="googleSheetsUrl" readonly /></label><p class="cloud-help">員工帳號為手機號碼；密碼為 6 位數 PIN。PIN 遺忘時請由老闆在員工頁面重設。</p><menu><button value="cancel">關閉</button></menu></form></dialog>
+    <script src="google-sheets-config.js"></script>
+    <script src="state-store.js"></script>
+    <script src="account-security.js"></script>
+    <script src="cloud-sync.js"></script>
+    <script src="google-sheets-cloud.js"></script>
+    <script src="login.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+      (() => {
+        if (!window.LOCAL_PREVIEW) return;
+        const previewRole = new URLSearchParams(location.search).get('preview') === 'employee' ? 'employee' : 'boss';
+        const openPreview = () => {
+          const overlay = document.querySelector('#loginOverlay');
+          if (overlay) { overlay.hidden = true; overlay.style.display = 'none'; }
+          const role = document.querySelector('#roleSelect');
+          const employee = document.querySelector('#employeeModeSelect');
+          if (!role) return;
+          role.value = previewRole;
+          role.dispatchEvent(new Event('change'));
+          if (previewRole === 'employee' && employee?.options.length) {
+            employee.value = employee.options[0].value;
+            employee.dispatchEvent(new Event('change'));
+          }
+          document.body.classList.add('local-preview-mode');
+        };
+        openPreview();
+        window.addEventListener('load', openPreview);
+        let previewAttempts = 0;
+        const previewTimer = setInterval(() => {
+          openPreview();
+          if (++previewAttempts >= 10) clearInterval(previewTimer);
+        }, 300);
+      })();
+    </script>
+  </body>
+</html>

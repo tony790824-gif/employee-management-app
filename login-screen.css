@@ -1,0 +1,2 @@
+.login-overlay{background:#fff7ed!important;z-index:100!important}
+body:not(.app-authenticated)>.topbar,body:not(.app-authenticated)>main,body:not(.app-authenticated)>dialog{display:none!important}

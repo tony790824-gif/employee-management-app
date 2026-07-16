@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>班表 APP 本機預覽</title>
+    <style>
+      :root{--ink:#49352c;--terra:#bf6248;--cream:#fff7ed;--line:#ead8c4}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--cream);font-family:"Microsoft JhengHei",system-ui,sans-serif;color:var(--ink);padding:24px}.preview{width:min(720px,100%);text-align:center}.preview h1{margin:0 0 10px}.preview p{color:#846f62;margin:0 0 30px}.roles{display:grid;grid-template-columns:1fr 1fr;gap:18px}.role{display:block;padding:36px 24px;background:#fffaf5;border:1px solid var(--line);border-radius:16px;text-decoration:none;color:var(--ink);box-shadow:0 8px 24px #49352c12}.role strong{display:block;font-size:25px;margin-bottom:10px;color:var(--terra)}.role span{font-size:14px;color:#846f62}.role:hover{border-color:var(--terra);transform:translateY(-2px)}small{display:block;color:#846f62;margin-top:26px}@media(max-width:600px){.roles{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <main class="preview">
+      <h1>班表 APP 本機預覽</h1>
+      <p>只檢查介面與操作，不用登入、不會連接 Google Sheets。</p>
+      <div class="roles">
+        <a class="role" href="./index.html?preview=boss"><strong>老闆介面</strong><span>查看排班、出勤、員工與薪資畫面</span></a>
+        <a class="role" href="./index.html?preview=employee"><strong>員工介面</strong><span>查看月班表、休假與我的出勤／收入</span></a>
+      </div>
+      <small>本機預覽資料只留在這個預覽網址，不會寫入雲端。</small>
+    </main>
+  </body>
+</html>

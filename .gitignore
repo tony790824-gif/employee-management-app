@@ -1,0 +1,8 @@
+dist/
+node_modules/
+.pnpm-store/
+*.log
+.DS_Store
+Thumbs.db
+shift-app-*.zip
+班表APP-pre-cleanup-*.zip
