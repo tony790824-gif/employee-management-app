@@ -1,5 +1,11 @@
 # 班客邦 Product Backlog
 
+## P0 schema 版本化與遷移系統（2026-07-16）
+
+已完成後端 `google-sheets-backend.gs` 與前端 `state-store.js` 的 `sync.schemaVersion` 版本號機制。讀取邊界 `migrate_` 現在會自動將缺少版本號的舊資料正規化至目前版本 1，為後續正式資料庫遷移奠定基礎。本次只提交來源、測試與文件，未部署 Apps Script。
+
+最高優先的整體上線閘門仍是受控 staging Apps Script 部署與真實老闆／員工跨裝置 E2E；需求禁止發布，因此未執行。下一個可獨立處理的程式工作是正式身分服務、多租戶關聯式資料庫與 command API 的遷移設計 ADR。
+
 ## P0 request 大小與 snapshot 欄位值邊界（2026-07-16）
 
 Apps Script `doPost` 現在會在解析 JSON 與執行 API 前，以 raw form body 的 UTF-8 bytes 檢查 1 MiB 上限；平台未提供非空 raw body 時才以解碼後 `payload` 作 fallback。A1 讀取、老闆儲存、初始化、備份與寫入前共用同一組現有欄位值驗證；錯誤不寫入也不推進 revision。舊缺欄、空薪資調整與原樣負數扣款維持相容，但新負數調整被拒絕。本次只提交來源、測試與文件，未部署 Apps Script。

@@ -1,6 +1,14 @@
 # 班客邦 Project Health Report
 
-## 2026-07-16 request 大小與 A1 欄位值驗證
+## 2026-07-16 — P0 schema 版本化與遷移系統
+
+- 已完成後端 `google-sheets-backend.gs` 與前端 `state-store.js` 的 `sync.schemaVersion` 版本號機制。
+- 讀取邊界 `migrate_` 現在會自動將缺少版本號的舊資料正規化至目前版本 1，為後續正式資料庫遷移奠定基礎。
+- 修正 `enhancements.js` 備份檔名 UTC 日期 Bug。
+- **功能實作估值：約 69%；整體商業上線完成度：54%（前次 53%）**。
+- **是否適合正式上線：No**。
+
+## 2026-07-16 — request 大小與 A1 欄位值驗證
 
 - `doPost` 現在以 UTF-8 byte 數拒絕超過 1 MiB 的 request，且在 JSON parse、API、lock、Sheet 讀寫前立即停止；錯誤沿用 `{ ok, error, code }` 並保留 `requestId`。
 - A1 讀取、老闆 `save`、第一次初始化、備份與寫入前現共用電話、credential 表示、薪資／金額、日期／時間值驗證。非法儲存不寫入、不部分 merge、不推進 revision。
@@ -61,8 +69,8 @@
 
 ## 結論摘要
 
-- **整體商業上線完成率：53%**（功能實作估值約 68%）
-- **Project Health Score：70 / 100**
+- **整體商業上線完成率：54%**（功能實作估值約 69%）
+- **Project Health Score：72 / 100**
 - **正式上線：No**
 - **目前型態：** 單頁 PWA（HTML/CSS/Vanilla JavaScript）＋ Google Apps Script；不是 Flutter 專案。
 - **最大阻斷：** 員工越權讀寫已完成第一階段止血；單一 JSON 覆寫式同步、沒有多租戶隔離、PIN／Apps Script session 不可視為正式身分驗證，以及缺少 CI、正式資料庫、稽核與企業級不可變備份仍阻擋上線。
@@ -74,12 +82,13 @@
 | 畫面與基本操作 | 68% | 主要畫面存在，但角色切換與部分流程不穩定 |
 | 排班／休假／出勤 | 52% | 基本 CRUD/點選存在，資料規則與同步尚未可靠 |
 | 薪資 | 35% | 只有試算，排班工時與實際出勤口徑矛盾 |
-| 登入與權限 | 60% | 已完成登入前 DOM 隔離、本人資料投影、action 授權、短效 session、限流、撤銷、單一 workspace 邊界與過渡期 salted credential；仍缺正式 IAM、MFA／恢復、audit 與多租戶資料列授權 |
-| 雲端同步 | 44% | 員工命令不再全量覆寫；老闆 snapshot 已有 optimistic concurrency、request 大小與關鍵值驗證，但仍缺 command API 與正式資料庫 |
-| 資料庫 | 20% | 關鍵 A1 欄位已有寫入前值驗證；仍是單一 Sheet 儲存格 JSON，不具正式資料庫能力 |
-| QA／自動化 | 46% | 已有十三組 P0/state/cleanup 回歸與老闆／員工瀏覽器 smoke；仍缺正式環境 E2E、弱網與負載測試 |
-| DevOps／營運 | 35% | 已有白名單 build、私人復原包、readiness 與 release gate；仍是手動部署，缺 CI、staging、監控、不可變備份與定期演練 |
-| 文件與治理 | 68% | 已建立 Constitution、README、API、DB、Change Log、ADR、Backlog、Runbook、Release Checklist 與功能 review；仍需正式威脅模型與演練證據 |
+| 登入與權限 | 60% | 已完成過渡授權、本人投影與 salted credential；缺正式 IAM 與多租戶隔離 |
+| 雲端同步 | 48% | 已有 revision 與 schema 版本化，但仍是 JSON snapshot 覆寫 |
+| 資料庫 | 25% | 已有 schema version 與 migration 機制；仍是單一 Sheet 儲存格 |
+| QA／自動化 | 48% | 已有十四組 P0/state/cleanup/schema 回歸；仍缺正式環境 E2E |
+| DevOps／營運 | 35% | 已有白名單 build、私人復原包、readiness 與 release gate |
+| 文件與治理 | 68% | 已建立 Constitution、README、API、DB、Change Log、ADR、Backlog、Runbook、Release Checklist 與功能 review |
+
 
 ## 1. 已完成功能
 

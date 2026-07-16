@@ -42,7 +42,7 @@ const iso = '2026-07-16T04:05:06.007Z';
 const payrollKey = 'employee-1-2026-07';
 const snapshot = () => ({
   workspace: { id: workspaceId },
-  sync: { revision: 3 },
+  sync: { revision: 3, schemaVersion: 1 },
   employees: [{
     id: 'employee-1', name: '員工', phone: '0922222222', role: '門市', rate: 200, leaveQuota: 8,
     pinHash: prehash('123456')
@@ -68,6 +68,16 @@ const expectCode = (operation, code) => assert.throws(
   error => error && error.code === code,
   `預期錯誤代碼 ${code}`
 );
+
+// Schema Migration tests
+const legacyData = snapshot();
+delete legacyData.sync.schemaVersion;
+const migrated = context.migrate_(legacyData);
+assert.equal(migrated.sync.schemaVersion, 1, 'v0 資料必須能遷移至 v1');
+
+const invalidVersion = snapshot();
+invalidVersion.sync.schemaVersion = -1;
+expectCode(() => context.validateSnapshotShape_(invalidVersion, 'DATA_SOURCE_INVALID'), 'DATA_SOURCE_INVALID');
 
 // Raw request limit: UTF-8 bytes, not JavaScript character count.
 assert.equal(context.utf8ByteLength_('abc'), 3);

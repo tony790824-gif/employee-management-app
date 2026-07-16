@@ -1,5 +1,19 @@
 # Change Log
 
+## 2026-07-16 — P0 schema versioning and migration
+
+### Fixed
+
+- 建立正式 schema 版本化與遷移系統；Apps Script 與前端 state store 具備 `sync.schemaVersion` 及其遷移功能。
+- `google-sheets-backend.gs` 的 `readData_` 與 `readDataStrict_` 現在會先通過 `migrate_` 正規化舊資料至最新版本，再進行形狀與值驗證。
+- `state-store.js` 的 `normalize` 整合遷移邏輯，確保本機與雲端資料版本同步。
+- 修正 `enhancements.js` 備份下載檔名使用 UTC 時間造成台灣每月 1 日凌晨日期錯誤的 Bug。
+
+### Verified
+
+- 新增 v0 資料自動遷移至 v1、非法版本拒絕、`ensureSync_` 與 `bumpRevision_` 保留版本號，以及前端 state 遷移回歸測試。
+- 全部 14 組回歸測試通過。整體商業上線完成度由 53% 調整為 54%。
+
 ## 2026-07-16 — P0 request size and snapshot value schema
 
 ### Fixed

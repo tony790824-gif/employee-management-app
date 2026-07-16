@@ -3,19 +3,34 @@
   const PRIOR_KEYS = ['shift-app-data-v2', 'shift-app-data-v1'];
   const CORRUPT_BACKUP_KEY = 'shift-app-data-corrupt-backup';
   const SYNC_CONFLICT_BACKUP_KEY = 'shift-sync-conflict-backup';
+  const SCHEMA_VERSION = 1;
   const ARRAY_FIELDS = ['employees', 'shifts', 'attendance', 'leaveHistory', 'removedEmployees'];
   const OBJECT_FIELDS = ['workspace', 'sync', 'leaves', 'leaveRequests', 'access', 'payrollAdjustments'];
   let recovery = null;
 
   const objectValue = value => value && typeof value === 'object' && !Array.isArray(value);
 
+  function migrate(data) {
+    const version = Number(data && data.sync && data.sync.schemaVersion) || 0;
+    if (version >= SCHEMA_VERSION) return data;
+    if (version === 0) {
+      data.sync = data.sync || {};
+      data.sync.schemaVersion = 1;
+    }
+    return data;
+  }
+
   function normalize(value, fallback = {}) {
-    const base = objectValue(value) ? value : objectValue(fallback) ? fallback : {};
-    const state = { ...base };
+    const migrated = migrate(objectValue(value) ? value : objectValue(fallback) ? fallback : {});
+    const state = { ...migrated };
     ARRAY_FIELDS.forEach(field => { if (!Array.isArray(state[field])) state[field] = []; });
     OBJECT_FIELDS.forEach(field => { if (!objectValue(state[field])) state[field] = {}; });
     const revision = Number(state.sync.revision);
-    state.sync = { revision: Number.isSafeInteger(revision) && revision >= 0 ? revision : 0 };
+    const schemaVersion = Number(state.sync.schemaVersion);
+    state.sync = {
+      revision: Number.isSafeInteger(revision) && revision >= 0 ? revision : 0,
+      schemaVersion: Number.isSafeInteger(schemaVersion) && schemaVersion >= 0 ? schemaVersion : SCHEMA_VERSION
+    };
     state.removedEmployees = state.removedEmployees.filter(record => record && typeof record === 'object');
     return state;
   }
@@ -74,6 +89,7 @@
     key: CURRENT_KEY,
     corruptBackupKey: CORRUPT_BACKUP_KEY,
     syncConflictBackupKey: SYNC_CONFLICT_BACKUP_KEY,
+    schemaVersion: SCHEMA_VERSION,
     normalize,
     read,
     write,

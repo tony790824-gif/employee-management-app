@@ -30,6 +30,7 @@ const BOSS_SAVE_MUTABLE_FIELDS = ['employees', 'shifts', 'attendance', 'leaves',
 const REQUEST_PAYLOAD_MAX_BYTES = 1024 * 1024;
 const PHONE_DIGIT_MIN_LENGTH = 8;
 const PHONE_DIGIT_MAX_LENGTH = 15;
+const CURRENT_SCHEMA_VERSION = 1;
 
 function doGet() {
   return messagePage_({ channel: 'staff-sheets', type: 'ready' });
@@ -976,7 +977,8 @@ function readDataStrict_() {
   if (!raw) return emptyData_();
   const parsed = parseJson_(raw);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw operationalError_('雲端資料不是有效 JSON，禁止備份或覆寫。', 'BACKUP_SOURCE_INVALID');
-  return validateSnapshotShape_(parsed, 'BACKUP_SOURCE_INVALID');
+  const migrated = migrate_(parsed);
+  return validateSnapshotShape_(migrated, 'BACKUP_SOURCE_INVALID');
 }
 
 function validateSnapshotShape_(data, errorCode) {
@@ -1016,9 +1018,15 @@ function validateSnapshotShape_(data, errorCode) {
       if (data[key][mapKey].some(item => !isObject(item))) fail(key);
     });
   });
-  if (hasOwn('sync') && Object.prototype.hasOwnProperty.call(data.sync, 'revision')) {
-    const revision = Number(data.sync.revision);
-    if (!Number.isSafeInteger(revision) || revision < 0) fail('sync.revision');
+  if (hasOwn('sync')) {
+    if (Object.prototype.hasOwnProperty.call(data.sync, 'revision')) {
+      const revision = Number(data.sync.revision);
+      if (!Number.isSafeInteger(revision) || revision < 0) fail('sync.revision');
+    }
+    if (Object.prototype.hasOwnProperty.call(data.sync, 'schemaVersion')) {
+      const ver = Number(data.sync.schemaVersion);
+      if (!Number.isSafeInteger(ver) || ver < 0) fail('sync.schemaVersion');
+    }
   }
   validateSnapshotValues_(data, fail, options);
   return data;
@@ -1246,7 +1254,8 @@ function readData_() {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw operationalError_('雲端主資料損壞，為避免覆寫既有資料，系統已停止這次操作。', 'DATA_SOURCE_INVALID');
   }
-  return validateSnapshotShape_(parsed, 'DATA_SOURCE_INVALID');
+  const migrated = migrate_(parsed);
+  return validateSnapshotShape_(migrated, 'DATA_SOURCE_INVALID');
 }
 
 function writeData_(data) {
@@ -1264,12 +1273,24 @@ function getSheet_() {
   return sheet;
 }
 
-function emptyData_() { return { workspace: {}, sync: { revision: 0 }, employees: [], shifts: [], attendance: [], leaves: {}, leaveRequests: {}, leaveHistory: [], removedEmployees: [], access: {}, payrollAdjustments: {} }; }
-function mergeInitial_(stored, initial) { const merged = emptyData_(); Object.keys(merged).forEach(key => { if (key !== 'workspace' && key !== 'sync' && initial[key] !== undefined) merged[key] = initial[key]; }); merged.workspace = JSON.parse(JSON.stringify((stored && stored.workspace) || {})); merged.sync = { revision: revisionOf_(stored) }; return merged; }
+function emptyData_() { return { workspace: {}, sync: { revision: 0, schemaVersion: CURRENT_SCHEMA_VERSION }, employees: [], shifts: [], attendance: [], leaves: {}, leaveRequests: {}, leaveHistory: [], removedEmployees: [], access: {}, payrollAdjustments: {} }; }
+
+function migrate_(data) {
+  const version = Number(data && data.sync && data.sync.schemaVersion) || 0;
+  if (version >= CURRENT_SCHEMA_VERSION) return data;
+  
+  if (version === 0) {
+    data.sync = data.sync || {};
+    data.sync.schemaVersion = 1;
+  }
+  
+  return data;
+}
+function mergeInitial_(stored, initial) { const merged = emptyData_(); Object.keys(merged).forEach(key => { if (key !== 'workspace' && key !== 'sync' && initial[key] !== undefined) merged[key] = initial[key]; }); merged.workspace = JSON.parse(JSON.stringify((stored && stored.workspace) || {})); merged.sync = { revision: revisionOf_(stored), schemaVersion: CURRENT_SCHEMA_VERSION }; return merged; }
 function cleanupRemoved_(data) { const objectValue = value => value && typeof value === 'object' && !Array.isArray(value); data.workspace = objectValue(data.workspace) ? data.workspace : {}; data.sync = objectValue(data.sync) ? data.sync : {}; data.removedEmployees = Array.isArray(data.removedEmployees) ? data.removedEmployees : []; const before = data.removedEmployees.length; const now = Date.now(); data.removedEmployees = data.removedEmployees.filter(record => record && new Date(record.removeAfter).getTime() > now); data.employees = Array.isArray(data.employees) ? data.employees : []; data.shifts = Array.isArray(data.shifts) ? data.shifts : []; data.attendance = Array.isArray(data.attendance) ? data.attendance : []; data.leaves = objectValue(data.leaves) ? data.leaves : {}; data.leaveRequests = objectValue(data.leaveRequests) ? data.leaveRequests : {}; data.leaveHistory = Array.isArray(data.leaveHistory) ? data.leaveHistory : []; data.access = objectValue(data.access) ? data.access : {}; data.payrollAdjustments = objectValue(data.payrollAdjustments) ? data.payrollAdjustments : {}; return before !== data.removedEmployees.length; }
 function revisionOf_(data) { const value = Number(data && data.sync && data.sync.revision); return Number.isSafeInteger(value) && value >= 0 ? value : 0; }
-function ensureSync_(data) { data.sync = { revision: revisionOf_(data) }; return data.sync; }
-function bumpRevision_(data) { const current = revisionOf_(data); if (current >= Number.MAX_SAFE_INTEGER) throw new Error('資料版本已達上限，請聯絡系統管理員。'); data.sync = { revision: current + 1 }; return data.sync.revision; }
+function ensureSync_(data) { data.sync = data.sync || {}; data.sync.revision = revisionOf_(data); data.sync.schemaVersion = Number(data.sync.schemaVersion) || CURRENT_SCHEMA_VERSION; return data.sync; }
+function bumpRevision_(data) { const current = revisionOf_(data); if (current >= Number.MAX_SAFE_INTEGER) throw new Error('資料版本已達上限，請聯絡系統管理員。'); data.sync = data.sync || {}; data.sync.revision = current + 1; data.sync.schemaVersion = CURRENT_SCHEMA_VERSION; return data.sync.revision; }
 function requestRevision_(value) { const revision = Number(value); return Number.isSafeInteger(revision) && revision >= 0 ? revision : null; }
 function revisionConflict_(data) { const response = bossResponse_(data); response.ok = false; response.code = 'REVISION_CONFLICT'; response.error = '雲端資料已被其他裝置更新，這次變更尚未儲存。'; response.currentRevision = revisionOf_(data); return response; }
 function cleanPhone_(value) { return String(value || '').replace(/[^0-9]/g, ''); }

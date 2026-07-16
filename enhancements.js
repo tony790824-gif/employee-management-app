@@ -40,7 +40,9 @@
     ));
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `班表備份-${new Date().toISOString().slice(0, 10)}.json`;
+    const date = new Date();
+    const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    anchor.download = `班表備份-${localDate}.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 0);
   };
