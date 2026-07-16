@@ -5,7 +5,7 @@
   const read = () => stateStore.read();
   const write = data => stateStore.write(data);
   const money = amount => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(amount);
-  const today = () => new Date().toLocaleDateString('en-CA');
+  const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(new Date());
   const month = () => $('#monthPicker').value;
   const currentId = () => document.body.dataset.employeeId || '';
   const roundedHours = iso => Math.max(0.5, Math.round(((Date.now() - new Date(iso).getTime()) / 3600000) * 2) / 2);

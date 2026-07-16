@@ -17,9 +17,13 @@
   const normal = list => (list || []).map(item => typeof item === 'string' ? { date: item, type: '休假', reason: '', portion: '全天' } : item);
   const allowedEmployeeMonth = value => {
     const now = new Date();
-    const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const nextMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+    const taipei = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(now);
+    const thisMonth = taipei.slice(0, 7);
+    const year = Number(taipei.slice(0, 4));
+    const month = Number(taipei.slice(5, 7));
+    const nextY = month === 12 ? year + 1 : year;
+    const nextM = month === 12 ? 1 : month + 1;
+    const nextMonth = `${nextY}-${String(nextM).padStart(2, '0')}`;
     return value === thisMonth || value === nextMonth;
   };
 

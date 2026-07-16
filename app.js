@@ -13,7 +13,8 @@ if (recoveredState) requestAnimationFrame(() => alert(
     : '偵測到本機班表資料損壞，系統已改用安全資料，但瀏覽器無法保存損壞資料備份。'
 ));
 const initialDate = new Date();
-let month = `${initialDate.getFullYear()}-${String(initialDate.getMonth()+1).padStart(2,'0')}`; let calendarEmployeeId = data.employees[0]?.id || '';
+let month = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(initialDate).slice(0, 7);
+let calendarEmployeeId = data.employees[0]?.id || '';
 const $ = s => document.querySelector(s); const employee = id => data.employees.find(e => e.id === id);
 const dom = window.shiftDomSafety;
 const money = n => new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(n);

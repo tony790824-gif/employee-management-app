@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 — UTC 月份與角色 UI 修正
+
+- 已修正 `app.js`、`access.js` 與 `employee-work.js` 的 initial month、allowed months 與 today's date 計算，一律改用 `Asia/Taipei` 時區以解決 UTC 邊界造成 1 日凌晨月份錯誤的 P0/P1 風險。
+- 已修正 `employee-layout.css`，在員工模式下強制隱藏「出勤／請假」、「員工」與「薪資試算」等老闆專屬頁籤，完成 Sprint 1 的角色 UI 隔離驗收標準。
+- 本次修改已通過 13 組回歸測試與本機 smoke test。
+- **功能實作估值：約 71%；整體商業上線完成度：56%（前次 54%）**。
+- **是否適合正式上線：No**。
+
 ## 2026-07-16 — P0 schema 版本化與遷移系統
 
 - 已完成後端 `google-sheets-backend.gs` 與前端 `state-store.js` 的 `sync.schemaVersion` 版本號機制。

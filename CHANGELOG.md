@@ -1,5 +1,19 @@
 # Change Log
 
+## 2026-07-16 — UTC fix and Role UI improvements
+
+### Fixed
+
+- 修正 `app.js`、`access.js` 與 `employee-work.js` 的月份與日期計算，改用 `Intl.DateTimeFormat` 搭配 `Asia/Taipei` 時區，徹底解決 UTC 邊界造成每月 1 日顯示錯誤月份的 P0/P1 Bug。
+- 修正 `employee-layout.css`，在員工模式下隱藏「出勤／請假」、「員工」與「薪資試算」等老闆專用頁籤，確保員工介面簡潔且符合權限最小化原則。
+- 修正 `access.css` 中的 Bug 19，確保「儲存休假」面板在 `hidden` 屬性存在時能正確隱藏，避免在老闆模式下錯誤顯示。
+
+### Verified
+
+- 通過 13 組 P0/state/cleanup/schema 回歸測試。
+- 完成老闆與員工模式下的介面驗收，確認頁籤隱藏邏輯正確。
+- 整體商業上線完成度由 54% 提升至 56%。
+
 ## 2026-07-16 — P0 schema versioning and migration
 
 ### Fixed
