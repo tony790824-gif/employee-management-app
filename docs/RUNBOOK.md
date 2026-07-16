@@ -38,6 +38,7 @@
 
 ## 失敗處理
 
+- `DATA_SOURCE_INVALID`：一般 APP API 偵測到 A1 不是有效 JSON object。立即停止 APP 操作，保存 A1 原始內容與 execution log；不要清空 A1、不要重新登入或重複儲存。先驗證私人備份，再依復原流程處理。
 - `BACKUP_NOT_PRIVATE`：立即檢查 Drive 分享權限；不要繼續發布。
 - `BACKUP_CHECKSUM_INVALID`：檔案損壞或被修改，改用另一份已驗證備份。
 - `BACKUP_SOURCE_INVALID`：來源 Sheet JSON 損壞，或包含無法安全轉換的舊資料格式。空的舊版 `payrollAdjustments` 陣列會自動按空 object map 備份；若陣列含資料，先保留原始 A1 內容並人工確認資料對應，禁止直接清空重試。

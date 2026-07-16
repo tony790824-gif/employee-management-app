@@ -1,5 +1,17 @@
 # Change Log
 
+## 2026-07-16 — P0 cloud data corruption guard
+
+### Fixed
+
+- 一般 APP API 讀取 Google Sheet 主資料時，無效 JSON、`null`、array 或其他非 object root 不再被當成空白公司資料。
+- 主資料損壞時改以 `DATA_SOURCE_INVALID` fail closed，保留原始 A1 內容並停止登入、同步與寫入，避免下一次操作覆蓋可供人工救援的資料。
+
+### Verified
+
+- 沿用既有營運復原測試，新增一般 API 損壞 JSON、錯誤根節點、錯誤碼與原始內容不變的回歸案例。
+- 本次未變更前端、API action、資料 schema 或正式部署；產品完成率維持 67%。
+
 ## 2026-07-16 — P0 legacy payroll backup compatibility
 
 ### Fixed

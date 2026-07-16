@@ -1,5 +1,11 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 雲端主資料損壞防覆寫
+
+- 修正一般 Apps Script API 將損壞 JSON／非 object root 當成空公司資料的 P0 風險；現在回 `DATA_SOURCE_INVALID` 並保留原始 A1。
+- 既有空白新資料表初始化、一般 API action、前端與 snapshot schema 均未改變；針對讀取邊界的品質檢查與回歸測試通過。
+- 這是資料安全止血，不是新產品功能，也未補齊欄位 schema、多租戶、正式 IAM 或關聯式資料庫，因此整體完成率維持 67%、正式上線仍為 No。
+
 ## 2026-07-16 整理功能驗收
 
 - 完成桌機與 390×844 手機尺寸的老闆／員工驗收；發現並修正月曆姓名撐開七欄造成的水平溢位。
@@ -97,6 +103,7 @@
 4. ~~第一個知道員工電話的人可自行認領 PIN；空白雲端的第一個呼叫者也可認領老闆帳號。~~ **2026-07-15 已止血：老闆第一次初始化須符合 Apps Script 預登記電話；員工以 8 碼一次性啟用碼設定第一組 PIN。**
 5. ~~資料、session 與回應沒有 workspace 邊界。~~ **2026-07-15 已建立 server-generated 單一 workspace 綁定；同一部署仍無法服務多家公司，正式 row-level tenant isolation 尚未完成。**
 6. ~~全量 JSON snapshot 以最後寫入者覆蓋；多裝置同時操作會靜默遺失資料。~~ **2026-07-15 已加入 server revision／compare-and-swap；衝突會拒絕且保留本機修改。全量 snapshot 架構仍待取代。**
+6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；欄位級 schema validation 仍待 Sprint 3。**
 
 ### High / P1
 
@@ -207,7 +214,7 @@
 
 - Google Sheet `_班表APP資料!A1` 儲存整份 JSON；沒有 table、index、foreign key、unique constraint。
 - Apps Script lock＋全域 revision 已阻止 stale snapshot overwrite；仍沒有 relational transaction boundary。
-- 沒有正式 schema validation、migration、row revision、soft delete policy、audit log。
+- 已拒絕損壞 JSON／非 object root；仍沒有正式欄位 schema validation、migration、row revision、soft delete policy、audit log。
 - 已加入不可由 client 修改的單一 `workspace.id`；仍沒有正式關聯式 `workspace_id` 外鍵與多租戶資料列隔離。
 - 電話沒有 canonical unique index。
 - 員工、班次、出勤、休假、薪資缺 referential integrity。
@@ -218,7 +225,7 @@
 ## 10. API 問題
 
 - API 已由四個 action 增加三個員工明確命令，但仍沒有版本、正式資源模型與標準錯誤碼。
-- Request/response 沒有 schema validation、大小限制、欄位白名單。
+- 主資料讀取已有根節點防護；request/response 仍沒有完整 schema validation、大小限制、欄位白名單。
 - 已有全域 snapshot revision 與 conflict response；仍沒有 command idempotency key、row ETag 與 HTTP 409 transport。
 - ~~沒有正式 session token，直接重播 `phone + pinHash`。~~ **已改為 8 小時 server session；正式 refresh/device management 仍未完成。**
 - ~~沒有 rate limit、lockout。~~ **已加入每電話失敗限流與暫時鎖定；仍缺 IP/device risk 與 request signing。**

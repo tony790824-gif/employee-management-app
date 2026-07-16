@@ -968,7 +968,11 @@ function logOperationalResult_(operation, result) {
 function readData_() {
   const raw = String(getSheet_().getRange('A1').getValue() || '');
   if (!raw) return emptyData_();
-  try { return JSON.parse(raw); } catch (_) { return emptyData_(); }
+  const parsed = parseJson_(raw);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw operationalError_('雲端主資料損壞，為避免覆寫既有資料，系統已停止這次操作。', 'DATA_SOURCE_INVALID');
+  }
+  return parsed;
 }
 
 function writeData_(data) {

@@ -41,3 +41,15 @@
 ## 結論
 
 所有角色同意本次過渡 P0 可合併；review 發現的空白目標、非私人殘留與舊版空薪資調整格式問題已先修正並加回歸。未知的非空舊格式仍停止備份，必須人工遷移，不能用清空資料換取 readiness 通過。產品仍不可正式上線，下一步是正式身分／多租戶資料庫遷移與自動化營運平台。
+
+## 2026-07-16 一般 API fail-closed 追蹤審查
+
+- **A／CTO：** 一般 API 與維運備份必須採相同的「損壞資料不可視為空白」原則；本次不藉機增加產品功能或發布版本。
+- **B／Senior Engineer：** 沿用 `parseJson_`、`operationalError_` 與既有 API catch，不建立第二套解析器；空白 A1 保留新公司初始化相容性。
+- **C／Security Engineer：** 檢查無效 JSON、`null`、array、primitive、錯誤碼洩漏、未授權請求、重複請求與原始資料改寫；根節點不合法一律在驗證 session 前停止，錯誤訊息不含資料內容。
+- **D／Performance Engineer：** 每次請求仍只有一次 A1 讀取與一次 JSON parse，沒有額外 I/O、迴圈或網路請求；全域 lock 與 snapshot 成本仍是正式資料庫遷移項目。
+- **E／Product Manager：** 使用者不需要新畫面；明確停止操作比靜默建立空公司更能降低資料遺失與客服成本。
+- **F／QA Lead：** 已覆蓋損壞 JSON、array root、domain code、A1 不變與既有備份錯誤碼；空白初始化與欄位級舊資料相容性仍由既有測試保護。
+- **G／Database Architect：** 本修正只保護解析／根節點，不能宣稱 schema 已完成；下一階段仍需版本化 migration、欄位約束與關聯完整性。
+- **H／DevOps Engineer：** 新錯誤已加入 Runbook；因本 Sprint 明確禁止正式發布，Apps Script 線上版本與真實復原演練保持阻塞。
+- **I／Code Reviewer：** 反向檢查至少十項邊界後未發現需要擴大本次修改的重大問題；可合併，但不可因此提高產品完成率或上線判定。

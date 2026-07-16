@@ -6,6 +6,8 @@
 
 已修正線上營運備份遇到舊版空 `payrollAdjustments` 陣列時無法建立復原包的相容性問題；未知的非空陣列仍 fail closed。此修正只提交來源與測試，尚未部署 Apps Script。
 
+已修正一般 APP API 將損壞 A1 JSON／非 object root 當成空資料的 P0 覆寫風險；現在回 `DATA_SOURCE_INVALID` 並保留原始資料。此修正同樣只提交來源、測試與文件，尚未部署 Apps Script。
+
 下一個工作仍是正式環境的 Apps Script 部署版本、設定與真實老闆／員工跨裝置 E2E；未通過前不得發布。
 
 ## Sprint 2 進度（2026-07-15）

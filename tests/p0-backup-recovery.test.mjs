@@ -295,6 +295,24 @@ assert.equal(rejectedFile.trashed, true, '非私人備份檔案必須立即丟�
 privateFolder.createFile = originalCreateFile;
 
 cells.set('A1', '{broken-json');
+const corruptApiResponse = context.api({ action: 'pull', sessionToken: 'invalid-session' });
+assert.equal(corruptApiResponse.ok, false, '一般 APP API 不得把損壞主資料當成空資料繼續執行');
+assert.equal(corruptApiResponse.code, 'DATA_SOURCE_INVALID');
+assert.equal(cells.get('A1'), '{broken-json', '拒絕損壞主資料後不得改寫原始 A1 內容');
+
+['[]', 'null', '"text"', '42', 'true'].forEach(invalidRoot => {
+  cells.set('A1', invalidRoot);
+  const invalidRootResponse = context.api({ action: 'pull', sessionToken: 'invalid-session' });
+  assert.equal(invalidRootResponse.code, 'DATA_SOURCE_INVALID', '主資料根節點不是 object 時必須 fail closed');
+  assert.equal(cells.get('A1'), invalidRoot, '拒絕不合法根節點後不得改寫原始 A1 內容');
+});
+
+cells.set('A1', '');
+const blankSource = context.readData_();
+assert.equal(blankSource.sync.revision, 0, '空白新資料表仍須保留安全初始化能力');
+assert.equal(Array.isArray(blankSource.employees), true);
+
+cells.set('A1', '{broken-json');
 expectCode(() => context.createOperationalBackup(), 'BACKUP_SOURCE_INVALID');
 
 assert.doesNotMatch(backendSource.slice(0, backendSource.indexOf('function createOperationalBackup')), /restoreLatestOperationalBackup|runReleaseReadinessCheck/, '維運函式不應接入 Web App API dispatch');

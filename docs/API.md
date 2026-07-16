@@ -1,6 +1,6 @@
 # API 文件（現況與目標）
 
-> 2026-07-16 專案整理未變更任何 API action、request 或 response schema；Google Sheets Web App URL 現只由 `google-sheets-config.js` 提供。
+> 2026-07-16 專案整理未變更任何 API action、request 或 response schema；Google Sheets Web App URL 現只由 `google-sheets-config.js` 提供。主資料不是有效 JSON object 時會以 `DATA_SOURCE_INVALID` 停止全部一般 API 操作。
 
 ## 2026-07-15 現行驗證契約
 
@@ -35,7 +35,7 @@
 
 目前 API 為 Google Apps Script 過渡後端。它已有短效 server session 與明確單一工作區邊界，但仍不符合正式多租戶、正式 IAM 與關聯式資料庫標準。Endpoint 由 `google-sheets-config.js` 指定，前端透過隱藏 iframe/form POST `payload`。
 
-前端已使用 `state-store.js` 安全解析本機主要 state；此項修復**沒有改變 API contract，也沒有解決伺服器端 validation、authorization 或併發覆寫問題**。
+前端已使用 `state-store.js` 安全解析本機主要 state；Apps Script 讀取邊界也會拒絕損壞 JSON 與非 object root。這仍**沒有完成欄位級 schema validation、正式 authorization 或關聯式 transaction**。
 
 前端在 API 登入成功前不載入管理功能。Google Sheets 回傳成功後才寫入本機 state 並啟動 APP；員工登入若缺少 `employeeId` 會拒絕進入。員工已採 action-level authorization，session 與資料已綁定 server workspace；正式版仍須遷移到多租戶資料列授權與正式資料庫。
 
@@ -71,7 +71,7 @@
 }
 ```
 
-錯誤回應已增加過渡期 domain code：`{ "ok": false, "error": "message", "code": "..." }`。目前啟用流程使用 `OWNER_NOT_CONFIGURED`、`BOSS_NOT_AUTHORIZED`、`ACTIVATION_REQUIRED`、`ACTIVATION_INVALID`、`ACTIVATION_NOT_CONFIGURED`；Apps Script credential pepper 格式損壞時回 `CREDENTIAL_CONFIG_INVALID` 並停止登入，禁止自動輪替。其餘錯誤暫用 `REQUEST_FAILED`。HTTP status 與完整 error catalog 仍待正式 API。
+錯誤回應已增加過渡期 domain code：`{ "ok": false, "error": "message", "code": "..." }`。目前啟用流程使用 `OWNER_NOT_CONFIGURED`、`BOSS_NOT_AUTHORIZED`、`ACTIVATION_REQUIRED`、`ACTIVATION_INVALID`、`ACTIVATION_NOT_CONFIGURED`；Apps Script credential pepper 格式損壞時回 `CREDENTIAL_CONFIG_INVALID`；主資料不是有效 JSON object 時回 `DATA_SOURCE_INVALID`，且不寫回 Sheet。其餘錯誤暫用 `REQUEST_FAILED`。HTTP status 與完整 error catalog 仍待正式 API。
 
 ### 現行授權範圍
 
@@ -95,7 +95,7 @@
 - `employeeLogin/pull` 全公司資料外洩：**2026-07-15 已止血**，目前只回本人 projection。
 - 員工以 `save` 覆寫公司資料：**2026-07-15 已止血**，目前伺服器拒絕員工全量儲存。
 - 老闆 `save` 仍接受整份 snapshot，但 stale／replay 已由全域 revision 拒絕。
-- 無正式 tenant row isolation、schema validation、size limit、command idempotency 或 row revision。
+- 主資料無效 JSON／非 object root 已 fail closed；仍無正式 tenant row isolation、欄位級 schema validation、size limit、command idempotency 或 row revision。
 - Apps Script origin hard-code 單一 Netlify domain。
 
 ## 目標 API 原則
