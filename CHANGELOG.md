@@ -1,5 +1,18 @@
 # Change Log
 
+## 2026-07-16 — Project cleanup acceptance
+
+### Fixed
+
+- 修正 720px 以下老闆與員工月曆被員工姓名撐開、造成手機橫向捲動的問題。
+- Service Worker cache 升至 v43，確保已安裝裝置取得手機版修正。
+
+### Verified
+
+- 新增月曆縮欄防回歸檢查；品質檢查、12 組回歸、build 與 release gate 全數通過。
+- 桌機及 390×844 老闆／員工角色實測通過；員工管理權限未洩漏，瀏覽器無 console warning/error。
+- 本次未變更 API、Database schema 或產品功能；完整證據見 [Project Cleanup Acceptance](docs/reviews/PROJECT_CLEANUP_ACCEPTANCE.md)。
+
 ## 2026-07-16 — Project cleanup closure and stable baseline
 
 ### 整理

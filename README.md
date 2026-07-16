@@ -1,5 +1,7 @@
 # 班客邦
 
+> 2026-07-16 驗收補充：修正老闆／員工月曆在手機寬度下的橫向溢位，加入防回歸檢查；桌機、390×844 雙角色與完整 release gate 均通過。詳見 [Project Cleanup Acceptance](docs/reviews/PROJECT_CLEANUP_ACCEPTANCE.md)。
+
 > 2026-07-16 專案整理收尾：員工／班次／出勤管理事件已集中至單一模組，未啟用 Firebase／Supabase 草稿已移除，Service Worker 資產失敗不再錯誤回傳 HTML。12 組回歸、25 個發布資產、本機老闆／員工 smoke 均通過；本次沒有變更 API 或資料結構。
 
 > 2026-07-15 P0 營運復原更新：Google Sheets snapshot 與必要 Script Properties 現可建立私人 Google Drive 復原包，具 checksum、workspace 驗證、一次性復原確認、回滾與發布前 readiness gate。詳見 [ADR 0010](docs/adr/0010-operational-recovery.md) 與 [Runbook](docs/RUNBOOK.md)。

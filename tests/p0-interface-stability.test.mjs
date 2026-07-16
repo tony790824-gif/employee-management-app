@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const employeeLayout = await readFile('employee-layout.js', 'utf8');
+const employeeLayoutCss = await readFile('employee-layout.css', 'utf8');
 const bossHours = await readFile('boss-hours.js', 'utf8');
 const app = await readFile('app.js', 'utf8');
 
@@ -31,6 +32,16 @@ assert.doesNotMatch(
   bossHours,
   /observer\.observe\(document\.body/,
   '工時增強不可監聽整個 document body'
+);
+assert.match(
+  employeeLayoutCss,
+  /#schedule \.calendar-grid\{grid-template-columns:repeat\(7,minmax\(0,1fr\)\);min-width:0\}/,
+  '手機日曆七欄必須允許縮小，避免姓名撐開頁面'
+);
+assert.match(
+  employeeLayoutCss,
+  /#schedule \.calendar-day\{min-width:0\}/,
+  '手機日曆日期格不可使用內容最小寬度造成橫向溢位'
 );
 
 console.log('P0 介面穩定性防回歸檢查通過。');
