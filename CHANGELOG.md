@@ -1,5 +1,18 @@
 # Change Log
 
+## 2026-07-16 — P0 boss save request boundary
+
+### Fixed
+
+- 老闆 `save` 新增 top-level 欄位白名單與 collection／map 基本形狀驗證；未知欄位、錯誤形狀、array root 與空操作回 `REQUEST_DATA_INVALID`。
+- 合併改以伺服器既有 snapshot 為底，只覆寫 request 明確傳送的可變欄位，避免漏傳 `employees`、`shifts`、`leaves` 等欄位時靜默清空資料。
+- `workspace`、`sync`、`access` 維持 server-managed；明確合法空集合仍保留原本刪除語意。
+
+### Verified
+
+- 擴充既有 P0 concurrency 測試，涵蓋未知欄位、錯誤集合、舊 payroll array、array root、空操作、server 欄位竄改、部分儲存保留與明確清空。
+- 本次未新增 API action、畫面或資料 schema，且未部署正式版本；整體商業上線完成度維持 52%。
+
 ## 2026-07-16 — P0 cloud snapshot shape guard
 
 ### Fixed

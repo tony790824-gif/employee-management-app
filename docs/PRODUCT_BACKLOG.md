@@ -1,10 +1,16 @@
 # 班客邦 Product Backlog
 
+## P0 老闆 save request 防 mass-assignment／漏欄清空（2026-07-16）
+
+已在既有 `save` action 完成 top-level 欄位白名單、collection／map 基本形狀驗證及缺欄保留。未知欄位、錯誤形狀、array root 與只有 server-managed 欄位的空操作都回 `REQUEST_DATA_INVALID`，不寫入也不推進 revision；`workspace`、`sync`、`access` 仍完全由伺服器管理。明確傳送空集合仍可執行原本的刪除語意。本次只提交來源、測試與文件，未部署 Apps Script。
+
+最高優先的整體上線閘門仍是受控 staging Apps Script 部署與真實老闆／員工跨裝置 E2E；需求禁止發布，因此未執行。下一個可獨立處理的程式工作是帶版本的欄位值 schema 與 request 大小限制，接著才是正式 IAM、多租戶關聯式資料庫與 command API 遷移。
+
 ## P0 snapshot 欄位形狀防覆寫（2026-07-16）
 
 已完成 Google Sheet 主資料的 top-level collection／map、巢狀記錄及 revision 形狀驗證。格式錯誤時一般 API 與營運備份都會 fail closed，原始 A1 不被清理或寫回；缺少欄位的舊資料維持相容。本次只提交來源、測試與文件，未部署 Apps Script。
 
-最高優先的整體上線閘門仍是受控 staging Apps Script 部署與真實老闆／員工跨裝置 E2E，但本次需求明確禁止發布，因此未執行。下一個可獨立處理的程式工作是老闆 `save` request 的欄位 allowlist／形狀驗證與缺少欄位保留，避免錯誤或惡意 request 清空既有集合。
+此項目的下一個程式工作「老闆 `save` request 白名單、形狀驗證與缺欄保留」已由上方 P0 項目完成；正式部署與跨裝置驗收仍未執行。
 
 ## 專案整理收尾（2026-07-16）
 

@@ -75,6 +75,7 @@ assert.equal(stored.employees[0].role, '門市', '過期老闆修改不得局部
 
 const latest = structuredClone(conflict.data);
 latest.employees[0].role = '店長';
+latest.shifts = [{ id: 'shift-1', employeeId: 'employee-1', date: '2026-07-21' }];
 const accepted = context.api({
   action: 'save', sessionToken: bossLogin.sessionToken,
   baseRevision: conflict.currentRevision, data: latest
@@ -83,6 +84,7 @@ assert.equal(accepted.ok, true, '最新版本應可儲存');
 assert.equal(accepted.data.sync.revision, 4);
 assert.equal(stored.employees[0].role, '店長');
 assert.deepEqual(stored.leaves['employee-1-2026-07'], ['2026-07-20']);
+assert.equal(stored.shifts.length, 1);
 assert.equal(stored.employees[0].pinCredential.scheme, 'iterated-hmac-sha256-v1', '版本控制不得破壞伺服器 credential');
 
 const replay = context.api({
@@ -92,9 +94,66 @@ const replay = context.api({
 assert.equal(replay.code, 'REVISION_CONFLICT', '已使用過的版本不得重播覆寫');
 assert.equal(context.api({ action: 'save', sessionToken: bossLogin.sessionToken, data: latest }).code, 'REVISION_REQUIRED');
 
+const beforeInvalidSave = structuredClone(stored);
+const unknownField = context.api({
+  action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4,
+  data: { ...structuredClone(accepted.data), unexpectedCollection: [] }
+});
+assert.equal(unknownField.code, 'REQUEST_DATA_INVALID', '未知欄位必須由白名單拒絕');
+assert.deepEqual(stored, beforeInvalidSave, '未知欄位不得寫入或推進版本');
+
+const malformedCollection = context.api({
+  action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4,
+  data: { employees: {} }
+});
+assert.equal(malformedCollection.code, 'REQUEST_DATA_INVALID', '已知集合形狀錯誤必須拒絕');
+assert.deepEqual(stored, beforeInvalidSave, '形狀錯誤不得清理或覆寫既有資料');
+
+const malformedPayroll = context.api({
+  action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4,
+  data: { payrollAdjustments: [] }
+});
+assert.equal(malformedPayroll.code, 'REQUEST_DATA_INVALID', 'request 不接受舊版 payroll array 形狀');
+assert.deepEqual(stored, beforeInvalidSave);
+assert.equal(context.api({ action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4, data: [] }).code, 'REQUEST_DATA_INVALID');
+assert.equal(
+  context.api({ action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4, data: { sync: { revision: 4 } } }).code,
+  'REQUEST_DATA_INVALID',
+  '只有 server-managed 欄位的空操作不得推進版本'
+);
+assert.deepEqual(stored, beforeInvalidSave);
+
+const serverWorkspaceId = stored.workspace.id;
+const serverBossPhone = stored.access.bossPhone;
+const partialSave = context.api({
+  action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 4,
+  data: {
+    workspace: { id: 'ws_ffffffffffffffffffffffffffffffff' },
+    sync: { revision: 999 },
+    access: { bossConfigured: false },
+    employees: structuredClone(accepted.data.employees)
+  }
+});
+assert.equal(partialSave.ok, true, '省略未修改欄位的 save 應可成功');
+assert.equal(partialSave.data.sync.revision, 5);
+assert.equal(stored.workspace.id, serverWorkspaceId, 'client 不得覆寫 server workspace');
+assert.equal(stored.access.bossPhone, serverBossPhone, 'client 不得覆寫 server access');
+assert.equal(stored.shifts.length, 1, '省略 shifts 不得清空既有班次');
+assert.deepEqual(stored.leaves['employee-1-2026-07'], ['2026-07-20'], '省略 leaves 不得清空既有休假');
+
+const explicitClear = context.api({
+  action: 'save', sessionToken: bossLogin.sessionToken, baseRevision: 5,
+  data: { shifts: [] }
+});
+assert.equal(explicitClear.ok, true, '明確傳送空集合仍應允許刪除內容');
+assert.equal(explicitClear.data.sync.revision, 6);
+assert.deepEqual(stored.shifts, []);
+assert.equal(stored.employees[0].role, '店長', '清空 shifts 不得影響 employees');
+assert.deepEqual(stored.leaves['employee-1-2026-07'], ['2026-07-20']);
+
 const clockIn = context.api({ action: 'employeeClockIn', sessionToken: employeeLogin.sessionToken });
 assert.equal(clockIn.ok, true);
-assert.equal(clockIn.data.sync.revision, 5, '員工 action 也必須推進全域版本');
+assert.equal(clockIn.data.sync.revision, 7, '員工 action 也必須推進全域版本');
 
 assert.match(cloudSource, /baseRevision/);
 assert.match(cloudSource, /REVISION_CONFLICT/);

@@ -1,6 +1,6 @@
 # API 文件（現況與目標）
 
-> 2026-07-16 本次未變更任何 API action、request 或 response schema；Google Sheets Web App URL 只由 `google-sheets-config.js` 提供。主資料不是有效 JSON object，或已知 snapshot 欄位形狀不正確時，會以 `DATA_SOURCE_INVALID` 停止全部一般 API 操作。
+> 2026-07-16 老闆 `save.data` 現在只接受既有 snapshot 欄位；未知欄位、array root、錯誤 collection／map 形狀或沒有任何可變欄位時回 `REQUEST_DATA_INVALID`。省略可變欄位代表保留伺服器既有值，明確空集合才代表清除。API action 與成功 response schema 未變，本次未部署 Apps Script。
 
 ## 2026-07-15 現行驗證契約
 
@@ -16,6 +16,7 @@
 - 舊版快速 hash 在正確登入／啟用時自動升級；API request/response schema 不變，不會要求使用者重設 PIN。
 - 所有 projection 帶 server-managed `sync.revision`；任何 mutation 成功後回傳更大的 revision。
 - `save.baseRevision` 缺少時回 `REVISION_REQUIRED`；與伺服器不一致或重播時回 `REVISION_CONFLICT`，資料不寫入並附最新安全 boss projection。
+- `save.data` 的允許欄位為 `workspace`、`sync`、`employees`、`shifts`、`attendance`、`leaves`、`leaveRequests`、`leaveHistory`、`removedEmployees`、`access`、`payrollAdjustments`。其中 `workspace`、`sync`、`access` 只為現有完整 projection 相容，伺服器會忽略 client 值並保留 server 值；至少須明確傳送一個可變欄位。
 
 成功登入範例：
 
@@ -35,7 +36,7 @@
 
 目前 API 為 Google Apps Script 過渡後端。它已有短效 server session 與明確單一工作區邊界，但仍不符合正式多租戶、正式 IAM 與關聯式資料庫標準。Endpoint 由 `google-sheets-config.js` 指定，前端透過隱藏 iframe/form POST `payload`。
 
-前端已使用 `state-store.js` 安全解析本機主要 state；Apps Script 讀取邊界也會拒絕損壞 JSON、非 object root、錯誤的 top-level collection／map 形狀與無效 revision。這仍**沒有完成帶版本的完整欄位值驗證、request allowlist、正式 authorization 或關聯式 transaction**。
+前端已使用 `state-store.js` 安全解析本機主要 state；Apps Script 讀取邊界會拒絕損壞 JSON、非 object root、錯誤的 top-level collection／map 形狀與無效 revision；老闆 `save` 另有 top-level request allowlist 與基本形狀驗證。這仍**沒有完成帶版本的完整欄位值驗證、request size limit、正式 authorization 或關聯式 transaction**。
 
 前端在 API 登入成功前不載入管理功能。Google Sheets 回傳成功後才寫入本機 state 並啟動 APP；員工登入若缺少 `employeeId` 會拒絕進入。員工已採 action-level authorization，session 與資料已綁定 server workspace；正式版仍須遷移到多租戶資料列授權與正式資料庫。
 
@@ -94,8 +95,8 @@
 - 首次帳號搶先認領：**2026-07-15 已止血**；這不是正式 session/auth 的替代品。
 - `employeeLogin/pull` 全公司資料外洩：**2026-07-15 已止血**，目前只回本人 projection。
 - 員工以 `save` 覆寫公司資料：**2026-07-15 已止血**，目前伺服器拒絕員工全量儲存。
-- 老闆 `save` 仍接受整份 snapshot，但 stale／replay 已由全域 revision 拒絕。
-- 主資料無效 JSON／非 object root 已 fail closed；仍無正式 tenant row isolation、欄位級 schema validation、size limit、command idempotency 或 row revision。
+- 老闆 `save` 仍以 snapshot 為主，但 stale／replay 已由全域 revision 拒絕，未知 top-level 欄位與錯誤 collection／map 形狀會 fail closed；漏傳可變欄位不再清空既有資料。
+- 主資料無效 JSON／非 object root 已 fail closed；仍無正式 tenant row isolation、完整欄位值 schema、size limit、command idempotency 或 row revision。
 - Apps Script origin hard-code 單一 Netlify domain。
 
 ## 目標 API 原則

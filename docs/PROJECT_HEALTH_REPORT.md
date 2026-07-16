@@ -1,5 +1,11 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 老闆 save request 邊界防護
+
+- 已封堵老闆 `save` 的 top-level mass-assignment 與漏欄清空：未知欄位、錯誤 collection／map 形狀、array root、只有 server-managed 欄位的空操作會以 `REQUEST_DATA_INVALID` 拒絕且不寫入。
+- 合併改以伺服器既有 snapshot 為底；漏傳員工、班次、休假等欄位會保留原值，明確空集合仍保留既有刪除語意。`workspace`、`sync`、`access` 仍不可由 client 覆寫。
+- 本次沒有新增 action、畫面或資料 schema，也未部署 Apps Script。功能實作估值維持約 67%，整體商業上線完成度維持 **52%**；正式 IAM、多租戶資料庫、完整值 schema、size limit、staging 與跨裝置 E2E 仍是上線阻擋。
+
 ## 2026-07-16 完成度校正與 snapshot 欄位形狀防護
 
 - Apps Script 現在會在任何登入、同步、清理或寫回前，驗證主資料已知陣列、object map、巢狀記錄與 `sync.revision` 的基本形狀；錯誤時回 `DATA_SOURCE_INVALID` 並保留 A1 原文。
@@ -110,7 +116,7 @@
 4. ~~第一個知道員工電話的人可自行認領 PIN；空白雲端的第一個呼叫者也可認領老闆帳號。~~ **2026-07-15 已止血：老闆第一次初始化須符合 Apps Script 預登記電話；員工以 8 碼一次性啟用碼設定第一組 PIN。**
 5. ~~資料、session 與回應沒有 workspace 邊界。~~ **2026-07-15 已建立 server-generated 單一 workspace 綁定；同一部署仍無法服務多家公司，正式 row-level tenant isolation 尚未完成。**
 6. ~~全量 JSON snapshot 以最後寫入者覆蓋；多裝置同時操作會靜默遺失資料。~~ **2026-07-15 已加入 server revision／compare-and-swap；衝突會拒絕且保留本機修改。全量 snapshot 架構仍待取代。**
-6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；同日補上 top-level collection／map、巢狀記錄與 revision 形狀驗證。帶版本的完整欄位值 schema、request allowlist 與 migration 仍待 Sprint 3。**
+6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；同日補上 top-level collection／map、巢狀記錄、revision 形狀驗證，以及老闆 `save` request allowlist／漏欄保留。帶版本的完整欄位值 schema、size limit 與 migration 仍待 Sprint 3。**
 
 ### High / P1
 
@@ -232,12 +238,12 @@
 ## 10. API 問題
 
 - API 已由四個 action 增加三個員工明確命令，但仍沒有版本、正式資源模型與標準錯誤碼。
-- 主資料讀取已有根節點防護；request/response 仍沒有完整 schema validation、大小限制、欄位白名單。
+- 主資料讀取已有根節點防護，老闆 `save` 已有 top-level 白名單與基本 collection／map 形狀驗證；request/response 仍沒有完整欄位值 schema 與大小限制。
 - 已有全域 snapshot revision 與 conflict response；仍沒有 command idempotency key、row ETag 與 HTTP 409 transport。
 - ~~沒有正式 session token，直接重播 `phone + pinHash`。~~ **已改為 8 小時 server session；正式 refresh/device management 仍未完成。**
 - ~~沒有 rate limit、lockout。~~ **已加入每電話失敗限流與暫時鎖定；仍缺 IP/device risk 與 request signing。**
 - ~~員工回應未做 field-level filtering。~~ **已完成本人 projection。**
-- 員工 `save` 已關閉；老闆 `save` 仍接受客戶端整份資料，是併發與 mass-assignment 風險。
+- 員工 `save` 已關閉；老闆 `save` 的 top-level mass-assignment、錯誤集合形狀與漏欄清空已封堵，但全量 snapshot 架構仍應改成 command API。
 - 沒有 observability：request ID、structured log、latency、error rate、health endpoint。
 - Apps Script origin hard-code Netlify 網址；換 custom domain 會中斷。
 

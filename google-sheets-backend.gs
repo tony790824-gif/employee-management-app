@@ -25,6 +25,8 @@ const SNAPSHOT_ARRAY_FIELDS = ['employees', 'shifts', 'attendance', 'leaveHistor
 const SNAPSHOT_OBJECT_FIELDS = ['workspace', 'sync', 'leaves', 'leaveRequests', 'access', 'payrollAdjustments'];
 const SNAPSHOT_ARRAY_MAP_FIELDS = ['leaves', 'leaveRequests', 'payrollAdjustments'];
 const SNAPSHOT_OBJECT_ARRAY_MAP_FIELDS = ['leaveRequests', 'payrollAdjustments'];
+const BOSS_SAVE_ALLOWED_FIELDS = SNAPSHOT_ARRAY_FIELDS.concat(SNAPSHOT_OBJECT_FIELDS);
+const BOSS_SAVE_MUTABLE_FIELDS = ['employees', 'shifts', 'attendance', 'leaves', 'leaveRequests', 'leaveHistory', 'removedEmployees', 'payrollAdjustments'];
 
 function doGet() {
   return messagePage_({ channel: 'staff-sheets', type: 'ready' });
@@ -108,11 +110,12 @@ function api(request) {
     if (action === 'save') {
       if (identity.role !== 'boss') return fail_('員工帳號不可覆寫公司資料。');
       const incoming = request.data;
-      if (!incoming || typeof incoming !== 'object') return fail_('沒有可儲存的資料。');
+      if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return fail_('沒有可儲存的資料。', 'REQUEST_DATA_INVALID');
       const baseRevision = requestRevision_(request.baseRevision);
       if (baseRevision === null) return fail_('缺少資料版本，請重新整理後再試。', 'REVISION_REQUIRED');
       if (baseRevision !== revisionOf_(data)) return revisionConflict_(data);
-      const merged = mergeBossSave_(data, incoming);
+      const validatedIncoming = validateBossSaveRequest_(incoming);
+      const merged = mergeBossSave_(data, validatedIncoming);
       cleanupRemoved_(merged);
       revokeMissingEmployeeSessions_(merged.employees);
       bumpRevision_(merged);
@@ -183,7 +186,12 @@ function safeEmployee_(employee) {
 }
 
 function mergeBossSave_(stored, incoming) {
-  const merged = JSON.parse(JSON.stringify(incoming));
+  const merged = JSON.parse(JSON.stringify(stored || emptyData_()));
+  BOSS_SAVE_MUTABLE_FIELDS.forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(incoming, key)) {
+      merged[key] = JSON.parse(JSON.stringify(incoming[key]));
+    }
+  });
   merged.workspace = JSON.parse(JSON.stringify((stored && stored.workspace) || {}));
   merged.sync = { revision: revisionOf_(stored) };
   merged.access = JSON.parse(JSON.stringify((stored && stored.access) || {}));
@@ -979,6 +987,29 @@ function validateSnapshotShape_(data, errorCode) {
     if (!Number.isSafeInteger(revision) || revision < 0) fail('sync.revision');
   }
   return data;
+}
+
+function validateBossSaveRequest_(incoming) {
+  const code = 'REQUEST_DATA_INVALID';
+  const fail = field => {
+    throw operationalError_('儲存資料欄位格式不正確：' + String(field || 'root'), code);
+  };
+  if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) fail('root');
+  const unknownField = Object.keys(incoming).find(key => BOSS_SAVE_ALLOWED_FIELDS.indexOf(key) === -1);
+  if (unknownField) fail(unknownField);
+  if (!BOSS_SAVE_MUTABLE_FIELDS.some(key => Object.prototype.hasOwnProperty.call(incoming, key))) fail('root');
+
+  const hasPayrollAdjustments = Object.prototype.hasOwnProperty.call(incoming, 'payrollAdjustments');
+  if (hasPayrollAdjustments) {
+    const adjustments = incoming.payrollAdjustments;
+    if (!adjustments || typeof adjustments !== 'object' || Array.isArray(adjustments)) fail('payrollAdjustments');
+  }
+
+  const validated = JSON.parse(JSON.stringify(incoming));
+  if (!hasPayrollAdjustments) validated.payrollAdjustments = {};
+  validateSnapshotShape_(validated, code);
+  if (!hasPayrollAdjustments) delete validated.payrollAdjustments;
+  return validated;
 }
 
 function operationalError_(message, code) {
