@@ -931,7 +931,19 @@ function readDataStrict_() {
   if (!raw) return emptyData_();
   const parsed = parseJson_(raw);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw operationalError_('雲端資料不是有效 JSON，禁止備份或覆寫。', 'BACKUP_SOURCE_INVALID');
-  return parsed;
+  return normalizeRecoverySource_(parsed);
+}
+
+function normalizeRecoverySource_(data) {
+  const adjustments = data.payrollAdjustments;
+  if (adjustments === undefined || adjustments === null || (Array.isArray(adjustments) && adjustments.length === 0)) {
+    data.payrollAdjustments = {};
+    return data;
+  }
+  if (!adjustments || typeof adjustments !== 'object' || Array.isArray(adjustments)) {
+    throw operationalError_('備份來源的 payrollAdjustments 格式無法安全轉換，請先人工檢查薪資調整資料。', 'BACKUP_SOURCE_INVALID');
+  }
+  return data;
 }
 
 function operationalError_(message, code) {

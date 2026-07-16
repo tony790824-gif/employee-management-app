@@ -4,6 +4,8 @@
 
 已完成現有前端管理事件、雲端設定來源、Service Worker fallback 與備份還原入口的去重整理；未啟用 Firebase／Supabase 草稿已移除。12 組回歸、25 個發布資產與本機老闆／員工 smoke 通過。本次未新增產品功能，也未變更 API／資料結構。
 
+已修正線上營運備份遇到舊版空 `payrollAdjustments` 陣列時無法建立復原包的相容性問題；未知的非空陣列仍 fail closed。此修正只提交來源與測試，尚未部署 Apps Script。
+
 下一個工作仍是正式環境的 Apps Script 部署版本、設定與真實老闆／員工跨裝置 E2E；未通過前不得發布。
 
 ## Sprint 2 進度（2026-07-15）

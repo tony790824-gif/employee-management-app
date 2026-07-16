@@ -75,6 +75,7 @@ Google Apps Script 取得 active spreadsheet，建立隱藏工作表 `_班表APP
 - session、登入限流與復原確認值不得進入復原包；成功復原會撤銷既有 session 與 throttle。
 - Drive 資料夾與檔案必須維持 `PRIVATE`；建立時若不是私人項目會立即丟棄並 fail closed。
 - 非空目標復原前會建立 safety backup；復原後驗證失敗會回滾操作前 snapshot 與 Script Properties。
+- 備份讀取邊界只會把舊資料中缺少、`null` 或空陣列形式的 `payrollAdjustments` 視為空 object map；非空陣列或其他未知格式會以 `BACKUP_SOURCE_INVALID` 停止，避免靜默遺失薪資資料。
 - 這是 Google Sheets 過渡期災難復原，不是不可變備份、跨區複寫或 PITR。正式上線仍需定義 RPO/RTO、保留政策、自動化與 restore drill。
 
 ### P0 員工寫入邊界

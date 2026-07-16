@@ -1,5 +1,17 @@
 # Change Log
 
+## 2026-07-16 — P0 legacy payroll backup compatibility
+
+### Fixed
+
+- 營運備份可把舊資料中缺少、`null` 或空陣列形式的 `payrollAdjustments` 無損正規化為目前的 object map，再建立與驗證復原包。
+- 非空陣列或其他無法證明可無損轉換的格式仍回傳 `BACKUP_SOURCE_INVALID`，不覆蓋最後成功備份指標，也不暗中改寫主要工作表。
+
+### Verified
+
+- 新增舊格式成功備份、readiness 一致讀取、未知資料拒絕與最後成功備份指標保護測試。
+- 本次只修改 Apps Script 營運備份讀取邊界；APP 畫面、一般 API 與資料庫 schema 未變，且未發布正式版本。
+
 ## 2026-07-16 — Project cleanup acceptance
 
 ### Fixed

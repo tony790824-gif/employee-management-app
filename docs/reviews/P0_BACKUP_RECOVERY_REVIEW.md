@@ -24,7 +24,7 @@
 
 ## F — QA Lead
 
-涵蓋正常備份、驗證、最新備份發布檢查、資料變更／超過 24 小時／錯來源、錯誤確認、成功復原、safety backup、寫後驗證失敗 rollback、session revoke、checksum 篡改、公開檔案、未允許 property、跨 workspace、損壞 pepper、空白資料表災難復原、日誌脫敏、公開新資料夾／檔案清理與損壞來源 JSON。
+涵蓋正常備份、驗證、最新備份發布檢查、資料變更／超過 24 小時／錯來源、錯誤確認、成功復原、safety backup、寫後驗證失敗 rollback、session revoke、checksum 篡改、公開檔案、未允許 property、跨 workspace、損壞 pepper、空白資料表災難復原、日誌脫敏、公開新資料夾／檔案清理、損壞來源 JSON，以及舊版空 `payrollAdjustments` 陣列的無損相容與非空未知陣列的 fail-closed 行為。
 
 ## G — Product Manager
 
@@ -40,4 +40,4 @@
 
 ## 結論
 
-所有角色同意本次過渡 P0 可合併；review 發現的空白目標與非私人殘留問題已先修正並加回歸。產品仍不可正式上線，下一步是正式身分／多租戶資料庫遷移與自動化營運平台。
+所有角色同意本次過渡 P0 可合併；review 發現的空白目標、非私人殘留與舊版空薪資調整格式問題已先修正並加回歸。未知的非空舊格式仍停止備份，必須人工遷移，不能用清空資料換取 readiness 通過。產品仍不可正式上線，下一步是正式身分／多租戶資料庫遷移與自動化營運平台。

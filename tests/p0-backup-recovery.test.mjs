@@ -111,6 +111,21 @@ const resignPackage = recoveryPackage => {
   return next;
 };
 
+const legacyPayrollSnapshot = baseData();
+legacyPayrollSnapshot.payrollAdjustments = [];
+writeSnapshot(legacyPayrollSnapshot);
+const legacyPayrollBackup = context.createOperationalBackup();
+const legacyPayrollPackage = JSON.parse(driveFiles.get(legacyPayrollBackup.fileId).content);
+assert.deepEqual(legacyPayrollPackage.snapshot.payrollAdjustments, {}, '空的舊版薪資調整陣列必須無損轉換為 object map');
+assert.deepEqual(readSnapshot().payrollAdjustments, [], '建立備份不得暗中改寫主要工作表資料');
+assert.equal(context.runReleaseReadinessCheck().ok, true, '發布檢查必須以相同的相容性規則讀取舊資料');
+
+const unsafeLegacyPayrollSnapshot = baseData();
+unsafeLegacyPayrollSnapshot.payrollAdjustments = [{ amount: 1000 }];
+writeSnapshot(unsafeLegacyPayrollSnapshot);
+expectCode(() => context.createOperationalBackup(), 'BACKUP_SOURCE_INVALID');
+assert.equal(scriptProperties.get('SHIFT_APP_LAST_BACKUP_FILE_ID'), legacyPayrollBackup.fileId, '拒絕不安全轉換時不得覆蓋最後成功備份指標');
+
 writeSnapshot(baseData());
 const backup = context.createOperationalBackup();
 assert.equal(backup.ok, true);
