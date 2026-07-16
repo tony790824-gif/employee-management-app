@@ -41,7 +41,7 @@ Google Apps Script 取得 active spreadsheet，建立隱藏工作表 `_班表APP
 - `A1`：整份應用資料的 JSON 字串。
 - `A2`：最後同步時間文字。
 
-一般 API 讀取 A1 時要求根節點為有效 JSON object；無效 JSON、`null`、array 或 primitive 會回 `DATA_SOURCE_INVALID`，不執行登入、同步或寫回。空白 A1 仍視為尚未初始化的新資料表。這是資料覆寫防護，不是完整 schema validation。
+一般 API 讀取 A1 時要求根節點為有效 JSON object，並檢查已知 array、object map、巢狀記錄及 `sync.revision` 的基本形狀；錯誤會回 `DATA_SOURCE_INVALID`，不執行登入、同步、清理或寫回。空白 A1 仍視為尚未初始化的新資料表，缺少欄位的舊資料維持向後相容。這是資料覆寫防護，仍不是帶版本的完整 schema validation、欄位值驗證或 migration。
 
 資料大致包含：
 

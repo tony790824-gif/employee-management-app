@@ -38,10 +38,10 @@
 
 ## 失敗處理
 
-- `DATA_SOURCE_INVALID`：一般 APP API 偵測到 A1 不是有效 JSON object。立即停止 APP 操作，保存 A1 原始內容與 execution log；不要清空 A1、不要重新登入或重複儲存。先驗證私人備份，再依復原流程處理。
+- `DATA_SOURCE_INVALID`：一般 APP API 偵測到 A1 不是有效 JSON object，或已知 snapshot 欄位形狀錯誤。立即停止 APP 操作，保存 A1 原始內容與 execution log；不要清空 A1、不要重新登入或重複儲存。先驗證私人備份，再依復原流程處理。
 - `BACKUP_NOT_PRIVATE`：立即檢查 Drive 分享權限；不要繼續發布。
 - `BACKUP_CHECKSUM_INVALID`：檔案損壞或被修改，改用另一份已驗證備份。
-- `BACKUP_SOURCE_INVALID`：來源 Sheet JSON 損壞，或包含無法安全轉換的舊資料格式。空的舊版 `payrollAdjustments` 陣列會自動按空 object map 備份；若陣列含資料，先保留原始 A1 內容並人工確認資料對應，禁止直接清空重試。
+- `BACKUP_SOURCE_INVALID`：來源 Sheet JSON 損壞、已知 snapshot 欄位形狀錯誤，或包含無法安全轉換的舊資料格式。空的舊版 `payrollAdjustments` 陣列會自動按空 object map 備份；若陣列含資料，先保留原始 A1 內容並人工確認資料對應，禁止直接清空重試。
 - `BACKUP_WORKSPACE_MISMATCH`：選錯公司／工作區，停止操作。
 - `RESTORE_ROLLED_BACK`：程式已嘗試回復操作前狀態；使用結果中的 safety backup 或前一份備份，並保留錯誤記錄。
 - `RESTORE_ROLLBACK_FAILED`：復原與自動回滾皆失敗。立即停止 APP 寫入、保存 execution log，依錯誤物件的 `safetyBackupFileId` 找到復原前備份，再由管理員進行人工災難復原。

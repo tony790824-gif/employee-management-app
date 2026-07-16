@@ -55,7 +55,7 @@ pnpm release:check
 
 主要本機資料統一由 `state-store.js` 讀寫。若偵測到損壞 JSON，APP 會隔離一份本機備份並使用安全資料繼續啟動；備份不會同步至 Google Sheets。
 
-Google Sheet 主資料與本機復原策略不同：A1 若不是有效 JSON object，Apps Script 會回傳 `DATA_SOURCE_INVALID` 並停止操作，不會把損壞資料當成空公司。此時必須保留 A1 原文並依 Runbook 復原，禁止清空後重試。
+Google Sheet 主資料與本機復原策略不同：A1 若不是有效 JSON object，或已知 snapshot 欄位的陣列、object map、巢狀記錄、`sync.revision` 形狀不正確，Apps Script 會回傳 `DATA_SOURCE_INVALID` 並停止操作，不會把損壞資料正規化成空公司後寫回。此時必須保留 A1 原文並依 Runbook 復原，禁止清空後重試。
 
 正式頁面採分階段啟動：登入前只載入設定、雲端驗證、登入與 PWA 必要程式；驗證成功後才載入管理畫面與公司資料。這是前端資料最小化，不等於正式後端 authorization。
 

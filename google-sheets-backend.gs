@@ -21,6 +21,10 @@ const RECOVERY_FOLDER_PROPERTY_KEY = 'SHIFT_APP_RECOVERY_FOLDER_ID';
 const LAST_BACKUP_FILE_PROPERTY_KEY = 'SHIFT_APP_LAST_BACKUP_FILE_ID';
 const RESTORE_CONFIRMATION_PROPERTY_KEY = 'SHIFT_APP_RESTORE_CONFIRMATION';
 const RECOVERY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const SNAPSHOT_ARRAY_FIELDS = ['employees', 'shifts', 'attendance', 'leaveHistory', 'removedEmployees'];
+const SNAPSHOT_OBJECT_FIELDS = ['workspace', 'sync', 'leaves', 'leaveRequests', 'access', 'payrollAdjustments'];
+const SNAPSHOT_ARRAY_MAP_FIELDS = ['leaves', 'leaveRequests', 'payrollAdjustments'];
+const SNAPSHOT_OBJECT_ARRAY_MAP_FIELDS = ['leaveRequests', 'payrollAdjustments'];
 
 function doGet() {
   return messagePage_({ channel: 'staff-sheets', type: 'ready' });
@@ -841,10 +845,10 @@ function validateRecoverySnapshot_(snapshot, workspaceId, revision) {
   if (!isObject(snapshot) || workspaceIdFromData_(snapshot) !== workspaceId || revisionOf_(snapshot) !== revision) {
     throw operationalError_('備份資料與工作區或版本不一致。', 'BACKUP_WORKSPACE_INVALID');
   }
-  ['employees', 'shifts', 'attendance', 'leaveHistory', 'removedEmployees'].forEach(key => {
+  SNAPSHOT_ARRAY_FIELDS.forEach(key => {
     if (!Array.isArray(snapshot[key])) throw operationalError_('備份資料欄位格式不正確：' + key, 'BACKUP_FORMAT_INVALID');
   });
-  ['workspace', 'sync', 'leaves', 'leaveRequests', 'access', 'payrollAdjustments'].forEach(key => {
+  SNAPSHOT_OBJECT_FIELDS.forEach(key => {
     if (!isObject(snapshot[key])) throw operationalError_('備份資料欄位格式不正確：' + key, 'BACKUP_FORMAT_INVALID');
   });
 }
@@ -931,17 +935,48 @@ function readDataStrict_() {
   if (!raw) return emptyData_();
   const parsed = parseJson_(raw);
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw operationalError_('雲端資料不是有效 JSON，禁止備份或覆寫。', 'BACKUP_SOURCE_INVALID');
-  return normalizeRecoverySource_(parsed);
+  return validateSnapshotShape_(parsed, 'BACKUP_SOURCE_INVALID');
 }
 
-function normalizeRecoverySource_(data) {
+function validateSnapshotShape_(data, errorCode) {
+  const code = String(errorCode || 'DATA_SOURCE_INVALID');
+  const fail = field => {
+    throw operationalError_('雲端資料欄位格式不正確，系統已停止操作：' + String(field || 'root'), code);
+  };
+  const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
+  const hasOwn = key => Object.prototype.hasOwnProperty.call(data, key);
+  if (!isObject(data)) fail('root');
+
+  SNAPSHOT_ARRAY_FIELDS.forEach(key => {
+    if (!hasOwn(key)) return;
+    if (!Array.isArray(data[key]) || data[key].some(item => !isObject(item))) fail(key);
+  });
+
   const adjustments = data.payrollAdjustments;
   if (adjustments === undefined || adjustments === null || (Array.isArray(adjustments) && adjustments.length === 0)) {
     data.payrollAdjustments = {};
-    return data;
+  } else if (!isObject(adjustments)) {
+    fail('payrollAdjustments');
   }
-  if (!adjustments || typeof adjustments !== 'object' || Array.isArray(adjustments)) {
-    throw operationalError_('備份來源的 payrollAdjustments 格式無法安全轉換，請先人工檢查薪資調整資料。', 'BACKUP_SOURCE_INVALID');
+
+  SNAPSHOT_OBJECT_FIELDS.forEach(key => {
+    if (hasOwn(key) && !isObject(data[key])) fail(key);
+  });
+  SNAPSHOT_ARRAY_MAP_FIELDS.forEach(key => {
+    if (!hasOwn(key)) return;
+    Object.keys(data[key]).forEach(mapKey => {
+      if (!Array.isArray(data[key][mapKey])) fail(key);
+    });
+  });
+  SNAPSHOT_OBJECT_ARRAY_MAP_FIELDS.forEach(key => {
+    if (!hasOwn(key)) return;
+    Object.keys(data[key]).forEach(mapKey => {
+      if (data[key][mapKey].some(item => !isObject(item))) fail(key);
+    });
+  });
+  if (hasOwn('sync') && Object.prototype.hasOwnProperty.call(data.sync, 'revision')) {
+    const revision = Number(data.sync.revision);
+    if (!Number.isSafeInteger(revision) || revision < 0) fail('sync.revision');
   }
   return data;
 }
@@ -972,7 +1007,7 @@ function readData_() {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw operationalError_('雲端主資料損壞，為避免覆寫既有資料，系統已停止這次操作。', 'DATA_SOURCE_INVALID');
   }
-  return parsed;
+  return validateSnapshotShape_(parsed, 'DATA_SOURCE_INVALID');
 }
 
 function writeData_(data) {

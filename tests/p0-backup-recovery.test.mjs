@@ -307,6 +307,44 @@ assert.equal(cells.get('A1'), '{broken-json', '拒絕損壞主資料後不得改
   assert.equal(cells.get('A1'), invalidRoot, '拒絕不合法根節點後不得改寫原始 A1 內容');
 });
 
+const malformedFieldCases = [
+  ['employees', {}],
+  ['shifts', [null]],
+  ['attendance', 'invalid'],
+  ['leaveHistory', [42]],
+  ['removedEmployees', [null]],
+  ['workspace', []],
+  ['sync', { revision: -1 }],
+  ['leaves', { '2026-07': {} }],
+  ['leaveRequests', { 'employee-1': [null] }],
+  ['access', []],
+  ['payrollAdjustments', { 'employee-1': [null] }]
+];
+malformedFieldCases.forEach(([field, value]) => {
+  const malformed = baseData();
+  malformed[field] = value;
+  writeSnapshot(malformed);
+  const original = cells.get('A1');
+  const response = context.api({ action: 'pull', sessionToken: 'invalid-session' });
+  assert.equal(response.code, 'DATA_SOURCE_INVALID', `${field} 欄位格式錯誤時必須 fail closed`);
+  assert.equal(cells.get('A1'), original, `${field} 欄位格式錯誤時不得改寫 A1`);
+  assert.doesNotMatch(String(response.error || ''), /employee-1|2026-07/, '格式錯誤不得把巢狀資料鍵名回傳給 client');
+});
+
+const malformedBackupSource = baseData();
+malformedBackupSource.attendance = {};
+writeSnapshot(malformedBackupSource);
+expectCode(() => context.createOperationalBackup(), 'BACKUP_SOURCE_INVALID');
+
+const compatiblePartialSnapshot = baseData();
+delete compatiblePartialSnapshot.leaveRequests;
+delete compatiblePartialSnapshot.payrollAdjustments;
+writeSnapshot(compatiblePartialSnapshot);
+const compatibleRead = context.readData_();
+assert.equal(Object.keys(compatibleRead.payrollAdjustments).length, 0, '舊資料缺少 payrollAdjustments 時必須使用無損預設值');
+assert.equal(Object.prototype.hasOwnProperty.call(compatibleRead, 'leaveRequests'), false, '讀取時不得暗中補寫其他缺少欄位');
+assert.deepEqual(readSnapshot(), compatiblePartialSnapshot, '相容性正規化不得改寫 A1');
+
 cells.set('A1', '');
 const blankSource = context.readData_();
 assert.equal(blankSource.sync.revision, 0, '空白新資料表仍須保留安全初始化能力');

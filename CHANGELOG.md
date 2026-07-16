@@ -1,5 +1,19 @@
 # Change Log
 
+## 2026-07-16 — P0 cloud snapshot shape guard
+
+### Fixed
+
+- Google Sheet 主資料除了 JSON root 以外，現在也會驗證陣列、object map、巢狀記錄與 `sync.revision` 的基本形狀。
+- 任一已知欄位形狀錯誤時回 `DATA_SOURCE_INVALID`，停止登入、同步、清理與寫回，保留 A1 原始內容供人工救援。
+- 營運備份使用相同的欄位形狀規則，無法安全解讀時回 `BACKUP_SOURCE_INVALID`；缺少欄位的舊資料仍可讀取，空的舊版 `payrollAdjustments` 仍可無損轉換。
+
+### Verified
+
+- 既有營運復原測試新增 11 種欄位損壞、備份拒絕、舊資料相容與 A1 不變的回歸案例。
+- 本次未變更畫面、API action、正式資料 schema 或線上部署。
+- 重新依功能、測試、權限、資料庫、跨裝置與部署準備度評估：功能實作估值仍約 67%，整體商業上線完成度由 67% 修正為 52%。
+
 ## 2026-07-16 — P0 cloud data corruption guard
 
 ### Fixed

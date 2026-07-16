@@ -1,10 +1,17 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 完成度校正與 snapshot 欄位形狀防護
+
+- Apps Script 現在會在任何登入、同步、清理或寫回前，驗證主資料已知陣列、object map、巢狀記錄與 `sync.revision` 的基本形狀；錯誤時回 `DATA_SOURCE_INVALID` 並保留 A1 原文。
+- 缺少欄位的舊 snapshot 維持向後相容，空的舊版 `payrollAdjustments` 仍可無損轉換；本次沒有變更畫面、API action、資料 schema 或正式部署。
+- **功能實作估值：約 67%；整體商業上線完成度：52%（前次回報 67%）**。前次百分比過度偏重已存在的畫面與功能檔案，未充分扣除正式 IAM、多租戶資料庫、request/schema 完整驗證、跨裝置 E2E、實際裝置與部署演練尚未完成；因此本次依使用者指定的綜合標準向下校正。
+- **是否適合正式上線：No**。目前仍是 Google Sheets／Apps Script 過渡後端，沒有正式多租戶關聯式資料庫、正式身分服務、完整 audit／PITR、staging 驗收與真實跨裝置 E2E。
+
 ## 2026-07-16 雲端主資料損壞防覆寫
 
 - 修正一般 Apps Script API 將損壞 JSON／非 object root 當成空公司資料的 P0 風險；現在回 `DATA_SOURCE_INVALID` 並保留原始 A1。
 - 既有空白新資料表初始化、一般 API action、前端與 snapshot schema 均未改變；針對讀取邊界的品質檢查與回歸測試通過。
-- 這是資料安全止血，不是新產品功能，也未補齊欄位 schema、多租戶、正式 IAM 或關聯式資料庫，因此整體完成率維持 67%、正式上線仍為 No。
+- 這是資料安全止血，不是新產品功能；本段當時沿用的 67% 是功能實作估值，已由上方依商業上線標準校正為 52%。
 
 ## 2026-07-16 整理功能驗收
 
@@ -22,7 +29,7 @@
 
 ## 2026-07-15 本 Sprint 更新
 
-- **目前完成率：67%**（前次 65%）
+- **當時功能實作估值：67%**（前次 65%；2026-07-16 依商業上線標準校正為 52%）
 - **Project Health Score：69 / 100**（前次 66）
 - **是否適合正式上線：No**
 - 已封堵：無限 PIN 線上猜測、PIN hash 長期重播、未驗證 session restore、登出／刪除員工未撤銷、credential hashes 回傳瀏覽器。
@@ -40,7 +47,7 @@
 
 ## 結論摘要
 
-- **整體完成率：67%**
+- **整體商業上線完成率：52%**（功能實作估值約 67%）
 - **Project Health Score：69 / 100**
 - **正式上線：No**
 - **目前型態：** 單頁 PWA（HTML/CSS/Vanilla JavaScript）＋ Google Apps Script；不是 Flutter 專案。
@@ -103,7 +110,7 @@
 4. ~~第一個知道員工電話的人可自行認領 PIN；空白雲端的第一個呼叫者也可認領老闆帳號。~~ **2026-07-15 已止血：老闆第一次初始化須符合 Apps Script 預登記電話；員工以 8 碼一次性啟用碼設定第一組 PIN。**
 5. ~~資料、session 與回應沒有 workspace 邊界。~~ **2026-07-15 已建立 server-generated 單一 workspace 綁定；同一部署仍無法服務多家公司，正式 row-level tenant isolation 尚未完成。**
 6. ~~全量 JSON snapshot 以最後寫入者覆蓋；多裝置同時操作會靜默遺失資料。~~ **2026-07-15 已加入 server revision／compare-and-swap；衝突會拒絕且保留本機修改。全量 snapshot 架構仍待取代。**
-6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；欄位級 schema validation 仍待 Sprint 3。**
+6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；同日補上 top-level collection／map、巢狀記錄與 revision 形狀驗證。帶版本的完整欄位值 schema、request allowlist 與 migration 仍待 Sprint 3。**
 
 ### High / P1
 
@@ -289,4 +296,4 @@
 
 ## 13. 剩餘工作量估算
 
-以 1 個資深全端工程師＋兼任 QA/DevOps 計算，達到可控 beta 約 **16–24 週**；達到可收費正式營運約 **28–40 週**。若由 3–4 人小隊平行開發，可縮短日曆時間，但安全、遷移與 beta 觀察期不能省略。
+以 1 個資深全端工程師＋兼任 QA/DevOps、需求範圍不再擴張計算：達到可控 beta 約還需 **8–10 個 Sprint、80–120 個人天／640–960 小時，日曆時間 16–24 週**；達到可收費正式營運約還需 **14–18 個 Sprint、140–200 個人天／1,120–1,600 小時，日曆時間 28–40 週**。若由 3–4 人小隊平行開發可縮短日曆時間，但安全、資料遷移、實際裝置驗收與 beta 觀察期不能省略。

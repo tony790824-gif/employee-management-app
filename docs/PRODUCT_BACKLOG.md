@@ -1,5 +1,11 @@
 # 班客邦 Product Backlog
 
+## P0 snapshot 欄位形狀防覆寫（2026-07-16）
+
+已完成 Google Sheet 主資料的 top-level collection／map、巢狀記錄及 revision 形狀驗證。格式錯誤時一般 API 與營運備份都會 fail closed，原始 A1 不被清理或寫回；缺少欄位的舊資料維持相容。本次只提交來源、測試與文件，未部署 Apps Script。
+
+最高優先的整體上線閘門仍是受控 staging Apps Script 部署與真實老闆／員工跨裝置 E2E，但本次需求明確禁止發布，因此未執行。下一個可獨立處理的程式工作是老闆 `save` request 的欄位 allowlist／形狀驗證與缺少欄位保留，避免錯誤或惡意 request 清空既有集合。
+
 ## 專案整理收尾（2026-07-16）
 
 已完成現有前端管理事件、雲端設定來源、Service Worker fallback 與備份還原入口的去重整理；未啟用 Firebase／Supabase 草稿已移除。12 組回歸、25 個發布資產與本機老闆／員工 smoke 通過。本次未新增產品功能，也未變更 API／資料結構。
