@@ -19,7 +19,8 @@ const $ = s => document.querySelector(s); const employee = id => data.employees.
 const dom = window.shiftDomSafety;
 const money = n => new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(n);
 const hours = s => { const [a,b]=[s.start,s.end].map(x=>x.split(':').map(Number)); return Math.max(0,(b[0]*60+b[1]-a[0]*60-a[1])/60); };
-const totals = e => { const shifts=data.shifts.filter(s=>s.employeeId===e.id&&s.date.startsWith(month)); const h=shifts.reduce((n,s)=>n+hours(s),0); return {shifts,h,pay:h*e.rate}; };
+const planned = e => { const shifts=data.shifts.filter(s=>s.employeeId===e.id&&s.date.startsWith(month)); const h=shifts.reduce((n,s)=>n+hours(s),0); return {shifts,h,pay:h*e.rate}; };
+const actual = e => { const att=data.attendance.filter(a=>a.employeeId===e.id&&a.date.startsWith(month)&&a.type==='出勤'); const h=att.reduce((n,a)=>n+Number(a.hours||0),0); return {h,pay:h*e.rate,count:att.length}; };
 function leaveKey(){ return `${calendarEmployeeId}-${month}`; }
 function selectedLeaves(){ return data.leaves[leaveKey()] || []; }
 function save(){ stateStore.write(data); render(); }
@@ -36,11 +37,11 @@ function renderCalendar(){
 function toggleLeave(date){ if(!calendarEmployeeId) return; const key=leaveKey(), values=[...(data.leaves[key]||[])], at=values.indexOf(date), quota=employee(calendarEmployeeId)?.leaveQuota??8; if(at>=0) values.splice(at,1); else { if(values.length>=quota) return alert(`這位員工本月已設定 ${quota} 天休假；若要調整，請先取消其中一天。`); values.push(date); } data.leaves[key]=values.sort(); save(); }
 function render(){
   $('#monthTitle').textContent=new Date(month+'-01T00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long'}); $('#monthPicker').value=month;
-  const all=data.employees.map(totals), attendance=data.attendance.filter(a=>a.date.startsWith(month));
-  const stats=[['員工人數',data.employees.length+' 位'],['已排班次',all.reduce((n,x)=>n+x.shifts.length,0)+' 班'],['總工時',all.reduce((n,x)=>n+x.h,0)+' 小時'],['預估人事成本',money(all.reduce((n,x)=>n+x.pay,0))]];
+  const p=data.employees.map(planned), a=data.employees.map(actual), attendance=data.attendance.filter(a=>a.date.startsWith(month));
+  const stats=[['員工人數',data.employees.length+' 位'],['排班時數',p.reduce((n,x)=>n+x.h,0)+' 小時'],['實際工時',a.reduce((n,x)=>n+x.h,0)+' 小時'],['預估成本 / 實際支出', `${money(p.reduce((n,x)=>n+x.pay,0))} / ${money(a.reduce((n,x)=>n+x.pay,0))}`]];
   dom.replace($('#stats'),...stats.map(([label,value])=>dom.element('article',{className:'stat'},[dom.element('p',{text:label}),dom.element('strong',{text:value})])));
   renderCalendar();
-  const scheduleRows=data.employees.map(e=>{const t=totals(e),shifts=dom.element('td');if(t.shifts.length)t.shifts.forEach(s=>shifts.append(dom.element('span',{className:'badge',text:`${s.date.slice(8)}日 ${s.start}–${s.end}`,title:s.note||''})));else shifts.append(dom.element('span',{className:'empty',text:'尚未排班'}));return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(e.role),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(money(t.pay)),shifts]);});
+  const scheduleRows=data.employees.map((e,i)=>{const t=p[i],shifts=dom.element('td');if(t.shifts.length)t.shifts.forEach(s=>shifts.append(dom.element('span',{className:'badge',text:`${s.date.slice(8)}日 ${s.start}–${s.end}`,title:s.note||''})));else shifts.append(dom.element('span',{className:'empty',text:'尚未排班'}));return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(e.role),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(money(t.pay)),shifts]);});
   dom.replace($('#scheduleBody'),...(scheduleRows.length?scheduleRows:[dom.emptyRow(6,'尚無員工資料')]));
   const employeeCards=data.employees.map(e=>{const card=dom.element('article',{className:'card'},[dom.element('h3',{text:e.name}),dom.element('p',{text:e.role}),dom.element('p',{text:`帳號：${e.phone||'尚未設定'}`}),dom.element('p',{text:`登入狀態：${e.credentialState==='active'?'PIN 已設定':e.credentialState==='pending'?'等待首次啟用':'需要產生啟用碼'}`}),dom.element('p',{text:`時薪 ${money(e.rate)}`})]);[['編輯',()=>openEmployee(e)],['重設 PIN',()=>window.resetEmployeePin(e.id)],['移除員工',()=>window.removeEmployee(e.id)]].forEach(([label,handler])=>{const button=dom.element('button',{text:label,attributes:{type:'button'}});button.addEventListener('click',handler);card.append(button);});return card;});
   dom.replace($('#employeeCards'),...(employeeCards.length?employeeCards:[dom.element('p',{className:'empty',text:'請先新增第一位員工。'})]));
@@ -50,7 +51,7 @@ function render(){
     const archivedCards=data.removedEmployees.map(r=>{const card=dom.element('article',{className:'card'},[dom.element('h3',{text:r.employee.name}),dom.element('p',{text:`保留至 ${new Date(r.removeAfter).toLocaleString('zh-TW')}`})]);[['復原員工',()=>window.restoreEmployee(r.employee.id)],['立即永久刪除',()=>window.deleteArchivedEmployee(r.employee.id)]].forEach(([label,handler])=>{const button=dom.element('button',{text:label,attributes:{type:'button'}});button.addEventListener('click',handler);card.append(button);});return card;});
     dom.replace(removed,dom.element('h3',{text:'已移除員工（保留 3 天）'}),dom.element('p',{text:'員工已不能登入；保留期限到後，系統會永久刪除資料。'}),...archivedCards);
   }else{removed.hidden=true;removed.replaceChildren();}
-  const payrollRows=data.employees.map(e=>{const t=totals(e);return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(`${t.shifts.length} 班`),dom.element('td',{},[dom.element('strong',{text:money(t.pay)})])]);});
+  const payrollRows=data.employees.map((e,i)=>{const t=a[i];return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(`${t.count} 筆出勤`),dom.element('td',{},[dom.element('strong',{text:money(t.pay)})])]);});
   dom.replace($('#payrollBody'),...(payrollRows.length?payrollRows:[dom.emptyRow(5,'尚無資料')]));
   const attendanceRows=attendance.sort((a,b)=>b.date.localeCompare(a.date)).map(a=>{const remove=dom.element('button',{className:'icon',text:'×',title:'刪除紀錄',attributes:{type:'button'}});remove.addEventListener('click',()=>window.removeAttendance(a.id));return dom.element('tr',{},[dom.cell(a.date),dom.element('td',{},[dom.element('strong',{text:employee(a.employeeId)?.name||'已刪除員工'})]),dom.element('td',{},[dom.element('span',{className:'badge',text:a.type})]),dom.cell(`${a.hours} 小時`),dom.cell(a.note||'—'),dom.element('td',{},[remove])]);});
   dom.replace($('#attendanceBody'),...(attendanceRows.length?attendanceRows:[dom.emptyRow(6,'本月尚無出勤或請假紀錄')]));
@@ -65,6 +66,7 @@ window.restoreEmployee=id=>{const archived=data.removedEmployees.find(r=>r.emplo
 window.deleteArchivedEmployee=id=>{if(!confirm('確定要立即永久刪除這位員工及其保留資料嗎？'))return;data.removedEmployees=data.removedEmployees.filter(r=>r.employee.id!==id);save();};
 window.removeAttendance=id=>{if(confirm('確定刪除此紀錄嗎？')){data.attendance=data.attendance.filter(a=>a.id!==id);save();}};
 $('#calendarEmployee').onchange=e=>{calendarEmployeeId=e.target.value;renderCalendar();};$('#monthPicker').onchange=e=>{month=e.target.value;render();};
+if($('#logoutBtn')) $('#logoutBtn').onclick=()=>window.shiftLogout();
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab],.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');});
-$('#printBtn').onclick=()=>window.print();$('#exportBtn').onclick=()=>{const rows=[['員工','時薪','工時','班次','預估薪資'],...data.employees.map(e=>{const t=totals(e);return[e.name,e.rate,t.h,t.shifts.length,t.pay]})],a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download=`薪資試算-${month}.csv`;a.click();};
+$('#printBtn').onclick=()=>window.print();$('#exportBtn').onclick=()=>{const rows=[['員工','時薪','工時','出勤筆數','實際薪資'],...data.employees.map(e=>{const t=actual(e);return[e.name,e.rate,t.h,t.count,t.pay]})],a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download=`薪資實付-${month}.csv`;a.click();};
 render();

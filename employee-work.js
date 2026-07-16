@@ -8,7 +8,7 @@
   const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(new Date());
   const month = () => $('#monthPicker').value;
   const currentId = () => document.body.dataset.employeeId || '';
-  const roundedHours = iso => Math.max(0.5, Math.round(((Date.now() - new Date(iso).getTime()) / 3600000) * 2) / 2);
+  const roundedHours = iso => Math.round(((Date.now() - new Date(iso).getTime()) / 3600000) * 2) / 2;
   const requireCloudSession = () => {
     if (window.LOCAL_PREVIEW) return false;
     if (!window.sheetsCloud?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');

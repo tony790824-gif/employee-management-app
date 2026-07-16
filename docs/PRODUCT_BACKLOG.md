@@ -84,7 +84,7 @@ Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provide
 
 ## Sprint 1 — P0 前端止血與單一 State Schema
 
-**進度：P0 介面載入穩定性、損壞 JSON 安全復原、登入前 DOM 隔離與員工雲端授權止血已完成；角色 UI、UTC 月份與完整 schema migration 尚未完成。**
+**進度：P0 介面載入穩定性、損壞 JSON 安全復原、登入前 DOM 隔離、員工雲端授權止血、UTC 月份、角色 UI 頁籤隔離及登出功能已完成；完整 schema migration 已具備基線。**
 
 **目標**
 
