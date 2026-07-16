@@ -27,6 +27,9 @@ const SNAPSHOT_ARRAY_MAP_FIELDS = ['leaves', 'leaveRequests', 'payrollAdjustment
 const SNAPSHOT_OBJECT_ARRAY_MAP_FIELDS = ['leaveRequests', 'payrollAdjustments'];
 const BOSS_SAVE_ALLOWED_FIELDS = SNAPSHOT_ARRAY_FIELDS.concat(SNAPSHOT_OBJECT_FIELDS);
 const BOSS_SAVE_MUTABLE_FIELDS = ['employees', 'shifts', 'attendance', 'leaves', 'leaveRequests', 'leaveHistory', 'removedEmployees', 'payrollAdjustments'];
+const REQUEST_PAYLOAD_MAX_BYTES = 1024 * 1024;
+const PHONE_DIGIT_MIN_LENGTH = 8;
+const PHONE_DIGIT_MAX_LENGTH = 15;
 
 function doGet() {
   return messagePage_({ channel: 'staff-sheets', type: 'ready' });
@@ -34,12 +37,46 @@ function doGet() {
 
 // APP 使用隱藏表單 POST，避開 Apps Script 外層 iframe 限制。
 function doPost(e) {
+  const requestId = String(e && e.parameter && e.parameter.requestId || '');
   try {
+    if (requestPayloadByteLength_(e) > REQUEST_PAYLOAD_MAX_BYTES) {
+      return messagePage_({
+        channel: 'staff-sheets',
+        requestId: requestId,
+        response: fail_('請求資料超過 1 MiB 上限。', 'REQUEST_PAYLOAD_TOO_LARGE')
+      });
+    }
     const payload = JSON.parse((e && e.parameter && e.parameter.payload) || '{}');
-    return messagePage_({ channel: 'staff-sheets', requestId: payload.requestId || '', response: api(payload.request || {}) });
+    return messagePage_({ channel: 'staff-sheets', requestId: payload.requestId || requestId, response: api(payload.request || {}) });
   } catch (error) {
-    return messagePage_({ channel: 'staff-sheets', requestId: '', response: fail_(error.message || '雲端處理失敗。') });
+    return messagePage_({ channel: 'staff-sheets', requestId: requestId, response: fail_(error.message || '雲端處理失敗。', error.code || 'REQUEST_FAILED') });
   }
+}
+
+function requestPayloadByteLength_(event) {
+  const postedBody = event && event.postData && typeof event.postData.contents === 'string'
+    ? event.postData.contents
+    : '';
+  const rawBody = postedBody || String(event && event.parameter && event.parameter.payload || '');
+  return utf8ByteLength_(rawBody, REQUEST_PAYLOAD_MAX_BYTES + 1);
+}
+
+function utf8ByteLength_(value, stopAfter) {
+  const text = String(value || '');
+  const limit = Number.isSafeInteger(stopAfter) && stopAfter >= 0 ? stopAfter : Number.MAX_SAFE_INTEGER;
+  let bytes = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    if (code <= 0x7f) bytes += 1;
+    else if (code <= 0x7ff) bytes += 2;
+    else if (code >= 0xd800 && code <= 0xdbff && index + 1 < text.length
+      && text.charCodeAt(index + 1) >= 0xdc00 && text.charCodeAt(index + 1) <= 0xdfff) {
+      bytes += 4;
+      index += 1;
+    } else bytes += 3;
+    if (bytes >= limit) return bytes;
+  }
+  return bytes;
 }
 
 function messagePage_(message) {
@@ -77,6 +114,7 @@ function api(request) {
         const initial = request.initialData && typeof request.initialData === 'object' ? request.initialData : {};
         data = mergeInitial_(data, initial);
         data.access = { bossPhone: phone, bossPinCredential: createCredential_(pinHash) };
+        validateSnapshotShape_(data, 'REQUEST_DATA_INVALID', { rejectNewNegativePayrollAdjustments: true });
         initialized = true;
       } else {
         if (data.access.bossPhone !== phone) {
@@ -114,7 +152,7 @@ function api(request) {
       const baseRevision = requestRevision_(request.baseRevision);
       if (baseRevision === null) return fail_('缺少資料版本，請重新整理後再試。', 'REVISION_REQUIRED');
       if (baseRevision !== revisionOf_(data)) return revisionConflict_(data);
-      const validatedIncoming = validateBossSaveRequest_(incoming);
+      const validatedIncoming = validateBossSaveRequest_(incoming, data);
       const merged = mergeBossSave_(data, validatedIncoming);
       cleanupRemoved_(merged);
       revokeMissingEmployeeSessions_(merged.employees);
@@ -853,12 +891,7 @@ function validateRecoverySnapshot_(snapshot, workspaceId, revision) {
   if (!isObject(snapshot) || workspaceIdFromData_(snapshot) !== workspaceId || revisionOf_(snapshot) !== revision) {
     throw operationalError_('備份資料與工作區或版本不一致。', 'BACKUP_WORKSPACE_INVALID');
   }
-  SNAPSHOT_ARRAY_FIELDS.forEach(key => {
-    if (!Array.isArray(snapshot[key])) throw operationalError_('備份資料欄位格式不正確：' + key, 'BACKUP_FORMAT_INVALID');
-  });
-  SNAPSHOT_OBJECT_FIELDS.forEach(key => {
-    if (!isObject(snapshot[key])) throw operationalError_('備份資料欄位格式不正確：' + key, 'BACKUP_FORMAT_INVALID');
-  });
+  validateSnapshotShape_(snapshot, 'BACKUP_FORMAT_INVALID');
 }
 
 function validateRecoveryProperties_(values, workspaceId, snapshot) {
@@ -947,6 +980,7 @@ function readDataStrict_() {
 }
 
 function validateSnapshotShape_(data, errorCode) {
+  const options = arguments.length > 2 && arguments[2] ? arguments[2] : {};
   const code = String(errorCode || 'DATA_SOURCE_INVALID');
   const fail = field => {
     throw operationalError_('雲端資料欄位格式不正確，系統已停止操作：' + String(field || 'root'), code);
@@ -986,10 +1020,181 @@ function validateSnapshotShape_(data, errorCode) {
     const revision = Number(data.sync.revision);
     if (!Number.isSafeInteger(revision) || revision < 0) fail('sync.revision');
   }
+  validateSnapshotValues_(data, fail, options);
   return data;
 }
 
-function validateBossSaveRequest_(incoming) {
+function validateSnapshotValues_(data, fail, options) {
+  const hasOwn = (record, key) => Object.prototype.hasOwnProperty.call(record || {}, key);
+  const validateOptional = (record, key, validator, path) => {
+    if (hasOwn(record, key) && !validator(record[key])) fail(path);
+  };
+  const validateCredentialFields = (record, path) => {
+    ['pinHash', 'activationCodeHash'].forEach(key => {
+      validateOptional(record, key, value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value), path + '.' + key);
+    });
+    ['pinCredential', 'activationCredential'].forEach(key => {
+      validateOptional(record, key, validCredential_, path + '.' + key);
+    });
+  };
+  const validateEmployee = (record, path) => {
+    validateOptional(record, 'phone', validPhoneValue_, path + '.phone');
+    validateOptional(record, 'rate', nonNegativeInteger_, path + '.rate');
+    validateOptional(record, 'leaveQuota', value => nonNegativeInteger_(value) && value <= 31, path + '.leaveQuota');
+    validateCredentialFields(record, path);
+  };
+  const validateShift = (record, path) => {
+    validateOptional(record, 'date', validCalendarDate_, path + '.date');
+    validateOptional(record, 'start', validClockTime_, path + '.start');
+    validateOptional(record, 'end', validClockTime_, path + '.end');
+  };
+  const validateAttendance = (record, path) => {
+    validateOptional(record, 'date', validCalendarDate_, path + '.date');
+    validateOptional(record, 'clockIn', validIsoTimestamp_, path + '.clockIn');
+    validateOptional(record, 'clockOut', validIsoTimestamp_, path + '.clockOut');
+    validateOptional(record, 'hours', value => typeof value === 'number' && Number.isFinite(value) && value >= 0, path + '.hours');
+  };
+  const validateLeaveRecord = (record, path) => {
+    validateOptional(record, 'date', validCalendarDate_, path + '.date');
+    validateOptional(record, 'createdAt', validIsoTimestamp_, path + '.createdAt');
+    validateOptional(record, 'requestedAt', validIsoTimestamp_, path + '.requestedAt');
+    validateOptional(record, 'approvedAt', validIsoTimestamp_, path + '.approvedAt');
+  };
+  const validateDateMap = (map, path, itemValidator) => {
+    Object.keys(map || {}).forEach(mapKey => {
+      const month = snapshotMonthFromKey_(mapKey);
+      if (!month) fail(path);
+      map[mapKey].forEach((item, index) => itemValidator(item, month, path + '[' + index + ']', mapKey));
+    });
+  };
+
+  (data.employees || []).forEach((employee, index) => validateEmployee(employee, 'employees[' + index + ']'));
+  (data.shifts || []).forEach((shift, index) => validateShift(shift, 'shifts[' + index + ']'));
+  (data.attendance || []).forEach((record, index) => validateAttendance(record, 'attendance[' + index + ']'));
+  if (data.leaves) {
+    validateDateMap(data.leaves, 'leaves', (date, month, path) => {
+      if (!validCalendarDate_(date) || String(date).slice(0, 7) !== month) fail(path);
+    });
+  }
+  if (data.leaveRequests) {
+    validateDateMap(data.leaveRequests, 'leaveRequests', (record, month, path) => {
+      validateLeaveRecord(record, path);
+      if (hasOwn(record, 'date') && String(record.date).slice(0, 7) !== month) fail(path + '.date');
+    });
+  }
+  (data.leaveHistory || []).forEach((record, index) => validateLeaveRecord(record, 'leaveHistory[' + index + ']'));
+
+  (data.removedEmployees || []).forEach((archive, index) => {
+    const path = 'removedEmployees[' + index + ']';
+    validateOptional(archive, 'removedAt', validIsoTimestamp_, path + '.removedAt');
+    validateOptional(archive, 'removeAfter', validIsoTimestamp_, path + '.removeAfter');
+    if (hasOwn(archive, 'employee')) {
+      if (!isPlainObject_(archive.employee)) fail(path + '.employee');
+      validateEmployee(archive.employee, path + '.employee');
+    }
+    if (hasOwn(archive, 'shifts')) {
+      if (!Array.isArray(archive.shifts) || archive.shifts.some(item => !isPlainObject_(item))) fail(path + '.shifts');
+      archive.shifts.forEach((shift, itemIndex) => validateShift(shift, path + '.shifts[' + itemIndex + ']'));
+    }
+    if (hasOwn(archive, 'attendance')) {
+      if (!Array.isArray(archive.attendance) || archive.attendance.some(item => !isPlainObject_(item))) fail(path + '.attendance');
+      archive.attendance.forEach((record, itemIndex) => validateAttendance(record, path + '.attendance[' + itemIndex + ']'));
+    }
+    if (hasOwn(archive, 'leaves')) {
+      if (!isPlainObject_(archive.leaves) || Object.keys(archive.leaves).some(key => !Array.isArray(archive.leaves[key]))) fail(path + '.leaves');
+      validateDateMap(archive.leaves, path + '.leaves', (date, month, itemPath) => {
+        if (!validCalendarDate_(date) || String(date).slice(0, 7) !== month) fail(itemPath);
+      });
+    }
+  });
+
+  if (data.access) {
+    validateOptional(data.access, 'bossPhone', validPhoneValue_, 'access.bossPhone');
+    validateOptional(data.access, 'bossPinHash', value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value), 'access.bossPinHash');
+    validateOptional(data.access, 'bossPinCredential', validCredential_, 'access.bossPinCredential');
+  }
+
+  const legacyNegativeBudget = legacyNegativeAdjustmentBudget_(options.legacyPayrollAdjustments);
+  if (data.payrollAdjustments) {
+    validateDateMap(data.payrollAdjustments, 'payrollAdjustments', (record, _month, path, mapKey) => {
+      if (!hasOwn(record, 'amount') || !Number.isSafeInteger(record.amount)) fail(path + '.amount');
+      if (record.amount < 0 && options.rejectNewNegativePayrollAdjustments === true
+        && !consumeLegacyNegativeAdjustment_(legacyNegativeBudget, mapKey, record)) fail(path + '.amount');
+      validateOptional(record, 'date', validIsoTimestamp_, path + '.date');
+    });
+  }
+}
+
+function isPlainObject_(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function validPhoneValue_(value) {
+  if (typeof value !== 'string') return false;
+  const pattern = new RegExp('^\\d{' + PHONE_DIGIT_MIN_LENGTH + ',' + PHONE_DIGIT_MAX_LENGTH + '}$');
+  return pattern.test(value) && cleanPhone_(value) === value;
+}
+
+function nonNegativeInteger_(value) {
+  return Number.isSafeInteger(value) && value >= 0;
+}
+
+function validMonthValue_(value) {
+  const match = /^(\d{4})-(\d{2})$/.exec(String(value || ''));
+  return Boolean(match && Number(match[1]) >= 1 && Number(match[2]) >= 1 && Number(match[2]) <= 12);
+}
+
+function validCalendarDate_(value) {
+  const text = String(value || '');
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
+  if (!match || Number(match[1]) < 1) return false;
+  const date = new Date(0);
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCFullYear(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return date.toISOString().slice(0, 10) === text;
+}
+
+function validClockTime_(value) {
+  return typeof value === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+
+function validIsoTimestamp_(value) {
+  const text = String(value || '');
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/.exec(text);
+  if (!match || Number(match[1]) < 1) return false;
+  const date = new Date(0);
+  date.setUTCHours(Number(match[4]), Number(match[5]), Number(match[6]), Number(match[7]));
+  date.setUTCFullYear(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return date.toISOString() === text;
+}
+
+function snapshotMonthFromKey_(value) {
+  const match = /-(\d{4}-\d{2})$/.exec(String(value || ''));
+  return match && validMonthValue_(match[1]) ? match[1] : '';
+}
+
+function legacyNegativeAdjustmentBudget_(adjustments) {
+  const budget = {};
+  if (!isPlainObject_(adjustments)) return budget;
+  Object.keys(adjustments).forEach(mapKey => {
+    if (!Array.isArray(adjustments[mapKey])) return;
+    adjustments[mapKey].forEach(record => {
+      if (!isPlainObject_(record) || !Number.isSafeInteger(record.amount) || record.amount >= 0) return;
+      const signature = mapKey + ':' + JSON.stringify(record);
+      budget[signature] = (budget[signature] || 0) + 1;
+    });
+  });
+  return budget;
+}
+
+function consumeLegacyNegativeAdjustment_(budget, mapKey, record) {
+  const signature = mapKey + ':' + JSON.stringify(record);
+  if (!budget[signature]) return false;
+  budget[signature] -= 1;
+  return true;
+}
+
+function validateBossSaveRequest_(incoming, stored) {
   const code = 'REQUEST_DATA_INVALID';
   const fail = field => {
     throw operationalError_('儲存資料欄位格式不正確：' + String(field || 'root'), code);
@@ -1007,7 +1212,10 @@ function validateBossSaveRequest_(incoming) {
 
   const validated = JSON.parse(JSON.stringify(incoming));
   if (!hasPayrollAdjustments) validated.payrollAdjustments = {};
-  validateSnapshotShape_(validated, code);
+  validateSnapshotShape_(validated, code, {
+    rejectNewNegativePayrollAdjustments: true,
+    legacyPayrollAdjustments: stored && stored.payrollAdjustments
+  });
   if (!hasPayrollAdjustments) delete validated.payrollAdjustments;
   return validated;
 }
@@ -1042,6 +1250,7 @@ function readData_() {
 }
 
 function writeData_(data) {
+  validateSnapshotShape_(data, 'DATA_WRITE_INVALID');
   const sheet = getSheet_();
   sheet.getRange('A1').setValue(JSON.stringify(data));
   sheet.getRange('A2').setValue('最後同步：' + new Date().toLocaleString('zh-TW'));

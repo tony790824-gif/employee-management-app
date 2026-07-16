@@ -149,8 +149,10 @@
   $('#bossLogin').onclick = async () => {
     if (busy) return;
     const number = clean(phone.value);
-    const code = clean(pin.value);
-    if (!number || code.length !== 6) return alert('請輸入電話號碼與 6 位數 PIN。');
+    const code = String(pin.value || '').trim();
+    if (!window.shiftAccountSecurity.isValidPhone(number) || !window.shiftAccountSecurity.isValidPin(code)) {
+      return alert('請輸入有效手機號碼與 6 位數純數字 PIN。');
+    }
     setBusy(true, '正在驗證並載入班表…');
     let entered = false;
     try {
@@ -165,13 +167,18 @@
   $('#employeeLogin').onclick = async () => {
     if (busy) return;
     const number = clean(phone.value);
-    const code = clean(pin.value);
-    if (!number || code.length !== 6) return alert('請輸入電話號碼與 6 位數 PIN。');
+    const code = String(pin.value || '').trim();
+    if (!window.shiftAccountSecurity.isValidPhone(number) || !window.shiftAccountSecurity.isValidPin(code)) {
+      return alert('請輸入有效手機號碼與 6 位數純數字 PIN。');
+    }
     setBusy(true, '正在驗證並載入個人班表…');
     let entered = false;
     try {
       if (!useSheets()) throw new Error('無法連上 Google Sheets，為保護帳號安全，離線時不提供登入。');
       const activationCode = window.shiftAccountSecurity.normalizeActivationCode(activation.value);
+      if (activationCode && !window.shiftAccountSecurity.isValidActivationCode(activationCode)) {
+        throw new Error('一次性啟用碼必須是現行 8 碼大寫英數格式。');
+      }
       const result = await sheetsLogin('employee', number, code, activationCode);
       await enter('employee', result.employeeId);
       entered = true;

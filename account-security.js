@@ -1,6 +1,7 @@
 (() => {
   const ACTIVATION_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   const ACTIVATION_LENGTH = 8;
+  const PIN_LENGTH = 6;
 
   const hashSecret = async value => {
     const digest = await crypto.subtle.digest(
@@ -32,12 +33,23 @@
     .replace(/[^A-Z0-9]/g, '');
 
   const cleanPhone = value => String(value || '').replace(/[^0-9]/g, '');
+  const isValidPhone = value => /^\d{8,15}$/.test(String(value || ''));
+  const isValidPin = value => new RegExp('^\\d{' + PIN_LENGTH + '}$').test(String(value || ''));
+  const isValidActivationCode = value => {
+    const normalized = String(value || '');
+    return normalized.length === ACTIVATION_LENGTH
+      && [...normalized].every(character => ACTIVATION_ALPHABET.includes(character));
+  };
 
   window.shiftAccountSecurity = Object.freeze({
     activationCodeLength: ACTIVATION_LENGTH,
+    pinLength: PIN_LENGTH,
     cleanPhone,
     generateActivationCode,
     hashSecret,
+    isValidActivationCode,
+    isValidPhone,
+    isValidPin,
     normalizeActivationCode
   });
 })();

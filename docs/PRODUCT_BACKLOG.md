@@ -1,5 +1,11 @@
 # 班客邦 Product Backlog
 
+## P0 request 大小與 snapshot 欄位值邊界（2026-07-16）
+
+Apps Script `doPost` 現在會在解析 JSON 與執行 API 前，以 raw form body 的 UTF-8 bytes 檢查 1 MiB 上限；平台未提供非空 raw body 時才以解碼後 `payload` 作 fallback。A1 讀取、老闆儲存、初始化、備份與寫入前共用同一組現有欄位值驗證；錯誤不寫入也不推進 revision。舊缺欄、空薪資調整與原樣負數扣款維持相容，但新負數調整被拒絕。本次只提交來源、測試與文件，未部署 Apps Script。
+
+本項自動測試已完成；受控 staging 部署、Apps Script 真實 transport 驗證與跨裝置 E2E 仍為最高的整體上線閥門。需求禁止正式發布，因此未執行。下一個可獨立處理的程式工作是建立帶版本 schema/migration 與後端 command API 遷移設計，不再擴大 A1 全量 snapshot。
+
 ## P0 老闆 save request 防 mass-assignment／漏欄清空（2026-07-16）
 
 已在既有 `save` action 完成 top-level 欄位白名單、collection／map 基本形狀驗證及缺欄保留。未知欄位、錯誤形狀、array root 與只有 server-managed 欄位的空操作都回 `REQUEST_DATA_INVALID`，不寫入也不推進 revision；`workspace`、`sync`、`access` 仍完全由伺服器管理。明確傳送空集合仍可執行原本的刪除語意。本次只提交來源、測試與文件，未部署 Apps Script。

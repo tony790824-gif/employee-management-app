@@ -1,5 +1,7 @@
 # API 文件（現況與目標）
 
+> 2026-07-16 `doPost` 傳輸層上限為 1 MiB（1,048,576 UTF-8 bytes）；超限在 JSON 解析、schema 驗證與資料寫入前回 `REQUEST_PAYLOAD_TOO_LARGE`。A1 snapshot 及老闆 `save.data` 現對現有電話、credential 表示、薪資／金額、日期／時間執行嚴格值驗證。API action 與成功 response schema 未變，本次未部署 Apps Script。
+
 > 2026-07-16 老闆 `save.data` 現在只接受既有 snapshot 欄位；未知欄位、array root、錯誤 collection／map 形狀或沒有任何可變欄位時回 `REQUEST_DATA_INVALID`。省略可變欄位代表保留伺服器既有值，明確空集合才代表清除。API action 與成功 response schema 未變，本次未部署 Apps Script。
 
 ## 2026-07-15 現行驗證契約
@@ -17,6 +19,7 @@
 - 所有 projection 帶 server-managed `sync.revision`；任何 mutation 成功後回傳更大的 revision。
 - `save.baseRevision` 缺少時回 `REVISION_REQUIRED`；與伺服器不一致或重播時回 `REVISION_CONFLICT`，資料不寫入並附最新安全 boss projection。
 - `save.data` 的允許欄位為 `workspace`、`sync`、`employees`、`shifts`、`attendance`、`leaves`、`leaveRequests`、`leaveHistory`、`removedEmployees`、`access`、`payrollAdjustments`。其中 `workspace`、`sync`、`access` 只為現有完整 projection 相容，伺服器會忽略 client 值並保留 server 值；至少須明確傳送一個可變欄位。
+- 前端原始 PIN 只接受 6 位純數字；電話送往後端前正規化為 8–15 位數字。現行一次性啟用碼為既有 8 碼大寫英數字母表，不是純數字；為避免既有尚未啟用帳號失效，本 Sprint 保留正式使用中的規格。
 
 成功登入範例：
 
@@ -36,7 +39,9 @@
 
 目前 API 為 Google Apps Script 過渡後端。它已有短效 server session 與明確單一工作區邊界，但仍不符合正式多租戶、正式 IAM 與關聯式資料庫標準。Endpoint 由 `google-sheets-config.js` 指定，前端透過隱藏 iframe/form POST `payload`。
 
-前端已使用 `state-store.js` 安全解析本機主要 state；Apps Script 讀取邊界會拒絕損壞 JSON、非 object root、錯誤的 top-level collection／map 形狀與無效 revision；老闆 `save` 另有 top-level request allowlist 與基本形狀驗證。這仍**沒有完成帶版本的完整欄位值驗證、request size limit、正式 authorization 或關聯式 transaction**。
+`doPost` 優先以 Apps Script `e.postData.contents` 的 UTF-8 byte 長度作 1 MiB 上限，因此量到的是 URL-encoded form transport body，可能比解碼後 JSON 更大，屬保守拒絕。只在 Apps Script 未提供非空 raw body 時，才 fallback 計算已解碼 `payload` 的 UTF-8 bytes；該 fallback 無法完全還原傳輸層大小，是平台 API 限制。
+
+前端已使用 `state-store.js` 安全解析本機主要 state；Apps Script 讀取邊界會拒絕損壞 JSON、非 object root、錯誤的 top-level collection／map 形狀、無效 revision，以及本 Sprint 要求的電話、credential 表示、薪資／金額、日期／時間值；老闆 `save` 另有 top-level request allowlist 與 1 MiB transport boundary。這仍**不是帶 schema version 的 migration system、正式 authorization 或關聯式 transaction**。
 
 前端在 API 登入成功前不載入管理功能。Google Sheets 回傳成功後才寫入本機 state 並啟動 APP；員工登入若缺少 `employeeId` 會拒絕進入。員工已採 action-level authorization，session 與資料已綁定 server workspace；正式版仍須遷移到多租戶資料列授權與正式資料庫。
 
@@ -72,7 +77,7 @@
 }
 ```
 
-錯誤回應已增加過渡期 domain code：`{ "ok": false, "error": "message", "code": "..." }`。目前啟用流程使用 `OWNER_NOT_CONFIGURED`、`BOSS_NOT_AUTHORIZED`、`ACTIVATION_REQUIRED`、`ACTIVATION_INVALID`、`ACTIVATION_NOT_CONFIGURED`；Apps Script credential pepper 格式損壞時回 `CREDENTIAL_CONFIG_INVALID`；主資料 JSON root 或已知 snapshot 欄位形狀錯誤時回 `DATA_SOURCE_INVALID`，且不寫回 Sheet。其餘錯誤暫用 `REQUEST_FAILED`。HTTP status 與完整 error catalog 仍待正式 API。
+錯誤回應已增加過渡期 domain code：`{ "ok": false, "error": "message", "code": "..." }`。目前啟用流程使用 `OWNER_NOT_CONFIGURED`、`BOSS_NOT_AUTHORIZED`、`ACTIVATION_REQUIRED`、`ACTIVATION_INVALID`、`ACTIVATION_NOT_CONFIGURED`；Apps Script credential pepper 格式損壞時回 `CREDENTIAL_CONFIG_INVALID`；傳輸層超過 1 MiB 回 `REQUEST_PAYLOAD_TOO_LARGE`；主資料值／形狀錯誤回 `DATA_SOURCE_INVALID`，老闆新儲存值錯誤回 `REQUEST_DATA_INVALID`，寫入前最後防線錯誤回 `DATA_WRITE_INVALID`。這些失敗都不寫回 Sheet。HTTP status 與完整 error catalog 仍待正式 API。
 
 ### 現行授權範圍
 
@@ -96,7 +101,7 @@
 - `employeeLogin/pull` 全公司資料外洩：**2026-07-15 已止血**，目前只回本人 projection。
 - 員工以 `save` 覆寫公司資料：**2026-07-15 已止血**，目前伺服器拒絕員工全量儲存。
 - 老闆 `save` 仍以 snapshot 為主，但 stale／replay 已由全域 revision 拒絕，未知 top-level 欄位與錯誤 collection／map 形狀會 fail closed；漏傳可變欄位不再清空既有資料。
-- 主資料無效 JSON／非 object root 已 fail closed；仍無正式 tenant row isolation、完整欄位值 schema、size limit、command idempotency 或 row revision。
+- 主資料無效 JSON／非 object root 已 fail closed，且現有關鍵值與 1 MiB transport 已受防護；仍無正式 tenant row isolation、帶版本完整 schema/migration、command idempotency 或 row revision。
 - Apps Script origin hard-code 單一 Netlify domain。
 
 ## 目標 API 原則
@@ -106,7 +111,7 @@
 - Scoped query：員工只能取得本人資料。
 - Command API：例如 `create-shift`、`save-leave-selection`、`clock-in`、`clock-out`、`approve-hours`，禁止全量 snapshot save。
 - Mutation 具 idempotency key 與 resource revision；衝突回 409。
-- JSON schema validation、field allowlist、request size limit、structured error。
+- 帶版本 JSON schema/migration、完整 field constraint、HTTP status 與 structured error catalog。
 - Structured logging、request ID、latency/error metrics、audit event。
 
 正式 endpoint、schema 與 error catalog 將在 Sprint 2–3 ADR 後定案。

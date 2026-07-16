@@ -121,7 +121,11 @@
         const input = document.createElement('input');
         input.name = 'payload';
         input.value = JSON.stringify({ requestId, request });
+        const requestIdInput = document.createElement('input');
+        requestIdInput.name = 'requestId';
+        requestIdInput.value = requestId;
         form.appendChild(input);
+        form.appendChild(requestIdInput);
         document.body.appendChild(form);
         form.submit();
         setTimeout(() => { form.remove(); frame.remove(); }, 30000);
@@ -137,6 +141,13 @@
   }
 
   async function login(role, phone, pin, initialData, activationCode = '') {
+    if (!window.shiftAccountSecurity?.isValidPhone(String(phone || ''))
+      || !window.shiftAccountSecurity?.isValidPin(String(pin || ''))) {
+      throw new Error('帳號或 PIN 格式不正確。');
+    }
+    if (activationCode && !window.shiftAccountSecurity.isValidActivationCode(String(activationCode))) {
+      throw new Error('一次性啟用碼格式不正確。');
+    }
     const pinHash = await hash(pin);
     const action = role === 'boss' ? 'bossLogin' : 'employeeLogin';
     const activationHash = activationCode ? await hash(activationCode) : '';

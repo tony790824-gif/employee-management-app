@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-16 request 大小與 A1 欄位值驗證
+
+- `doPost` 現在以 UTF-8 byte 數拒絕超過 1 MiB 的 request，且在 JSON parse、API、lock、Sheet 讀寫前立即停止；錯誤沿用 `{ ok, error, code }` 並保留 `requestId`。
+- A1 讀取、老闆 `save`、第一次初始化、備份與寫入前現共用電話、credential 表示、薪資／金額、日期／時間值驗證。非法儲存不寫入、不部分 merge、不推進 revision。
+- 舊資料缺欄、空薪資調整及原樣舊負數扣款維持相容；新負數或複製扣款被拒絕。現行啟用碼是既有 8 碼大寫英數，與「純數字」新描述不一致；本次保留正式使用中規格，列為技術債。
+- 13 組 P0/state/cleanup 回歸、品質檢查與 25 檔 build 通過。未部署 Apps Script，未作 staging/actual-device E2E，因此仍不適合正式上線。
+- **功能實作估值：約 68%；整體商業上線完成度：53%（前次 52%）**。上調 1 個百分點是因為又封堵一組 P0 傳輸／資料完整性風險並有自動證據；正式 IAM、多租戶關聯式資料庫、staging、跨裝置 E2E、負載／DR 仍大幅限制總完成度。
+
 ## 2026-07-16 老闆 save request 邊界防護
 
 - 已封堵老闆 `save` 的 top-level mass-assignment 與漏欄清空：未知欄位、錯誤 collection／map 形狀、array root、只有 server-managed 欄位的空操作會以 `REQUEST_DATA_INVALID` 拒絕且不寫入。
@@ -53,8 +61,8 @@
 
 ## 結論摘要
 
-- **整體商業上線完成率：52%**（功能實作估值約 67%）
-- **Project Health Score：69 / 100**
+- **整體商業上線完成率：53%**（功能實作估值約 68%）
+- **Project Health Score：70 / 100**
 - **正式上線：No**
 - **目前型態：** 單頁 PWA（HTML/CSS/Vanilla JavaScript）＋ Google Apps Script；不是 Flutter 專案。
 - **最大阻斷：** 員工越權讀寫已完成第一階段止血；單一 JSON 覆寫式同步、沒有多租戶隔離、PIN／Apps Script session 不可視為正式身分驗證，以及缺少 CI、正式資料庫、稽核與企業級不可變備份仍阻擋上線。
@@ -67,9 +75,9 @@
 | 排班／休假／出勤 | 52% | 基本 CRUD/點選存在，資料規則與同步尚未可靠 |
 | 薪資 | 35% | 只有試算，排班工時與實際出勤口徑矛盾 |
 | 登入與權限 | 60% | 已完成登入前 DOM 隔離、本人資料投影、action 授權、短效 session、限流、撤銷、單一 workspace 邊界與過渡期 salted credential；仍缺正式 IAM、MFA／恢復、audit 與多租戶資料列授權 |
-| 雲端同步 | 42% | 員工命令不再全量覆寫；老闆 snapshot 已有 optimistic concurrency，但仍缺 command API 與正式資料庫 |
-| 資料庫 | 18% | 單一 Sheet 儲存格 JSON，不具正式資料庫能力 |
-| QA／自動化 | 44% | 已有十二組 P0/state/cleanup 回歸與老闆／員工瀏覽器 smoke；仍缺正式環境 E2E、弱網與負載測試 |
+| 雲端同步 | 44% | 員工命令不再全量覆寫；老闆 snapshot 已有 optimistic concurrency、request 大小與關鍵值驗證，但仍缺 command API 與正式資料庫 |
+| 資料庫 | 20% | 關鍵 A1 欄位已有寫入前值驗證；仍是單一 Sheet 儲存格 JSON，不具正式資料庫能力 |
+| QA／自動化 | 46% | 已有十三組 P0/state/cleanup 回歸與老闆／員工瀏覽器 smoke；仍缺正式環境 E2E、弱網與負載測試 |
 | DevOps／營運 | 35% | 已有白名單 build、私人復原包、readiness 與 release gate；仍是手動部署，缺 CI、staging、監控、不可變備份與定期演練 |
 | 文件與治理 | 68% | 已建立 Constitution、README、API、DB、Change Log、ADR、Backlog、Runbook、Release Checklist 與功能 review；仍需正式威脅模型與演練證據 |
 
@@ -116,7 +124,7 @@
 4. ~~第一個知道員工電話的人可自行認領 PIN；空白雲端的第一個呼叫者也可認領老闆帳號。~~ **2026-07-15 已止血：老闆第一次初始化須符合 Apps Script 預登記電話；員工以 8 碼一次性啟用碼設定第一組 PIN。**
 5. ~~資料、session 與回應沒有 workspace 邊界。~~ **2026-07-15 已建立 server-generated 單一 workspace 綁定；同一部署仍無法服務多家公司，正式 row-level tenant isolation 尚未完成。**
 6. ~~全量 JSON snapshot 以最後寫入者覆蓋；多裝置同時操作會靜默遺失資料。~~ **2026-07-15 已加入 server revision／compare-and-swap；衝突會拒絕且保留本機修改。全量 snapshot 架構仍待取代。**
-6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；同日補上 top-level collection／map、巢狀記錄、revision 形狀驗證，以及老闆 `save` request allowlist／漏欄保留。帶版本的完整欄位值 schema、size limit 與 migration 仍待 Sprint 3。**
+6a. ~~Google Sheet A1 損壞或根節點錯誤時，一般 API 會當成空資料繼續執行，可能覆蓋救援來源。~~ **2026-07-16 已改為 `DATA_SOURCE_INVALID` fail closed 並保留 A1；同日補上 collection／map 形狀、老闆 `save` allowlist／漏欄保留、1 MiB request 邊界與本 Sprint 指定的關鍵值驗證。帶版本的完整 schema/migration 仍待 Sprint 3。**
 
 ### High / P1
 
@@ -227,7 +235,7 @@
 
 - Google Sheet `_班表APP資料!A1` 儲存整份 JSON；沒有 table、index、foreign key、unique constraint。
 - Apps Script lock＋全域 revision 已阻止 stale snapshot overwrite；仍沒有 relational transaction boundary。
-- 已拒絕損壞 JSON／非 object root；仍沒有正式欄位 schema validation、migration、row revision、soft delete policy、audit log。
+- 已拒絕損壞 JSON／非 object root 與本 Sprint 指定的非法關鍵值；仍沒有帶版本完整 schema、migration、row revision、soft delete policy、audit log。
 - 已加入不可由 client 修改的單一 `workspace.id`；仍沒有正式關聯式 `workspace_id` 外鍵與多租戶資料列隔離。
 - 電話沒有 canonical unique index。
 - 員工、班次、出勤、休假、薪資缺 referential integrity。
@@ -238,7 +246,7 @@
 ## 10. API 問題
 
 - API 已由四個 action 增加三個員工明確命令，但仍沒有版本、正式資源模型與標準錯誤碼。
-- 主資料讀取已有根節點防護，老闆 `save` 已有 top-level 白名單與基本 collection／map 形狀驗證；request/response 仍沒有完整欄位值 schema 與大小限制。
+- 主資料讀取已有根節點防護，老闆 `save` 已有 top-level 白名單、collection／map 形狀、關鍵值與 1 MiB request 限制；request/response 仍沒有帶版本完整 schema、HTTP status 與 command idempotency。
 - 已有全域 snapshot revision 與 conflict response；仍沒有 command idempotency key、row ETag 與 HTTP 409 transport。
 - ~~沒有正式 session token，直接重播 `phone + pinHash`。~~ **已改為 8 小時 server session；正式 refresh/device management 仍未完成。**
 - ~~沒有 rate limit、lockout。~~ **已加入每電話失敗限流與暫時鎖定；仍缺 IP/device risk 與 request signing。**

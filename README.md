@@ -1,5 +1,7 @@
 # 班客邦
 
+> 2026-07-16 P0 request/value schema 更新：Apps Script `doPost` 以 UTF-8 byte 數限制 1 MiB，超限在 JSON 解析與資料寫入前拒絕；A1 snapshot 現驗證電話、過渡 credential 表示、薪資／金額、日期與時間。舊資料缺欄、空薪資調整及原樣舊扣款維持相容；新負數調整會被拒絕。本次未部署 Apps Script。
+
 > 2026-07-16 P0 儲存邊界更新：老闆 `save` 只接受既有 snapshot 欄位與正確 collection／map 形狀；漏傳欄位會保留雲端既有值，明確空集合仍可刪除，未知或錯誤欄位以 `REQUEST_DATA_INVALID` 拒絕。本次未部署 Apps Script。
 
 > 2026-07-16 驗收補充：修正老闆／員工月曆在手機寬度下的橫向溢位，加入防回歸檢查；桌機、390×844 雙角色與完整 release gate 均通過。詳見 [Project Cleanup Acceptance](docs/reviews/PROJECT_CLEANUP_ACCEPTANCE.md)。
@@ -31,6 +33,7 @@
 - [P0 Credential Hardening Review](docs/reviews/P0_CREDENTIAL_HARDENING_REVIEW.md)
 - [P0 Backup & Recovery Review](docs/reviews/P0_BACKUP_RECOVERY_REVIEW.md)
 - [P0 Boss Save Request Review](docs/reviews/P0_BOSS_SAVE_REQUEST_REVIEW.md)
+- [P0 Request & Snapshot Schema Review](docs/reviews/P0_SCHEMA_BOUNDARY_REVIEW.md)
 - [營運 Runbook](docs/RUNBOOK.md)
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Account Activation ADR](docs/adr/0004-transitional-account-activation.md)
@@ -50,9 +53,9 @@ pnpm release:check
 ```
 
 - `npm run check`：檢查 JavaScript／Apps Script 語法、manifest、HTML 資產引用與發布白名單。
-- `npm test`：執行目前已建立的 P0 防回歸檢查，包括員工雲端欄位隔離、越權拒絕、本人排假／打卡、短效 session、工作區竄改、stored XSS、credential migration、老闆儲存白名單與雲端損壞資料防覆寫。
+- `npm test`：執行目前已建立的 13 組 P0/state/cleanup 防回歸檢查，包括員工雲端欄位隔離、越權拒絕、本人排假／打卡、短效 session、工作區竄改、stored XSS、credential migration、儲存白名單、1 MiB request 邊界與 snapshot 欄位值驗證。
 - `npm run build`：建立乾淨的 `dist/` 靜態部署輸出，不包含 ZIP、後端原始碼或未啟用雲端設定。
-- `pnpm release:check`：執行全部檢查、12 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
+- `pnpm release:check`：執行全部檢查、13 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
 
 本機預覽可用靜態 HTTP server 開啟 `local-preview.html`。員工介面無限更新與登入前敏感 DOM 曝露已修復；其餘 P0 問題仍列於健康報告。
 

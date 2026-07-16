@@ -1,5 +1,20 @@
 # Change Log
 
+## 2026-07-16 — P0 request size and snapshot value schema
+
+### Fixed
+
+- Apps Script `doPost` 在 JSON parse 與 API 前以 UTF-8 bytes 限制 1 MiB raw request body；超限回 `REQUEST_PAYLOAD_TOO_LARGE` 並保留前端 `requestId`。
+- A1 snapshot 現共用電話、credential 表示、員工時薪、薪資調整、日期與時間值驗證；老闆儲存錯誤回 `REQUEST_DATA_INVALID`，最後寫入防線錯誤回 `DATA_WRITE_INVALID`。
+- 前端登入不再將 PIN 的非數字字元自動刪除後接受；電話、6 位純數字 PIN 與既有 8 碼大寫英數啟用碼在雲端登入前已檢查。
+- 舊資料缺欄、空薪資調整與原樣舊負數扣款維持相容；新建或複製負數調整被拒絕。
+- Service Worker cache 升至 v44，確保已安裝 PWA 在未來受控發布後取得新登入驗證邏輯。
+
+### Verified
+
+- 新增 request 小於／等於／超過 1 MiB、多位元 UTF-8、電話／PIN／啟用碼、金額、日期／時間、舊資料、空薪資調整、負數舊資料及失敗不寫入測試。
+- 13 組 P0/state/cleanup 回歸、品質檢查與 25 檔 build 全部通過。本次未新增 A1 欄位，也未部署正式版本；整體商業上線完成度由 52% 調整為 53%。
+
 ## 2026-07-16 — P0 boss save request boundary
 
 ### Fixed

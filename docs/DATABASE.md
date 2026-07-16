@@ -1,5 +1,7 @@
 # Database 文件（現況與目標）
 
+> 2026-07-16 本 Sprint 沒有新增、刪除或改名 A1 snapshot 欄位；只對既有電話、credential 表示、員工時薪、薪資調整、日期與時間建立寫入前值驗證。舊資料缺欄、`payrollAdjustments` 缺少／`null`／空陣列維持相容；舊負數扣款可讀且可原樣保存，但不得新增或複製。
+
 > 2026-07-16 本次未新增、修改或刪除 snapshot 欄位／資料表；只強化老闆 `save` 的寫入邊界。省略欄位會從既有雲端 snapshot 保留，client 明確傳送合法空集合才會清除該集合。
 
 > 2026-07-16 專案整理未變更本機 state 或 Google Sheets snapshot schema；未啟用 Firebase／Supabase 草稿已移除。
@@ -43,7 +45,7 @@ Google Apps Script 取得 active spreadsheet，建立隱藏工作表 `_班表APP
 - `A1`：整份應用資料的 JSON 字串。
 - `A2`：最後同步時間文字。
 
-一般 API 讀取 A1 時要求根節點為有效 JSON object，並檢查已知 array、object map、巢狀記錄及 `sync.revision` 的基本形狀；錯誤會回 `DATA_SOURCE_INVALID`，不執行登入、同步、清理或寫回。老闆寫入另要求 top-level 欄位白名單與相同的基本形狀，錯誤回 `REQUEST_DATA_INVALID`；合併以既有 snapshot 為底，只有 request 明確帶入的可變欄位會被取代。空白 A1 仍視為尚未初始化的新資料表，缺少欄位的舊資料維持向後相容。這是資料覆寫防護，仍不是帶版本的完整 schema validation、欄位值驗證或 migration。
+一般 API 讀取 A1 時要求根節點為有效 JSON object，並檢查已知 array、object map、巢狀記錄及 `sync.revision` 的基本形狀；錯誤會回 `DATA_SOURCE_INVALID`，不執行登入、同步、清理或寫回。老闆寫入另要求 top-level 欄位白名單與相同形狀，錯誤回 `REQUEST_DATA_INVALID`；合併以既有 snapshot 為底，只有 request 明確帶入的可變欄位會被取代。電話只接受 8–15 位數字；credential 物件與舊 64-hex prehash 必須符合現行表示；`employees[].rate` 與新的 `payrollAdjustments[].amount` 必須為 safe integer 且非負；日期只接受 `YYYY-MM-DD`、班次時間只接受 `HH:mm`、timestamp 只接受精確 UTC ISO `YYYY-MM-DDTHH:mm:ss.sssZ`。寫入 A1 前會再驗證一次。空白 A1 仍視為尚未初始化的新資料表，缺少欄位的舊資料維持向後相容。這是過渡期資料覆寫防護，仍不是帶 schema version 的 migration system。
 
 資料大致包含：
 
