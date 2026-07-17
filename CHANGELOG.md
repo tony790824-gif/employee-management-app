@@ -80,6 +80,21 @@
 - 新增 v0 資料自動遷移至 v1、非法版本拒絕、`ensureSync_` 與 `bumpRevision_` 保留版本號，以及前端 state 遷移回歸測試。
 - 全部 14 組回歸測試通過。整體商業上線完成度由 53% 調整為 54%。
 
+## 2026-07-17 — P0 controlled Staging acceptance
+
+### Fixed
+
+- 修正 Apps Script 在全域 lock 內為每次登入執行 4096 次 HMAC，導致請求逾時並阻塞其他操作的 P0 問題。
+- 新建 credential 改為版本化 `hmac-sha256-v2`：每筆獨立 salt、server-only pepper、domain separation 與固定成本；既有 `iterated-hmac-sha256-v1` 在成功登入後自動遷移。
+- malformed scheme／iterations 維持 fail closed；未知帳號仍執行相同 v2 verifier 路徑。
+
+### Staging verification
+
+- 建立與正式資料隔離的 Staging Google Sheet、Apps Script 專案及 Web App 部署；正式站未發布。
+- 線上驗收通過老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、老闆同步與 session 撤銷。
+- 私人備份、checksum 驗證、readiness、實際 restore、restore 後 readiness 皆通過；Staging 已回復乾淨 revision 0。
+- 品質檢查、13 組既有 P0/state/cleanup 回歸與 25 個發布資產 build 通過；origin/main 另新增的 migration 測試由完整發布閘門一併驗證。
+
 ## 2026-07-16 — P0 request size and snapshot value schema
 
 ### Fixed
@@ -198,7 +213,7 @@
 
 ### 安全修正
 
-- Google Sheets 不再為新帳號保存快速、無 salt 的 PIN／啟用碼 SHA-256；改為每筆獨立 salt、4096 次 HMAC-SHA256 與 Apps Script server-only pepper 的版本化 credential。
+- Google Sheets 當時不再為新帳號保存快速、無 salt 的 PIN／啟用碼 SHA-256，改為每筆獨立 salt、4096 次 HMAC-SHA256 與 Apps Script server-only pepper；此歷史 v1 方案已由 2026-07-17 的 v2 runtime 修正取代。
 - 舊 `bossPinHash`、`pinHash`、`activationCodeHash` 在正確登入／啟用時自動升級，不要求使用者重設 PIN。
 - 相同 PIN 會產生不同 salt/hash；未知電話與錯誤電話執行 dummy KDF，credential 比對採固定流程。
 - malformed prehash、credential 或 pepper 一律 fail closed；review 發現的 pepper 靜默輪替風險已修正為 `CREDENTIAL_CONFIG_INVALID`。

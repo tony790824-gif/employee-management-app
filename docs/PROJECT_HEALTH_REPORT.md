@@ -44,6 +44,18 @@
 
 ## 2026-07-16 — request 大小與 A1 欄位值驗證
 
+## 2026-07-17 受控 Staging 驗收
+
+- 已建立與正式資料隔離的 Staging Google Sheet、Apps Script 專案與 Web App 部署；部署來源為 commit `7c9b687` 加上本次驗收中發現的 credential runtime 修正。
+- 線上 API 驗收通過：老闆登入、員工新增與首次啟用、員工登入、排班、排假、上下班打卡、老闆同步、revision conflict、登出後 session invalidation。
+- `createOperationalBackup`、`verifyLatestOperationalBackup`、`runReleaseReadinessCheck`、實際 restore 與 restore 後 readiness 均通過；Staging 最後回復為乾淨 revision 0，且 restore 會撤銷所有舊 session。
+- Staging 實測找到 P0 效能問題：Apps Script 在全域 ScriptLock 內執行 4096 次 HMAC 會讓登入逾時並阻塞所有請求。新 credential 改為有 salt、server-only pepper、domain separation 的固定成本 `hmac-sha256-v2`；舊 v1 credential 仍可驗證並在成功登入後遷移。
+- 限制：此次 UI 並未建立獨立的 Staging 前端設定，線上驗收是直接呼叫隔離後端；實際 8 小時 TTL 未等待，已驗證登出與還原撤銷，TTL 邏輯由自動測試覆蓋。真實手機／平板跨裝置 UI E2E 仍未完成。
+- **此段原始估值：功能實作約 70%；商業上線完成度 55%（以 commit `7c9b687` 的 53% 基線計算）**。這是 Staging 驗收當時的歷史估值，不覆蓋 origin/main 後續完成資料庫／API 設計後記錄的 62%。最新整體文件估值仍為 62%，且受控後端驗收與 DR 演練已有實證；正式 IAM、多租戶關聯式資料庫實作、Staging 前端、真實裝置 E2E、監控與 CI/CD 仍是上線阻擋。
+- **是否適合正式上線：No**。
+
+## 2026-07-16 request 大小與 A1 欄位值驗證
+
 - `doPost` 現在以 UTF-8 byte 數拒絕超過 1 MiB 的 request，且在 JSON parse、API、lock、Sheet 讀寫前立即停止；錯誤沿用 `{ ok, error, code }` 並保留 `requestId`。
 - A1 讀取、老闆 `save`、第一次初始化、備份與寫入前現共用電話、credential 表示、薪資／金額、日期／時間值驗證。非法儲存不寫入、不部分 merge、不推進 revision。
 - 舊資料缺欄、空薪資調整及原樣舊負數扣款維持相容；新負數或複製扣款被拒絕。現行啟用碼是既有 8 碼大寫英數，與「純數字」新描述不一致；本次保留正式使用中規格，列為技術債。

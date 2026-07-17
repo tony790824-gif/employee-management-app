@@ -1,5 +1,7 @@
 # P0 Credential Hardening — Architecture Review
 
+> 2026-07-17 修訂：原 review 對 4096 次 Apps Script HMAC 的效能判斷已被受控 Staging 實測推翻。該路徑在全域 lock 內約六分鐘後逾時並阻塞其他請求。新 credential 已改為固定成本 `hmac-sha256-v2`；舊 v1 僅供相容讀取並於成功登入後遷移。安全取捨與正式 IAM 要求見 [ADR 0009](../adr/0009-salted-pin-credentials.md) 及 [Staging Review](P0_STAGING_READINESS_REVIEW.md)。
+
 日期：2026-07-15
 
 ## A — CTO

@@ -1,5 +1,7 @@
 # 班客邦
 
+> 2026-07-17 P0 Staging 驗收：已建立與正式資料隔離的 Google Sheet、Apps Script 專案及 Web App 部署，完成老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、session 撤銷及備份還原演練。Staging 實測發現 Apps Script 在全域 lock 內執行 4096 次 HMAC 會逾時，已改為有版本、固定成本的 `hmac-sha256-v2` 過渡 credential；既有 v1 成功登入後自動遷移。正式站未發布，產品仍不可正式上線。
+
 > 2026-07-16 P0 request/value schema 更新：Apps Script `doPost` 以 UTF-8 byte 數限制 1 MiB，超限在 JSON 解析與資料寫入前拒絕；A1 snapshot 現驗證電話、過渡 credential 表示、薪資／金額、日期與時間。舊資料缺欄、空薪資調整及原樣舊扣款維持相容；新負數調整會被拒絕。本次未部署 Apps Script。
 
 > 2026-07-16 P0 儲存邊界更新：老闆 `save` 只接受既有 snapshot 欄位與正確 collection／map 形狀；漏傳欄位會保留雲端既有值，明確空集合仍可刪除，未知或錯誤欄位以 `REQUEST_DATA_INVALID` 拒絕。本次未部署 Apps Script。
@@ -34,6 +36,7 @@
 - [P0 Backup & Recovery Review](docs/reviews/P0_BACKUP_RECOVERY_REVIEW.md)
 - [P0 Boss Save Request Review](docs/reviews/P0_BOSS_SAVE_REQUEST_REVIEW.md)
 - [P0 Request & Snapshot Schema Review](docs/reviews/P0_SCHEMA_BOUNDARY_REVIEW.md)
+- [P0 Controlled Staging Review](docs/reviews/P0_STAGING_READINESS_REVIEW.md)
 - [營運 Runbook](docs/RUNBOOK.md)
 - [Release Checklist](docs/RELEASE_CHECKLIST.md)
 - [Account Activation ADR](docs/adr/0004-transitional-account-activation.md)

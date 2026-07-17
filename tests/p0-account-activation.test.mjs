@@ -76,7 +76,7 @@ assert.equal(writes, 0);
 result = backendContext.api({ action: 'bossLogin', phone: '0911-111-111', pinHash: bossPinHash, initialData: emptyState() });
 assert.equal(result.ok, true, '預先登記的電話可以完成第一次老闆初始化');
 assert.equal(stored.access.bossPhone, '0911111111');
-assert.equal(stored.access.bossPinCredential.scheme, 'iterated-hmac-sha256-v1');
+assert.equal(stored.access.bossPinCredential.scheme, 'hmac-sha256-v2');
 assert.notEqual(stored.access.bossPinCredential.hash, bossPinHash, '伺服器不得直接保存瀏覽器的快速 PIN hash');
 assert.equal('bossPinHash' in stored.access, false, '新老闆憑證不得再使用舊欄位');
 assert.equal('bossPinHash' in result.data.access, false, '老闆 PIN hash 不得回傳瀏覽器');
@@ -102,7 +102,7 @@ assert.deepEqual(stored, beforeActivation, '錯誤啟用碼不得改動帳號');
 
 result = backendContext.api({ action: 'employeeLogin', phone: '0922222222', pinHash: newPinHash, activationHash });
 assert.equal(result.ok, true, '正確的一次性啟用碼可讓員工自行設定 PIN');
-assert.equal(stored.employees[0].pinCredential.scheme, 'iterated-hmac-sha256-v1');
+assert.equal(stored.employees[0].pinCredential.scheme, 'hmac-sha256-v2');
 assert.notEqual(stored.employees[0].pinCredential.hash, newPinHash);
 assert.equal('pinHash' in stored.employees[0], false);
 assert.equal('activationCodeHash' in stored.employees[0], false, '啟用後必須立即銷毀一次性啟用碼');

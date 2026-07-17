@@ -85,7 +85,7 @@ assert.equal(accepted.data.sync.revision, 4);
 assert.equal(stored.employees[0].role, '店長');
 assert.deepEqual(stored.leaves['employee-1-2026-07'], ['2026-07-20']);
 assert.equal(stored.shifts.length, 1);
-assert.equal(stored.employees[0].pinCredential.scheme, 'iterated-hmac-sha256-v1', '版本控制不得破壞伺服器 credential');
+assert.equal(stored.employees[0].pinCredential.scheme, 'hmac-sha256-v2', '版本控制不得破壞伺服器 credential');
 
 const replay = context.api({
   action: 'save', sessionToken: bossLogin.sessionToken,

@@ -11,8 +11,13 @@ const AUTH_FAILURE_LIMIT = 5;
 const MAX_ACTIVE_SESSIONS = 100;
 const MAX_AUTH_THROTTLE_RECORDS = 200;
 const CREDENTIAL_PEPPER_PROPERTY_KEY = 'SHIFT_APP_CREDENTIAL_PEPPER';
-const CREDENTIAL_SCHEME = 'iterated-hmac-sha256-v1';
-const CREDENTIAL_ITERATIONS = 4096;
+// Apps Script executes repeated HMAC calls very slowly. Keep the legacy scheme
+// readable for existing records, but create a bounded single-HMAC credential
+// for this transitional backend. A dedicated identity provider remains the
+// required long-term replacement.
+const CREDENTIAL_SCHEME = 'hmac-sha256-v2';
+const LEGACY_CREDENTIAL_SCHEME = 'iterated-hmac-sha256-v1';
+const CREDENTIAL_ITERATIONS = 1;
 const CREDENTIAL_SALT_HEX_LENGTH = 32;
 const RECOVERY_FORMAT = 'banke-recovery-v1';
 const RECOVERY_FOLDER_NAME = '班客邦系統復原備份';
@@ -581,7 +586,7 @@ function createCredential_(prehash) {
     scheme: CREDENTIAL_SCHEME,
     salt: salt,
     iterations: CREDENTIAL_ITERATIONS,
-    hash: deriveCredential_(normalized, salt, CREDENTIAL_ITERATIONS)
+    hash: deriveCredential_(normalized, salt, CREDENTIAL_ITERATIONS, CREDENTIAL_SCHEME)
   };
 }
 function verifyCredential_(record, credentialKey, legacyKey, prehash) {
@@ -590,8 +595,13 @@ function verifyCredential_(record, credentialKey, legacyKey, prehash) {
   if (record[credentialKey]) {
     const credential = record[credentialKey];
     if (!validCredential_(credential)) return { ok: false, migrated: false };
-    const candidate = deriveCredential_(normalized, credential.salt, credential.iterations);
-    return { ok: constantTimeEqual_(credential.hash, candidate), migrated: false };
+    const candidate = deriveCredential_(normalized, credential.salt, credential.iterations, credential.scheme);
+    if (!constantTimeEqual_(credential.hash, candidate)) return { ok: false, migrated: false };
+    if (credential.scheme === LEGACY_CREDENTIAL_SCHEME) {
+      record[credentialKey] = createCredential_(normalized);
+      return { ok: true, migrated: true };
+    }
+    return { ok: true, migrated: false };
   }
   const legacy = normalizePrehash_(record[legacyKey]);
   if (!legacy || !constantTimeEqual_(legacy, normalized)) return { ok: false, migrated: false };
@@ -602,16 +612,26 @@ function verifyCredential_(record, credentialKey, legacyKey, prehash) {
 function validCredential_(credential) {
   return Boolean(
     credential && typeof credential === 'object' && !Array.isArray(credential)
-    && credential.scheme === CREDENTIAL_SCHEME
     && /^[a-f0-9]{32}$/.test(String(credential.salt || ''))
     && Number.isInteger(credential.iterations)
-    && credential.iterations >= 1024
-    && credential.iterations <= 10000
+    && (
+      (credential.scheme === CREDENTIAL_SCHEME && credential.iterations === CREDENTIAL_ITERATIONS)
+      || (credential.scheme === LEGACY_CREDENTIAL_SCHEME
+        && credential.iterations >= 1024
+        && credential.iterations <= 10000)
+    )
     && /^[a-f0-9]{64}$/.test(String(credential.hash || ''))
   );
 }
-function deriveCredential_(prehash, salt, iterations) {
+function deriveCredential_(prehash, salt, iterations, scheme) {
   const pepper = credentialPepper_();
+  const selectedScheme = scheme || CREDENTIAL_SCHEME;
+  if (selectedScheme === CREDENTIAL_SCHEME) {
+    return hmacSha256_('v2:' + String(prehash) + ':' + String(salt), pepper);
+  }
+  if (selectedScheme !== LEGACY_CREDENTIAL_SCHEME) {
+    throw new Error('Unsupported credential scheme.');
+  }
   let result = hmacSha256_(String(prehash) + ':' + String(salt), pepper);
   for (let index = 1; index < iterations; index += 1) {
     result = hmacSha256_(result + ':' + String(salt) + ':' + index, pepper);
@@ -633,7 +653,7 @@ function credentialPepper_() {
 }
 function burnCredentialCheck_(prehash) {
   if (!normalizePrehash_(prehash)) return;
-  deriveCredential_(prehash, '00000000000000000000000000000000', CREDENTIAL_ITERATIONS);
+  deriveCredential_(prehash, '00000000000000000000000000000000', CREDENTIAL_ITERATIONS, CREDENTIAL_SCHEME);
 }
 function constantTimeEqual_(leftValue, rightValue) {
   const left = String(leftValue || '');

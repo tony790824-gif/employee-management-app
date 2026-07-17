@@ -15,6 +15,7 @@ const propertyStore = {
   getProperties: () => Object.fromEntries(scriptProperties)
 };
 let uuid = 0;
+let hmacCalls = 0;
 const context = vm.createContext({
   console, Date, JSON, Math, Number, Object, Array, Set, String, RegExp,
   PropertiesService: { getScriptProperties: () => propertyStore },
@@ -23,7 +24,10 @@ const context = vm.createContext({
     DigestAlgorithm: { SHA_256: 'SHA_256' },
     Charset: { UTF_8: 'UTF_8' },
     computeDigest: (_algorithm, value) => [...createHash('sha256').update(String(value)).digest()],
-    computeHmacSha256Signature: (value, key) => [...createHmac('sha256', String(key)).update(String(value)).digest()],
+    computeHmacSha256Signature: (value, key) => {
+      hmacCalls += 1;
+      return [...createHmac('sha256', String(key)).update(String(value)).digest()];
+    },
     formatDate: (_date, _zone, pattern) => pattern === 'yyyy-MM' ? '2026-07' : '2026-07-15',
     getUuid: () => String(++uuid).padStart(32, '0')
   },
@@ -46,8 +50,8 @@ context.writeData_ = data => { stored = structuredClone(data); };
 const bossLogin = context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash });
 assert.equal(bossLogin.ok, true, '舊老闆憑證應在正確登入後遷移');
 assert.equal('bossPinHash' in stored.access, false);
-assert.equal(stored.access.bossPinCredential.scheme, 'iterated-hmac-sha256-v1');
-assert.equal(stored.access.bossPinCredential.iterations, 4096);
+assert.equal(stored.access.bossPinCredential.scheme, 'hmac-sha256-v2');
+assert.equal(stored.access.bossPinCredential.iterations, 1);
 assert.match(stored.access.bossPinCredential.salt, /^[a-f0-9]{32}$/);
 assert.match(stored.access.bossPinCredential.hash, /^[a-f0-9]{64}$/);
 assert.notEqual(stored.access.bossPinCredential.hash, sharedPinHash, '不得直接保存瀏覽器預雜湊');
@@ -55,7 +59,7 @@ assert.notEqual(stored.access.bossPinCredential.hash, sharedPinHash, '不得直�
 const employeeLogin = context.api({ action: 'employeeLogin', phone: '0922222222', pinHash: sharedPinHash });
 assert.equal(employeeLogin.ok, true, '舊員工憑證應在正確登入後遷移');
 assert.equal('pinHash' in stored.employees[0], false);
-assert.equal(stored.employees[0].pinCredential.scheme, 'iterated-hmac-sha256-v1');
+assert.equal(stored.employees[0].pinCredential.scheme, 'hmac-sha256-v2');
 assert.notEqual(stored.access.bossPinCredential.salt, stored.employees[0].pinCredential.salt, '相同 PIN 也必須使用不同 salt');
 assert.notEqual(stored.access.bossPinCredential.hash, stored.employees[0].pinCredential.hash, '相同 PIN 不得產生相同儲存值');
 
@@ -83,7 +87,7 @@ const employeeCreated = context.api({
 assert.equal(employeeCreated.ok, true);
 const pendingEmployee = stored.employees.find(employee => employee.id === 'employee-2');
 assert.equal('activationCodeHash' in pendingEmployee, false, '新啟用碼預雜湊不得原樣保存');
-assert.equal(pendingEmployee.activationCredential.scheme, 'iterated-hmac-sha256-v1');
+assert.equal(pendingEmployee.activationCredential.scheme, 'hmac-sha256-v2');
 assert.notEqual(pendingEmployee.activationCredential.hash, activationHash);
 
 const newPinHash = prehash('112233');
@@ -94,14 +98,27 @@ assert.equal(activated.ok, true, '加鹽啟用憑證應可完成首次登入');
 assert.equal('activationCredential' in pendingEmployee, true, '測試快照不得與伺服器物件共用參照');
 const activatedStored = stored.employees.find(employee => employee.id === 'employee-2');
 assert.equal('activationCredential' in activatedStored, false, '成功啟用後必須銷毀啟用憑證');
-assert.equal(activatedStored.pinCredential.scheme, 'iterated-hmac-sha256-v1');
+assert.equal(activatedStored.pinCredential.scheme, 'hmac-sha256-v2');
 assert.equal(context.api({ action: 'employeeLogin', phone: '0933333333', pinHash: newPinHash }).ok, true);
 
 const untamperedCredential = structuredClone(stored.access.bossPinCredential);
-stored.access.bossPinCredential.iterations = 1;
+stored.access.bossPinCredential.iterations = 2;
 assert.equal(context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash }).ok, false, '被竄改成低迭代次數的憑證必須 fail closed');
 stored.access.bossPinCredential = untamperedCredential;
 assert.equal(context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash }).ok, true);
+assert.ok(hmacCalls < 50, `目前 credential 操作不得回歸成數千次 HMAC；實際呼叫 ${hmacCalls} 次`);
+
+const legacySalt = 'a'.repeat(32);
+stored.access.bossPinCredential = {
+  scheme: 'iterated-hmac-sha256-v1',
+  salt: legacySalt,
+  iterations: 1024,
+  hash: context.deriveCredential_(sharedPinHash, legacySalt, 1024, 'iterated-hmac-sha256-v1')
+};
+const legacyLogin = context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash });
+assert.equal(legacyLogin.ok, true, '既有 v1 credential 必須仍可登入');
+assert.equal(stored.access.bossPinCredential.scheme, 'hmac-sha256-v2', '成功登入後必須遷移至 v2');
+assert.equal(stored.access.bossPinCredential.iterations, 1);
 
 scriptProperties.set('SHIFT_APP_CREDENTIAL_PEPPER', 'corrupted');
 const corruptPepper = context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash });
@@ -111,7 +128,7 @@ scriptProperties.set('SHIFT_APP_CREDENTIAL_PEPPER', pepper);
 assert.equal(context.api({ action: 'bossLogin', phone: '0911111111', pinHash: sharedPinHash }).ok, true);
 
 assert.match(backendSource, /constantTimeEqual_/);
-assert.match(backendSource, /CREDENTIAL_ITERATIONS = 4096/);
+assert.match(backendSource, /CREDENTIAL_ITERATIONS = 1/);
 assert.match(backendSource, /SHIFT_APP_CREDENTIAL_PEPPER/);
 assert.doesNotMatch(JSON.stringify(bossLogin.data), /pinCredential|activationCredential|bossPinCredential/);
 

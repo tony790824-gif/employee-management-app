@@ -14,6 +14,18 @@
 
 最高優先的整體上線閘門仍是受控 staging Apps Script 部署與真實老闆／員工跨裝置 E2E；需求禁止發布，因此未執行。下一個可獨立處理的程式工作是正式身分服務、多租戶關聯式資料庫與 command API 的遷移設計 ADR。
 
+## P0 受控 Staging 後端與復原演練（2026-07-17）
+
+已完成隔離 Google Sheet、Apps Script 專案及 Web App 部署。線上驗收已覆蓋老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、session 撤銷、私人備份、驗證、實際 restore 與 restore 後 readiness。Staging 已回復乾淨 revision 0，正式站未發布。
+
+驗收中修正 Apps Script 在 lock 內執行 4096 次 HMAC 導致登入逾時的 P0 問題。新的 `hmac-sha256-v2` 維持每筆 salt、server-only pepper 與固定成本，既有 v1 登入後自動遷移。這只是 Google Sheets 過渡後端的可用性修正，不取代正式 Identity Provider。
+
+**Staging 驗收紀錄所建議的下一項工作：P0 建立獨立 Staging 前端設定並完成真實手機、平板與桌機的角色 UI E2E。** 目前後端驗收工具繞過正式前端，尚不能證明瀏覽器設定、PWA cache、弱網與跨裝置操作已通過。
+
+### 2026-07-17 合併狀態說明
+
+origin/main 的資料庫／API 設計紀錄將「建立 PostgreSQL 與正式 Auth」列為下一項；本次 Staging 驗收紀錄則將「獨立 Staging 前端與跨裝置 E2E」列為下一項。兩項均為 P0 且尚未執行，本次只完整保留兩邊紀錄，不自行改變 Sprint 優先順序，等待產品負責人下一個指令。
+
 ## P0 request 大小與 snapshot 欄位值邊界（2026-07-16）
 
 Apps Script `doPost` 現在會在解析 JSON 與執行 API 前，以 raw form body 的 UTF-8 bytes 檢查 1 MiB 上限；平台未提供非空 raw body 時才以解碼後 `payload` 作 fallback。A1 讀取、老闆儲存、初始化、備份與寫入前共用同一組現有欄位值驗證；錯誤不寫入也不推進 revision。舊缺欄、空薪資調整與原樣負數扣款維持相容，但新負數調整被拒絕。本次只提交來源、測試與文件，未部署 Apps Script。

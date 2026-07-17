@@ -1,5 +1,30 @@
 # 班客邦營運 Runbook（Google Sheets 過渡期）
 
+## 受控 Staging
+
+Staging 必須使用獨立 Google Sheet、獨立 bound Apps Script 專案、獨立 Web App deployment 與合成測試帳號；不得共用正式 Sheet、workspace ID、pepper 或 session。Script Properties 至少設定 `SHIFT_APP_OWNER_PHONE`，其餘 workspace、pepper 與 recovery metadata 由既有程式受控建立。
+
+部署前：
+
+1. 確認來源 commit、Apps Script 版本與部署說明可追溯。
+2. 將 `google-sheets-backend.gs` 完整同步至 Staging 專案。
+3. 執行 `createOperationalBackup()`、`verifyLatestOperationalBackup()` 與 `runReleaseReadinessCheck()`。
+4. 以環境變數提供合成的 Staging 老闆／員工電話、PIN 與一次性啟用碼；禁止將測試或正式密碼提交到 Git。
+5. 執行：
+
+```powershell
+$env:STAGING_BOSS_PHONE = '<staging-only phone>'
+$env:STAGING_BOSS_PIN = '<staging-only pin>'
+$env:STAGING_EMPLOYEE_PHONE = '<staging-only phone>'
+$env:STAGING_EMPLOYEE_PIN = '<staging-only pin>'
+$env:STAGING_ACTIVATION_CODE = '<staging-only activation code>'
+node scripts/staging-acceptance.mjs '<staging-web-app-url>'
+```
+
+驗收必須涵蓋老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、老闆同步與 session invalidation。完成後以一次性 `SHIFT_APP_RESTORE_CONFIRMATION` 執行實際 restore drill，再次執行 readiness；禁止把確認值寫入文件、Git 或日誌。
+
+已知限制：Apps Script Web App 不提供企業級 observability；此工具是直接後端驗收，不代表前端、PWA cache、弱網或真實手機已通過。這些項目必須由獨立 Staging 前端 E2E 補足。
+
 本文件只供 Apps Script 專案管理員使用。不要把備份連結、復原確認值或 Script Properties 提供給員工或一般老闆帳號。
 
 ## 發布前必要步驟

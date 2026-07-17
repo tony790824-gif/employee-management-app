@@ -1,5 +1,9 @@
 # Database 文件（現況與目標）
 
+## 2026-07-17 credential runtime 修正
+
+新 credential 現為 `hmac-sha256-v2` object：獨立 128-bit salt、`iterations: 1`、64-hex HMAC hash。pepper 只存在 Apps Script Script Properties。既有 `iterated-hmac-sha256-v1`（1024–10000 次）仍可讀取，正確登入後自動遷移至 v2；未知 scheme 或錯誤 iteration fail closed。v2 是為避免 Apps Script 在全域 lock 內逾時的過渡方案，不是正式密碼資料庫；正式上線仍須 Identity Provider／專用 auth service。
+
 > 2026-07-16 本 Sprint 沒有新增、刪除或改名 A1 snapshot 欄位；只對既有電話、credential 表示、員工時薪、薪資調整、日期與時間建立寫入前值驗證。舊資料缺欄、`payrollAdjustments` 缺少／`null`／空陣列維持相容；舊負數扣款可讀且可原樣保存，但不得新增或複製。
 
 > 2026-07-16 本次未新增、修改或刪除 snapshot 欄位／資料表；只強化老闆 `save` 的寫入邊界。省略欄位會從既有雲端 snapshot 保留，client 明確傳送合法空集合才會清除該集合。
@@ -18,7 +22,7 @@ Apps Script Script Properties 新增兩類暫存記錄：
 - `SHIFT_APP_LAST_BACKUP_FILE_ID`：最新已驗證復原包的 Drive 檔案 ID。
 - `SHIFT_APP_RESTORE_CONFIRMATION`：管理員復原前手動設定的一次性確認值；讀取後立即刪除，不進入備份。
 
-Sheet 新 credential 使用 `iterated-hmac-sha256-v1` object，包含每筆獨立 salt、4096 次迭代與 hash。舊 `access.bossPinHash`、`employees[].pinHash`、`employees[].activationCodeHash` 只作登入時相容遷移來源；成功驗證後會被新欄位取代。所有新舊 credential 都禁止回傳瀏覽器。這仍不符合正式商業資料庫標準：沒有 Argon2id／正式 Identity Provider、tenant、session table、audit、migration ledger 與 backup drill，正式上線前必須遷移。
+Sheet 新 credential 使用 `hmac-sha256-v2` object，包含每筆獨立 salt、固定成本 HMAC 與 hash。既有 `iterated-hmac-sha256-v1`、`access.bossPinHash`、`employees[].pinHash`、`employees[].activationCodeHash` 只作登入時相容遷移來源；成功驗證後會被 v2 取代。所有新舊 credential 都禁止回傳瀏覽器。這仍不符合正式商業資料庫標準：沒有 Argon2id／正式 Identity Provider、tenant、session table、audit、migration ledger 與企業級 PITR，正式上線前必須遷移。
 
 ## 現況
 

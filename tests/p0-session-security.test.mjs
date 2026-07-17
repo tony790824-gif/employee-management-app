@@ -86,7 +86,7 @@ const removedData = structuredClone(stored);
 removedData.employees = removedData.employees.filter(employee => employee.id !== 'employee-2');
 assert.equal(context.api({ action: 'save', sessionToken: bossToken, baseRevision: removedData.sync.revision, data: removedData }).ok, true);
 assert.equal(context.api({ action: 'pull', sessionToken: employeeToken }).code, 'SESSION_INVALID', '移除員工必須立刻撤銷登入工作階段');
-assert.equal(stored.access.bossPinCredential.scheme, 'iterated-hmac-sha256-v1', '一般儲存不得覆寫伺服器端老闆憑證');
+assert.equal(stored.access.bossPinCredential.scheme, 'hmac-sha256-v2', '一般儲存不得覆寫伺服器端老闆憑證');
 assert.equal(stored.employees[0].pinHash, employeePinHash, '一般編輯不得清除尚未登入遷移的員工憑證');
 
 const expiringLogin = context.api({ action: 'bossLogin', phone: '0911111111', pinHash: bossPinHash });
