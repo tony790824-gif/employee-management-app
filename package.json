@@ -5,9 +5,11 @@
   "description": "班客邦員工排班與出勤管理 PWA",
   "scripts": {
     "check": "node scripts/quality-check.mjs",
-    "test": "node tests/p0-interface-stability.test.mjs && node tests/state-store.test.mjs && node tests/p0-auth-isolation.test.mjs && node tests/p0-employee-authorization.test.mjs && node tests/p0-account-activation.test.mjs && node tests/p0-session-security.test.mjs && node tests/p0-workspace-boundary.test.mjs && node tests/p0-xss-containment.test.mjs && node tests/p0-concurrency-control.test.mjs && node tests/p0-credential-hardening.test.mjs && node tests/p0-backup-recovery.test.mjs && node tests/p0-schema-boundary.test.mjs && node tests/project-cleanup.test.mjs",
+    "test": "node tests/p0-interface-stability.test.mjs && node tests/state-store.test.mjs && node tests/p0-auth-isolation.test.mjs && node tests/p0-employee-authorization.test.mjs && node tests/p0-account-activation.test.mjs && node tests/p0-session-security.test.mjs && node tests/p0-workspace-boundary.test.mjs && node tests/p0-xss-containment.test.mjs && node tests/p0-concurrency-control.test.mjs && node tests/p0-credential-hardening.test.mjs && node tests/p0-backup-recovery.test.mjs && node tests/p0-schema-boundary.test.mjs && node tests/project-cleanup.test.mjs && node tests/p0-frontend-environment-isolation.test.mjs",
     "build": "node scripts/build.mjs",
-    "verify": "node scripts/quality-check.mjs && node tests/p0-interface-stability.test.mjs && node tests/state-store.test.mjs && node tests/p0-auth-isolation.test.mjs && node tests/p0-employee-authorization.test.mjs && node tests/p0-account-activation.test.mjs && node tests/p0-session-security.test.mjs && node tests/p0-workspace-boundary.test.mjs && node tests/p0-xss-containment.test.mjs && node tests/p0-concurrency-control.test.mjs && node tests/p0-credential-hardening.test.mjs && node tests/p0-backup-recovery.test.mjs && node tests/p0-schema-boundary.test.mjs && node tests/project-cleanup.test.mjs && node scripts/build.mjs",
+    "build:local": "node scripts/build.mjs --environment=local",
+    "build:staging": "node scripts/build.mjs --environment=staging",
+    "verify": "node scripts/quality-check.mjs && pnpm test && node scripts/build.mjs",
     "release:check": "pnpm verify && node scripts/release-gate.mjs"
   },
   "engines": {

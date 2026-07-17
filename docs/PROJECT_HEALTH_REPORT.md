@@ -1,5 +1,14 @@
 # 班客邦 Project Health Report
 
+## 2026-07-17 — Staging 前端環境隔離
+
+- 已完成 Local／Staging／Production 前端設定與可重複建置；Staging 僅含 Staging Apps Script URL。
+- Service Worker cache、PWA identity、localStorage 與 sessionStorage 已依環境隔離，Production 保留既有 storage key 相容性。
+- 桌機 Staging 驗證通過：STAGING 識別清楚、實際後端 iframe 僅指向 Staging、Console 無 JavaScript Error。
+- 既有 13 組回歸、環境隔離測試、品質檢查、資產建置與發布閘門通過。
+- **整體商業上線完成度：63%（前次 62%）**。增加 1% 來自環境與發布安全性；真實手機／平板 E2E、正式 Identity／資料庫及正式發布仍未完成。
+- **是否適合正式上線：No**。下一個 P0 是依人工清單完成真實跨裝置 Staging E2E；Production 未部署。
+
 ## 2026-07-17 — 資料庫 Schema 與 API 規格設計 (Sprint 2)
 
 - 已完成正式資料庫 Schema ([docs/schema.sql](../docs/schema.sql)) 與 OpenAPI 規格 ([docs/openapi.yaml](../docs/openapi.yaml))。

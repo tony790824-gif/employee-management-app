@@ -9,6 +9,8 @@ export const deployFiles = Object.freeze([
   'login-screen.css',
   'employee-calendar.css',
   'employee-layout.css',
+  'environment.css',
+  'environment-config.js',
   'google-sheets-config.js',
   'state-store.js',
   'account-security.js',

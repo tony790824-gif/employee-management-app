@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>班表與薪資管理</title>
+    <script src="environment-config.js"></script>
     <meta name="theme-color" content="#a94f35" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="app-icon.svg" />
@@ -13,9 +14,10 @@
     <link rel="stylesheet" href="login-screen.css" />
     <link rel="stylesheet" href="employee-calendar.css" />
     <link rel="stylesheet" href="employee-layout.css" />
+    <link rel="stylesheet" href="environment.css" />
     <style>.employee-mode #cloudConfigBtn{display:none!important}</style>
     <script>
-      window.LOCAL_PREVIEW = new URLSearchParams(location.search).has('preview');
+      window.LOCAL_PREVIEW = window.shiftEnvironment?.name === 'local';
       if (window.LOCAL_PREVIEW) {
         document.documentElement.classList.add('local-preview');
         navigator.serviceWorker?.getRegistrations?.().then(items => items.forEach(item => item.unregister()));

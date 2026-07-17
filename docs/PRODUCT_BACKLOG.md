@@ -1,5 +1,9 @@
 # 班客邦 Product Backlog
 
+## P0 Staging 前端環境隔離（2026-07-17）
+
+已完成 Local／Staging／Production 可重複建置、Staging 專用後端、畫面識別，以及 PWA cache／manifest／localStorage／session 隔離。Production 未部署。下一個唯一驗收工作是依 `docs/STAGING_E2E_CHECKLIST.md` 執行真實手機、平板與桌機人工 E2E；本項不改變下方正式資料庫長期 Backlog 的內容。
+
 ## P0 正式資料庫 Schema 與 API 規格設計（2026-07-17）
 
 已完成正式關聯式資料庫設計 (`docs/schema.sql`) 與 OpenAPI 3.0 規格 (`docs/openapi.yaml`)。

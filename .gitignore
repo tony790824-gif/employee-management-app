@@ -1,4 +1,6 @@
 dist/
+dist-local/
+dist-staging/
 node_modules/
 .pnpm-store/
 *.log

@@ -1,8 +1,9 @@
 (() => {
-  const CURRENT_KEY = 'shift-app-data-v3';
-  const PRIOR_KEYS = ['shift-app-data-v2', 'shift-app-data-v1'];
-  const CORRUPT_BACKUP_KEY = 'shift-app-data-corrupt-backup';
-  const SYNC_CONFLICT_BACKUP_KEY = 'shift-sync-conflict-backup';
+  const storageKey = key => window.shiftEnvironment?.storageKey?.(key) || key;
+  const CURRENT_KEY = storageKey('shift-app-data-v3');
+  const PRIOR_KEYS = ['shift-app-data-v2', 'shift-app-data-v1'].map(storageKey);
+  const CORRUPT_BACKUP_KEY = storageKey('shift-app-data-corrupt-backup');
+  const SYNC_CONFLICT_BACKUP_KEY = storageKey('shift-sync-conflict-backup');
   const SCHEMA_VERSION = 1;
   const ARRAY_FIELDS = ['employees', 'shifts', 'attendance', 'leaveHistory', 'removedEmployees'];
   const OBJECT_FIELDS = ['workspace', 'sync', 'leaves', 'leaveRequests', 'access', 'payrollAdjustments'];

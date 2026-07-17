@@ -4,6 +4,7 @@ import { deployFiles } from './project-files.mjs';
 const failures = [];
 const fail = message => failures.push(message);
 const expectedFiles = [...deployFiles].sort();
+const generatedEnvironmentFiles = new Set(['environment-config.js', 'manifest.webmanifest']);
 let actualFiles = [];
 
 try {
@@ -22,11 +23,17 @@ if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
 for (const file of expectedFiles) {
   try {
     const [source, built] = await Promise.all([readFile(file), readFile(`dist/${file}`)]);
-    if (!source.equals(built)) fail(`建置檔案與來源不一致：${file}`);
+    if (!generatedEnvironmentFiles.has(file) && !source.equals(built)) fail(`建置檔案與來源不一致：${file}`);
   } catch (error) {
     fail(`無法驗證發布檔案 ${file}：${error.message}`);
   }
 }
+
+const productionEnvironment = await readFile('dist/environment-config.js', 'utf8');
+if (!productionEnvironment.includes('"name": "production"')) fail('Production build 缺少 production 環境識別。');
+if (productionEnvironment.includes('banke:staging:') || productionEnvironment.includes('STAGING')) fail('Production build 混入 Staging 設定。');
+const productionManifest = JSON.parse(await readFile('dist/manifest.webmanifest', 'utf8'));
+if (productionManifest.id !== './?app=banke-production') fail('Production PWA manifest id 不正確。');
 
 const sensitivePatterns = [
   'SHIFT_APP_CREDENTIAL_PEPPER',

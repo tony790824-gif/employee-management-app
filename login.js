@@ -1,5 +1,6 @@
 (() => {
   const $ = s => document.querySelector(s);
+  const storageKey = key => window.shiftEnvironment?.storageKey?.(key) || key;
   const clean = value => String(value || '').replace(/[^0-9]/g, '');
   const stateStore = window.shiftStateStore;
   const overlay = $('#loginOverlay');
@@ -55,10 +56,10 @@
   }
 
   function clearSession() {
-    sessionStorage.removeItem('shift-signed-in');
-    sessionStorage.removeItem('shift-sheets-auth');
-    localStorage.removeItem('shift-session-role');
-    localStorage.removeItem('shift-person');
+    sessionStorage.removeItem(storageKey('shift-signed-in'));
+    sessionStorage.removeItem(storageKey('shift-sheets-auth'));
+    localStorage.removeItem(storageKey('shift-session-role'));
+    localStorage.removeItem(storageKey('shift-person'));
   }
 
   function purgeRenderedData() {
@@ -68,17 +69,17 @@
 
   function sheetsSession() {
     try {
-      const session = JSON.parse(sessionStorage.getItem('shift-sheets-auth') || 'null');
+      const session = JSON.parse(sessionStorage.getItem(storageKey('shift-sheets-auth')) || 'null');
       const valid = session && typeof session === 'object' && !Array.isArray(session)
         && typeof session.sessionToken === 'string' && session.sessionToken.length >= 32
         && Number(session.sessionExpiresAt) > Date.now()
         && /^ws_[a-f0-9]{32}$/i.test(String(session.workspaceId || ''))
         && (session.role === 'boss' || session.role === 'employee');
       if (valid) return session;
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       return null;
     } catch {
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       return null;
     }
   }
@@ -86,7 +87,7 @@
   function clearCloudSensitiveCache() {
     if (isLocalPreview) return;
     try {
-      const cloud = JSON.parse(localStorage.getItem('shift-cloud-config') || '{}');
+      const cloud = JSON.parse(localStorage.getItem(storageKey('shift-cloud-config')) || '{}');
       if (cloud.mode === 'google_sheets') stateStore.clearSensitive();
     } catch {
       stateStore.clearSensitive();
@@ -97,9 +98,9 @@
     if (role !== 'boss' && role !== 'employee') throw new Error('登入身份無效。');
     if (role === 'employee' && !employeeId) throw new Error('找不到員工身份，請重新登入。');
 
-    localStorage.setItem('shift-session-role', role);
-    if (employeeId) localStorage.setItem('shift-person', employeeId);
-    else localStorage.removeItem('shift-person');
+    localStorage.setItem(storageKey('shift-session-role'), role);
+    if (employeeId) localStorage.setItem(storageKey('shift-person'), employeeId);
+    else localStorage.removeItem(storageKey('shift-person'));
     window.SHIFT_AUTHORIZED = true;
     try {
       await loadAuthenticatedApp();
@@ -112,7 +113,7 @@
       throw error;
     }
 
-    sessionStorage.setItem('shift-signed-in', 'yes');
+    sessionStorage.setItem(storageKey('shift-signed-in'), 'yes');
     document.body.classList.add('app-authenticated');
     $('#installAppBtn').hidden = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     $('#roleSelect').value = role;
@@ -136,7 +137,7 @@
     }
     if (role === 'employee' && !response.employeeId) throw new Error('雲端未回傳員工身份，請老闆確認員工資料。');
     write(response.data);
-    localStorage.setItem('shift-cloud-config', JSON.stringify({ mode: 'google_sheets', url: window.GOOGLE_SHEETS_WEB_APP_URL }));
+    localStorage.setItem(storageKey('shift-cloud-config'), JSON.stringify({ mode: 'google_sheets', url: window.GOOGLE_SHEETS_WEB_APP_URL }));
     return response;
   }
 
@@ -217,9 +218,9 @@
         alert(error.message || '本機預覽載入失敗。');
       });
     });
-  } else if (sessionStorage.getItem('shift-signed-in') === 'yes') {
-    const savedRole = localStorage.getItem('shift-session-role') || 'boss';
-    const savedEmployee = savedRole === 'employee' ? localStorage.getItem('shift-person') || '' : '';
+  } else if (sessionStorage.getItem(storageKey('shift-signed-in')) === 'yes') {
+    const savedRole = localStorage.getItem(storageKey('shift-session-role')) || 'boss';
+    const savedEmployee = savedRole === 'employee' ? localStorage.getItem(storageKey('shift-person')) || '' : '';
     const savedCloudSession = isLocalPreview ? null : sheetsSession();
     const invalidRole = savedRole !== 'boss' && savedRole !== 'employee';
     const invalidEmployee = savedRole === 'employee' && !savedEmployee;
@@ -268,6 +269,6 @@
   };
 
   window.addEventListener('shift-session-invalid', () => {
-    if (sessionStorage.getItem('shift-signed-in') === 'yes') window.shiftLogout();
+    if (sessionStorage.getItem(storageKey('shift-signed-in')) === 'yes') window.shiftLogout();
   });
 })();

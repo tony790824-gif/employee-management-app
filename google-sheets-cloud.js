@@ -1,6 +1,7 @@
 (() => {
   if (window.LOCAL_PREVIEW) return;
-  const stateKey = 'shift-app-data-v3';
+  const storageKey = key => window.shiftEnvironment?.storageKey?.(key) || key;
+  const stateKey = storageKey('shift-app-data-v3');
   const endpoint = String(window.GOOGLE_SHEETS_WEB_APP_URL || '').trim();
   if (!endpoint) throw new Error('缺少 Google Sheets Web App URL 設定。');
   let ready = false, savePromise = null, pendingSave = null, timer, applyingRemote = false, syncConflict = false, conflictNotified = false;
@@ -9,23 +10,23 @@
     const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
     return [...new Uint8Array(raw)].map(x => x.toString(16).padStart(2, '0')).join('');
   };
-  const config = () => JSON.parse(localStorage.getItem('shift-cloud-config') || '{}');
+  const config = () => JSON.parse(localStorage.getItem(storageKey('shift-cloud-config')) || '{}');
   const enabled = () => config().mode === 'google_sheets';
   const status = text => { const el = document.querySelector('#cloudStatus'); if (el) el.textContent = text; };
   const validWorkspaceId = value => /^ws_[a-f0-9]{32}$/i.test(String(value || ''));
   const session = () => {
     try {
-      const value = JSON.parse(sessionStorage.getItem('shift-sheets-auth') || 'null');
+      const value = JSON.parse(sessionStorage.getItem(storageKey('shift-sheets-auth')) || 'null');
       const valid = value && typeof value === 'object' && !Array.isArray(value)
         && typeof value.sessionToken === 'string' && value.sessionToken.length >= 32
         && Number(value.sessionExpiresAt) > Date.now()
         && validWorkspaceId(value.workspaceId)
         && (value.role === 'boss' || value.role === 'employee');
       if (valid) return value;
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       return null;
     } catch {
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       return null;
     }
   };
@@ -34,7 +35,7 @@
     const error = new Error(response?.error || fallback);
     error.code = response?.code || 'REQUEST_FAILED';
     if (error.code === 'SESSION_INVALID' || error.code === 'WORKSPACE_MISMATCH') {
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       window.dispatchEvent(new CustomEvent('shift-session-invalid'));
     }
     return error;
@@ -44,7 +45,7 @@
     const responseWorkspaceId = String(response?.workspaceId || '');
     const dataWorkspaceId = String(response?.data?.workspace?.id || '');
     if (!validWorkspaceId(responseWorkspaceId) || responseWorkspaceId !== dataWorkspaceId || (auth && auth.workspaceId !== responseWorkspaceId)) {
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       window.dispatchEvent(new CustomEvent('shift-session-invalid'));
       const error = new Error('公司工作區驗證失敗，已停止同步以避免資料混用。');
       error.code = 'WORKSPACE_MISMATCH';
@@ -67,7 +68,7 @@
   function preserveConflict(attempted, remote) {
     syncConflict = true;
     pendingSave = null;
-    localStorage.setItem('shift-sync-conflict-backup', JSON.stringify({
+    localStorage.setItem(storageKey('shift-sync-conflict-backup'), JSON.stringify({
       capturedAt: new Date().toISOString(),
       attempted,
       remote
@@ -163,7 +164,7 @@
         throw new Error('雲端未建立安全登入工作階段，請重新登入。');
       }
       const workspaceId = validateWorkspaceResponse(response);
-      sessionStorage.setItem('shift-sheets-auth', JSON.stringify({
+      sessionStorage.setItem(storageKey('shift-sheets-auth'), JSON.stringify({
         sessionToken: response.sessionToken,
         sessionExpiresAt: Number(response.sessionExpiresAt),
         workspaceId,
@@ -204,7 +205,7 @@
           } else {
             writeRemote(result.data);
           }
-          localStorage.removeItem('shift-sync-conflict-backup');
+          localStorage.removeItem(storageKey('shift-sync-conflict-backup'));
         }
         status('Google Sheets 已同步');
       } catch (error) {
@@ -241,7 +242,7 @@
     if (!result?.ok) throw responseError(result, '雲端讀取失敗。');
     validateWorkspaceResponse(result, auth);
     if (result.role !== auth.role || (auth.role === 'employee' && result.employeeId !== auth.employeeId) || !result.data) {
-      sessionStorage.removeItem('shift-sheets-auth');
+      sessionStorage.removeItem(storageKey('shift-sheets-auth'));
       throw responseError({ code: 'SESSION_INVALID' }, '登入身分驗證失敗，請重新登入。');
     }
     return result;
@@ -269,7 +270,7 @@
 
   async function logout() {
     const auth = session();
-    sessionStorage.removeItem('shift-sheets-auth');
+    sessionStorage.removeItem(storageKey('shift-sheets-auth'));
     if (!auth) return;
     try {
       await call({ action: 'logout', sessionToken: auth.sessionToken });

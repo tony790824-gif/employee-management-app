@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-17 — Staging frontend isolation
+
+- Added explicit Local, Staging, and Production frontend build profiles.
+- Added a STAGING badge and Staging-only Apps Script endpoint.
+- Isolated Service Worker caches, PWA identity, localStorage, and sessionStorage by environment.
+- Added repeatable builds, isolation regression coverage, and a manual cross-device E2E checklist.
+- Production was not deployed or modified during this Sprint.
+
 ## 2026-07-17 — Sprint 2: Database Schema and API Specification Design
 
 ### Added

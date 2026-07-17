@@ -4,7 +4,8 @@
   const button = document.querySelector('#installAppBtn');
   let deferred;
   const installed = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+  const serviceWorkerUrl = window.shiftEnvironment?.serviceWorkerUrl || './service-worker.js';
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register(serviceWorkerUrl).catch(() => {}));
   if (button) button.hidden = installed();
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();

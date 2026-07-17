@@ -1,12 +1,13 @@
 (() => {
   const $ = s => document.querySelector(s);
+  const storageKey = key => window.shiftEnvironment?.storageKey?.(key) || key;
   const stateStore = window.shiftStateStore;
   const dom = window.shiftDomSafety;
   const role = $('#roleSelect');
   const person = $('#employeeModeSelect');
   const wrap = $('#employeeModeWrap');
   let mode = 'boss';
-  let mine = localStorage.getItem('shift-person') || '';
+  let mine = localStorage.getItem(storageKey('shift-person')) || '';
   let draftKey = '';
   let leaveDraft = [];
   let leaveSaving = false;
@@ -164,7 +165,7 @@
   }
 
   role.onchange = () => { mode = role.value; apply(); };
-  person.onchange = () => { mine = person.value; localStorage.setItem('shift-person', mine); draftKey = ''; apply(); };
+  person.onchange = () => { mine = person.value; localStorage.setItem(storageKey('shift-person'), mine); draftKey = ''; apply(); };
   $('#monthPicker').addEventListener('change', () => { draftKey = ''; apply(); });
   $('#calendarEmployee').addEventListener('change', showBossCalendarNames);
 

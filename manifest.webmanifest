@@ -1,6 +1,7 @@
 {
   "name": "班表管理",
   "short_name": "班表管理",
+  "id": "./?app=banke-production",
   "description": "員工排班、出勤、請假與薪資試算",
   "lang": "zh-Hant",
   "start_url": "./",
