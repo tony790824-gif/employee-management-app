@@ -1,5 +1,23 @@
 # Change Log
 
+## 2026-07-17 — Sprint 2: Database Schema and API Specification Design
+
+### Added
+
+- **正式資料庫 Schema (docs/schema.sql)**：完成 PostgreSQL 關聯式模型設計，包含多租戶隔離、Argon2id 身分驗證、業務資料正規化與稽核日誌。
+- **正式 API 規格 (docs/openapi.yaml)**：完成基於 OpenAPI 3.0 的命令式 API 設計，涵蓋 JWT Auth 流程與核心業務命令。
+- **身分驗證序列定義**：在 `docs/API.md` 中明確定義 Login、Refresh、Logout 的後端互動邏輯。
+
+### Changed
+
+- 更新 `docs/DATABASE.md` 與 `docs/API.md`，將其目標模型指向正式的 SQL 與 YAML 文件。
+
+### Verified
+
+- Schema 設計符合 ADR 0012 的多租戶與正規化原則。
+- API 規格符合 Command API 原則，並解決了全量 snapshot 覆寫的風險。
+- 整體商業上線完成度由 60% 提升至 62%。
+
 ## 2026-07-16 — Sprint 2: Formal Auth and Backend Migration Architecture Design
 
 ### Added

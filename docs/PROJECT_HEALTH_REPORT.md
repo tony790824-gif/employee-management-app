@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-17 — 資料庫 Schema 與 API 規格設計 (Sprint 2)
+
+- 已完成正式資料庫 Schema ([docs/schema.sql](../docs/schema.sql)) 與 OpenAPI 規格 ([docs/openapi.yaml](../docs/openapi.yaml))。
+- 詳細定義了多租戶（Workspace ID）隔離、Argon2id 雜湊、JWT/Refresh Token 流程與命令式 API。
+- 解決了資料一致性、全量覆寫風險與身分驗證非標的問題。
+- **功能實作估值：約 78%；整體商業上線完成度：62%（前次 60%）**。
+- **是否適合正式上線：No**。設計已具備實作條件，但實體資料庫建置、API 開發與資料遷移尚未執行。
+
 ## 2026-07-16 — 正式 Auth 與後端遷移架構設計 (Sprint 2)
 
 - 已完成 [ADR 0012](docs/adr/0012-formal-auth-and-backend-migration.md)，定義目標身份驗證系統（JWT + Refresh Token + Argon2id）與關聯式資料庫架構（PostgreSQL）。

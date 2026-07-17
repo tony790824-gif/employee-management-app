@@ -133,3 +133,21 @@ Google Apps Script 取得 active spreadsheet，建立隱藏工作表 `_班表APP
 6. Restore drill、RPO/RTO 與資料保留政策。
 
 Google Sheets 在目標架構中只作匯出、報表或客戶整合，不作 primary database。
+
+## 正式資料庫設計 (Sprint 2)
+
+詳細的 PostgreSQL Schema 定義請參閱：[docs/schema.sql](schema.sql)
+
+### 核心 Table
+- `organizations` / `workspaces`: 多租戶根節點。
+- `users` / `user_credentials`: 統一身份驗證與 Argon2id 安全雜湊。
+- `workspace_members`: 連結使用者、工作區與角色。
+- `employees` / `shifts` / `attendance_records` / `leaves`: 業務核心資料列，均含 `workspace_id` 物理隔離。
+- `audit_logs`: 不可竄改的操作稽核紀錄。
+
+### 遷移策略
+從 Google Sheets A1 Snapshot 遷移至 PostgreSQL 的流程：
+1. **解析 (Parse)**: 使用 `state-store.js` 的正規化邏輯解析 A1 JSON。
+2. **對應 (Map)**: 將 `employees`、`shifts` 等陣列對應至新 Table。
+3. **注入 (Inject)**: 為所有資料列注入 `workspace_id` 與 UUID。
+4. **驗證 (Verify)**: 檢查外鍵約束與資料完整性。

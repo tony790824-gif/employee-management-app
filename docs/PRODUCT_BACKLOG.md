@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## P0 正式資料庫 Schema 與 API 規格設計（2026-07-17）
+
+已完成正式關聯式資料庫設計 (`docs/schema.sql`) 與 OpenAPI 3.0 規格 (`docs/openapi.yaml`)。
+- **資料庫**：支援多租戶隔離、Argon2id、稽核日誌與正規化業務模型。
+- **API**：採用 Command 模式，定義了 Auth 與核心業務命令，解決了 Google Sheets 全量覆寫的架構性風險。
+
+下一個最高優先的工作是 **「Sprint 2：建立實體資料庫環境與開發正式 Auth 服務」**。這包含建置 PostgreSQL 實例、開發 Login/Refresh/Logout API 並通過安全測試。
+
 ## P0 schema 版本化與遷移系統（2026-07-16）
 
 已完成後端 `google-sheets-backend.gs` 與前端 `state-store.js` 的 `sync.schemaVersion` 版本號機制。讀取邊界 `migrate_` 現在會自動將缺少版本號的舊資料正規化至目前版本 1，為後續正式資料庫遷移奠定基礎。本次只提交來源、測試與文件，未部署 Apps Script。

@@ -116,6 +116,31 @@
 
 正式 endpoint、schema 與 error catalog 將在 Sprint 2–3 ADR 後定案。
 
+## 正式 API 設計 (Sprint 2)
+
+詳細的 OpenAPI 規格請參閱：[docs/openapi.yaml](openapi.yaml)
+
+### 身份驗證流程 (Auth Flow)
+
+1. **登入 (Login)**:
+   - Client 送出 `phone` 與 `pin_hash`。
+   - Server 驗證成功後，核發 `access_token` (短效) 與 `refresh_token` (長效)。
+2. **存取 (Access)**:
+   - Client 在 Header 帶入 `Authorization: Bearer <access_token>`。
+   - Server 透過 JWT 內嵌的 `workspace_id` 執行 RLS 隔離。
+3. **刷新 (Refresh)**:
+   - `access_token` 過期時，Client 呼叫 `/auth/refresh` 並帶入 `refresh_token`。
+   - Server 檢查 `refresh_token` 有效性並核發新的 `access_token`。
+4. **登出 (Logout)**:
+   - Client 呼叫 `/auth/logout`。
+   - Server 撤銷資料庫中的 `refresh_token`。
+
+### 命令與查詢 (Command & Query)
+
+- **Command**: 使用明確的語意化 API (如 `/employees/{id}/clock-in`)。
+- **Revision**: 每個寫入操作必須帶入 `revision` 以防止併發衝突。
+- **Response**: 統一回傳格式與錯誤代碼，詳見 OpenAPI 文件。
+
 ## 管理員維運函式（非 Web API）
 
 以下函式只允許 Apps Script 專案管理員在編輯器中手動執行，刻意不接入 `api()`、`doGet()`、`doPost()`，APP、老闆與員工都不能呼叫：

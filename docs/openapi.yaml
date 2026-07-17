@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: 班客邦 Command API
+  description: 正式多租戶後端 API 規格。採用 Command 模式與 JWT 身份驗證。
+  version: 2026-07-17.1
+servers:
+  - url: https://api.bankebang.com/v1
+    description: 正式環境
+
+paths:
+  /auth/login:
+    post:
+      summary: 使用電話與 PIN 登入
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, pin_hash]
+              properties:
+                phone:
+                  type: string
+                  example: "0912345678"
+                pin_hash:
+                  type: string
+                  description: 前端產生的 SHA-256 prehash
+                  example: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+      responses:
+        '200':
+          description: 登入成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 認證失敗
+        '429':
+          description: 登入限流
+
+  /auth/refresh:
+    post:
+      summary: 刷新 Access Token
+      tags: [Auth]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenBundle'
+
+  /auth/logout:
+    post:
+      summary: 登出並撤銷 Session
+      tags: [Auth]
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: 登出成功
+
+  /employees:
+    get:
+      summary: 取得員工列表 (老闆/管理員)
+      tags: [Employee]
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+    post:
+      summary: 新增員工
+      tags: [Employee]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+      responses:
+        '201':
+          description: 建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+
+  /employees/{id}/clock-in:
+    post:
+      summary: 員工打卡上班 (Command)
+      tags: [Attendance]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 打卡成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+        '409':
+          description: 重複打卡
+
+  /employees/{id}/clock-out:
+    post:
+      summary: 員工打卡下班 (Command)
+      tags: [Attendance]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 下班成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceRecord'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/User'
+        workspace:
+          $ref: '#/components/schemas/WorkspaceInfo'
+        tokens:
+          $ref: '#/components/schemas/TokenBundle'
+
+    TokenBundle:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_at:
+          type: integer
+          format: int64
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [boss, manager, employee]
+
+    WorkspaceInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ws_0123456789abcdef0123456789abcdef"
+        name:
+          type: string
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        job_title:
+          type: string
+        phone:
+          type: string
+        rate:
+          type: integer
+        leave_quota:
+          type: integer
+        status:
+          type: string
+        revision:
+          type: integer
+
+    CreateEmployeeRequest:
+      type: object
+      required: [name, phone, rate]
+      properties:
+        name:
+          type: string
+        job_title:
+          type: string
+        phone:
+          type: string
+        rate:
+          type: integer
+        leave_quota:
+          type: integer
+
+    AttendanceRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employee_id:
+          type: string
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+        hours:
+          type: number
+        clock_in:
+          type: string
+          format: date-time
+        clock_out:
+          type: string
+          format: date-time
+        note:
+          type: string
+        revision:
+          type: integer
