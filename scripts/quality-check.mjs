@@ -16,8 +16,11 @@ const backendSourceFiles = [
   'server/errors.mjs',
   'server/index.mjs',
   'server/jwt-verifier.mjs',
+  'server/oidc-readiness.mjs',
   'server/tenant-context.mjs',
   'server/validation.mjs',
+  'scripts/oidc-readiness.mjs',
+  'tests/oidc-readiness.test.mjs',
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'
 ];

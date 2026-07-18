@@ -4,6 +4,21 @@ import { ApiError, assert } from './errors.mjs';
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 const KID_PATTERN = /^[A-Za-z0-9._-]{1,128}$/;
 
+export function createRs256KeyMap(body) {
+  assert(body && Array.isArray(body.keys) && body.keys.length > 0 && body.keys.length <= 32,
+    503, 'JWKS_INVALID', 'Identity signing keys are invalid.');
+  const keys = new Map();
+  for (const jwk of body.keys) {
+    if (!jwk || !KID_PATTERN.test(String(jwk.kid || '')) || jwk.kty !== 'RSA'
+      || (jwk.use && jwk.use !== 'sig') || (jwk.alg && jwk.alg !== 'RS256')) continue;
+    if (typeof jwk.n !== 'string' || Buffer.from(jwk.n, 'base64url').length < 256) continue;
+    try { keys.set(jwk.kid, createPublicKey({ key: jwk, format: 'jwk' })); }
+    catch { /* malformed keys are ignored; an empty usable set fails closed below */ }
+  }
+  assert(keys.size > 0, 503, 'JWKS_INVALID', 'Identity signing keys contain no usable RS256 key.');
+  return keys;
+}
+
 function decodeJson(value, label) {
   try {
     const decoded = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
@@ -111,18 +126,7 @@ export function createOidcVerifier({
       let body;
       try { body = await response.json(); }
       catch { throw new ApiError(503, 'JWKS_INVALID', 'Identity signing keys are invalid.'); }
-      assert(body && Array.isArray(body.keys) && body.keys.length > 0 && body.keys.length <= 32,
-        503, 'JWKS_INVALID', 'Identity signing keys are invalid.');
-      const next = new Map();
-      for (const jwk of body.keys) {
-        if (!jwk || !KID_PATTERN.test(String(jwk.kid || '')) || jwk.kty !== 'RSA'
-          || (jwk.use && jwk.use !== 'sig') || (jwk.alg && jwk.alg !== 'RS256')) continue;
-        if (typeof jwk.n !== 'string' || Buffer.from(jwk.n, 'base64url').length < 256) continue;
-        try { next.set(jwk.kid, createPublicKey({ key: jwk, format: 'jwk' })); }
-        catch { /* malformed keys are ignored; an empty usable set fails closed below */ }
-      }
-      assert(next.size > 0, 503, 'JWKS_INVALID', 'Identity signing keys contain no usable RS256 key.');
-      cache = next;
+      cache = createRs256KeyMap(body);
       const ttl = parseMaxAge(response.headers?.get?.('cache-control'), cacheSeconds, maximumCacheSeconds);
       cacheExpiresAt = now() + ttl * 1000;
       rejectedKids.clear();

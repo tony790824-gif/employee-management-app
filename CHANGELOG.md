@@ -2,6 +2,7 @@
 
 ## 2026-07-18 — Sprint 3 OIDC and unforgeable tenant context foundation
 
+- Added a read-only OIDC discovery/JWKS readiness check for the next Local/Auth0 connection step. It verifies exact issuer/JWKS metadata, Authorization Code, PKCE S256 and usable RS256 keys without requiring or printing any secret or token.
 - Selected Auth0 as the single managed OIDC/OAuth 2.0 provider; added strict RS256 issuer/audience/time validation, same-origin JWKS caching, key rotation, unknown-key fail-closed behavior, timeout and RSA-key bounds.
 - Rejected token `workspace_id`; the requested workspace is now re-authorized against live PostgreSQL user, workspace, membership, role and session state for every controlled call.
 - Added migrations 0004–0008 for OIDC principal mapping, revocable local sessions, tenant-context keys/nonces and controlled SECURITY DEFINER query/command functions.
@@ -9,7 +10,8 @@
 - Added 30-second HMAC-signed, single-use internal tenant assertions. Direct table access and forged custom GUC remain denied even with the runtime database credential.
 - Live Staging tests cover two tenants, all six commands, assertion replay, member/user suspension, simulated refresh-family compromise, logout and least-privilege grants.
 - Fixed Session `iat` second/millisecond precision and leave audit resource-ID operator precedence defects found on the real engine.
-- Production, frontend, Google Sheets and Apps Script were not changed or deployed. Real Auth0 Staging PKCE/refresh/reuse integration remains an external acceptance gate.
+- Added a Staging-only Auth0 SPA entry point using Authorization Code + PKCE S256, exact Staging audience, memory-only token cache and isolated frontend configuration; Production, Google Sheets and Apps Script were not changed or deployed.
+- Completed a real Auth0 Staging login acceptance: the namespaced access-token session claim was present, non-empty and matched the Auth0 ID-token `sid` without logging either value. Refresh rotation/reuse, logout and account-disable E2E remain pending.
 
 ## 2026-07-18 — Sprint 2 Managed Staging PostgreSQL validation
 

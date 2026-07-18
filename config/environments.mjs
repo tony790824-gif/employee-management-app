@@ -8,6 +8,11 @@ export const environmentProfiles = Object.freeze({
   staging: Object.freeze({
     name: 'staging', label: 'STAGING',
     backendUrl: 'https://script.google.com/macros/s/AKfycbwdg-jbAn6ENzsDJrsdXoVZz2Z9KAyDKfCuKj2FeT23UgHgUFHtakHOrHboUeX3WpJ3/exec',
+    auth: Object.freeze({
+      domain: 'dev-nkduawjn5itjlhx4.us.auth0.com',
+      clientId: 'nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu',
+      audience: 'https://bankeban-staging-api'
+    }),
     storagePrefix: 'banke:staging:', cachePrefix: 'banke-staging-', cacheName: 'banke-staging-v1',
     manifest: Object.freeze({ id: './?app=banke-staging', name: '班表管理 STAGING', shortName: '班表 STG', startUrl: './?app=banke-staging' })
   }),
