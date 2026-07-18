@@ -1,5 +1,15 @@
 # 班客邦 Project Health Report
 
+## 2026-07-18 — Sprint 3 Identity 與不可偽造 Tenant Context
+
+- 已建立 Auth0 OIDC/OAuth 2.0 的 server/database 基礎；Access Token 採 RS256、issuer/audience/exp/nbf/iat/session claim 驗證，同源 JWKS 有安全快取、輪替與未知 `kid` fail closed。
+- Token 中的 workspace claim 會被拒絕；每次請求由資料庫重新確認 identity principal、內部 user、workspace、membership、role 與 local session。
+- API database role 已從十張 business tables 的 DML 降為零 table/sequence 權限，只保留四個受控函式；自行 SET custom GUC、直接 SQL 或直接呼叫內部 verifier 均不能取得租戶資料。
+- 30 秒簽章 tenant context 具 nonce replay protection；停權 user/member、移除 membership、compromised/revoked session 即使 Access Token 尚未過期仍會被拒絕。
+- 真實 Staging 驗收發現並修正 Session 秒／毫秒精度與排假 SQL 運算優先序；migrations 0004–0008 均保留 checksum/version history。
+- **商業上線完成度：72%（前次 69%）。** 上調來自關閉共用 DB credential + forged GUC 的已實作 API P0，但 Auth0 Staging 尚未接通，refresh-reuse provider event、完整 API、前端切換、監控與跨裝置 E2E 仍未驗收。
+- **是否適合正式上線：No。** 目前只是 Local/Staging foundation；Google Sheets/Apps Script/Production 未修改。下一個 P0 是唯一外部步驟與真實 Auth0 token lifecycle E2E。
+
 ## 2026-07-18 — Managed Staging PostgreSQL 真實引擎驗收
 
 - 隔離 Neon PostgreSQL 18.4 已通過 0001–0003 Migration、checksum、逐版 transaction、advisory lock 與重複執行保護；未連接或修改 Production。

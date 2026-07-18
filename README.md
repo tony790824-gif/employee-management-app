@@ -16,10 +16,15 @@ The formal multi-tenant database and Transaction/Command API now live in `databa
 - [Migration rehearsal runbook](docs/POSTGRESQL_MIGRATION.md)
 - [Implemented transition API](docs/openapi-postgres.yaml)
 - [ADR 0013](docs/adr/0013-postgresql-transaction-command-api.md)
+- [ADR 0014](docs/adr/0014-oidc-signed-tenant-context.md)
+- [Identity threat model](docs/THREAT_MODEL_IDENTITY_TENANT.md)
+- [Auth0 Staging connection gate](docs/AUTH0_STAGING_SETUP.md)
 
 Run database commands only with an explicitly configured PostgreSQL environment. Never commit `.env` files or database/JWT secrets.
 
 > 2026-07-18 Managed Staging PostgreSQL 驗收：Neon PostgreSQL 18.4 的隔離 Staging 已完成三階段 Migration、checksum／transaction／advisory-lock／重複執行、非敏感 snapshot dry-run／apply／replay、雙 Workspace FORCE RLS 正反向、Command API、查詢計畫及官方 `pg_dump`／`pg_restore` 還原演練。Migration 採 direct owner endpoint，API 採 pooler + `NOINHERIT` 最小權限角色，並以固定 Staging host 防止環境誤標。Production、Google Sheets 與現行前端均未切換或部署。
+
+> 2026-07-18 Sprint 3 Identity/Tenant foundation：PostgreSQL runtime role 已降為零 business-table 權限，只能執行四個受控函式；API 驗證 RS256 OIDC/JWKS 後，簽發 30 秒、單次使用的內部 context，資料庫再以 issuer/subject、user、workspace、membership、role 與可撤銷 session 建立 tenant boundary。偽造 token workspace、custom GUC、跨租戶、停權／移除、已撤銷 session 及 context replay 均在真實 Staging 被拒絕。Auth0 Staging 外部設定與真實 PKCE/refresh-reuse E2E 尚未完成，因此正式 Identity Provider 不可視為已接通，Production 未修改。
 
 > 2026-07-17 P0 Staging 驗收：已建立與正式資料隔離的 Google Sheet、Apps Script 專案及 Web App 部署，完成老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、session 撤銷及備份還原演練。Staging 實測發現 Apps Script 在全域 lock 內執行 4096 次 HMAC 會逾時，已改為有版本、固定成本的 `hmac-sha256-v2` 過渡 credential；既有 v1 成功登入後自動遷移。正式站未發布，產品仍不可正式上線。
 

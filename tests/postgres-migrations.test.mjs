@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { databaseConfig, loadMigrations } from '../database/migrate.mjs';
 
 const migrations = await loadMigrations();
-assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003']);
+assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008']);
 assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
 for (const migration of migrations) {
   assert.match(migration.checksum, /^[a-f0-9]{64}$/);
@@ -25,6 +25,12 @@ assert.match(sql, /app_private\.current_workspace_id\(\)/);
 assert.match(sql, /PRIMARY KEY \(workspace_id,/);
 assert.match(sql, /command_receipts/);
 assert.match(sql, /outbox_events/);
+assert.match(sql, /identity_principals/);
+assert.match(sql, /auth_sessions/);
+assert.match(sql, /tenant_context_keys/);
+assert.match(sql, /api_execute_command/);
+assert.match(sql, /SECURITY DEFINER/);
+assert.match(sql, /TENANT_CONTEXT_REPLAYED/);
 
 assert.throws(() => databaseConfig({ BANK_ENV: 'production', DATABASE_URL: 'postgres://db' }), /Production/);
 assert.throws(() => databaseConfig({

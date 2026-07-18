@@ -6,7 +6,9 @@ The schema, migration runner, transactional Command API, and snapshot mapper are
 
 Staging commands require both `BANK_ENV=staging` and an exact `BANK_STAGING_DATABASE_HOST`. Migration/import uses the direct owner endpoint; runtime tests use a separate pooler endpoint and `NOINHERIT` least-privilege role. The restore rehearsal additionally requires `BANK_STAGING_RESTORE_CONFIRM=RESTORE_BANKE_STAGING_BACKUP` and recreates only `banke_restore_sprint2`.
 
-Security boundary: current RLS trusts tenant/user custom GUC values set by the backend transaction. It blocks missing context and cross-tenant SQL issued after binding a legitimate principal, but possession of the shared API database credential can forge those GUC values. Production cutover is prohibited until formal identity is paired with a signed/externally verified database context or a trusted connection proxy.
+Sprint 3 adds migrations 0004 through 0008. The runtime role has no direct business-table or sequence privileges and may execute only four controlled `app_private.api_*` entry points. Each entry point verifies a short-lived HMAC assertion, resolves the OIDC issuer/subject to an internal user, consumes a one-time nonce, and rechecks the live user, workspace, membership, role, and revocable session before an internal transaction may set RLS context. A caller who only possesses the runtime database credential cannot read business tables, call the verifier directly, or gain access by setting a custom GUC.
+
+The external Auth0 Staging tenant is still a release gate. Until it is configured and its Authorization Code + PKCE, rotating refresh-token, reuse-detection, logout, suspension, and membership-removal flows pass real Staging E2E, the local synthetic issuer tests do not constitute formal Identity Provider acceptance.
 
 ## Rehearsal sequence
 
@@ -19,7 +21,7 @@ Security boundary: current RLS trusts tenant/user custom GUC values set by the b
 7. Reconcile employees, archived employees, shifts, attendance, leave dates, payroll adjustments, revision, and checksum.
 8. Verify a second identical import reports replay and a different import is blocked.
 9. Execute RLS tests using two workspaces and two separate members.
-10. Complete Identity Provider reenrollment and API E2E before any frontend cutover.
+10. Follow `docs/AUTH0_STAGING_SETUP.md`; complete Identity Provider reenrollment and API E2E before any frontend cutover.
 
 ## Rollback
 

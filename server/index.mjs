@@ -2,7 +2,8 @@ import process from 'node:process';
 import { createApiServer } from './app.mjs';
 import { createCommandService } from './commands.mjs';
 import { createPool } from './db.mjs';
-import { createJwtVerifier } from './jwt-verifier.mjs';
+import { createOidcVerifier } from './jwt-verifier.mjs';
+import { createTenantContextSigner } from './tenant-context.mjs';
 
 function required(name) {
   const value = String(process.env[name] || '').trim();
@@ -13,13 +14,18 @@ function required(name) {
 const environment = String(process.env.BANK_ENV || 'local').toLowerCase();
 if (!['local', 'staging', 'production'].includes(environment)) throw new Error('BANK_ENV 格式不正確。');
 const pool = createPool();
-const verifyAccessToken = createJwtVerifier({
-  publicKeyPem: required('BANK_JWT_PUBLIC_KEY').replaceAll('\\n', '\n'),
-  issuer: required('BANK_JWT_ISSUER'),
-  audience: required('BANK_JWT_AUDIENCE')
+const verifyAccessToken = createOidcVerifier({
+  issuer: required('BANK_OIDC_ISSUER'),
+  audience: required('BANK_OIDC_AUDIENCE'),
+  jwksUri: required('BANK_OIDC_JWKS_URL'),
+  sessionClaim: String(process.env.BANK_OIDC_SESSION_CLAIM || 'https://banke.tw/session_id')
+});
+const tenantContextSigner = createTenantContextSigner({
+  key: required('BANK_TENANT_CONTEXT_KEY'),
+  keyId: required('BANK_TENANT_CONTEXT_KEY_ID')
 });
 const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => value.trim()).filter(Boolean);
-const commandService = createCommandService({ pool });
+const commandService = createCommandService({ pool, tenantContextSigner });
 const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins });
 const port = Number(process.env.PORT || 8080);
 

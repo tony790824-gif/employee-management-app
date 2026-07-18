@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-18.1
-  description: Implemented transition API. It is not the Production endpoint and does not include the future Identity Provider endpoints.
+  version: 2026-07-18.2
+  description: Implemented Staging transition API. Auth0 OIDC validation and local session boundaries exist, but external Auth0 PKCE/refresh integration and Production cutover are not approved.
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only
@@ -20,8 +20,26 @@ paths:
       responses:
         '200': { description: Database is reachable }
         '500': { $ref: '#/components/responses/Error' }
+  /auth/session:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '201': { description: Local revocable session established after live membership authorization }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /auth/logout:
+    post:
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200': { description: Local session revoked }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
   /employees:
     get:
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
       responses:
         '200': { description: Active employees visible to boss or manager }
         '401': { $ref: '#/components/responses/Error' }
@@ -29,6 +47,7 @@ paths:
   /commands/{commandName}:
     post:
       parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
         - in: path
           name: commandName
           required: true
@@ -53,11 +72,18 @@ paths:
         '409': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
 components:
+  parameters:
+    WorkspaceId:
+      in: header
+      name: X-Workspace-Id
+      required: true
+      description: Untrusted requested workspace; authorization is resolved server-side from live membership.
+      schema: { type: string, pattern: '^ws_[a-f0-9]{32}$' }
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT RS256
+      bearerFormat: Auth0 OIDC access token (RS256)
   responses:
     Error:
       description: Structured API error

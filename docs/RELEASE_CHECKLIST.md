@@ -1,5 +1,18 @@
 # 班客邦 Release Checklist
 
+> 2026-07-18 Identity/Tenant boundary: PostgreSQL migrations 0004 through 0008 add OIDC principal mapping, revocable sessions, signed one-time tenant assertions, and controlled database functions. The runtime API role has zero business-table grants. Synthetic Local/Staging security tests are required to pass, but external Auth0 Staging PKCE and refresh-token lifecycle E2E remains a P0 release gate. Production remains untouched.
+
+## Sprint 3 Identity release gates
+
+- [x] RS256 access-token verification checks issuer, audience, expiration, not-before, key ID, and JWKS rotation behavior.
+- [x] Unknown JWKS key ID fails closed.
+- [x] Tenant context is resolved from verified issuer/subject plus live database membership, not a token workspace claim.
+- [x] Direct business-table access and forged custom GUC access are denied to the runtime API role.
+- [x] Session logout, suspension, membership removal, context replay, and simulated refresh-reuse revocation are covered by automated tests.
+- [ ] Create the isolated Auth0 Staging tenant and configure Authorization Code + PKCE with rotating refresh tokens and reuse detection.
+- [ ] Complete real Auth0 Staging E2E for login, refresh rotation/replay, logout, user suspension, membership removal, and JWKS rotation.
+- [ ] Approve Identity Provider operations/runbook before any frontend cutover or Production deployment.
+
 > 2026-07-17 Frontend isolation: Local/Staging/Production builds now have separate backend configuration, storage/session namespaces, cache prefixes, and PWA identities. Desktop Staging smoke verification passed; real phone/tablet/desktop E2E remains required and is tracked in `docs/STAGING_E2E_CHECKLIST.md`. Production was not deployed.
 
 > 2026-07-17 Staging 證據：隔離 Apps Script 後端的核心 API、revision conflict、session 撤銷、私人備份、實際還原及還原後 readiness 已通過。尚未建立獨立 Staging 前端，也未完成真實手機／平板 E2E，因此本清單仍未全部通過，禁止正式發布。

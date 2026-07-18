@@ -1,5 +1,16 @@
 # Change Log
 
+## 2026-07-18 — Sprint 3 OIDC and unforgeable tenant context foundation
+
+- Selected Auth0 as the single managed OIDC/OAuth 2.0 provider; added strict RS256 issuer/audience/time validation, same-origin JWKS caching, key rotation, unknown-key fail-closed behavior, timeout and RSA-key bounds.
+- Rejected token `workspace_id`; the requested workspace is now re-authorized against live PostgreSQL user, workspace, membership, role and session state for every controlled call.
+- Added migrations 0004–0008 for OIDC principal mapping, revocable local sessions, tenant-context keys/nonces and controlled SECURITY DEFINER query/command functions.
+- Removed all runtime table/sequence privileges. The API role may execute only four exact controlled functions and cannot invoke tenant verification directly.
+- Added 30-second HMAC-signed, single-use internal tenant assertions. Direct table access and forged custom GUC remain denied even with the runtime database credential.
+- Live Staging tests cover two tenants, all six commands, assertion replay, member/user suspension, simulated refresh-family compromise, logout and least-privilege grants.
+- Fixed Session `iat` second/millisecond precision and leave audit resource-ID operator precedence defects found on the real engine.
+- Production, frontend, Google Sheets and Apps Script were not changed or deployed. Real Auth0 Staging PKCE/refresh/reuse integration remains an external acceptance gate.
+
 ## 2026-07-18 — Sprint 2 Managed Staging PostgreSQL validation
 
 - Applied migrations 0001–0003 to an isolated Neon PostgreSQL 18.4 Staging database and verified checksums, per-migration transactions, advisory locking, and repeat execution protection.

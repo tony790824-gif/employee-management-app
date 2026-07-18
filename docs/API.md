@@ -126,24 +126,19 @@
 
 正式 endpoint、schema 與 error catalog 將在 Sprint 2–3 ADR 後定案。
 
-## 正式 API 設計 (Sprint 2)
+## 正式 API 設計（Sprint 3 安全邊界）
 
 詳細的 OpenAPI 規格請參閱：[docs/openapi.yaml](openapi.yaml)
 
 ### 身份驗證流程 (Auth Flow)
 
-1. **登入 (Login)**:
-   - Client 送出 `phone` 與 `pin_hash`。
-   - Server 驗證成功後，核發 `access_token` (短效) 與 `refresh_token` (長效)。
-2. **存取 (Access)**:
-   - Client 在 Header 帶入 `Authorization: Bearer <access_token>`。
-   - Server 透過 JWT 內嵌的 `workspace_id` 執行 RLS 隔離。
-3. **刷新 (Refresh)**:
-   - `access_token` 過期時，Client 呼叫 `/auth/refresh` 並帶入 `refresh_token`。
-   - Server 檢查 `refresh_token` 有效性並核發新的 `access_token`。
-4. **登出 (Logout)**:
-   - Client 呼叫 `/auth/logout`。
-   - Server 撤銷資料庫中的 `refresh_token`。
+1. **登入**：未來 Staging frontend 使用 Auth0 Authorization Code + PKCE；程式基礎已完成，外部 Auth0 tenant 尚未接通。
+2. **Access**：Client 帶 `Authorization: Bearer <RS256 access token>` 與不可信任的 `X-Workspace-Id` request。API 驗證 issuer/audience/time/JWKS/session claim；任何 token `workspace_id` 會被拒絕。
+3. **Tenant authorization**：API 簽發短效、單次 internal context。PostgreSQL 以 issuer/subject 對應 active user，再即時確認 workspace、membership、role 與 local session；client 不能決定真正 tenant context。
+4. **Refresh**：由 Auth0 rotation/reuse detection 管理，token 不儲存在本資料庫；外部 Staging event 到 local-session revoke 尚待 E2E。
+5. **Logout**：`POST /v1/auth/logout` 撤銷 local session，舊 Access Token 後續被資料庫拒絕；provider logout 尚待 Auth0 Staging 驗收。
+
+現行 PostgreSQL API 實作另見 `docs/openapi-postgres.yaml`。Google Sheets 過渡登入流程未移除或切換。
 
 ### 命令與查詢 (Command & Query)
 

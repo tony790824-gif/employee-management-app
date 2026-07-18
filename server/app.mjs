@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import { ApiError } from './errors.mjs';
 import { bearerToken } from './jwt-verifier.mjs';
+import { requestedWorkspace } from './tenant-context.mjs';
 
 const MAX_BODY_BYTES = 1_048_576;
 
@@ -67,7 +68,7 @@ export function createRequestHandler({ commandService, verifyAccessToken, pool, 
       }
       if (request.method === 'OPTIONS') {
         response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-        response.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Idempotency-Key,X-Request-Id');
+        response.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Workspace-Id');
         response.statusCode = 204;
         response.end();
         return;
@@ -81,16 +82,26 @@ export function createRequestHandler({ commandService, verifyAccessToken, pool, 
         json(response, 200, { ok: true }, requestId);
         return;
       }
-      const principal = verifyAccessToken(bearerToken(request.headers));
+      const identity = await verifyAccessToken(bearerToken(request.headers));
+      const workspaceId = requestedWorkspace(request.headers);
+      if (request.method === 'POST' && url.pathname === '/v1/auth/session') {
+        json(response, 201, await commandService.establishSession({ identity, workspaceId }), requestId);
+        return;
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/auth/logout') {
+        json(response, 200, await commandService.logout({ identity, workspaceId }), requestId);
+        return;
+      }
       if (request.method === 'GET' && url.pathname === '/v1/employees') {
-        json(response, 200, await commandService.listEmployees({ principal }), requestId);
+        json(response, 200, await commandService.listEmployees({ identity, workspaceId }), requestId);
         return;
       }
       const match = request.method === 'POST' && /^\/v1\/commands\/([a-z.-]+)$/.exec(url.pathname);
       if (match) {
         const input = await readJson(request);
         const result = await commandService.execute({
-          principal,
+          identity,
+          workspaceId,
           commandName: match[1],
           input,
           idempotencyKey: String(request.headers['idempotency-key'] || ''),

@@ -1,0 +1,11 @@
+DROP FUNCTION IF EXISTS app_private.api_execute_command(text, text, text, text, jsonb, text, text, text);
+DROP FUNCTION IF EXISTS app_private.api_list_employees(text, text, text);
+DROP FUNCTION IF EXISTS app_private.api_logout_session(text, text, text);
+DROP FUNCTION IF EXISTS app_private.api_establish_session(text, text, text);
+DROP FUNCTION IF EXISTS app_private.verify_tenant_context(text, text, text, text, boolean);
+DROP FUNCTION IF EXISTS app_private.raise_auth_error(text);
+DROP FUNCTION IF EXISTS app_private.base64url_decode(text);
+DROP TABLE IF EXISTS app_private.tenant_context_nonces;
+DROP TABLE IF EXISTS app_private.tenant_context_keys;
+DROP TABLE IF EXISTS app_private.auth_sessions;
+DROP TABLE IF EXISTS app_private.identity_principals;

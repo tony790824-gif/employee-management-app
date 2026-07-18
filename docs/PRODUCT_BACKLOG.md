@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-18 — Sprint 3 Identity/Tenant 程式基礎已驗證
+
+- **完成：** RS256 OIDC/JWKS 驗證、`kid` rotation/unknown-key fail closed、短效 access-token 時間邊界、namespaced provider session、可撤銷 local session、live membership recheck、簽章/短效/單次 tenant context、API role 零 table 權限、四個受控 database functions。
+- **真實 Staging 證據：** 雙租戶正反向、偽造 workspace claim、偽造 custom GUC、direct SQL、context replay、停權／移除、compromised session、logout 及六個 command 全部符合預期。
+- **外部阻擋：** 依 `docs/AUTH0_STAGING_SETUP.md` 建立獨立 Auth0 Staging tenant/API/browser app；完成 PKCE、refresh rotation/reuse、provider logout/disable event 到 local session revoke 的 E2E 前，不得稱正式 Identity Provider 已接通。
+- **下一個唯一最高優先：** 完成 Auth0 Staging 外部設定與真實 token lifecycle E2E，不切換 Production 前端。
+- **後續 P0/P1：** 完整 read/API surface、provider event adapter、context-key rotation runbook、rate limit/observability、frontend adapter/cutover rehearsal、真實跨裝置 E2E。
+
 ## 2026-07-18 — Managed Staging PostgreSQL 已驗收
 
 - **完成：** 真實 PostgreSQL 18.4 Migration、checksum／transaction／advisory lock／重跑保護、非敏感 snapshot dry-run／apply／replay、雙租戶 FORCE RLS、複合外鍵、六個 Command API、資料對帳、Query Plan、官方 backup/restore 與還原後 RLS/API。

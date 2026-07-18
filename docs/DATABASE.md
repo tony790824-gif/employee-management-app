@@ -1,5 +1,13 @@
 # Database 文件（現況與目標）
 
+## 2026-07-18 Identity/Tenant 安全邊界
+
+Migrations `0004`–`0008` 新增 `app_private.identity_principals`、`auth_sessions`、`tenant_context_keys`、`tenant_context_nonces`，以及四個受控 `api_*` 函式。Runtime API role 對 public/app_private tables 與 sequences 皆無權限，只能執行精確授權的 session/list/command functions。
+
+自訂 GUC 仍只在 SECURITY DEFINER transaction 內供現有 FORCE RLS 使用，但不再是授權來源。函式先驗證 API HMAC context、nonce、OIDC issuer/subject、internal user、workspace、membership、role 與 session，才設定 transaction-local GUC。API role 自行 SET GUC 無法直接查表，亦無權呼叫 verifier。
+
+Context signing key 是高敏感 service secret：API environment/secret manager 與 migrator 安裝的 active DB key 必須一致；不得提交 Git。0006 修正 token `iat` 秒精度，0007 修正 leave audit resource ID，0008 綁定 provider session 的 issuer/subject/user。
+
 ## 2026-07-18 Managed Staging PostgreSQL 驗收
 
 隔離 Neon PostgreSQL 18.4 已完成三階段 Migration、非敏感 Snapshot 匯入／重播、雙租戶 FORCE RLS、複合外鍵、最小權限 API role、Command API、Query Plan 及官方邏輯備份／還原。Migration role 使用 direct endpoint；API role 使用 pooler、`NOINHERIT`、20 連線上限與 10 秒 statement timeout，不能讀取 `schema_migrations` 或建立物件。Staging host 另以環境變數固定，避免誤標環境後連到其他專案。

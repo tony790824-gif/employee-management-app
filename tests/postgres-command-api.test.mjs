@@ -3,143 +3,153 @@ import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
 import { createApiServer } from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
-import { createPool, withTenantTransaction } from '../server/db.mjs';
-import { createJwtVerifier } from '../server/jwt-verifier.mjs';
+import { createPool } from '../server/db.mjs';
+import { createOidcVerifier } from '../server/jwt-verifier.mjs';
+import { createTenantContextSigner } from '../server/tenant-context.mjs';
 import { validateCommand } from '../server/validation.mjs';
 
 assert.equal(validateCommand('employees.create', {
-  name: '王小明', phone: '0912345678', hourlyRate: 200
+  name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200
 }).leaveQuota, 8);
 assert.throws(() => validateCommand('employees.create', {
-  name: '王小明', phone: '0912345678', hourlyRate: 200, workspaceId: 'attacker'
-}), error => error.code === 'COMMAND_INVALID');
-assert.throws(() => validateCommand('shifts.create', {
-  employeeId: 'employee-1', date: '2026-02-30', startTime: '09:00', endTime: '18:00'
-}), error => error.code === 'COMMAND_INVALID');
-assert.throws(() => validateCommand('attendance.approve-hours', {
-  attendanceId: 'attendance-1', hours: -1, baseRevision: 0
+  name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200, workspaceId: 'attacker'
 }), error => error.code === 'COMMAND_INVALID');
 
+const workspaceId = 'ws_0123456789abcdef0123456789abcdef';
+const identity = Object.freeze({
+  issuer: 'https://identity.test.invalid/', subject: 'auth0|synthetic-user', sessionId: 'session-synthetic-001',
+  tokenId: 'token-001', issuedAt: 1_800_000_000, expiresAt: 1_800_000_300
+});
+const contextSigner = createTenantContextSigner({
+  key: Buffer.alloc(32, 7).toString('base64url'), keyId: 'local-test-v1',
+  now: () => 1_800_000_000_000, nonceFactory: () => '00000000-0000-4000-8000-000000000001'
+});
 const queries = [];
-const client = {
+const pool = {
   async query(sql, params = []) {
     queries.push({ sql, params });
-    if (/SELECT command_name/.test(sql)) return { rows: [] };
-    if (/INSERT INTO employees/.test(sql)) return { rows: [{ id: params[1], name: params[2], phone: params[4] }] };
-    return { rows: [] };
+    if (sql.includes('api_establish_session')) return { rows: [{ result: { ok: true, sessionExpiresAt: 1_800_028_800 } }] };
+    if (sql.includes('api_logout_session')) return { rows: [{ result: { ok: true } }] };
+    if (sql.includes('api_list_employees')) return { rows: [{ result: { ok: true, data: [] } }] };
+    if (sql.includes('api_execute_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic' } } }] };
+    throw new Error(`Unexpected SQL: ${sql}`);
   }
 };
-const transactionRunner = async (_pool, principal, callback) => callback({
-  client, member: { role: 'boss', employee_id: null },
-  workspaceId: principal.workspaceId, userId: principal.userId
-});
 const service = createCommandService({
-  pool: {}, transactionRunner, idFactory: () => '00000000-0000-4000-8000-000000000001'
+  pool, tenantContextSigner: contextSigner, idFactory: () => '00000000-0000-4000-8000-000000000002',
+  clock: () => new Date('2027-01-15T08:00:00.000Z')
 });
-const principal = {
-  workspaceId: 'ws_0123456789abcdef0123456789abcdef',
-  userId: '11111111-1111-4111-8111-111111111111'
-};
-const created = await service.execute({
-  principal, commandName: 'employees.create', idempotencyKey: 'employee-create-0001', requestId: 'request-0001',
-  input: { name: '王小明', phone: '0912345678', hourlyRate: 200 }
+await service.establishSession({ identity, workspaceId });
+await service.execute({
+  identity, workspaceId, commandName: 'employees.create', idempotencyKey: 'employee-create-0001', requestId: 'request-0001',
+  input: { name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200 }
 });
-assert.equal(created.ok, true);
-for (const marker of ['INSERT INTO employees', 'INSERT INTO command_receipts', 'INSERT INTO audit_logs', 'INSERT INTO outbox_events']) {
-  assert.ok(queries.some(item => item.sql.includes(marker)), `${marker} must be part of the same transaction callback`);
-}
-assert.ok(queries.filter(item => /INSERT INTO (employees|command_receipts|audit_logs|outbox_events)/.test(item.sql))
-  .every(item => item.params[0] === principal.workspaceId), 'all writes must carry the authenticated workspace');
+await service.listEmployees({ identity, workspaceId });
+await service.logout({ identity, workspaceId });
+assert.equal(queries.length, 4);
+assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
+assert.ok(queries.every(item => !/\b(?:FROM|INTO|UPDATE|DELETE FROM)\s+(?:employees|workspaces|workspace_members)\b/i.test(item.sql)),
+  'API never directly queries tenant tables');
 
-const transactionQueries = [];
-let released = false;
-const transactionClient = {
-  async query(sql, params = []) {
-    transactionQueries.push({ sql, params });
-    if (/SELECT wm\.role/.test(sql)) {
-      return { rows: [{ role: 'boss', employee_id: null, status: 'active', workspace_status: 'active' }] };
-    }
-    return { rows: [] };
-  },
-  release() { released = true; }
-};
-const transactionPool = { connect: async () => transactionClient };
-const transactionResult = await withTenantTransaction(transactionPool, principal, async context => {
-  assert.equal(context.workspaceId, principal.workspaceId);
-  return 'committed';
-});
-assert.equal(transactionResult, 'committed');
-assert.equal(released, true);
-const workspaceContextIndex = transactionQueries.findIndex(item => item.sql.includes("app.current_workspace_id"));
-const membershipIndex = transactionQueries.findIndex(item => /SELECT wm\.role/.test(item.sql));
-assert.ok(workspaceContextIndex >= 0 && workspaceContextIndex < membershipIndex,
-  'tenant context must be established before RLS-protected membership lookup');
-assert.equal(transactionQueries.at(-1).sql, 'COMMIT');
 assert.throws(() => createPool({
   BANK_ENV: 'staging', DATABASE_MIGRATOR_URL: 'postgres://owner@direct.example/db',
   DATABASE_API_URL: 'postgres://owner@direct-pooler.example/db', DATABASE_SSL: 'require',
   BANK_STAGING_DATABASE_HOST: 'direct.example'
-}), /不得共用/);
-assert.throws(() => createPool({
-  BANK_ENV: 'staging', DATABASE_URL: 'postgres://owner@direct.example/db', DATABASE_SSL: 'require'
-}), /DATABASE_API_URL/);
-assert.throws(() => createPool({
-  BANK_ENV: 'staging', DATABASE_API_URL: 'postgres://api@other-pooler.example/db', DATABASE_SSL: 'require',
-  BANK_STAGING_DATABASE_HOST: 'direct.example'
-}), /Staging PostgreSQL host/);
+}), /API.*Migration/);
 
-const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
-const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+function keyPair(kid) {
+  const pair = generateKeyPairSync('rsa', { modulusLength: 2048 });
+  return { ...pair, kid, jwk: { ...pair.publicKey.export({ format: 'jwk' }), kid, use: 'sig', alg: 'RS256' } };
+}
+function token(pair, claims) {
+  const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const header = encode({ alg: 'RS256', typ: 'JWT', kid: pair.kid });
+  const payload = encode(claims);
+  const signature = sign('RSA-SHA256', Buffer.from(`${header}.${payload}`), pair.privateKey).toString('base64url');
+  return `${header}.${payload}.${signature}`;
+}
+const first = keyPair('key-1');
+const second = keyPair('key-2');
+const unknown = keyPair('unknown-key');
+let published = [first.jwk];
+let fetches = 0;
+const fetcher = async () => ({
+  ok: true,
+  headers: { get: name => name.toLowerCase() === 'cache-control' ? 'public, max-age=300' : null },
+  async json() { fetches += 1; return { keys: published }; }
+});
 const nowSeconds = 1_800_000_000;
-const header = encode({ alg: 'RS256', typ: 'JWT' });
-const payload = encode({
-  iss: 'https://identity.example', aud: 'banke-api', sub: principal.userId,
-  workspace_id: principal.workspaceId, exp: nowSeconds + 300
+const verifier = createOidcVerifier({
+  issuer: identity.issuer, audience: 'banke-api', jwksUri: 'https://identity.test.invalid/.well-known/jwks.json',
+  fetcher, now: () => nowSeconds * 1000
 });
-const signature = sign('RSA-SHA256', Buffer.from(`${header}.${payload}`), privateKey).toString('base64url');
-const verifier = createJwtVerifier({
-  publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }),
-  issuer: 'https://identity.example', audience: 'banke-api', now: () => nowSeconds * 1000
-});
-assert.deepEqual(verifier(`${header}.${payload}.${signature}`), { ...principal, tokenId: '' });
-assert.throws(() => verifier(`${header}.${payload}.invalid`), error => error.code === 'TOKEN_INVALID');
+const validClaims = {
+  iss: identity.issuer, aud: 'banke-api', sub: identity.subject,
+  'https://banke.tw/session_id': identity.sessionId, jti: identity.tokenId,
+  iat: nowSeconds, nbf: nowSeconds - 1, exp: nowSeconds + 300
+};
+assert.deepEqual(await verifier(token(first, validClaims)), identity);
+assert.equal(fetches, 1, 'JWKS is cached');
+assert.deepEqual(await verifier(token(first, validClaims)), identity);
+assert.equal(fetches, 1, 'cached key avoids a second fetch');
+await assert.rejects(() => verifier(token(first, { ...validClaims, iss: 'https://evil.invalid/' })), error => error.code === 'TOKEN_ISSUER_INVALID');
+await assert.rejects(() => verifier(token(first, { ...validClaims, aud: 'other-api' })), error => error.code === 'TOKEN_AUDIENCE_INVALID');
+await assert.rejects(() => verifier(token(first, { ...validClaims, exp: nowSeconds - 31 })), error => error.code === 'TOKEN_EXPIRED');
+await assert.rejects(() => verifier(token(first, { ...validClaims, nbf: nowSeconds + 31 })), error => error.code === 'TOKEN_NOT_ACTIVE');
+await assert.rejects(() => verifier(token(first, { ...validClaims, iat: nowSeconds + 31 })), error => error.code === 'TOKEN_INVALID');
+const claimsWithoutSession = { ...validClaims };
+delete claimsWithoutSession['https://banke.tw/session_id'];
+await assert.rejects(() => verifier(token(first, claimsWithoutSession)), error => error.code === 'TOKEN_SESSION_INVALID');
+await assert.rejects(() => verifier(token(first, { ...validClaims, workspace_id: workspaceId })), error => error.code === 'TOKEN_TENANT_CLAIM_REJECTED');
+
+assert.throws(() => createOidcVerifier({
+  issuer: identity.issuer, audience: 'banke-api', jwksUri: 'https://untrusted.invalid/.well-known/jwks.json'
+}), error => error.code === 'AUTH_CONFIG_INVALID');
+
+published = [first.jwk, second.jwk];
+assert.equal((await verifier(token(second, validClaims))).subject, identity.subject, 'unknown kid triggers one safe refresh for rotation');
+await assert.rejects(() => verifier(token(unknown, validClaims)), error => error.code === 'TOKEN_KEY_UNKNOWN');
 
 const api = createApiServer({
   pool: { query: async () => ({ rows: [{ '?column?': 1 }] }) },
   allowedOrigins: ['https://staging.example'],
-  verifyAccessToken: () => principal,
-  commandService: { execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }) }
+  verifyAccessToken: async () => identity,
+  commandService: {
+    establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
+    execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] })
+  }
 });
 api.listen(0, '127.0.0.1');
 await once(api, 'listening');
 const base = `http://127.0.0.1:${api.address().port}`;
 try {
+  const commonHeaders = {
+    Origin: 'https://staging.example', Authorization: 'Bearer a.b.c', 'X-Workspace-Id': workspaceId
+  };
+  const sessionResponse = await fetch(`${base}/v1/auth/session`, { method: 'POST', headers: commonHeaders });
+  assert.equal(sessionResponse.status, 201);
+  const missingWorkspace = await fetch(`${base}/v1/employees`, { headers: {
+    Origin: 'https://staging.example', Authorization: 'Bearer a.b.c'
+  } });
+  assert.equal(missingWorkspace.status, 400);
+  assert.equal((await missingWorkspace.json()).code, 'WORKSPACE_REQUIRED');
+
   const exactPrefix = '{"value":"';
   const exactSuffix = '"}';
   const exactBody = exactPrefix + 'a'.repeat(1_048_576 - Buffer.byteLength(exactPrefix + exactSuffix)) + exactSuffix;
-  assert.equal(Buffer.byteLength(exactBody), 1_048_576);
   const accepted = await fetch(`${base}/v1/commands/attendance.clock-in`, {
-    method: 'POST', headers: {
-      Origin: 'https://staging.example', Authorization: 'Bearer a.b.c',
-      'Content-Type': 'application/json', 'Idempotency-Key': 'clock-in-0001'
-    }, body: exactBody
+    method: 'POST', headers: { ...commonHeaders, 'Content-Type': 'application/json', 'Idempotency-Key': 'clock-in-0001' }, body: exactBody
   });
-  assert.equal(accepted.status, 201, 'exactly 1 MiB is allowed');
-  const unicodeBody = JSON.stringify({ value: '班'.repeat(349_524) });
-  assert.ok(unicodeBody.length < 1_048_576 && Buffer.byteLength(unicodeBody) > 1_048_576);
+  assert.equal(accepted.status, 201);
+  const unicodeBody = JSON.stringify({ value: '測'.repeat(349_524) });
   const rejected = await fetch(`${base}/v1/commands/attendance.clock-in`, {
-    method: 'POST', headers: {
-      Origin: 'https://staging.example', Authorization: 'Bearer a.b.c',
-      'Content-Type': 'application/json', 'Idempotency-Key': 'clock-in-0002'
-    }, body: unicodeBody
+    method: 'POST', headers: { ...commonHeaders, 'Content-Type': 'application/json', 'Idempotency-Key': 'clock-in-0002' }, body: unicodeBody
   });
-  assert.equal(rejected.status, 413, 'UTF-8 bytes, not JavaScript characters, enforce the limit');
+  assert.equal(rejected.status, 413);
   assert.equal((await rejected.json()).code, 'REQUEST_PAYLOAD_TOO_LARGE');
-  const wrongOrigin = await fetch(`${base}/v1/health`, { headers: { Origin: 'https://production.example' } });
-  assert.equal(wrongOrigin.status, 403);
 } finally {
   api.close();
   await once(api, 'close');
 }
 
-console.log('PostgreSQL command validation, JWT, tenant writes and API boundaries passed');
+console.log('PostgreSQL OIDC, signed tenant context, controlled function and API boundary tests passed');

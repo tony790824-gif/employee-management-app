@@ -5,17 +5,11 @@ import pg from 'pg';
 import { databaseConfig } from './migrate.mjs';
 
 const { Client } = pg;
-const API_TABLES = Object.freeze([
-  'workspaces',
-  'workspace_members',
-  'employees',
-  'shifts',
-  'leave_selections',
-  'attendance_records',
-  'payroll_adjustments',
-  'command_receipts',
-  'audit_logs',
-  'outbox_events'
+const API_FUNCTIONS = Object.freeze([
+  'app_private.api_establish_session(text,text,text)',
+  'app_private.api_logout_session(text,text,text)',
+  'app_private.api_list_employees(text,text,text)',
+  'app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'
 ]);
 
 function requiredApiUrl(env = process.env) {
@@ -52,12 +46,15 @@ export async function applyApiRoleGrants(client, apiUrl) {
   const database = (await client.query('SELECT current_database() AS name')).rows[0].name;
   await client.query(await quoted(client, 'REVOKE ALL ON DATABASE %I FROM %I', database, role));
   await client.query(await quoted(client, 'GRANT CONNECT ON DATABASE %I TO %I', database, role));
-  await client.query(await quoted(client, 'GRANT USAGE ON SCHEMA public, app_private TO %I', role));
-  await client.query(await quoted(client, `REVOKE ALL ON ALL TABLES IN SCHEMA public FROM %I`, role));
-  await client.query(await quoted(client, `GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE ${API_TABLES.join(', ')} TO %I`, role));
+  await client.query(await quoted(client, 'GRANT USAGE ON SCHEMA app_private TO %I', role));
+  await client.query(await quoted(client, 'REVOKE ALL ON ALL TABLES IN SCHEMA public, app_private FROM %I', role));
+  await client.query(await quoted(client, 'REVOKE ALL ON ALL SEQUENCES IN SCHEMA public, app_private FROM %I', role));
   await client.query('REVOKE ALL ON ALL FUNCTIONS IN SCHEMA app_private FROM PUBLIC');
-  await client.query(await quoted(client, 'GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA app_private TO %I', role));
-  return { role, tables: API_TABLES.length };
+  await client.query(await quoted(client, 'REVOKE ALL ON ALL FUNCTIONS IN SCHEMA app_private FROM %I', role));
+  for (const signature of API_FUNCTIONS) {
+    await client.query(await quoted(client, `GRANT EXECUTE ON FUNCTION ${signature} TO %I`, role));
+  }
+  return { role, tables: 0, functions: API_FUNCTIONS.length };
 }
 
 async function main() {
@@ -75,7 +72,7 @@ async function main() {
     await client.query('BEGIN');
     const result = await applyApiRoleGrants(client, apiUrl);
     await client.query('COMMIT');
-    process.stdout.write(`${JSON.stringify({ environment: config.environment, apiRole: result.role, grantedTables: result.tables })}\n`);
+    process.stdout.write(`${JSON.stringify({ environment: config.environment, apiRole: result.role, grantedTables: result.tables, grantedFunctions: result.functions })}\n`);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

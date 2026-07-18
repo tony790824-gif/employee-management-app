@@ -173,7 +173,7 @@ async function main() {
 
 if (path.resolve(process.argv[1] || '') === path.resolve(fileURLToPath(import.meta.url))) {
   main().catch(error => {
-    console.error(error.message);
+    console.error(`${error.message}${error.position ? ` (SQL position ${error.position})` : ''}`);
     process.exitCode = 1;
   });
 }

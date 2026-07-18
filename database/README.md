@@ -10,6 +10,8 @@
 - Down migrations are disabled in Production. Local/Staging rollback additionally requires `BANK_ALLOW_DESTRUCTIVE_MIGRATIONS=ALLOW_BANKE_DESTRUCTIVE_ROLLBACK`.
 - Every migration runs in its own transaction under a process-wide advisory lock and is recorded with a SHA-256 checksum.
 
+Migrations 0004–0008 add the Staging identity/tenant boundary: OIDC principal mapping, revocable sessions, signed context keys/nonces and the four controlled database functions. The runtime role receives no business-table or sequence privilege. The signed context key must come from a secret manager/environment and be installed by the migrator; it must never be committed.
+
 ## Commands
 
 ```powershell
@@ -26,7 +28,7 @@ The backup/restore rehearsal is staging-only and requires `BANK_STAGING_RESTORE_
 
 Snapshot import is dry-run by default. Apply mode is single-use and idempotent for the same checksum. A different snapshot cannot be silently imported into an initialized workspace.
 
-Legacy PIN/activation credentials are deliberately not imported. Imported memberships receive `reenrollment_required`; a future approved Identity Provider must complete enrollment before cutover.
+Legacy PIN/activation credentials are deliberately not imported. Imported memberships receive `reenrollment_required`; Auth0 Staging enrollment and token-lifecycle E2E must complete before cutover.
 
 ## Cutover rule
 

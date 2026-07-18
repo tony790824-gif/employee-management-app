@@ -1,5 +1,14 @@
 # 班客邦營運 Runbook（Google Sheets 過渡期）
 
+## PostgreSQL Identity Staging（未接 Production）
+
+- 只可使用 `BANK_ENV=staging`、固定 Staging database host、獨立 runtime/migrator roles 與隔離 Auth0 Staging tenant。
+- OIDC 與 context 變數名稱見 `docs/AUTH0_STAGING_SETUP.md`；所有 secret 只進 secret manager 或 ignored `.env`。
+- 套用 migrations 後執行 `pnpm db:grant-api`，確認結果為 `grantedTables: 0`、`grantedFunctions: 4`。
+- 執行 `pnpm test:postgres:staging`，必須通過跨租戶、direct SQL/GUC、停權/移除、context replay、compromised session 與 logout。
+- Auth0 真實 PKCE/refresh/reuse event 尚未驗收前，不得切換前端、發布 Production 或匯入正式帳號。
+- Context key 輪替必須先在 DB 安裝新 active key、再切 API `BANK_TENANT_CONTEXT_KEY_ID`，保留短暫重疊後撤銷舊 key；正式自動化與復原演練仍是 P1。
+
 ## 受控 Staging
 
 Staging 必須使用獨立 Google Sheet、獨立 bound Apps Script 專案、獨立 Web App deployment 與合成測試帳號；不得共用正式 Sheet、workspace ID、pepper 或 session。Script Properties 至少設定 `SHIFT_APP_OWNER_PHONE`，其餘 workspace、pepper 與 recovery metadata 由既有程式受控建立。
