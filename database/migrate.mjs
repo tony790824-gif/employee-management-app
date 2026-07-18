@@ -11,19 +11,34 @@ const LOCK_NAME = 'banke-schema-migrations-v1';
 const PRODUCTION_CONFIRMATION = 'APPLY_BANKE_PRODUCTION_MIGRATIONS';
 const DESTRUCTIVE_CONFIRMATION = 'ALLOW_BANKE_DESTRUCTIVE_ROLLBACK';
 
+function normalizedHost(value) {
+  return String(value || '').trim().toLowerCase().replace('-pooler.', '.');
+}
+
 export function databaseConfig(env = process.env) {
   const environment = String(env.BANK_ENV || 'local').toLowerCase();
   if (!['local', 'staging', 'production'].includes(environment)) {
     throw new Error('BANK_ENV 必須是 local、staging 或 production。');
   }
-  const connectionString = String(env.DATABASE_URL || '').trim();
-  if (!connectionString) throw new Error('缺少 DATABASE_URL，未執行任何 Migration。');
+  const connectionString = String(env.DATABASE_MIGRATOR_URL || env.DATABASE_URL || '').trim();
+  if (!connectionString) throw new Error('缺少 DATABASE_MIGRATOR_URL，未執行任何 Migration。');
   if (environment === 'production' && env.BANK_ALLOW_PRODUCTION_MIGRATIONS !== PRODUCTION_CONFIRMATION) {
     throw new Error('Production Migration 未取得明確確認，已停止。');
   }
   const sslMode = String(env.DATABASE_SSL || (environment === 'local' ? 'disable' : 'require')).toLowerCase();
   if (!['disable', 'require'].includes(sslMode)) throw new Error('DATABASE_SSL 只能是 disable 或 require。');
   if (environment === 'production' && sslMode !== 'require') throw new Error('Production PostgreSQL 必須啟用 TLS。');
+  const hostname = new URL(connectionString).hostname;
+  if (environment !== 'local' && hostname.includes('-pooler.')) {
+    throw new Error('Staging/Production Migration 必須使用 direct PostgreSQL endpoint，不可使用 pooler。');
+  }
+  if (environment === 'staging') {
+    const expectedHost = String(env.BANK_STAGING_DATABASE_HOST || '').trim();
+    if (!expectedHost) throw new Error('Staging PostgreSQL 缺少 BANK_STAGING_DATABASE_HOST 安全邊界。');
+    if (normalizedHost(hostname) !== normalizedHost(expectedHost)) {
+      throw new Error('DATABASE_MIGRATOR_URL 不符合已確認的 Staging PostgreSQL host，已停止。');
+    }
+  }
   return {
     environment,
     connectionString,

@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## 2026-07-18 — Managed Staging PostgreSQL 已驗收
+
+- **完成：** 真實 PostgreSQL 18.4 Migration、checksum／transaction／advisory lock／重跑保護、非敏感 snapshot dry-run／apply／replay、雙租戶 FORCE RLS、複合外鍵、六個 Command API、資料對帳、Query Plan、官方 backup/restore 與還原後 RLS/API。
+- **環境隔離：** Migration 使用 direct schema owner；API 使用 pooler 上的獨立 `NOINHERIT` 最小權限 role；Staging host 必須與 `BANK_STAGING_DATABASE_HOST` 完全符合。Production 與現行 Google Sheets 路徑未修改。
+- **下一個唯一最高優先：** Sprint 3 在隔離 Staging 建立正式 Identity Provider／token lifecycle、workspace membership claim 驗證，以及不可由單獨 DB credential 偽造的 tenant context（簽章 context 或受信任連線代理），再進行剩餘 read endpoints、frontend adapter/cutover rehearsal。不得直接切換 Production。
+- **仍未完成：** 正式 IAM、不可偽造的 DB tenant context、refresh/revoke/device management、全部讀取 API、前端 adapter、觀測性／告警、負載測試、PITR 證據、真實手機／平板／桌機 E2E 與 Production cutover review。
+
 ## 2026-07-18 — PostgreSQL 多租戶基礎狀態
 
 - **程式面已完成：** versioned schema migrations、FORCE RLS tenant boundary、transactional migration runner、dry-run/idempotent snapshot importer、初版 Transaction/Command API、JWT verification boundary、idempotency/audit/outbox 與自動化結構／單元／API 邊界測試。

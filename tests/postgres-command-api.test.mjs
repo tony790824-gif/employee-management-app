@@ -3,7 +3,7 @@ import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
 import { createApiServer } from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
-import { withTenantTransaction } from '../server/db.mjs';
+import { createPool, withTenantTransaction } from '../server/db.mjs';
 import { createJwtVerifier } from '../server/jwt-verifier.mjs';
 import { validateCommand } from '../server/validation.mjs';
 
@@ -75,6 +75,18 @@ const membershipIndex = transactionQueries.findIndex(item => /SELECT wm\.role/.t
 assert.ok(workspaceContextIndex >= 0 && workspaceContextIndex < membershipIndex,
   'tenant context must be established before RLS-protected membership lookup');
 assert.equal(transactionQueries.at(-1).sql, 'COMMIT');
+assert.throws(() => createPool({
+  BANK_ENV: 'staging', DATABASE_MIGRATOR_URL: 'postgres://owner@direct.example/db',
+  DATABASE_API_URL: 'postgres://owner@direct-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_STAGING_DATABASE_HOST: 'direct.example'
+}), /不得共用/);
+assert.throws(() => createPool({
+  BANK_ENV: 'staging', DATABASE_URL: 'postgres://owner@direct.example/db', DATABASE_SSL: 'require'
+}), /DATABASE_API_URL/);
+assert.throws(() => createPool({
+  BANK_ENV: 'staging', DATABASE_API_URL: 'postgres://api@other-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_STAGING_DATABASE_HOST: 'direct.example'
+}), /Staging PostgreSQL host/);
 
 const { publicKey, privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
 const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');

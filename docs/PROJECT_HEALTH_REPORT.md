@@ -1,5 +1,16 @@
 # 班客邦 Project Health Report
 
+## 2026-07-18 — Managed Staging PostgreSQL 真實引擎驗收
+
+- 隔離 Neon PostgreSQL 18.4 已通過 0001–0003 Migration、checksum、逐版 transaction、advisory lock 與重複執行保護；未連接或修改 Production。
+- 非敏感 Snapshot 的 dry-run、apply、replay 與欄位／筆數對帳通過；過渡 credential 未匯入。
+- 兩個合成 Workspace 已通過 FORCE RLS 正反向測試、無 Context 直連、跨租戶讀寫、複合外鍵與獨立最小權限 API role 測試。
+- 六個已實作 Command API 流程在真實引擎通過；整合測試連續兩次通過，修正了休假測試前置狀態不具重複性的缺陷。
+- 官方 PostgreSQL 18 `pg_dump`／`pg_restore` 已完成隔離還原；Migration／資料筆數一致、11 張表維持 FORCE RLS，還原後雙租戶 API 讀取正常。現有索引已被查詢計畫採用，未新增無證據索引。
+- 安全稽核另確認：RLS 能阻擋無 Context 及已綁定 A 租戶後對 B 的查詢，但持有共用 API database credential 的攻擊者可偽造 custom GUC。正式切換前必須以正式 Identity Provider 搭配簽章 tenant context 或受信任連線代理封堵。
+- **商業上線完成度：69%（前次 67%）。** 上調來自真實 managed engine、RLS、API、匯入與 DR 證據；因上述 DB credential 信任邊界尚未封堵，未上調至 70%。
+- **是否適合正式上線：No。** 正式 Identity Provider、不可偽造 tenant context、token lifecycle、完整 read/API surface、frontend adapter、PITR/RPO/RTO、observability、load test、跨裝置 E2E 與 Production cutover review 尚未完成。
+
 ## 2026-07-18 — PostgreSQL 多租戶基礎
 
 - 正式 PostgreSQL 程式基礎已建立：三個 versioned migrations，包含 constraints、indexes、FORCE RLS、audit/outbox、idempotency 與 snapshot import tracking。

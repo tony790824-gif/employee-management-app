@@ -5,10 +5,30 @@ const { Pool } = pg;
 const WORKSPACE_PATTERN = /^ws_[a-f0-9]{32}$/;
 const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 
+function normalizedHost(value) {
+  return String(value || '').trim().toLowerCase().replace('-pooler.', '.');
+}
+
 export function createPool(env = process.env) {
-  const connectionString = String(env.DATABASE_URL || '').trim();
-  if (!connectionString) throw new Error('缺少 DATABASE_URL。');
   const environment = String(env.BANK_ENV || 'local').toLowerCase();
+  const connectionString = String(env.DATABASE_API_URL || env.DATABASE_URL || '').trim();
+  if (!connectionString) throw new Error('缺少 DATABASE_API_URL。');
+  if (environment !== 'local' && !String(env.DATABASE_API_URL || '').trim()) {
+    throw new Error('Staging/Production API 必須使用獨立的 DATABASE_API_URL 最小權限角色。');
+  }
+  if (environment === 'staging') {
+    const expectedHost = String(env.BANK_STAGING_DATABASE_HOST || '').trim();
+    if (!expectedHost) throw new Error('Staging PostgreSQL 缺少 BANK_STAGING_DATABASE_HOST 安全邊界。');
+    if (normalizedHost(new URL(connectionString).hostname) !== normalizedHost(expectedHost)) {
+      throw new Error('DATABASE_API_URL 不符合已確認的 Staging PostgreSQL host，已停止。');
+    }
+  }
+  const migratorConnectionString = String(env.DATABASE_MIGRATOR_URL || '').trim();
+  if (migratorConnectionString) {
+    const apiRole = new URL(connectionString).username;
+    const migratorRole = new URL(migratorConnectionString).username;
+    if (apiRole === migratorRole) throw new Error('API 與 Migration 不得共用資料庫角色。');
+  }
   const sslMode = String(env.DATABASE_SSL || (environment === 'local' ? 'disable' : 'require')).toLowerCase();
   if (environment === 'production' && sslMode !== 'require') throw new Error('Production PostgreSQL 必須啟用 TLS。');
   return new Pool({

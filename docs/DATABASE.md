@@ -1,5 +1,13 @@
 # Database 文件（現況與目標）
 
+## 2026-07-18 Managed Staging PostgreSQL 驗收
+
+隔離 Neon PostgreSQL 18.4 已完成三階段 Migration、非敏感 Snapshot 匯入／重播、雙租戶 FORCE RLS、複合外鍵、最小權限 API role、Command API、Query Plan 及官方邏輯備份／還原。Migration role 使用 direct endpoint；API role 使用 pooler、`NOINHERIT`、20 連線上限與 10 秒 statement timeout，不能讀取 `schema_migrations` 或建立物件。Staging host 另以環境變數固定，避免誤標環境後連到其他專案。
+
+本次沒有新增或變更 Migration／資料表 schema。`banke_restore_sprint2` 只保留於隔離 Staging 作還原證據；Production 與 Google Sheets A1 snapshot 均未修改。
+
+目前 RLS 的 tenant context 由受信任 API transaction 設定。無 Context 與已綁定 A 後查 B 均會被阻擋；但單獨取得共用 API database credential 的攻擊者仍可偽造 custom GUC。這是 Production 阻擋，下一個正式 Identity Sprint 必須加入簽章 context／受信任連線代理，不能把 database credential secrecy 當成唯一租戶邊界。
+
 ## 2026-07-18 可執行 PostgreSQL 基礎
 
 可執行 schema 現已版本化於 [`database/migrations`](../database/migrations)，`docs/schema.sql` 僅保留歷史設計參考。新 schema 包含 workspace composite keys／foreign keys、FORCE RLS、business constraints/indexes、command idempotency receipts、audit、outbox 與 snapshot import ledger。指令、安全確認、rollback 限制及匯入行為請見 [`database/README.md`](../database/README.md) 與 [`POSTGRESQL_MIGRATION.md`](POSTGRESQL_MIGRATION.md)。

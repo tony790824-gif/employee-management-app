@@ -6,6 +6,10 @@
 
 本實作不包含 login/refresh/logout；[openapi.yaml](openapi.yaml) 中相關路由仍是未來正式 Identity Provider Sprint 的目標規格。現有 Google Sheets API 仍為正式環境使用路徑，本次未變更 Production route。
 
+2026-07-18 Managed Staging 實測已通過：新增員工、建立班次、取代單月排假、上下班打卡、核定工時與員工清單；兩個 Workspace 的正向讀取、跨租戶讀寫拒絕及無 tenant context 拒絕均通過。API 使用獨立最小權限 role，不可讀 Migration ledger 或執行 DDL。這仍是 Staging transition API，尚未接上正式 Identity Provider 或現行前端。
+
+信任邊界限制：tenant context 目前由 backend 以 transaction-local custom GUC 設定；RLS 不會自行驗證 JWT。若共用 API database credential 外洩，攻擊者可偽造 GUC。Production 必須在正式 Identity Sprint 加入不可偽造的簽章 context／受信任連線代理後才可切換。
+
 > 2026-07-16 `doPost` 傳輸層上限為 1 MiB（1,048,576 UTF-8 bytes）；超限在 JSON 解析、schema 驗證與資料寫入前回 `REQUEST_PAYLOAD_TOO_LARGE`。A1 snapshot 及老闆 `save.data` 現對現有電話、credential 表示、薪資／金額、日期／時間執行嚴格值驗證。API action 與成功 response schema 未變，本次未部署 Apps Script。
 
 > 2026-07-16 老闆 `save.data` 現在只接受既有 snapshot 欄位；未知欄位、array root、錯誤 collection／map 形狀或沒有任何可變欄位時回 `REQUEST_DATA_INVALID`。省略可變欄位代表保留伺服器既有值，明確空集合才代表清除。API action 與成功 response schema 未變，本次未部署 Apps Script。

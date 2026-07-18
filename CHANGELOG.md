@@ -1,5 +1,17 @@
 # Change Log
 
+## 2026-07-18 — Sprint 2 Managed Staging PostgreSQL validation
+
+- Applied migrations 0001–0003 to an isolated Neon PostgreSQL 18.4 Staging database and verified checksums, per-migration transactions, advisory locking, and repeat execution protection.
+- Imported a non-sensitive Google Sheets snapshot through dry-run, apply, and replay flows; reconciled employees, shifts, attendance, leave, payroll, and import metadata.
+- Provisioned a separate pooled `NOINHERIT` API role with DML access only to the ten runtime tables; schema migration history and DDL remain inaccessible.
+- Passed positive and negative FORCE RLS tests across two synthetic workspaces, including no-context direct SQL, A-context-to-B cross-tenant mutation, and composite foreign-key attempts.
+- Passed all six implemented Command API flows and repeated the live test twice to prove idempotent execution.
+- Added a staging-only, host-pinned PostgreSQL 18 `pg_dump`/`pg_restore` rehearsal. Restore reconciliation, 11 forced-RLS tables, and tenant-isolated API reads passed in `banke_restore_sprint2`.
+- Query plans used the existing employee phone and workspace/date indexes; no speculative index was added.
+- Fixed a repeatability defect in the live leave-selection test. Production, Google Sheets, Apps Script, and the frontend route were not changed or deployed.
+- Confirmed a Production-blocking trust-boundary limitation: possession of the shared API database credential can forge the custom tenant GUC. Formal identity plus a signed/externally verified database context or trusted connection proxy is required before cutover.
+
 ## 2026-07-18 — Sprint 1 PostgreSQL multi-tenant foundation
 
 - Added three transactional PostgreSQL migrations for tenant identity mapping, employees, shifts, leave selections, attendance, payroll adjustments, idempotency receipts, audit logs, outbox events, and snapshot-import ledger.

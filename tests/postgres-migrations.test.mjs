@@ -31,9 +31,23 @@ assert.throws(() => databaseConfig({
   BANK_ENV: 'production', DATABASE_URL: 'postgres://db',
   BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'disable'
 }), /TLS|Production/);
-const staging = databaseConfig({ BANK_ENV: 'staging', DATABASE_URL: 'postgres://db', DATABASE_SSL: 'require' });
+const staging = databaseConfig({
+  BANK_ENV: 'staging', DATABASE_URL: 'postgres://db', DATABASE_SSL: 'require', BANK_STAGING_DATABASE_HOST: 'db'
+});
 assert.equal(staging.environment, 'staging');
 assert.deepEqual(staging.ssl, { rejectUnauthorized: true });
+const separated = databaseConfig({
+  BANK_ENV: 'staging', DATABASE_MIGRATOR_URL: 'postgres://owner@direct.example/db',
+  DATABASE_URL: 'postgres://legacy@ignored.example/db', DATABASE_SSL: 'require', BANK_STAGING_DATABASE_HOST: 'direct.example'
+});
+assert.equal(new URL(separated.connectionString).username, 'owner');
+assert.throws(() => databaseConfig({
+  BANK_ENV: 'staging', DATABASE_MIGRATOR_URL: 'postgres://owner@host-pooler.example/db', DATABASE_SSL: 'require'
+}), /direct|pooler/);
+assert.throws(() => databaseConfig({
+  BANK_ENV: 'staging', DATABASE_MIGRATOR_URL: 'postgres://owner@other.example/db', DATABASE_SSL: 'require',
+  BANK_STAGING_DATABASE_HOST: 'staging.example'
+}), /Staging PostgreSQL host/);
 
 const importer = await readFile(new URL('../database/import-snapshot.mjs', import.meta.url), 'utf8');
 const tenantContextPosition = importer.indexOf("set_config('app.current_workspace_id'");

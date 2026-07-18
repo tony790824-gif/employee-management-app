@@ -5,16 +5,20 @@ import { deployFiles, sourceScripts } from './project-files.mjs';
 const failures = [];
 const fail = message => failures.push(message);
 const backendSourceFiles = [
+  'database/apply-role-grants.mjs',
   'database/import-snapshot.mjs',
   'database/migrate.mjs',
   'database/snapshot-mapper.mjs',
+  'database/staging-backup-restore.mjs',
   'server/app.mjs',
   'server/commands.mjs',
   'server/db.mjs',
   'server/errors.mjs',
   'server/index.mjs',
   'server/jwt-verifier.mjs',
-  'server/validation.mjs'
+  'server/validation.mjs',
+  'tests/postgres-backup-restore.test.mjs',
+  'tests/postgres-staging-integration.test.mjs'
 ];
 
 for (const file of deployFiles) {

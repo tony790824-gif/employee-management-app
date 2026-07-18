@@ -19,6 +19,8 @@ The formal multi-tenant database and Transaction/Command API now live in `databa
 
 Run database commands only with an explicitly configured PostgreSQL environment. Never commit `.env` files or database/JWT secrets.
 
+> 2026-07-18 Managed Staging PostgreSQL 驗收：Neon PostgreSQL 18.4 的隔離 Staging 已完成三階段 Migration、checksum／transaction／advisory-lock／重複執行、非敏感 snapshot dry-run／apply／replay、雙 Workspace FORCE RLS 正反向、Command API、查詢計畫及官方 `pg_dump`／`pg_restore` 還原演練。Migration 採 direct owner endpoint，API 採 pooler + `NOINHERIT` 最小權限角色，並以固定 Staging host 防止環境誤標。Production、Google Sheets 與現行前端均未切換或部署。
+
 > 2026-07-17 P0 Staging 驗收：已建立與正式資料隔離的 Google Sheet、Apps Script 專案及 Web App 部署，完成老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、session 撤銷及備份還原演練。Staging 實測發現 Apps Script 在全域 lock 內執行 4096 次 HMAC 會逾時，已改為有版本、固定成本的 `hmac-sha256-v2` 過渡 credential；既有 v1 成功登入後自動遷移。正式站未發布，產品仍不可正式上線。
 
 > 2026-07-16 P0 request/value schema 更新：Apps Script `doPost` 以 UTF-8 byte 數限制 1 MiB，超限在 JSON 解析與資料寫入前拒絕；A1 snapshot 現驗證電話、過渡 credential 表示、薪資／金額、日期與時間。舊資料缺欄、空薪資調整及原樣舊扣款維持相容；新負數調整會被拒絕。本次未部署 Apps Script。
