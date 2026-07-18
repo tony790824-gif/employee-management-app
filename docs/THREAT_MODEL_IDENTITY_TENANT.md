@@ -16,14 +16,14 @@ Scope: Local and isolated Staging PostgreSQL/API. Production and the current Goo
 | Threat | Control | Residual risk / next gate |
 |---|---|---|
 | Access token theft | TLS, short Auth0 TTL, strict RS256/issuer/audience/time/JWKS validation, local session check on every request | A stolen bearer token remains usable until expiry or local revocation; DPoP is a later risk-based option |
-| Refresh token theft | Auth0 rotating refresh tokens, expiration, reuse detection and family revocation | External Auth0 configuration and a verified event path to mark local sessions compromised are still required |
+| Refresh token theft | Real Auth0 Staging rotation, expiration, reuse rejection and family revocation passed without persisting token values | A verified public Staging event path that marks the matching local session compromised automatically is still required |
 | API database credential leak | Runtime role has zero table/sequence grants and only four controlled function grants | Credential rotation, vault integration and alerting remain operational work |
 | Forged `workspace_id` | Token tenant claims are rejected; requested workspace is checked against live membership | None for the tested API surface; all future functions must use the same boundary |
 | Forged custom GUC | Runtime role cannot query tables; controlled functions overwrite internal GUC only after signed identity/membership validation | Database owner or migrator compromise remains out of scope for the runtime boundary |
-| Removed/suspended member uses old token | User, identity principal, workspace, membership status and role are checked on every call | Identity-provider disable events still need external integration |
+| Removed/suspended member uses old token | User, identity principal, workspace, membership status and role are checked on every call; a newly signed token cannot restore access | Identity-provider disable events still need external integration |
 | Token/context replay | Access token is bounded by Auth0/session; internal assertions use a UUID nonce consumed in PostgreSQL | Bearer access-token replay is not proof-of-possession |
 | Signing-key rotation | JWKS cache supports `kid` rotation and unknown keys fail closed; internal context keys have status/not-before/expiry | Context-key rotation runbook/automation remains P1 |
-| Logout | Local session is revoked and subsequent use fails | Provider logout/refresh revocation requires Auth0 Staging configuration |
+| Logout | Real Auth0 provider logout returns only to the allowlisted Local URL; local logout revokes the PostgreSQL session and rejects the old access token | Provider logout and local revocation are independently proven; automatic provider-event delivery remains pending |
 | Malicious JWT headers/JWKS | RS256 only, no critical headers, HTTPS same-origin JWKS, redirect denial, timeout, key-count and RSA-size bounds | Availability still depends on cached JWKS and Auth0 uptime |
 
 ## Security invariants proven in Staging
@@ -34,10 +34,12 @@ Scope: Local and isolated Staging PostgreSQL/API. Production and the current Goo
 - The API role cannot select employees, update memberships, or call `verify_tenant_context` directly.
 - A repeated signed tenant assertion is rejected.
 - Suspended user, suspended membership, compromised session and logged-out session are rejected even with an unexpired access token.
+- Refreshing/re-signing a token cannot bypass a suspended user or inactive membership, and removing Workspace A membership does not affect an independently valid Workspace B membership.
+- Real Auth0 Staging PKCE S256, refresh rotation, old-token reuse rejection, token-family revocation and provider logout passed without logging token/session values.
 
 ## Not yet proven
 
-- Real Auth0 Authorization Code + PKCE, refresh rotation/reuse event and provider logout E2E.
+- Automatic Auth0 refresh-reuse/account-disable event delivery to the corresponding local PostgreSQL session.
 - Secret-manager rotation, monitoring, rate limiting, WAF and incident response.
 - Real browser/mobile token storage and cross-device session management.
 - Production load, chaos and failover behavior.

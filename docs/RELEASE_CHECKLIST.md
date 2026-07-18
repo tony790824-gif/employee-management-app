@@ -9,8 +9,10 @@
 - [x] Tenant context is resolved from verified issuer/subject plus live database membership, not a token workspace claim.
 - [x] Direct business-table access and forged custom GUC access are denied to the runtime API role.
 - [x] Session logout, suspension, membership removal, context replay, and simulated refresh-reuse revocation are covered by automated tests.
-- [ ] Create the isolated Auth0 Staging tenant and configure Authorization Code + PKCE with rotating refresh tokens and reuse detection.
-- [ ] Complete real Auth0 Staging E2E for login, refresh rotation/replay, logout, user suspension, membership removal, and JWKS rotation.
+- [x] Create the isolated Auth0 Staging tenant and configure Authorization Code + PKCE with rotating refresh tokens and reuse detection.
+- [x] Complete real Auth0 Staging browser acceptance for PKCE login, refresh rotation/replay, token-family revocation, session-claim binding and provider logout.
+- [x] Prove in Staging PostgreSQL that user suspension, membership removal, compromised/revoked sessions and refreshed access tokens cannot bypass live authorization.
+- [ ] Deliver Auth0 refresh-reuse/account-disable events to a public isolated Staging endpoint and automatically revoke/compromise the matching local PostgreSQL session.
 - [ ] Approve Identity Provider operations/runbook before any frontend cutover or Production deployment.
 
 > 2026-07-17 Frontend isolation: Local/Staging/Production builds now have separate backend configuration, storage/session namespaces, cache prefixes, and PWA identities. Desktop Staging smoke verification passed; real phone/tablet/desktop E2E remains required and is tracked in `docs/STAGING_E2E_CHECKLIST.md`. Production was not deployed.

@@ -24,6 +24,8 @@ const owner = new pg.Client({
   connectionTimeoutMillis: 10_000
 });
 let originalMembershipAuth = [];
+let insertedWorkspaceBMembership = false;
+let insertedWorkspaceBUserId = null;
 
 function oidcKey(kid) {
   const pair = generateKeyPairSync('rsa', { modulusLength: 2048 });
@@ -98,6 +100,19 @@ try {
     "UPDATE workspace_members SET auth_status='active' WHERE workspace_id=$1 AND user_id=$2",
     [WORKSPACE_B, bossB.user_id]
   ));
+  const existingWorkspaceBMembership = await ownerContext(WORKSPACE_B, async () => (await owner.query(
+    'SELECT 1 FROM workspace_members WHERE workspace_id=$1 AND user_id=$2',
+    [WORKSPACE_B, employeeA.user_id]
+  )).rowCount > 0);
+  if (!existingWorkspaceBMembership) {
+    await ownerContext(WORKSPACE_B, () => owner.query(
+      `INSERT INTO workspace_members(workspace_id, user_id, role, status, auth_status)
+       VALUES ($1, $2, 'manager', 'active', 'active')`,
+      [WORKSPACE_B, employeeA.user_id]
+    ));
+    insertedWorkspaceBMembership = true;
+    insertedWorkspaceBUserId = employeeA.user_id;
+  }
 
   const principals = [
     { subject: 'auth0|synthetic-boss-a', userId: bossA.user_id, sessionId: `boss-a-${randomUUID()}` },
@@ -138,6 +153,7 @@ try {
     for (const [token, workspace] of [[bossToken, WORKSPACE_A], [employeeToken, WORKSPACE_A], [bossBToken, WORKSPACE_B]]) {
       await apiRequest(base, '/v1/auth/session', token, workspace, { method: 'POST', expected: 201 });
     }
+    await apiRequest(base, '/v1/auth/session', employeeToken, WORKSPACE_B, { method: 'POST', expected: 201 });
 
     const ownEmployees = await apiRequest(base, '/v1/employees', bossToken, WORKSPACE_A);
     assert.ok(ownEmployees.data.some(row => row.id === 'employee-a'));
@@ -214,6 +230,14 @@ try {
       method: 'POST', expected: 403, idempotencyKey: `removed-${randomUUID()}`, body: {}
     });
     assert.equal(removedMembership.code, 'WORKSPACE_ACCESS_DENIED');
+    const refreshedAfterRemoval = accessToken(oidc, { ...employeePrincipal, nowSeconds });
+    const removedMembershipAfterRefresh = await apiRequest(
+      base, '/v1/commands/attendance.clock-in', refreshedAfterRemoval, WORKSPACE_A,
+      { method: 'POST', expected: 403, idempotencyKey: `removed-refreshed-${randomUUID()}`, body: {} }
+    );
+    assert.equal(removedMembershipAfterRefresh.code, 'WORKSPACE_ACCESS_DENIED');
+    const retainedWorkspaceB = await apiRequest(base, '/v1/employees', refreshedAfterRemoval, WORKSPACE_B);
+    assert.deepEqual(retainedWorkspaceB.data.map(row => row.id), ['employee-b']);
     await ownerContext(WORKSPACE_A, () => owner.query(
       "UPDATE workspace_members SET status='active' WHERE workspace_id=$1 AND user_id=$2", [WORKSPACE_A, employeeA.user_id]
     ));
@@ -223,6 +247,12 @@ try {
       method: 'POST', expected: 403, idempotencyKey: `suspended-${randomUUID()}`, body: {}
     });
     assert.equal(suspendedUser.code, 'IDENTITY_ACCESS_DENIED');
+    const refreshedWhileSuspended = accessToken(oidc, { ...employeePrincipal, nowSeconds });
+    const suspendedUserAfterRefresh = await apiRequest(
+      base, '/v1/commands/attendance.clock-in', refreshedWhileSuspended, WORKSPACE_A,
+      { method: 'POST', expected: 403, idempotencyKey: `suspended-refreshed-${randomUUID()}`, body: {} }
+    );
+    assert.equal(suspendedUserAfterRefresh.code, 'IDENTITY_ACCESS_DENIED');
     await owner.query("UPDATE users SET status='active' WHERE id=$1", [employeeA.user_id]);
 
     await owner.query(
@@ -245,7 +275,8 @@ try {
   console.log(JSON.stringify({
     migration0004: 'passed', oidcRs256Jwks: 'passed', controlledDatabaseFunctions: 'passed',
     apiRoleDirectTableAccess: 'denied', forgedCustomGuc: 'denied', workspaceAAndBIsolation: 'passed',
-    membershipRemoval: 'denied', suspendedUser: 'denied', refreshReplaySessionRevocation: 'passed',
+    membershipRemoval: 'denied', membershipRemovalAfterRefresh: 'denied', retainedOtherWorkspace: 'passed',
+    suspendedUser: 'denied', suspendedUserAfterRefresh: 'denied', refreshReplaySessionRevocation: 'passed',
     logoutRevocation: 'passed', tenantContextReplay: 'denied', apiRoleLeastPrivilege: 'passed', commandApi: 'passed'
   }));
 } finally {
@@ -257,6 +288,12 @@ try {
       await ownerContext(state.workspaceId, () => owner.query(
         'UPDATE workspace_members SET auth_status=$3 WHERE workspace_id=$1 AND user_id=$2',
         [state.workspaceId, state.userId, state.authStatus]
+      ));
+    }
+    if (insertedWorkspaceBMembership) {
+      await ownerContext(WORKSPACE_B, () => owner.query(
+        'DELETE FROM workspace_members WHERE workspace_id=$1 AND user_id=$2',
+        [WORKSPACE_B, insertedWorkspaceBUserId]
       ));
     }
   } catch { /* preserve the primary test failure */ }

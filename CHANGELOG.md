@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-19 — Auth0 Staging token lifecycle acceptance
+
+- Added a Staging-only, memory-only Auth0 Authorization Code + PKCE S256 acceptance harness that never prints or stores token, authorization-code or session values.
+- Passed real Auth0 Staging access-token validation, session-claim binding, refresh rotation, old refresh-token reuse rejection, token-family revocation and allowlisted provider logout.
+- Extended live Staging PostgreSQL coverage to prove that a refreshed access token cannot bypass a suspended user or inactive Workspace A membership, while an independently active Workspace B membership remains usable.
+- Production, Google Sheets, Apps Script and the database schema were not modified or deployed.
+- Kept Production blocked until a public isolated Staging event path automatically maps Auth0 refresh-reuse/account-disable events to local PostgreSQL session revocation.
+
 ## 2026-07-18 — Sprint 3 OIDC and unforgeable tenant context foundation
 
 - Added a read-only OIDC discovery/JWKS readiness check for the next Local/Auth0 connection step. It verifies exact issuer/JWKS metadata, Authorization Code, PKCE S256 and usable RS256 keys without requiring or printing any secret or token.

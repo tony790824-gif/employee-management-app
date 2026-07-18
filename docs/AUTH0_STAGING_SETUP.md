@@ -15,7 +15,13 @@ Create an **isolated Auth0 Staging tenant**, then configure one API and one brow
 - Add a namespaced access-token claim `https://banke.tw/session_id` containing the provider session identifier through an Auth0 Action.
 - Record the non-secret issuer, audience, JWKS URL and browser client ID in the local Staging secret/config store. Do not paste client secrets, refresh tokens, private keys or database URLs into chat or Git.
 
-After that step, the next acceptance must verify discovery/JWKS, PKCE login, refresh rotation, refresh reuse, logout, account disable and local-session revocation against synthetic accounts. Until that acceptance passes, the formal Identity Provider is **not connected** and Production remains blocked.
+## 2026-07-19 Staging acceptance status
+
+The isolated Auth0 Staging application has passed a real browser Authorization Code + PKCE S256 flow with `openid profile offline_access`. The issued access token passed exact issuer/audience/RS256/expiry validation, the namespaced session claim was non-empty and matched the ID-token `sid`, refresh rotation succeeded, reuse of the previous refresh token was rejected, the token family was revoked, and provider logout returned only to the allowlisted Local URL. The acceptance harness keeps tokens in process memory and reports only boolean results.
+
+The isolated Staging PostgreSQL/API tests also prove that a suspended user, inactive Workspace A membership, compromised local session and logged-out local session are rejected even when presented with a newly signed or unexpired access token. A user who loses Workspace A membership but retains an active Workspace B membership can access only Workspace B.
+
+Production remains blocked: an Auth0 refresh-reuse/disable event still needs a verified public Staging event path that marks the corresponding local PostgreSQL session compromised or revoked automatically. The current acceptance proves the provider and local enforcement layers separately; it does not claim that external Auth0 events are already delivered to the private Local API.
 
 ## Public metadata readiness check
 
