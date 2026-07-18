@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## 2026-07-18 可執行 PostgreSQL 基礎
+
+可執行 schema 現已版本化於 [`database/migrations`](../database/migrations)，`docs/schema.sql` 僅保留歷史設計參考。新 schema 包含 workspace composite keys／foreign keys、FORCE RLS、business constraints/indexes、command idempotency receipts、audit、outbox 與 snapshot import ledger。指令、安全確認、rollback 限制及匯入行為請見 [`database/README.md`](../database/README.md) 與 [`POSTGRESQL_MIGRATION.md`](POSTGRESQL_MIGRATION.md)。
+
+Google Sheets A1 snapshot 仍是 Production active data store。本 Sprint 沒有執行正式 PostgreSQL cutover。
+
 ## 2026-07-17 credential runtime 修正
 
 新 credential 現為 `hmac-sha256-v2` object：獨立 128-bit salt、`iterations: 1`、64-hex HMAC hash。pepper 只存在 Apps Script Script Properties。既有 `iterated-hmac-sha256-v1`（1024–10000 次）仍可讀取，正確登入後自動遷移至 v2；未知 scheme 或錯誤 iteration fail closed。v2 是為避免 Apps Script 在全域 lock 內逾時的過渡方案，不是正式密碼資料庫；正式上線仍須 Identity Provider／專用 auth service。

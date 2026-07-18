@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-18 — PostgreSQL 多租戶基礎
+
+- 正式 PostgreSQL 程式基礎已建立：三個 versioned migrations，包含 constraints、indexes、FORCE RLS、audit/outbox、idempotency 與 snapshot import tracking。
+- 獨立 Transaction/Command API 已實作 strict allowlists、verified JWT context、active membership check、tenant transaction 與 structured errors。既有 Production frontend／Google Sheets path 未變更。
+- 自動測試涵蓋 migration structure/gates、legacy snapshot mapping、credential exclusion、tenant-scoped writes、JWT signature、CORS 與 1 MiB UTF-8 request limit。
+- **商業上線完成度：67%（前次 63%）。** 增幅代表已有可執行 database/API 基礎，不代表完成 cutover。managed PostgreSQL、live RLS/import/restore、正式 Identity Provider、endpoint 完整度、frontend adapter、observability、load test 及真實裝置 E2E 仍是阻擋。
+- **是否適合正式上線：No。** 此 workspace 沒有可用 PostgreSQL server，因此 migrations 尚未在真實 engine 執行。Production 未修改或部署。
+
 ## 2026-07-17 — Staging 前端環境隔離
 
 - 已完成 Local／Staging／Production 前端設定與可重複建置；Staging 僅含 Staging Apps Script URL。

@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: 班客邦 PostgreSQL Command API
+  version: 2026-07-18.1
+  description: Implemented transition API. It is not the Production endpoint and does not include the future Identity Provider endpoints.
+servers:
+  - url: http://127.0.0.1:8080/v1
+    description: Local development only
+security:
+  - BearerAuth: []
+paths:
+  /health:
+    get:
+      security: []
+      responses:
+        '200': { description: Process is running }
+  /readiness:
+    get:
+      security: []
+      responses:
+        '200': { description: Database is reachable }
+        '500': { $ref: '#/components/responses/Error' }
+  /employees:
+    get:
+      responses:
+        '200': { description: Active employees visible to boss or manager }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /commands/{commandName}:
+    post:
+      parameters:
+        - in: path
+          name: commandName
+          required: true
+          schema:
+            type: string
+            enum: [employees.create, shifts.create, leaves.replace-month, attendance.clock-in, attendance.clock-out, attendance.approve-hours]
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, minLength: 8, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        '200': { description: Idempotent replay }
+        '201': { description: Command committed }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT RS256
+  responses:
+    Error:
+      description: Structured API error
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ok, error, code, requestId]
+            properties:
+              ok: { type: boolean, enum: [false] }
+              error: { type: string }
+              code: { type: string }
+              requestId: { type: string }

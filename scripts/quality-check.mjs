@@ -4,6 +4,18 @@ import { deployFiles, sourceScripts } from './project-files.mjs';
 
 const failures = [];
 const fail = message => failures.push(message);
+const backendSourceFiles = [
+  'database/import-snapshot.mjs',
+  'database/migrate.mjs',
+  'database/snapshot-mapper.mjs',
+  'server/app.mjs',
+  'server/commands.mjs',
+  'server/db.mjs',
+  'server/errors.mjs',
+  'server/index.mjs',
+  'server/jwt-verifier.mjs',
+  'server/validation.mjs'
+];
 
 for (const file of deployFiles) {
   try {
@@ -13,7 +25,7 @@ for (const file of deployFiles) {
   }
 }
 
-for (const file of sourceScripts) {
+for (const file of [...sourceScripts, ...backendSourceFiles]) {
   const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
   if (result.status !== 0) fail(`${file} 語法錯誤：${result.stderr.trim()}`);
 }

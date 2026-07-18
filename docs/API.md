@@ -1,5 +1,11 @@
 # API 文件（現況與目標）
 
+## 2026-07-18 PostgreSQL 過渡 API 實作
+
+已實作且隔離的過渡 API 定義於 [openapi-postgres.yaml](openapi-postgres.yaml)。目前提供 health/readiness、老闆／管理員員工清單，以及新增員工、新增班次、取代單月排假、員工上下班打卡、核定出勤工時等 Transaction/Command API。每個 mutation 必須提供 `Idempotency-Key`；tenant context 只來自已驗證 RS256 JWT，且會在同一交易內重新確認 active workspace membership。
+
+本實作不包含 login/refresh/logout；[openapi.yaml](openapi.yaml) 中相關路由仍是未來正式 Identity Provider Sprint 的目標規格。現有 Google Sheets API 仍為正式環境使用路徑，本次未變更 Production route。
+
 > 2026-07-16 `doPost` 傳輸層上限為 1 MiB（1,048,576 UTF-8 bytes）；超限在 JSON 解析、schema 驗證與資料寫入前回 `REQUEST_PAYLOAD_TOO_LARGE`。A1 snapshot 及老闆 `save.data` 現對現有電話、credential 表示、薪資／金額、日期／時間執行嚴格值驗證。API action 與成功 response schema 未變，本次未部署 Apps Script。
 
 > 2026-07-16 老闆 `save.data` 現在只接受既有 snapshot 欄位；未知欄位、array root、錯誤 collection／map 形狀或沒有任何可變欄位時回 `REQUEST_DATA_INVALID`。省略可變欄位代表保留伺服器既有值，明確空集合才代表清除。API action 與成功 response schema 未變，本次未部署 Apps Script。

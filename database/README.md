@@ -1,0 +1,29 @@
+# PostgreSQL migration and snapshot import
+
+`database/migrations/` is the executable source of truth for the formal PostgreSQL schema. `docs/schema.sql` remains a historical design reference only.
+
+## Safety gates
+
+- All commands require `DATABASE_URL`; secrets are never stored in Git.
+- Staging and Production require verified TLS (`DATABASE_SSL=require`).
+- Production migrations additionally require `BANK_ALLOW_PRODUCTION_MIGRATIONS=APPLY_BANKE_PRODUCTION_MIGRATIONS`.
+- Down migrations are disabled in Production. Local/Staging rollback additionally requires `BANK_ALLOW_DESTRUCTIVE_MIGRATIONS=ALLOW_BANKE_DESTRUCTIVE_ROLLBACK`.
+- Every migration runs in its own transaction under a process-wide advisory lock and is recorded with a SHA-256 checksum.
+
+## Commands
+
+```powershell
+pnpm db:status
+pnpm db:migrate
+pnpm db:rollback -- --to=0001
+pnpm db:import -- --file=backup.json --workspace-id=ws_0123456789abcdef0123456789abcdef
+pnpm db:import -- --file=backup.json --workspace-id=ws_0123456789abcdef0123456789abcdef --apply
+```
+
+Snapshot import is dry-run by default. Apply mode is single-use and idempotent for the same checksum. A different snapshot cannot be silently imported into an initialized workspace.
+
+Legacy PIN/activation credentials are deliberately not imported. Imported memberships receive `reenrollment_required`; a future approved Identity Provider must complete enrollment before cutover.
+
+## Cutover rule
+
+The existing Google Sheets path remains the active application path. Do not set Production traffic to the PostgreSQL API until a managed PostgreSQL instance, external Identity Provider, live migration rehearsal, reconciliation report, rollback drill, and cross-device E2E have all passed.

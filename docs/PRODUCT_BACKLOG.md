@@ -1,5 +1,11 @@
 # 班客邦 Product Backlog
 
+## 2026-07-18 — PostgreSQL 多租戶基礎狀態
+
+- **程式面已完成：** versioned schema migrations、FORCE RLS tenant boundary、transactional migration runner、dry-run/idempotent snapshot importer、初版 Transaction/Command API、JWT verification boundary、idempotency/audit/outbox 與自動化結構／單元／API 邊界測試。
+- **尚未驗收：** managed Staging PostgreSQL 實際執行、雙租戶 live RLS integration、import reconciliation、backup/restore 證據、load test、正式 Identity Provider、剩餘 read/command endpoints、frontend adapter/cutover 與跨裝置 E2E。
+- **下一個唯一最高優先：** 建立隔離 Staging PostgreSQL，依 `docs/POSTGRESQL_MIGRATION.md` 執行 migration/import/RLS/restore rehearsal；不得切換 Production。
+
 ## P0 Staging 前端環境隔離（2026-07-17）
 
 已完成 Local／Staging／Production 可重複建置、Staging 專用後端、畫面識別，以及 PWA cache／manifest／localStorage／session 隔離。Production 未部署。下一個唯一驗收工作是依 `docs/STAGING_E2E_CHECKLIST.md` 執行真實手機、平板與桌機人工 E2E；本項不改變下方正式資料庫長期 Backlog 的內容。

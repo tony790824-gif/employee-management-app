@@ -1,3 +1,6 @@
+-- HISTORICAL DESIGN REFERENCE ONLY.
+-- Executable schema source of truth: ../database/migrations/*.up.sql
+-- See ../database/README.md and POSTGRESQL_MIGRATION.md before applying migrations.
 -- 班客邦正式資料庫 Schema (PostgreSQL)
 -- 版本：2026-07-17.1
 -- 核心原則：多租戶隔離 (Workspace ID)、正規化、Audit Log、Soft Delete

@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS workspace_members;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS workspaces;
+DROP TABLE IF EXISTS organizations;
+DROP FUNCTION IF EXISTS app_private.touch_updated_at();
+DROP FUNCTION IF EXISTS app_private.current_role();
+DROP FUNCTION IF EXISTS app_private.current_user_id();
+DROP FUNCTION IF EXISTS app_private.current_workspace_id();
+DROP SCHEMA IF EXISTS app_private;

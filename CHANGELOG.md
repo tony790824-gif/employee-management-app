@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-18 — Sprint 1 PostgreSQL multi-tenant foundation
+
+- Added three transactional PostgreSQL migrations for tenant identity mapping, employees, shifts, leave selections, attendance, payroll adjustments, idempotency receipts, audit logs, outbox events, and snapshot-import ledger.
+- Added FORCE RLS workspace isolation, composite tenant foreign keys, constraints, indexes, optimistic revisions, soft-delete metadata, and migration checksum/advisory-lock safety gates.
+- Added a separate Node Command API with strict allowlists, RS256 JWT verification, active membership checks, per-request tenant transactions, exact CORS allowlisting, 1 MiB request limits, idempotent commands, audit, and outbox writes.
+- Added a dry-run-first Apps Script/Google Sheets snapshot importer. Legacy credentials are never imported; memberships require formal identity reenrollment.
+- Existing Google Sheets Production path was not changed or deployed. Live PostgreSQL execution remains a Staging acceptance gate because no PostgreSQL server is configured in this workspace.
+
 ## 2026-07-17 — Staging frontend isolation
 
 - Added explicit Local, Staging, and Production frontend build profiles.

@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { databaseConfig, loadMigrations } from '../database/migrate.mjs';
+
+const migrations = await loadMigrations();
+assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003']);
+assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
+for (const migration of migrations) {
+  assert.match(migration.checksum, /^[a-f0-9]{64}$/);
+  assert.ok(migration.upSql.trim().length > 0);
+  assert.ok(migration.downSql.trim().length > 0);
+}
+
+const sql = (await Promise.all(migrations.map(item => item.upSql))).join('\n');
+const tenantTables = [
+  'workspaces', 'workspace_members', 'employees', 'shifts', 'leave_selections',
+  'attendance_records', 'payroll_adjustments', 'command_receipts', 'audit_logs',
+  'outbox_events', 'snapshot_imports'
+];
+for (const table of tenantTables) {
+  assert.match(sql, new RegExp(`(?:CREATE TABLE ${table}|ALTER TABLE ${table})`));
+}
+assert.equal((sql.match(/FORCE ROW LEVEL SECURITY/g) || []).length >= 4, true);
+assert.match(sql, /app_private\.current_workspace_id\(\)/);
+assert.match(sql, /PRIMARY KEY \(workspace_id,/);
+assert.match(sql, /command_receipts/);
+assert.match(sql, /outbox_events/);
+
+assert.throws(() => databaseConfig({ BANK_ENV: 'production', DATABASE_URL: 'postgres://db' }), /Production/);
+assert.throws(() => databaseConfig({
+  BANK_ENV: 'production', DATABASE_URL: 'postgres://db',
+  BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'disable'
+}), /TLS|Production/);
+const staging = databaseConfig({ BANK_ENV: 'staging', DATABASE_URL: 'postgres://db', DATABASE_SSL: 'require' });
+assert.equal(staging.environment, 'staging');
+assert.deepEqual(staging.ssl, { rejectUnauthorized: true });
+
+const importer = await readFile(new URL('../database/import-snapshot.mjs', import.meta.url), 'utf8');
+const tenantContextPosition = importer.indexOf("set_config('app.current_workspace_id'");
+const firstTenantReadPosition = importer.indexOf('SELECT imported_counts FROM snapshot_imports');
+assert.ok(tenantContextPosition >= 0 && tenantContextPosition < firstTenantReadPosition,
+  'snapshot import must bind RLS tenant context before reading tenant tables');
+
+console.log('PostgreSQL migration structure and production gates passed');
