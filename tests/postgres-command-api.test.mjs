@@ -3,7 +3,7 @@ import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
 import { createApiServer } from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
-import { createPool } from '../server/db.mjs';
+import { assertApiDatabaseTarget, createPool, expectedApiDatabase } from '../server/db.mjs';
 import { createOidcVerifier } from '../server/jwt-verifier.mjs';
 import { createTenantContextSigner } from '../server/tenant-context.mjs';
 import { validateCommand } from '../server/validation.mjs';
@@ -57,23 +57,41 @@ assert.throws(() => createPool({
   BANK_STAGING_DATABASE_HOST: 'direct.example'
 }), /API.*Migration/);
 assert.throws(() => createPool({
-  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require'
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production-pooler.example/neondb', DATABASE_SSL: 'require'
 }), /BANK_PRODUCTION_DATABASE_HOST/);
 assert.throws(() => createPool({
-  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@other-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@other-pooler.example/neondb', DATABASE_SSL: 'require',
   BANK_PRODUCTION_DATABASE_HOST: 'production.example'
 }), /approved Production PostgreSQL host/);
 assert.throws(() => createPool({
   BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/other',
-  DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require',
+  DATABASE_API_URL: 'postgres://api@production-pooler.example/neondb', DATABASE_SSL: 'require',
   BANK_PRODUCTION_DATABASE_HOST: 'production.example'
 }), /same approved database/);
+assert.throws(() => createPool({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/other',
+  DATABASE_API_URL: 'postgres://api@production-pooler.example/other', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+}), /explicitly target neondb/);
 const productionPool = createPool({
-  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/db',
-  DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/neondb',
+  DATABASE_API_URL: 'postgres://api@production-pooler.example/neondb', DATABASE_SSL: 'require',
   BANK_PRODUCTION_DATABASE_HOST: 'production.example'
 });
 await productionPool.end();
+assert.equal(expectedApiDatabase({
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production.example/neondb'
+}), 'neondb');
+assert.equal(await assertApiDatabaseTarget({
+  query: async () => ({ rows: [{ name: 'neondb' }] })
+}, {
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production.example/neondb'
+}), 'neondb');
+await assert.rejects(() => assertApiDatabaseTarget({
+  query: async () => ({ rows: [{ name: 'postgres' }] })
+}, {
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production.example/neondb'
+}), /startup target verification failed/);
 
 function keyPair(kid) {
   const pair = generateKeyPairSync('rsa', { modulusLength: 2048 });

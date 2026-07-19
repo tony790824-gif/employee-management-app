@@ -5,7 +5,7 @@
   "description": "班客邦員工排班與出勤管理 PWA",
   "scripts": {
     "check": "node scripts/quality-check.mjs",
-    "test": "node tests/p0-interface-stability.test.mjs && node tests/state-store.test.mjs && node tests/p0-auth-isolation.test.mjs && node tests/p0-employee-authorization.test.mjs && node tests/p0-account-activation.test.mjs && node tests/p0-session-security.test.mjs && node tests/p0-workspace-boundary.test.mjs && node tests/p0-xss-containment.test.mjs && node tests/p0-concurrency-control.test.mjs && node tests/p0-credential-hardening.test.mjs && node tests/p0-backup-recovery.test.mjs && node tests/p0-schema-boundary.test.mjs && node tests/project-cleanup.test.mjs && node tests/p0-frontend-environment-isolation.test.mjs && node tests/postgres-migrations.test.mjs && node tests/postgres-snapshot-migration.test.mjs && node tests/postgres-command-api.test.mjs && node tests/postgres-backup-restore.test.mjs && node tests/oidc-readiness.test.mjs && node tests/auth0-staging-token-lifecycle.test.mjs",
+    "test": "node tests/p0-interface-stability.test.mjs && node tests/state-store.test.mjs && node tests/p0-auth-isolation.test.mjs && node tests/p0-employee-authorization.test.mjs && node tests/p0-account-activation.test.mjs && node tests/p0-session-security.test.mjs && node tests/p0-workspace-boundary.test.mjs && node tests/p0-xss-containment.test.mjs && node tests/p0-concurrency-control.test.mjs && node tests/p0-credential-hardening.test.mjs && node tests/p0-backup-recovery.test.mjs && node tests/p0-schema-boundary.test.mjs && node tests/project-cleanup.test.mjs && node tests/p0-frontend-environment-isolation.test.mjs && node tests/postgres-migrations.test.mjs && node tests/postgres-role-grants.test.mjs && node tests/postgres-snapshot-migration.test.mjs && node tests/postgres-command-api.test.mjs && node tests/postgres-backup-restore.test.mjs && node tests/oidc-readiness.test.mjs && node tests/auth0-staging-token-lifecycle.test.mjs",
     "build": "node scripts/build.mjs",
     "build:local": "node scripts/build.mjs --environment=local",
     "build:staging": "node scripts/build.mjs --environment=staging",
@@ -14,11 +14,13 @@
     "api:start": "node --env-file-if-exists=.env server/index.mjs",
     "auth:check": "node --env-file-if-exists=.env scripts/oidc-readiness.mjs",
     "auth:lifecycle:staging": "node --env-file-if-exists=.env scripts/auth0-staging-token-lifecycle.mjs",
+    "db:configure-production-api-secret": "node --env-file-if-exists=.env.production scripts/configure-production-api-secret.mjs",
     "db:migrate": "node --env-file-if-exists=.env database/migrate.mjs up",
     "db:status": "node --env-file-if-exists=.env database/migrate.mjs status",
     "db:rollback": "node --env-file-if-exists=.env database/migrate.mjs down",
     "db:import": "node --env-file-if-exists=.env database/import-snapshot.mjs",
     "db:grant-api": "node --env-file-if-exists=.env database/apply-role-grants.mjs",
+    "db:verify-api-role": "node --env-file-if-exists=.env database/verify-role-grants.mjs",
     "db:backup-restore:staging": "node --env-file-if-exists=.env database/staging-backup-restore.mjs",
     "test:postgres:staging": "node --env-file-if-exists=.env tests/postgres-staging-integration.test.mjs"
   },

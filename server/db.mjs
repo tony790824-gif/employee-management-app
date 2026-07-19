@@ -4,6 +4,7 @@ import { assert } from './errors.mjs';
 const { Pool } = pg;
 const WORKSPACE_PATTERN = /^ws_[a-f0-9]{32}$/;
 const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+const PRODUCTION_DATABASE = 'neondb';
 
 function normalizedHost(value) {
   return String(value || '').trim().toLowerCase().replace('-pooler.', '.');
@@ -21,6 +22,33 @@ function expectedDatabaseHost(environment, env) {
   return expectedHost;
 }
 
+function databaseName(connectionString) {
+  const name = decodeURIComponent(new URL(connectionString).pathname.replace(/^\//, '')).trim();
+  if (!name) throw new Error('DATABASE_API_URL must explicitly name a database.');
+  return name;
+}
+
+export function expectedApiDatabase(env = process.env) {
+  const environment = String(env.BANK_ENV || 'local').toLowerCase();
+  const connectionString = String(env.DATABASE_API_URL || env.DATABASE_URL || '').trim();
+  if (!connectionString) throw new Error('缺少 DATABASE_API_URL。');
+  const expected = databaseName(connectionString);
+  if (environment === 'production' && expected !== PRODUCTION_DATABASE) {
+    throw new Error(`Production DATABASE_API_URL must explicitly target ${PRODUCTION_DATABASE}.`);
+  }
+  return expected;
+}
+
+export async function assertApiDatabaseTarget(pool, env = process.env) {
+  const expected = expectedApiDatabase(env);
+  const result = await pool.query('SELECT current_database() AS name');
+  const actual = String(result.rows[0]?.name || '');
+  if (actual !== expected) {
+    throw new Error('Database startup target verification failed.');
+  }
+  return actual;
+}
+
 export function createPool(env = process.env) {
   const environment = String(env.BANK_ENV || 'local').toLowerCase();
   if (!['local', 'staging', 'production'].includes(environment)) throw new Error('BANK_ENV must be local, staging, or production.');
@@ -30,6 +58,7 @@ export function createPool(env = process.env) {
     throw new Error('Staging/Production API 必須使用獨立的 DATABASE_API_URL 最小權限角色。');
   }
   const apiUrl = new URL(connectionString);
+  expectedApiDatabase(env);
   if (environment !== 'local') {
     const expectedHost = expectedDatabaseHost(environment, env);
     if (normalizedHost(apiUrl.hostname) !== normalizedHost(expectedHost)) {
@@ -51,8 +80,11 @@ export function createPool(env = process.env) {
   }
   const sslMode = String(env.DATABASE_SSL || (environment === 'local' ? 'disable' : 'require')).toLowerCase();
   if (environment === 'production' && sslMode !== 'require') throw new Error('Production PostgreSQL 必須啟用 TLS。');
+  const runtimeUrl = new URL(connectionString);
+  runtimeUrl.searchParams.delete('sslmode');
+  runtimeUrl.searchParams.delete('uselibpqcompat');
   return new Pool({
-    connectionString,
+    connectionString: runtimeUrl.href,
     ssl: sslMode === 'require' ? { rejectUnauthorized: true } : false,
     max: Number(env.DATABASE_POOL_MAX || 10),
     idleTimeoutMillis: 30_000,

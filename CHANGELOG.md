@@ -1,5 +1,20 @@
 # Change Log
 
+## 2026-07-19 — Production API role final acceptance
+
+- Accepted Neon/PostgreSQL's platform maintenance-database behavior: `PUBLIC CONNECT` on `postgres` is not a P0 blocker when it creates no new path to `neondb` business data.
+- Removed application provisioning logic that attempted to change platform-owned maintenance-database ACLs.
+- Required the Production runtime URL to name `neondb` explicitly and added a fail-closed startup check against `current_database()` before the API listens.
+- Expanded Production privilege verification to cover role attributes and membership, zero table/sequence access, the exact controlled-function allowlist, forbidden DDL, foreign-server/user-mapping creation, `dblink`/`postgres_fdw`, and the isolated `postgres` maintenance database.
+- Recorded inherited `PUBLIC TEMPORARY` as a monitored low-risk platform limitation. No business data, Production API, frontend, Auth0, AWS, Netlify, Google Sheets, or Apps Script deployment was changed.
+
+## 2026-07-19 — Production least-privilege API database role
+
+- Added an independent Production role-grant confirmation gate so API credential provisioning never enables schema migrations.
+- Created the dedicated `banke_api_production` role with `NOINHERIT`, no administrative/RLS-bypass attributes, no object ownership, no direct table/sequence privileges, and EXECUTE access to exactly four controlled `app_private` functions.
+- Added repeatable privilege-boundary verification for direct business/app-private reads, schema/role creation, RLS changes, forged Workspace context, function allowlisting, role separation, and zero-data preservation.
+- Stored the generated runtime credential only in the Git-ignored local `.env.production`; no secret, business data, frontend, API, or Production deployment was committed.
+
 ## 2026-07-19 — Production PostgreSQL target isolation guard
 
 - Added an explicit `BANK_PRODUCTION_DATABASE_HOST` allowlist requirement for Production migration and runtime API configuration.

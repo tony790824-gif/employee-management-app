@@ -1,5 +1,25 @@
 # 班客邦 Release Checklist
 
+## Production API database-role acceptance — 2026-07-19
+
+Accepted alternative criterion: Neon/PostgreSQL may retain `PUBLIC CONNECT` on the platform maintenance database `postgres`. This is a known platform/default behavior and is not a Production P0 blocker. Acceptance depends on proving that this connection creates **no additional path** to `neondb` business data, tenant data, controlled functions, credentials, or privileges.
+
+- [x] `DATABASE_API_URL` explicitly names `neondb`; Production configuration targeting any other database fails closed.
+- [x] API startup checks `current_database() = 'neondb'` before opening the listener.
+- [x] `banke_api_production` is not a member of `neon_superuser` or any other role and has no administrative or `BYPASSRLS` attribute.
+- [x] Direct privileges on all `public`/`app_private` tables and sequences are zero.
+- [x] EXECUTE is limited to the four reviewed `app_private.api_*` functions; invalid Session/Workspace context fails closed.
+- [x] The role cannot create schemas, permanent tables, roles, extensions, foreign servers, or user mappings and cannot disable RLS.
+- [x] Connecting to `postgres` exposes no `app_private` schema and PostgreSQL provides no direct cross-database table path into `neondb`.
+- [x] `dblink`/`postgres_fdw` cannot be installed or used by the API role to create a cross-database route.
+- [x] Migrator, owner, Staging API, and Production API identities/credentials remain separate; credentials stay in ignored environment files or the deployment secret manager.
+- [x] TLS certificate verification remains mandatory for Production.
+- [ ] Before API deployment, monitor role connection count, statement timeouts, `temp_files`, `temp_bytes`, and unusually large/long temporary workloads.
+
+Known low-risk limitation: PostgreSQL's inherited `PUBLIC TEMPORARY` capability may allow the role to create session-local temporary objects in a database it can connect to. It grants no persistent-schema, business-table, cross-tenant, or cross-database permission. Existing limits (`CONNECTION LIMIT 20`, 10-second statement timeout) reduce exposure; deployment monitoring and platform resource limits remain a P1 operations item, not a P0 authorization failure.
+
+> 2026-07-19 Production database role: `banke_api_production` is isolated from the migrator and Staging roles, owns no objects, has no administrative/RLS-bypass capability, has zero direct table privileges, and can execute only four controlled functions. Production business data remains empty; API/frontend deployment is still blocked.
+
 > 2026-07-18 Identity/Tenant boundary: PostgreSQL migrations 0004 through 0008 add OIDC principal mapping, revocable sessions, signed one-time tenant assertions, and controlled database functions. The runtime API role has zero business-table grants. Synthetic Local/Staging security tests are required to pass, but external Auth0 Staging PKCE and refresh-token lifecycle E2E remains a P0 release gate. Production remains untouched.
 
 ## Sprint 3 Identity release gates

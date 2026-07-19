@@ -1,5 +1,19 @@
 # Database 文件（現況與目標）
 
+## 2026-07-19 Production database-role platform boundary
+
+Production runtime configuration must explicitly target `neondb`. Before the HTTP listener opens, the API queries `current_database()` and stops safely unless the result is exactly `neondb`.
+
+Neon/PostgreSQL retains `PUBLIC CONNECT` on the `postgres` maintenance database as a platform/default behavior. Bankeban does not modify that platform ACL and does not treat it as a P0 blocker. The security acceptance criterion is instead that this connection creates no route to `neondb` business data: the maintenance database has no Bankeban private schema, PostgreSQL has no native cross-database table query, the API role cannot install or use `dblink`/`postgres_fdw`, and it cannot grant itself additional database privileges.
+
+`banke_api_production` remains a login-only, `NOINHERIT` role with no membership, object ownership, administrative capability, RLS bypass, direct table/sequence privilege, persistent DDL capability, foreign server, or user mapping. It may execute only the four reviewed `app_private.api_*` functions inside `neondb`, where live Session, user, Workspace, Membership, and role checks fail closed.
+
+Inherited `PUBLIC TEMPORARY` is documented as a low-risk operational limitation rather than a P0 authorization defect. It does not grant persistent or tenant-data access. Production operations must retain the 20-connection limit and 10-second statement timeout and monitor temporary-file bytes/counts, connection saturation, and long-running statements before runtime deployment.
+
+## 2026-07-19 Production API database role
+
+Production now has a dedicated `banke_api_production` runtime login. It is separate from the migrator and Staging roles, owns no database object, has no administrative or RLS-bypass attribute, has zero direct table/sequence privileges, and may execute only the four controlled `app_private.api_*` entry points. The credential exists only in the Git-ignored local Production environment file pending deployment-secret configuration. Production business tables remain empty and no frontend/API deployment occurred.
+
 ## 2026-07-18 Identity/Tenant 安全邊界
 
 Migrations `0004`–`0008` 新增 `app_private.identity_principals`、`auth_sessions`、`tenant_context_keys`、`tenant_context_nonces`，以及四個受控 `api_*` 函式。Runtime API role 對 public/app_private tables 與 sequences 皆無權限，只能執行精確授權的 session/list/command functions。

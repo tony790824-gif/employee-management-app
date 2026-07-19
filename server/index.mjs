@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { createApiServer } from './app.mjs';
 import { createCommandService } from './commands.mjs';
-import { createPool } from './db.mjs';
+import { assertApiDatabaseTarget, createPool } from './db.mjs';
 import { createOidcVerifier } from './jwt-verifier.mjs';
 import { createTenantContextSigner } from './tenant-context.mjs';
 
@@ -29,8 +29,21 @@ const commandService = createCommandService({ pool, tenantContextSigner });
 const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins });
 const port = Number(process.env.PORT || 8080);
 
-server.listen(port, '127.0.0.1', () => {
-  console.log(JSON.stringify({ level: 'info', message: 'Banke API listening', environment, port }));
+async function start() {
+  await assertApiDatabaseTarget(pool);
+  server.listen(port, '127.0.0.1', () => {
+    console.log(JSON.stringify({ level: 'info', message: 'Banke API listening', environment, port }));
+  });
+}
+
+start().catch(async error => {
+  console.error(JSON.stringify({
+    level: 'error',
+    message: 'Banke API startup failed closed',
+    code: 'DATABASE_TARGET_INVALID'
+  }));
+  await pool.end().catch(() => {});
+  process.exitCode = 1;
 });
 
 async function shutdown(signal) {
