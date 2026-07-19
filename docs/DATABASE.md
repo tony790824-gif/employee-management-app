@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## 2026-07-19 Auth0 Staging security-event inbox
+
+Migration `0009_auth0_security_event_inbox` adds `app_private.security_event_inbox` and the single controlled `app_private.ingest_auth0_security_event(...)` function. The inbox stores bounded event metadata and a SHA-256 payload fingerprint, never a raw Auth0 payload or token. Its composite primary key `(environment, issuer, event_id)` and `ON CONFLICT DO NOTHING` make duplicate delivery idempotent. Inbox insertion and the matching `auth_sessions` state transition run in one transaction.
+
+The migration is prepared only; it was not applied to Staging or Production in this milestone. `database/apply-security-event-role-grants.mjs` is Staging-only and fails closed unless the isolated `banke_event_staging` role already exists with non-administrative attributes. It grants only database connect, `app_private` schema usage and execution of the ingest function.
+
 ## 2026-07-19 Production database-role platform boundary
 
 Production runtime configuration must explicitly target `neondb`. Before the HTTP listener opens, the API queries `current_database()` and stops safely unless the result is exactly `neondb`.

@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Bankeban isolated Auth0 Staging security event pipeline (no Production resources)
+
+Parameters:
+  Auth0PartnerEventSourceName:
+    Type: String
+    AllowedPattern: '^aws\.partner/auth0\.com/.+$'
+  Auth0Issuer:
+    Type: String
+    AllowedPattern: '^https://[^/]+/$'
+  LambdaArtifactBucket:
+    Type: String
+  LambdaArtifactKey:
+    Type: String
+  StagingDatabaseSecretArn:
+    Type: String
+    AllowedPattern: '^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$'
+  StagingDatabaseHost:
+    Type: String
+  StagingDatabaseName:
+    Type: String
+
+Resources:
+  Auth0PartnerEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Ref Auth0PartnerEventSourceName
+      EventSourceName: !Ref Auth0PartnerEventSourceName
+
+  SecurityEventDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: alias/aws/sqs
+      MessageRetentionPeriod: 1209600
+      Tags:
+        - Key: bank:environment
+          Value: staging
+        - Key: bank:data-classification
+          Value: security-event
+
+  SecurityEventQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: alias/aws/sqs
+      MessageRetentionPeriod: 345600
+      VisibilityTimeout: 180
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt SecurityEventDeadLetterQueue.Arn
+        maxReceiveCount: 5
+      Tags:
+        - Key: bank:environment
+          Value: staging
+        - Key: bank:data-classification
+          Value: security-event
+
+  Auth0SecurityEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: !Ref Auth0PartnerEventBus
+      State: ENABLED
+      EventPattern:
+        source:
+          - !Ref Auth0PartnerEventSourceName
+        detail:
+          type:
+            - ferrt
+            - fertft
+            - srrt
+            - limit_sul
+            - session_revoked
+            - user.updated
+            - user.deleted
+      Targets:
+        - Id: SecurityEventQueue
+          Arn: !GetAtt SecurityEventQueue.Arn
+          RetryPolicy:
+            MaximumEventAgeInSeconds: 86400
+            MaximumRetryAttempts: 185
+          DeadLetterConfig:
+            Arn: !GetAtt SecurityEventDeadLetterQueue.Arn
+
+  SecurityEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref SecurityEventQueue
+        - !Ref SecurityEventDeadLetterQueue
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EventBridgeToSecurityQueue
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt SecurityEventQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt Auth0SecurityEventRule.Arn
+          - Sid: EventBridgeToDeadLetterQueue
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt SecurityEventDeadLetterQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !GetAtt Auth0SecurityEventRule.Arn
+
+  SecurityEventLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ConsumeOnlySecurityEvents
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt SecurityEventQueue.Arn
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref StagingDatabaseSecretArn
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/banke-auth0-security-events-staging:*
+
+  SecurityEventFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: SecurityEventLogGroup
+    Properties:
+      FunctionName: banke-auth0-security-events-staging
+      Description: Isolated Staging Auth0 security event consumer
+      Runtime: nodejs22.x
+      Handler: security-events/handler.handler
+      Architectures: [arm64]
+      Code:
+        S3Bucket: !Ref LambdaArtifactBucket
+        S3Key: !Ref LambdaArtifactKey
+      MemorySize: 256
+      Timeout: 30
+      ReservedConcurrentExecutions: 2
+      Role: !GetAtt SecurityEventLambdaRole.Arn
+      Environment:
+        Variables:
+          BANK_ENV: staging
+          AUTH0_ISSUER: !Ref Auth0Issuer
+          AUTH0_EVENT_SOURCE: !Ref Auth0PartnerEventSourceName
+          AUTH0_SECURITY_EVENT_QUEUE_ARN: !GetAtt SecurityEventQueue.Arn
+          AWS_ACCOUNT_ID: !Ref AWS::AccountId
+          DATABASE_EVENT_SECRET_ARN: !Ref StagingDatabaseSecretArn
+          BANK_STAGING_DATABASE_HOST: !Ref StagingDatabaseHost
+          BANK_STAGING_DATABASE_NAME: !Ref StagingDatabaseName
+          AUTH0_EVENT_MAX_AGE_SECONDS: '86400'
+      Tags:
+        - Key: bank:environment
+          Value: staging
+
+  SecurityEventMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt SecurityEventQueue.Arn
+      FunctionName: !Ref SecurityEventFunction
+      BatchSize: 10
+      MaximumBatchingWindowInSeconds: 5
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+      Enabled: true
+      ScalingConfig:
+        MaximumConcurrency: 2
+
+  SecurityEventLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/banke-auth0-security-events-staging
+      RetentionInDays: 30
+
+Outputs:
+  PartnerEventBusName:
+    Value: !Ref Auth0PartnerEventBus
+  SecurityEventQueueArn:
+    Value: !GetAtt SecurityEventQueue.Arn
+  SecurityEventDeadLetterQueueArn:
+    Value: !GetAtt SecurityEventDeadLetterQueue.Arn

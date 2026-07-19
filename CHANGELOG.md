@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-19 — Auth0 Staging security-event pipeline implementation
+
+- Added a Staging-only Node.js consumer for Auth0 security events delivered through an AWS partner EventBridge source and encrypted SQS.
+- Added strict source/envelope/time/correlation validation, minimal safe logs and fail-closed partial-batch retry behavior.
+- Added PostgreSQL migration `0009` for a transactionally idempotent security-event inbox and controlled Session compromise/revocation function.
+- Added a least-privilege Staging event-role grant gate, EventBridge/SQS/Lambda CloudFormation template, retry/DLQ controls and synthetic security tests.
+- Added pipeline, threat-model, database, API and release-gate documentation. No AWS/Auth0/Netlify resource was created; no Staging/Production migration or deployment occurred.
+
 ## 2026-07-19 — Production API role final acceptance
 
 - Accepted Neon/PostgreSQL's platform maintenance-database behavior: `PUBLIC CONNECT` on `postgres` is not a P0 blocker when it creates no new path to `neondb` business data.

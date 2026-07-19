@@ -19,6 +19,7 @@ The formal multi-tenant database and Transaction/Command API now live in `databa
 - [ADR 0014](docs/adr/0014-oidc-signed-tenant-context.md)
 - [Identity threat model](docs/THREAT_MODEL_IDENTITY_TENANT.md)
 - [Auth0 Staging connection gate](docs/AUTH0_STAGING_SETUP.md)
+- [Auth0 Staging security-event pipeline](docs/AUTH0_SECURITY_EVENT_PIPELINE.md)
 
 Run database commands only with an explicitly configured PostgreSQL environment. Never commit `.env` files or database/JWT secrets.
 

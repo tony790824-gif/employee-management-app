@@ -1,5 +1,11 @@
 # API 文件（現況與目標）
 
+## Internal Auth0 Staging security-event consumer — 2026-07-19
+
+This is not a browser/public HTTP API. Auth0 Staging events enter through an AWS partner EventBridge source and an exact SQS queue; Lambda consumes SQS records and calls only `app_private.ingest_auth0_security_event(...)`. The trusted envelope fields are validated before any database call. Failures use SQS partial batch responses, while application logs include only bounded result codes and an irreversible message fingerprint.
+
+See [Auth0 Staging security event pipeline](AUTH0_SECURITY_EVENT_PIPELINE.md). External resources and live Staging E2E remain pending explicit approval.
+
 ## 2026-07-18 PostgreSQL 過渡 API 實作
 
 已實作且隔離的過渡 API 定義於 [openapi-postgres.yaml](openapi-postgres.yaml)。目前提供 health/readiness、老闆／管理員員工清單，以及新增員工、新增班次、取代單月排假、員工上下班打卡、核定出勤工時等 Transaction/Command API。每個 mutation 必須提供 `Idempotency-Key`；tenant context 只來自已驗證 RS256 JWT，且會在同一交易內重新確認 active workspace membership。

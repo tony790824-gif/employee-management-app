@@ -1,5 +1,13 @@
 # Identity and tenant-boundary threat model
 
+## 2026-07-19 Staging security-event pipeline update
+
+The isolated Auth0 Staging event pipeline implementation and AWS IaC are prepared but not deployed. Auth0-to-AWS partner-source association plus AWS IAM/SigV4 service authorization is the source-signature boundary; the application additionally validates the exact SQS queue ARN, AWS account, region, partner source, issuer, timestamp and safe session/user correlation. It does not expose an unsigned public HTTP webhook.
+
+New controls include a transactionally idempotent PostgreSQL inbox, event-age rejection, cross-environment target guards, least-privilege event DB role grants, partial-batch retries and DLQs. A duplicate event cannot repeat the session mutation; an uncorrelated event cannot revoke another user's session; logs and the inbox contain no raw token or raw payload.
+
+Residual P0 gate: the AWS/Auth0 resources, migration and event role have not been created, and a real Staging event-to-session-revocation E2E has not run. Therefore automatic provider-event revocation is not yet an operationally completed control.
+
 Date: 2026-07-18
 Scope: Local and isolated Staging PostgreSQL/API. Production and the current Google Sheets frontend are unchanged.
 

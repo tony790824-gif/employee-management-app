@@ -1,5 +1,19 @@
 # 班客邦 Release Checklist
 
+## Auth0 Staging security-event pipeline gate — 2026-07-19
+
+- [x] Staging-only EventBridge -> encrypted SQS -> Lambda -> controlled PostgreSQL function IaC is reviewable and repeatable.
+- [x] Handler validates exact queue/account/region/partner source/issuer/time and fails closed on missing safe correlation.
+- [x] Database inbox and session mutation are transactionally idempotent and store no raw token/payload.
+- [x] SQS partial-batch retry, redrive policy and DLQ are configured; EventBridge retry/DLQ is configured independently.
+- [x] Event database grant script permits only the reviewed ingest function and no direct table access.
+- [x] Synthetic handler, isolation, duplicate, expiry, account-revoke and IaC boundary tests pass.
+- [ ] Create the external Auth0/AWS Staging resources and Staging database role/migration after explicit approval.
+- [ ] Run a real Auth0 Staging event -> SQS -> Lambda -> PostgreSQL -> old access-token rejection E2E.
+- [ ] Add operational alarms/runbook exercise for queue age, Lambda failures and DLQ depth.
+
+Production remains blocked from this pipeline. No AWS/Auth0/Netlify resource or Production deployment was created by this milestone.
+
 ## Production API database-role acceptance — 2026-07-19
 
 Accepted alternative criterion: Neon/PostgreSQL may retain `PUBLIC CONNECT` on the platform maintenance database `postgres`. This is a known platform/default behavior and is not a Production P0 blocker. Acceptance depends on proving that this connection creates **no additional path** to `neondb` business data, tenant data, controlled functions, credentials, or privileges.

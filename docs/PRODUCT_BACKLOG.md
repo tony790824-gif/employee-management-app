@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-19 — Auth0 Staging security-event pipeline 程式與 IaC 已準備
+
+- **完成：** EventBridge partner bus／rule、加密 SQS／DLQ、Lambda partial-batch consumer、嚴格 Staging 來源與時間驗證、PostgreSQL security-event inbox、Session compromise/revoke、transactional idempotency、least-privilege event role gate 與合成安全測試。
+- **未建立資源：** 本 Milestone 沒有建立 AWS、Auth0 或 Netlify 資源，沒有套用 migration `0009`，也沒有部署 Lambda。
+- **仍是 P0：** 在明確外部核准後建立隔離 Staging 資源，驗證真實 Auth0 event -> EventBridge -> SQS -> Lambda -> PostgreSQL -> 舊 Access Token 即時拒絕，並完成告警／DLQ 操作演練。
+- **Production：** 未連接、未修改、未部署；不得把 Staging event role、queue、secret 或 event source 重用於 Production。
+- **下一個唯一最高優先：** 外部資源建立前的部署包與 runbook 最終審核；待使用者核准後再分一步建立 Staging Auth0 partner event source，不能自行開始。
+
 ## 2026-07-18 — Sprint 3 Identity/Tenant 程式基礎已驗證
 
 - **完成：** RS256 OIDC/JWKS 驗證、`kid` rotation/unknown-key fail closed、短效 access-token 時間邊界、namespaced provider session、可撤銷 local session、live membership recheck、簽章/短效/單次 tenant context、API role 零 table 權限、四個受控 database functions。

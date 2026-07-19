@@ -6,6 +6,7 @@ const failures = [];
 const fail = message => failures.push(message);
 const backendSourceFiles = [
   'database/apply-role-grants.mjs',
+  'database/apply-security-event-role-grants.mjs',
   'database/verify-role-grants.mjs',
   'database/import-snapshot.mjs',
   'database/migrate.mjs',
@@ -20,6 +21,9 @@ const backendSourceFiles = [
   'server/oidc-readiness.mjs',
   'server/tenant-context.mjs',
   'server/validation.mjs',
+  'security-events/auth0-event.mjs',
+  'security-events/database.mjs',
+  'security-events/handler.mjs',
   'scripts/oidc-readiness.mjs',
   'scripts/configure-production-api-secret.mjs',
   'tests/oidc-readiness.test.mjs',

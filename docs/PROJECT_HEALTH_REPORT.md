@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-19 — Auth0 Staging security-event pipeline implementation
+
+- 已完成 Staging-only EventBridge/SQS/Lambda/PostgreSQL event consumer 程式、IaC、idempotency、retry/DLQ、least-privilege grant gate 與合成安全測試。
+- 來源信任邊界採 Auth0 AWS partner source + AWS IAM/SigV4 service path，不暴露未簽章 HTTP webhook；應用層再驗證 exact queue/account/region/source/issuer/time/correlation。
+- migration `0009` 與 event role 權限腳本僅準備，尚未套用；AWS/Auth0/Netlify 資源與真實 Staging event E2E 均未建立或執行。
+- **商業上線完成度：77%。** 本次提高程式準備度，但不把未部署的安全控制視為完成；自動 provider-event revocation、Production API/前端部署、監控、跨裝置 E2E 仍是正式上線阻擋。
+- **是否適合正式上線：No。** 必須先在隔離 Staging 建立外部資源並通過真實事件撤銷、重播、DLQ 與舊 Access Token 拒絕驗收。
+
 ## 2026-07-18 — Sprint 3 Identity 與不可偽造 Tenant Context
 
 - 已建立 Auth0 OIDC/OAuth 2.0 的 server/database 基礎；Access Token 採 RS256、issuer/audience/exp/nbf/iat/session claim 驗證，同源 JWKS 有安全快取、輪替與未知 `kid` fail closed。
