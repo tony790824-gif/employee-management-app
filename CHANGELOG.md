@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-19 — Production PostgreSQL target isolation guard
+
+- Added an explicit `BANK_PRODUCTION_DATABASE_HOST` allowlist requirement for Production migration and runtime API configuration.
+- Production direct migrator and pooled runtime URLs must target the same normalized Neon host and database before a connection can be opened.
+- Added regression coverage for missing/mismatched Production hosts, cross-database runtime configuration, and the valid isolated Production shape.
+- No Neon connection was opened, no migration was executed, and no Production data or frontend route was modified.
+
 ## 2026-07-19 — Auth0 Staging token lifecycle acceptance
 
 - Added a Staging-only, memory-only Auth0 Authorization Code + PKCE S256 acceptance harness that never prints or stores token, authorization-code or session values.

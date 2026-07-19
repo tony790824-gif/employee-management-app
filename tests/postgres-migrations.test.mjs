@@ -37,6 +37,22 @@ assert.throws(() => databaseConfig({
   BANK_ENV: 'production', DATABASE_URL: 'postgres://db',
   BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'disable'
 }), /TLS|Production/);
+assert.throws(() => databaseConfig({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/db',
+  BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'require'
+}), /BANK_PRODUCTION_DATABASE_HOST/);
+assert.throws(() => databaseConfig({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@other.example/db',
+  BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+}), /approved Production PostgreSQL host/);
+const production = databaseConfig({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/db',
+  BANK_ALLOW_PRODUCTION_MIGRATIONS: 'APPLY_BANKE_PRODUCTION_MIGRATIONS', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+});
+assert.equal(production.environment, 'production');
+assert.equal(new URL(production.connectionString).hostname, 'production.example');
 const staging = databaseConfig({
   BANK_ENV: 'staging', DATABASE_URL: 'postgres://db', DATABASE_SSL: 'require', BANK_STAGING_DATABASE_HOST: 'db'
 });

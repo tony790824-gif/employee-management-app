@@ -15,6 +15,18 @@ function normalizedHost(value) {
   return String(value || '').trim().toLowerCase().replace('-pooler.', '.');
 }
 
+function requiredExpectedHost(environment, env) {
+  const variable = environment === 'staging'
+    ? 'BANK_STAGING_DATABASE_HOST'
+    : environment === 'production'
+      ? 'BANK_PRODUCTION_DATABASE_HOST'
+      : '';
+  if (!variable) return '';
+  const expectedHost = String(env[variable] || '').trim();
+  if (!expectedHost) throw new Error(`${environment} PostgreSQL requires ${variable}.`);
+  return expectedHost;
+}
+
 export function databaseConfig(env = process.env) {
   const environment = String(env.BANK_ENV || 'local').toLowerCase();
   if (!['local', 'staging', 'production'].includes(environment)) {
@@ -32,11 +44,11 @@ export function databaseConfig(env = process.env) {
   if (environment !== 'local' && hostname.includes('-pooler.')) {
     throw new Error('Staging/Production Migration 必須使用 direct PostgreSQL endpoint，不可使用 pooler。');
   }
-  if (environment === 'staging') {
-    const expectedHost = String(env.BANK_STAGING_DATABASE_HOST || '').trim();
-    if (!expectedHost) throw new Error('Staging PostgreSQL 缺少 BANK_STAGING_DATABASE_HOST 安全邊界。');
+  if (environment !== 'local') {
+    const expectedHost = requiredExpectedHost(environment, env);
     if (normalizedHost(hostname) !== normalizedHost(expectedHost)) {
-      throw new Error('DATABASE_MIGRATOR_URL 不符合已確認的 Staging PostgreSQL host，已停止。');
+      const environmentLabel = environment === 'staging' ? 'Staging' : 'Production';
+      throw new Error(`DATABASE_MIGRATOR_URL does not match the approved ${environmentLabel} PostgreSQL host.`);
     }
   }
   return {

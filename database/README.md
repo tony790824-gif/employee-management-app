@@ -6,6 +6,7 @@
 
 - Migration/import commands require a direct `DATABASE_MIGRATOR_URL`; the runtime API requires a separate least-privilege `DATABASE_API_URL`. Secrets are never stored in Git.
 - Staging and Production require verified TLS (`DATABASE_SSL=require`).
+- Staging and Production require an explicit approved database host (`BANK_STAGING_DATABASE_HOST` or `BANK_PRODUCTION_DATABASE_HOST`). Direct migrator and pooled API URLs must resolve to that same Neon project/database; a mismatched host or database fails before any connection is opened.
 - Production migrations additionally require `BANK_ALLOW_PRODUCTION_MIGRATIONS=APPLY_BANKE_PRODUCTION_MIGRATIONS`.
 - Down migrations are disabled in Production. Local/Staging rollback additionally requires `BANK_ALLOW_DESTRUCTIVE_MIGRATIONS=ALLOW_BANKE_DESTRUCTIVE_ROLLBACK`.
 - Every migration runs in its own transaction under a process-wide advisory lock and is recorded with a SHA-256 checksum.

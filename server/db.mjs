@@ -9,25 +9,45 @@ function normalizedHost(value) {
   return String(value || '').trim().toLowerCase().replace('-pooler.', '.');
 }
 
+function expectedDatabaseHost(environment, env) {
+  const variable = environment === 'staging'
+    ? 'BANK_STAGING_DATABASE_HOST'
+    : environment === 'production'
+      ? 'BANK_PRODUCTION_DATABASE_HOST'
+      : '';
+  if (!variable) return '';
+  const expectedHost = String(env[variable] || '').trim();
+  if (!expectedHost) throw new Error(`${environment} PostgreSQL requires ${variable}.`);
+  return expectedHost;
+}
+
 export function createPool(env = process.env) {
   const environment = String(env.BANK_ENV || 'local').toLowerCase();
+  if (!['local', 'staging', 'production'].includes(environment)) throw new Error('BANK_ENV must be local, staging, or production.');
   const connectionString = String(env.DATABASE_API_URL || env.DATABASE_URL || '').trim();
   if (!connectionString) throw new Error('缺少 DATABASE_API_URL。');
   if (environment !== 'local' && !String(env.DATABASE_API_URL || '').trim()) {
     throw new Error('Staging/Production API 必須使用獨立的 DATABASE_API_URL 最小權限角色。');
   }
-  if (environment === 'staging') {
-    const expectedHost = String(env.BANK_STAGING_DATABASE_HOST || '').trim();
-    if (!expectedHost) throw new Error('Staging PostgreSQL 缺少 BANK_STAGING_DATABASE_HOST 安全邊界。');
-    if (normalizedHost(new URL(connectionString).hostname) !== normalizedHost(expectedHost)) {
-      throw new Error('DATABASE_API_URL 不符合已確認的 Staging PostgreSQL host，已停止。');
+  const apiUrl = new URL(connectionString);
+  if (environment !== 'local') {
+    const expectedHost = expectedDatabaseHost(environment, env);
+    if (normalizedHost(apiUrl.hostname) !== normalizedHost(expectedHost)) {
+      const environmentLabel = environment === 'staging' ? 'Staging' : 'Production';
+      throw new Error(`DATABASE_API_URL does not match the approved ${environmentLabel} PostgreSQL host.`);
     }
   }
   const migratorConnectionString = String(env.DATABASE_MIGRATOR_URL || '').trim();
   if (migratorConnectionString) {
-    const apiRole = new URL(connectionString).username;
-    const migratorRole = new URL(migratorConnectionString).username;
+    const migratorUrl = new URL(migratorConnectionString);
+    const apiRole = apiUrl.username;
+    const migratorRole = migratorUrl.username;
     if (apiRole === migratorRole) throw new Error('API 與 Migration 不得共用資料庫角色。');
+    if (environment !== 'local'
+      && (normalizedHost(apiUrl.hostname) !== normalizedHost(migratorUrl.hostname)
+        || apiUrl.pathname !== migratorUrl.pathname)) {
+      throw new Error('DATABASE_API_URL and DATABASE_MIGRATOR_URL must target the same approved database.');
+    }
   }
   const sslMode = String(env.DATABASE_SSL || (environment === 'local' ? 'disable' : 'require')).toLowerCase();
   if (environment === 'production' && sslMode !== 'require') throw new Error('Production PostgreSQL 必須啟用 TLS。');

@@ -56,6 +56,24 @@ assert.throws(() => createPool({
   DATABASE_API_URL: 'postgres://owner@direct-pooler.example/db', DATABASE_SSL: 'require',
   BANK_STAGING_DATABASE_HOST: 'direct.example'
 }), /API.*Migration/);
+assert.throws(() => createPool({
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require'
+}), /BANK_PRODUCTION_DATABASE_HOST/);
+assert.throws(() => createPool({
+  BANK_ENV: 'production', DATABASE_API_URL: 'postgres://api@other-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+}), /approved Production PostgreSQL host/);
+assert.throws(() => createPool({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/other',
+  DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+}), /same approved database/);
+const productionPool = createPool({
+  BANK_ENV: 'production', DATABASE_MIGRATOR_URL: 'postgres://owner@production.example/db',
+  DATABASE_API_URL: 'postgres://api@production-pooler.example/db', DATABASE_SSL: 'require',
+  BANK_PRODUCTION_DATABASE_HOST: 'production.example'
+});
+await productionPool.end();
 
 function keyPair(kid) {
   const pair = generateKeyPairSync('rsa', { modulusLength: 2048 });
