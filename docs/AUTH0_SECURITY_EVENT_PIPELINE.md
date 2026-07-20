@@ -10,7 +10,7 @@ This pipeline is isolated to Staging:
 ```text
 Auth0 Staging partner event source
   -> AWS EventBridge partner event bus and allowlisted rule
-  -> encrypted SQS queue
+  -> encrypted SQS queue (consumer disabled by default)
   -> Node.js 22 Lambda handler
   -> controlled PostgreSQL function
   -> app_private.security_event_inbox + app_private.auth_sessions
@@ -52,9 +52,10 @@ The exact event type mapping must be revalidated against the actual Auth0 Stagin
 - `INSERT ... ON CONFLICT DO NOTHING` and the session mutation execute in one PostgreSQL transaction.
 - A duplicate event returns the original result and does not repeat the session mutation.
 - Lambda uses SQS partial batch responses so only failed records are retried.
-- SQS moves a record to the DLQ after five receives.
-- EventBridge has an independent 24-hour/185-attempt delivery policy and DLQ.
+- SQS moves a record to the dedicated processing DLQ after five receives.
+- EventBridge has an independent 24-hour/185-attempt delivery policy and a separate delivery DLQ, so delivery and processing failures cannot be confused.
 - The inbox stores a SHA-256 payload fingerprint, not the raw payload.
+- The primary queue visibility timeout is six times the Lambda timeout plus its batching window.
 
 ## Secrets and least privilege
 
@@ -87,6 +88,8 @@ Before a real Staging deployment, a human must separately approve and create:
 6. a synthetic end-to-end replay/revocation exercise.
 
 Do not mark the release gate complete until that external Staging E2E succeeds. Do not reuse these resources or credentials in Production.
+
+The reviewed template, least-privilege matrix, alarm inventory and safe two-stage activation order are documented in [AWS Staging infrastructure preparation](AWS_STAGING_INFRASTRUCTURE.md). Both event ingress and the Lambda consumer default to disabled.
 
 ## Primary references
 

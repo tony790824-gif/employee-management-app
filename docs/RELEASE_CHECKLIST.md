@@ -1,5 +1,23 @@
 # 班客邦 Release Checklist
 
+## AWS Staging infrastructure preparation gate — 2026-07-20
+
+- [x] CloudFormation is Staging-only and contains no credential, database URL, token or Production endpoint.
+- [x] Partner rule and Lambda consumer are independently disabled by default.
+- [x] Lambda artifact requires an immutable S3 object version.
+- [x] EventBridge delivery failure and Lambda processing failure use separate encrypted DLQs.
+- [x] SQS visibility timeout covers six Lambda timeouts plus the batch window; partial-batch handling and five-attempt redrive remain enabled.
+- [x] Queue policies require TLS and restrict EventBridge sends to the exact rule ARN and AWS account.
+- [x] Lambda IAM has no wildcard allow/admin policy; secret and optional customer-managed KMS access are exact-resource and context-bound.
+- [x] CloudWatch alarms cover Lambda errors/throttles/duration, queue age, both DLQs and failure to write to the EventBridge DLQ.
+- [x] Local structural, reference, resource-type, IAM boundary and regression checks pass.
+- [ ] Package/review the immutable Lambda artifact and its runtime dependencies.
+- [ ] Run AWS `ValidateTemplate` and inspect a Staging-only change set after explicit external approval.
+- [ ] Connect and test an approved alarm notification destination.
+- [ ] Create resources with both gates disabled, then follow the staged activation/E2E runbook.
+
+No AWS/Auth0/Netlify resource was created, no database migration was applied and Production was not modified or deployed.
+
 ## Auth0 Staging security-event pipeline gate — 2026-07-19
 
 - [x] Staging-only EventBridge -> encrypted SQS -> Lambda -> controlled PostgreSQL function IaC is reviewable and repeatable.
@@ -10,7 +28,8 @@
 - [x] Synthetic handler, isolation, duplicate, expiry, account-revoke and IaC boundary tests pass.
 - [ ] Create the external Auth0/AWS Staging resources and Staging database role/migration after explicit approval.
 - [ ] Run a real Auth0 Staging event -> SQS -> Lambda -> PostgreSQL -> old access-token rejection E2E.
-- [ ] Add operational alarms/runbook exercise for queue age, Lambda failures and DLQ depth.
+- [x] Define operational alarms for queue age, Lambda failures and separate delivery/processing DLQ depth in IaC.
+- [ ] Create the external alarm route and execute the alarm/DLQ runbook in isolated Staging.
 
 Production remains blocked from this pipeline. No AWS/Auth0/Netlify resource or Production deployment was created by this milestone.
 

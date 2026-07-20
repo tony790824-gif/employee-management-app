@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## 2026-07-20 — AWS Staging infrastructure preparation completed locally
+
+- **Completed:** hardened Staging CloudFormation, fixed deterministic queue naming, separate EventBridge/processing DLQs, default-disabled ingress/consumer, immutable artifact version, TLS/source-account restrictions, optional exact KMS decrypt boundary, CloudWatch alarms and repeatable local validation.
+- **Not created:** no AWS, Auth0, Netlify or database resource was created or modified; no Production deployment occurred.
+- **Remaining P0:** build/review the Lambda artifact, then—only after explicit approval—run AWS template/change-set validation and create the isolated Staging stack with both gates disabled before controlled activation/E2E.
+- **Next single priority:** prepare a deterministic, dependency-complete, secret-free Lambda artifact with checksum/SBOM and local invocation proof. Do not create AWS resources in that work item.
+
 ## 2026-07-19 — Auth0 Staging security-event pipeline 程式與 IaC 已準備
 
 - **完成：** EventBridge partner bus／rule、加密 SQS／DLQ、Lambda partial-batch consumer、嚴格 Staging 來源與時間驗證、PostgreSQL security-event inbox、Session compromise/revoke、transactional idempotency、least-privilege event role gate 與合成安全測試。

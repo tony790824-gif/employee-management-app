@@ -14,6 +14,7 @@
     "api:start": "node --env-file-if-exists=.env server/index.mjs",
     "auth:check": "node --env-file-if-exists=.env scripts/oidc-readiness.mjs",
     "auth:lifecycle:staging": "node --env-file-if-exists=.env scripts/auth0-staging-token-lifecycle.mjs",
+    "infra:validate:aws:staging": "node tests/auth0-security-event-infrastructure.test.mjs",
     "db:configure-production-api-secret": "node --env-file-if-exists=.env.production scripts/configure-production-api-secret.mjs",
     "db:migrate": "node --env-file-if-exists=.env database/migrate.mjs up",
     "db:status": "node --env-file-if-exists=.env database/migrate.mjs status",

@@ -3,7 +3,7 @@ import { createSecurityEventRepository } from './database.mjs';
 
 const REQUIRED_ENV = Object.freeze([
   'AUTH0_ISSUER', 'AUTH0_EVENT_SOURCE', 'AUTH0_SECURITY_EVENT_QUEUE_ARN',
-  'AWS_ACCOUNT_ID', 'AWS_REGION', 'DATABASE_EVENT_SECRET_ARN',
+  'AWS_ACCOUNT_ID', 'AWS_PARTITION', 'AWS_REGION', 'DATABASE_EVENT_SECRET_ARN',
   'BANK_STAGING_DATABASE_HOST', 'BANK_STAGING_DATABASE_NAME'
 ]);
 
@@ -16,13 +16,16 @@ function runtimeConfig(env) {
   if (!/^https:\/\/[^/]+\/$/.test(issuer)) throw new Error('AUTH0_ISSUER_INVALID');
   const auth0EventSource = String(env.AUTH0_EVENT_SOURCE);
   const awsAccountId = String(env.AWS_ACCOUNT_ID);
+  const awsPartition = String(env.AWS_PARTITION);
   const awsRegion = String(env.AWS_REGION);
   const queueArn = String(env.AUTH0_SECURITY_EVENT_QUEUE_ARN);
   if (!/^aws\.partner\/auth0\.com\/.+/.test(auth0EventSource)) throw new Error('AUTH0_EVENT_SOURCE_INVALID');
-  if (!/^\d{12}$/.test(awsAccountId) || !/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(awsRegion)) {
+  if (!/^\d{12}$/.test(awsAccountId)
+    || !/^aws(?:-us-gov|-cn)?$/.test(awsPartition)
+    || !/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(awsRegion)) {
     throw new Error('AWS_IDENTITY_INVALID');
   }
-  if (queueArn !== `arn:aws:sqs:${awsRegion}:${awsAccountId}:banke-auth0-security-events-staging`) {
+  if (queueArn !== `arn:${awsPartition}:sqs:${awsRegion}:${awsAccountId}:banke-auth0-security-events-staging`) {
     throw new Error('AUTH0_SECURITY_EVENT_QUEUE_ARN_INVALID');
   }
   const maxEventAgeSeconds = Number(env.AUTH0_EVENT_MAX_AGE_SECONDS || 86_400);

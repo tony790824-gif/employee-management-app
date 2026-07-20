@@ -1,5 +1,14 @@
 # Change Log
 
+## 2026-07-20 — AWS Staging infrastructure preparation
+
+- Hardened the Staging CloudFormation template with default-disabled event ingress/consumer, deterministic queue naming and immutable Lambda S3 object versions.
+- Split EventBridge delivery failures from Lambda processing failures into separate encrypted DLQs and corrected SQS visibility timeout for the configured Lambda timeout plus batching window.
+- Added TLS-only queue policies, exact EventBridge source-account/rule constraints, optional exact KMS decrypt conditions and JSON Lambda logging.
+- Added CloudWatch alarms for Lambda errors, throttles and duration, queue age, both DLQs and EventBridge DLQ-delivery failure.
+- Expanded local validation for CloudFormation references/resource allowlists, IAM wildcard/admin exclusions, monitoring, retry and environment boundaries; documented the safe activation/runbook gates.
+- Fixed the Lambda queue-ARN contract and AWS partition validation. No cloud resource, database migration or Production system was created, modified or deployed.
+
 ## 2026-07-19 — Auth0 Staging security-event pipeline implementation
 
 - Added a Staging-only Node.js consumer for Auth0 security events delivered through an AWS partner EventBridge source and encrypted SQS.

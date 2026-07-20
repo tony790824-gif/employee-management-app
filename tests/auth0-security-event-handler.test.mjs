@@ -10,6 +10,7 @@ const env = {
   AUTH0_EVENT_SOURCE: source,
   AUTH0_SECURITY_EVENT_QUEUE_ARN: queueArn,
   AWS_ACCOUNT_ID: '123456789012',
+  AWS_PARTITION: 'aws',
   AWS_REGION: 'ap-southeast-1',
   DATABASE_EVENT_SECRET_ARN: 'arn:aws:secretsmanager:ap-southeast-1:123456789012:secret:synthetic',
   BANK_STAGING_DATABASE_HOST: 'synthetic-staging.invalid',
@@ -102,6 +103,10 @@ await assert.rejects(
 await assert.rejects(
   async () => createSecurityEventHandler({ env: { ...env, AUTH0_SECURITY_EVENT_QUEUE_ARN: queueArn.replace('123456789012', '000000000000') } }),
   /AUTH0_SECURITY_EVENT_QUEUE_ARN_INVALID/
+);
+await assert.rejects(
+  async () => createSecurityEventHandler({ env: { ...env, AWS_PARTITION: 'aws-attacker' } }),
+  /AWS_IDENTITY_INVALID/
 );
 
 await assert.rejects(() => handler({ Records: [] }), /SQS_BATCH_INVALID/);

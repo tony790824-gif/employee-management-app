@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-20 — AWS Staging infrastructure preparation
+
+- CloudFormation now defaults both EventBridge ingress and Lambda consumption to disabled, requires an immutable Lambda artifact version and fixes the queue-name contract used by the handler.
+- EventBridge delivery failures and Lambda processing failures have separate encrypted DLQs; SQS visibility timeout, TLS-only policy, exact source account/rule, optional KMS encryption-context restriction and CloudWatch alarms follow AWS operational guidance.
+- IAM remains least privilege: no wildcard allow/admin action, direct database credential, Production identifier or resource creation occurred. Local checks validate references, resource-type allowlist, IAM boundaries and alarm/retry settings.
+- **Commercial readiness: 78% (previously 77%).** The increase reflects deployment-safe, observable and locally repeatable IaC preparation only. It does not count AWS control-plane validation, Lambda packaging, resource creation or real event E2E as complete.
+- **Fit for Production: No.** The isolated AWS Staging stack, alarm route and immutable Lambda artifact must still be created and accepted through a reviewed change set and real E2E; Production remains untouched.
+
 ## 2026-07-19 — Auth0 Staging security-event pipeline implementation
 
 - 已完成 Staging-only EventBridge/SQS/Lambda/PostgreSQL event consumer 程式、IaC、idempotency、retry/DLQ、least-privilege grant gate 與合成安全測試。

@@ -10,15 +10,43 @@ Parameters:
     AllowedPattern: '^https://[^/]+/$'
   LambdaArtifactBucket:
     Type: String
+    AllowedPattern: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
   LambdaArtifactKey:
     Type: String
+    MinLength: 1
+  LambdaArtifactObjectVersion:
+    Type: String
+    MinLength: 1
   StagingDatabaseSecretArn:
     Type: String
-    AllowedPattern: '^arn:aws:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$'
+    AllowedPattern: '^arn:aws(?:-us-gov|-cn)?:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:.+$'
+  StagingDatabaseSecretKmsKeyArn:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|^arn:aws(?:-us-gov|-cn)?:kms:[a-z0-9-]+:[0-9]{12}:key/[0-9a-fA-F-]{36}$'
   StagingDatabaseHost:
     Type: String
+    AllowedPattern: '^[A-Za-z0-9.-]+$'
   StagingDatabaseName:
     Type: String
+    AllowedPattern: '^[A-Za-z0-9_]+$'
+  AlarmNotificationTopicArn:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|^arn:aws(?:-us-gov|-cn)?:sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_-]+$'
+  SecurityEventRuleState:
+    Type: String
+    Default: DISABLED
+    AllowedValues: [DISABLED, ENABLED]
+  SecurityEventConsumerEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['false', 'true']
+
+Conditions:
+  HasSecretKmsKey: !Not [!Equals [!Ref StagingDatabaseSecretKmsKeyArn, '']]
+  HasAlarmNotificationTopic: !Not [!Equals [!Ref AlarmNotificationTopicArn, '']]
+  IsSecurityEventConsumerEnabled: !Equals [!Ref SecurityEventConsumerEnabled, 'true']
 
 Resources:
   Auth0PartnerEventBus:
@@ -27,25 +55,44 @@ Resources:
       Name: !Ref Auth0PartnerEventSourceName
       EventSourceName: !Ref Auth0PartnerEventSourceName
 
-  SecurityEventDeadLetterQueue:
+  EventBridgeDeliveryDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
+      QueueName: banke-auth0-security-events-eventbridge-dlq-staging
       KmsMasterKeyId: alias/aws/sqs
       MessageRetentionPeriod: 1209600
       Tags:
         - Key: bank:environment
           Value: staging
+        - Key: bank:failure-stage
+          Value: eventbridge-delivery
+        - Key: bank:data-classification
+          Value: security-event
+
+  SecurityEventProcessingDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: banke-auth0-security-events-processing-dlq-staging
+      KmsMasterKeyId: alias/aws/sqs
+      MessageRetentionPeriod: 1209600
+      Tags:
+        - Key: bank:environment
+          Value: staging
+        - Key: bank:failure-stage
+          Value: lambda-processing
         - Key: bank:data-classification
           Value: security-event
 
   SecurityEventQueue:
     Type: AWS::SQS::Queue
     Properties:
+      QueueName: banke-auth0-security-events-staging
       KmsMasterKeyId: alias/aws/sqs
       MessageRetentionPeriod: 345600
-      VisibilityTimeout: 180
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 185
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt SecurityEventDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt SecurityEventProcessingDeadLetterQueue.Arn
         maxReceiveCount: 5
       Tags:
         - Key: bank:environment
@@ -57,7 +104,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       EventBusName: !Ref Auth0PartnerEventBus
-      State: ENABLED
+      State: !Ref SecurityEventRuleState
       EventPattern:
         source:
           - !Ref Auth0PartnerEventSourceName
@@ -77,14 +124,15 @@ Resources:
             MaximumEventAgeInSeconds: 86400
             MaximumRetryAttempts: 185
           DeadLetterConfig:
-            Arn: !GetAtt SecurityEventDeadLetterQueue.Arn
+            Arn: !GetAtt EventBridgeDeliveryDeadLetterQueue.Arn
 
   SecurityEventQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
         - !Ref SecurityEventQueue
-        - !Ref SecurityEventDeadLetterQueue
+        - !Ref SecurityEventProcessingDeadLetterQueue
+        - !Ref EventBridgeDeliveryDeadLetterQueue
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -97,15 +145,30 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt Auth0SecurityEventRule.Arn
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
           - Sid: EventBridgeToDeadLetterQueue
             Effect: Allow
             Principal:
               Service: events.amazonaws.com
             Action: sqs:SendMessage
-            Resource: !GetAtt SecurityEventDeadLetterQueue.Arn
+            Resource: !GetAtt EventBridgeDeliveryDeadLetterQueue.Arn
             Condition:
               ArnEquals:
                 aws:SourceArn: !GetAtt Auth0SecurityEventRule.Arn
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: sqs:*
+            Resource:
+              - !GetAtt SecurityEventQueue.Arn
+              - !GetAtt SecurityEventProcessingDeadLetterQueue.Arn
+              - !GetAtt EventBridgeDeliveryDeadLetterQueue.Arn
+            Condition:
+              Bool:
+                aws:SecureTransport: false
 
   SecurityEventLambdaRole:
     Type: AWS::IAM::Role
@@ -131,6 +194,16 @@ Resources:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue
                 Resource: !Ref StagingDatabaseSecretArn
+              - !If
+                - HasSecretKmsKey
+                - Effect: Allow
+                  Action: kms:Decrypt
+                  Resource: !Ref StagingDatabaseSecretKmsKeyArn
+                  Condition:
+                    StringEquals:
+                      kms:ViaService: !Sub secretsmanager.${AWS::Region}.${AWS::URLSuffix}
+                      'kms:EncryptionContext:SecretARN': !Ref StagingDatabaseSecretArn
+                - !Ref AWS::NoValue
               - Effect: Allow
                 Action:
                   - logs:CreateLogStream
@@ -149,10 +222,15 @@ Resources:
       Code:
         S3Bucket: !Ref LambdaArtifactBucket
         S3Key: !Ref LambdaArtifactKey
+        S3ObjectVersion: !Ref LambdaArtifactObjectVersion
       MemorySize: 256
       Timeout: 30
       ReservedConcurrentExecutions: 2
       Role: !GetAtt SecurityEventLambdaRole.Arn
+      LoggingConfig:
+        ApplicationLogLevel: INFO
+        LogFormat: JSON
+        SystemLogLevel: WARN
       Environment:
         Variables:
           BANK_ENV: staging
@@ -160,6 +238,7 @@ Resources:
           AUTH0_EVENT_SOURCE: !Ref Auth0PartnerEventSourceName
           AUTH0_SECURITY_EVENT_QUEUE_ARN: !GetAtt SecurityEventQueue.Arn
           AWS_ACCOUNT_ID: !Ref AWS::AccountId
+          AWS_PARTITION: !Ref AWS::Partition
           DATABASE_EVENT_SECRET_ARN: !Ref StagingDatabaseSecretArn
           BANK_STAGING_DATABASE_HOST: !Ref StagingDatabaseHost
           BANK_STAGING_DATABASE_NAME: !Ref StagingDatabaseName
@@ -177,7 +256,7 @@ Resources:
       MaximumBatchingWindowInSeconds: 5
       FunctionResponseTypes:
         - ReportBatchItemFailures
-      Enabled: true
+      Enabled: !If [IsSecurityEventConsumerEnabled, true, false]
       ScalingConfig:
         MaximumConcurrency: 2
 
@@ -187,10 +266,161 @@ Resources:
       LogGroupName: /aws/lambda/banke-auth0-security-events-staging
       RetentionInDays: 30
 
+  SecurityEventFunctionErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Staging security-event Lambda returned an error
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SecurityEventFunction
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  SecurityEventFunctionThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Staging security-event Lambda was throttled
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SecurityEventFunction
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  SecurityEventFunctionDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Staging security-event Lambda exceeded 80 percent of its timeout
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SecurityEventFunction
+      ExtendedStatistic: p95
+      Period: 300
+      EvaluationPeriods: 2
+      DatapointsToAlarm: 2
+      Threshold: 24000
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  SecurityEventQueueAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Staging security-event queue processing is delayed
+      Namespace: AWS/SQS
+      MetricName: ApproximateAgeOfOldestMessage
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt SecurityEventQueue.QueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 3
+      Threshold: 300
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  SecurityEventProcessingDeadLetterAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: A Staging security event exhausted Lambda processing retries
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt SecurityEventProcessingDeadLetterQueue.QueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  EventBridgeDeliveryDeadLetterAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: EventBridge could not deliver a Staging Auth0 event to SQS
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt EventBridgeDeliveryDeadLetterQueue.QueueName
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
+  EventBridgeDeadLetterDeliveryFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: EventBridge could not write a failed Staging event to its DLQ
+      Namespace: AWS/Events
+      MetricName: InvocationsFailedToBeSentToDLQ
+      Dimensions:
+        - Name: EventBusName
+          Value: !Ref Auth0PartnerEventBus
+        - Name: RuleName
+          Value: !Ref Auth0SecurityEventRule
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: !If
+        - HasAlarmNotificationTopic
+        - [!Ref AlarmNotificationTopicArn]
+        - !Ref AWS::NoValue
+
 Outputs:
   PartnerEventBusName:
     Value: !Ref Auth0PartnerEventBus
   SecurityEventQueueArn:
     Value: !GetAtt SecurityEventQueue.Arn
-  SecurityEventDeadLetterQueueArn:
-    Value: !GetAtt SecurityEventDeadLetterQueue.Arn
+  SecurityEventProcessingDeadLetterQueueArn:
+    Value: !GetAtt SecurityEventProcessingDeadLetterQueue.Arn
+  EventBridgeDeliveryDeadLetterQueueArn:
+    Value: !GetAtt EventBridgeDeliveryDeadLetterQueue.Arn
