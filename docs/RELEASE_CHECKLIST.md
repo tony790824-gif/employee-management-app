@@ -1,5 +1,20 @@
 # 班客邦 Release Checklist
 
+## Lambda artifact packaging gate — 2026-07-20
+
+- [x] Production dependencies are installed from the committed pnpm lockfile with scripts disabled; the local cache is preferred and only missing locked content may be retrieved.
+- [x] `pg` and `@aws-sdk/client-secrets-manager` are packaged explicitly; the function does not rely on mutable runtime-included SDK versions.
+- [x] Hoisted dependencies contain no pnpm symlinks or absolute store paths.
+- [x] ZIP entries are sorted and use a fixed timestamp; two independent builds produce identical bytes and SHA256.
+- [x] Artifact contains a deterministic manifest and CycloneDX 1.5 SBOM.
+- [x] `.env`, key, certificate and pnpm metadata files are excluded or rejected.
+- [x] Packaged Handler, PostgreSQL driver and AWS SDK resolve in an isolated local invocation.
+- [x] Artifact output is Git-ignored and no binary artifact or Secret is committed.
+- [ ] Review the generated SHA256/SBOM and upload the exact ZIP to an approved versioned Staging artifact bucket.
+- [ ] Run AWS `ValidateTemplate`, review a Staging-only change set and bind the resulting immutable S3 object version.
+
+No AWS resource or service was created or deployed by this gate.
+
 ## AWS Staging infrastructure preparation gate — 2026-07-20
 
 - [x] CloudFormation is Staging-only and contains no credential, database URL, token or Production endpoint.
@@ -11,7 +26,7 @@
 - [x] Lambda IAM has no wildcard allow/admin policy; secret and optional customer-managed KMS access are exact-resource and context-bound.
 - [x] CloudWatch alarms cover Lambda errors/throttles/duration, queue age, both DLQs and failure to write to the EventBridge DLQ.
 - [x] Local structural, reference, resource-type, IAM boundary and regression checks pass.
-- [ ] Package/review the immutable Lambda artifact and its runtime dependencies.
+- [x] Package and locally verify the immutable Lambda artifact and its runtime dependencies.
 - [ ] Run AWS `ValidateTemplate` and inspect a Staging-only change set after explicit external approval.
 - [ ] Connect and test an approved alarm notification destination.
 - [ ] Create resources with both gates disabled, then follow the staged activation/E2E runbook.

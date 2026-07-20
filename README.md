@@ -21,6 +21,7 @@ The formal multi-tenant database and Transaction/Command API now live in `databa
 - [Auth0 Staging connection gate](docs/AUTH0_STAGING_SETUP.md)
 - [Auth0 Staging security-event pipeline](docs/AUTH0_SECURITY_EVENT_PIPELINE.md)
 - [AWS Staging infrastructure preparation](docs/AWS_STAGING_INFRASTRUCTURE.md)
+- [Lambda artifact packaging](docs/LAMBDA_ARTIFACT_PACKAGING.md)
 
 Run database commands only with an explicitly configured PostgreSQL environment. Never commit `.env` files or database/JWT secrets.
 

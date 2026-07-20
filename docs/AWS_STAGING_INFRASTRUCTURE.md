@@ -102,7 +102,7 @@ The local environment intentionally does not install AWS CLI, SAM CLI or `cfn-li
 ## Future activation order (not executed)
 
 1. Confirm the isolated Auth0 partner event source, Staging AWS account/region and notification route.
-2. Package and review the Lambda artifact, including runtime dependencies; upload it to a versioned Staging artifact bucket.
+2. Build and review the reproducible Lambda artifact, checksum and SBOM; uploading it to a versioned Staging artifact bucket requires separate approval.
 3. Create the Staging database migration/role and Secrets Manager secret using an approved secure channel.
 4. Validate the template and inspect a CloudFormation change set while both gates remain disabled.
 5. Create the stack with `SecurityEventConsumerEnabled=false` and `SecurityEventRuleState=DISABLED`.
@@ -116,7 +116,7 @@ Any unexpected Production identifier, IAM wildcard, secret output, failed alarm 
 ## Operational limitations
 
 - No real AWS account/template validation, change set or resource exists yet.
-- Lambda artifact packaging and code-signing validation remain a separate pre-deployment task.
+- Reproducible Lambda packaging, runtime dependency inclusion, SHA256, CycloneDX SBOM and local invocation are complete; artifact upload and code-signing validation remain external pre-deployment tasks.
 - Lambda-to-Neon network egress must be selected and tested without weakening TLS; no VPC/NAT design is added by this milestone.
 - DLQ replay remains manual and must preserve the existing database idempotency key.
 - Alarm thresholds are conservative Staging defaults and require tuning from observed non-sensitive telemetry.

@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-20 — Reproducible Lambda artifact packaging
+
+- Added deterministic Lambda ZIP packaging from the frozen pnpm lockfile with cache-first, production-only, script-disabled and symlink-free dependency installation.
+- Added explicit packaged runtime dependencies for PostgreSQL and AWS Secrets Manager rather than relying on mutable runtime-provided SDK versions.
+- Added SHA256 output, embedded/external CycloneDX 1.5 SBOM and a deterministic artifact manifest with source hashes and exact direct dependency versions.
+- Added isolated packaged-handler invocation and two-build byte-for-byte reproducibility tests, plus rejection of `.env`, private-key/certificate and pnpm metadata files.
+- No AWS/Auth0/Netlify resource was created, no service was deployed and Production was not modified.
+
 ## 2026-07-20 — AWS Staging infrastructure preparation
 
 - Hardened the Staging CloudFormation template with default-disabled event ingress/consumer, deterministic queue naming and immutable Lambda S3 object versions.

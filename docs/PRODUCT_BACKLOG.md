@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## 2026-07-20 — Lambda artifact packaging completed locally
+
+- **Completed:** deterministic Node.js 22 ZIP, frozen production dependency install with a project-local cache, explicit AWS SDK and PostgreSQL dependencies, SHA256 checksum, CycloneDX 1.5 SBOM and isolated local Handler invocation.
+- **Verified:** two clean builds produce identical ZIP bytes and checksum; no symlink, pnpm store metadata, `.env`, key or certificate file enters the Artifact.
+- **Not performed:** no Artifact upload, AWS control-plane validation, change set, resource creation or deployment occurred.
+- **Next single priority:** after explicit external approval, run AWS CloudFormation `ValidateTemplate` and inspect a Staging-only change set with the EventBridge rule and Lambda consumer still disabled.
+
 ## 2026-07-20 — AWS Staging infrastructure preparation completed locally
 
 - **Completed:** hardened Staging CloudFormation, fixed deterministic queue naming, separate EventBridge/processing DLQs, default-disabled ingress/consumer, immutable artifact version, TLS/source-account restrictions, optional exact KMS decrypt boundary, CloudWatch alarms and repeatable local validation.

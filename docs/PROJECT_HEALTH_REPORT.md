@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-20 — Lambda artifact packaging
+
+- Lambda Artifact is now reproducible from the committed pnpm lockfile with an explicit package-manager version, no install scripts and a project-local dependency cache.
+- The ZIP includes exact `pg` and AWS Secrets Manager SDK versions, a deterministic manifest and CycloneDX 1.5 SBOM; generated ZIP, checksum and SBOM are local ignored outputs.
+- Two independent builds produce byte-identical archives and SHA256 values. The packaged Handler and both direct runtime dependencies pass an isolated synthetic SQS invocation without cloud or database access.
+- **Commercial readiness: 79% (previously 78%).** The increase covers build provenance, dependency completeness and local execution evidence only; no AWS validation, upload, resource creation or event E2E is counted.
+- **Fit for Production: No.** AWS Staging control-plane validation, reviewed change set, artifact upload/version binding, alarms and real Staging event E2E remain incomplete.
+
 ## 2026-07-20 — AWS Staging infrastructure preparation
 
 - CloudFormation now defaults both EventBridge ingress and Lambda consumption to disabled, requires an immutable Lambda artifact version and fixes the queue-name contract used by the handler.

@@ -3,6 +3,7 @@ dist-local/
 dist-staging/
 node_modules/
 .pnpm-store/
+artifacts/
 *.log
 .env
 .env.*
