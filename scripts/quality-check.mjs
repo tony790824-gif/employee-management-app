@@ -26,8 +26,10 @@ const backendSourceFiles = [
   'security-events/handler.mjs',
   'scripts/package-lambda-artifact.mjs',
   'scripts/oidc-readiness.mjs',
+  'scripts/staging-acceptance.mjs',
   'scripts/configure-production-api-secret.mjs',
   'tests/oidc-readiness.test.mjs',
+  'tests/staging-auth-initiation.test.mjs',
   'tests/lambda-artifact-packaging.test.mjs',
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'

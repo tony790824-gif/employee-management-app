@@ -1,5 +1,16 @@
 # 班客邦 Release Checklist
 
+## Project cleanup and technical-debt gate — 2026-07-20
+
+- [x] 正式來源、建置白名單、runtime loader、package scripts 與 Runbook 引用已交叉盤點；未發現可安全刪除的 dead source。
+- [x] `pg`、`@aws-sdk/client-secrets-manager`、`fflate` 均有可追蹤的實際用途，沒有移除依賴。
+- [x] 自包含的 Auth0 Staging initiation 測試已加入完整測試鏈；人工 Staging acceptance 腳本已加入語法檢查。
+- [x] migration rollback 快照的內容重複已確認為刻意設計，未誤刪 migration history。
+- [x] helper 重複與 ADR 編號衝突已記錄為技術債，未在清理工作中跨信任邊界重構。
+- [x] 完整 `release:check`、Staging build、依賴 audit 與 tracked-file Secret scan 已於 2026-07-20 通過。
+
+本閘門不建立 AWS/Auth0/Netlify 資源、不修改或部署 Production，也不變更架構決策。
+
 ## Lambda artifact packaging gate — 2026-07-20
 
 - [x] Production dependencies are installed from the committed pnpm lockfile with scripts disabled; the local cache is preferred and only missing locked content may be retrieved.
@@ -91,7 +102,7 @@ Known low-risk limitation: PostgreSQL's inherited `PUBLIC TEMPORARY` capability 
 
 ## 本機閘門
 
-- [ ] `pnpm release:check` 完整通過。
+- [x] `pnpm release:check` 完整通過（2026-07-20 Project Cleanup）。
 - [x] 13 組 P0/state/cleanup 回歸全部通過（2026-07-17）。
 - [ ] `dist/` 僅包含發布白名單檔案，且與來源逐檔一致。
 - [ ] 老闆／員工本機 smoke 無登入遮罩、白畫面或 console error。

@@ -1,5 +1,12 @@
 # 班客邦
 
+## Project cleanup status — 2026-07-20
+
+- 完成正式來源、測試入口、依賴與文件引用盤點；未發現可安全刪除的正式來源或未使用套件。
+- 完整測試鏈現包含自包含的 Auth0 Staging 啟動／PKCE 設定測試；人工 Staging 驗收腳本也納入語法檢查。
+- 已知 helper 重複、ADR 歷史編號衝突及長串測試指令列為技術債，本次未跨安全邊界重構。
+- 目前架構與模組責任請見 [Current Architecture](docs/ARCHITECTURE.md)。本次沒有改變架構、雲端資源、Production 或部署狀態。
+
 ## Frontend environments
 
 - `pnpm build:local` creates `dist-local/` for local preview.
@@ -13,6 +20,7 @@ See [Staging frontend environment](docs/STAGING_FRONTEND.md) and [cross-device E
 The formal multi-tenant database and Transaction/Command API now live in `database/` and `server/`. They are an isolated migration path and are **not** connected to the current Production frontend.
 
 - [Database commands and safety gates](database/README.md)
+- [Current implementation architecture](docs/ARCHITECTURE.md)
 - [Migration rehearsal runbook](docs/POSTGRESQL_MIGRATION.md)
 - [Implemented transition API](docs/openapi-postgres.yaml)
 - [ADR 0013](docs/adr/0013-postgresql-transaction-command-api.md)
@@ -85,9 +93,9 @@ pnpm release:check
 ```
 
 - `npm run check`：檢查 JavaScript／Apps Script 語法、manifest、HTML 資產引用與發布白名單。
-- `npm test`：執行目前已建立的 13 組 P0/state/cleanup 防回歸檢查，包括員工雲端欄位隔離、越權拒絕、本人排假／打卡、短效 session、工作區竄改、stored XSS、credential migration、儲存白名單、1 MiB request 邊界與 snapshot 欄位值驗證。
+- `npm test`：執行目前已建立的 25 組前端 P0、Apps Script、PostgreSQL、OIDC、Auth0 Staging、安全事件、IaC 與 Lambda Artifact 防回歸檢查。
 - `npm run build`：建立乾淨的 `dist/` 靜態部署輸出，不包含 ZIP、後端原始碼或未啟用雲端設定。
-- `pnpm release:check`：執行全部檢查、13 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
+- `pnpm release:check`：執行全部品質檢查、25 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
 
 本機預覽可用靜態 HTTP server 開啟 `local-preview.html`。員工介面無限更新與登入前敏感 DOM 曝露已修復；其餘 P0 問題仍列於健康報告。
 

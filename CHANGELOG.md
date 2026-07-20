@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-20 — Project cleanup and technical-debt review
+
+- Audited tracked source, build/runtime references, package dependencies, migration history and documentation links; no safe dead-source or unused-dependency deletion was identified.
+- Added the self-contained Auth0 Staging initiation test to the complete test chain and added syntax coverage for it and the manual Staging acceptance tool.
+- Documented the current implementation architecture without changing any accepted ADR, cloud resource, database, Auth0 setting or Production environment.
+- Recorded intentional migration rollback duplication, cross-layer helper duplication, the historical duplicate ADR `0011` number and the long serial test command as follow-up technical debt.
+- Commercial readiness remains 79%; no deployment or new product capability is counted.
+
 ## 2026-07-20 — Reproducible Lambda artifact packaging
 
 - Added deterministic Lambda ZIP packaging from the frozen pnpm lockfile with cache-first, production-only, script-disabled and symlink-free dependency installation.

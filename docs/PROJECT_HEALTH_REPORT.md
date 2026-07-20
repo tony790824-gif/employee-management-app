@@ -1,5 +1,18 @@
 # 班客邦 Project Health Report
 
+## 2026-07-20 — Project Cleanup & Technical Debt Review
+
+- **範圍：** 正式來源、建置／測試入口、依賴、migration、文件引用與 Git 發布邊界；沒有變更 Architecture、Auth0、AWS、Production 或資料庫。
+- **重複程式：** 前端管理 handler 已維持單一入口。跨層 `normalizedHost`、`stableJson`、`validDate` 與 SQL identifier quoting 仍有小型重複，但分布在 migration、runtime、security-event 等不同信任邊界，未經逐層契約測試前不宜合併。
+- **Dead code：** 未發現可安全刪除的 tracked 正式來源。`staging-acceptance.mjs` 由 Runbook 使用；PostgreSQL Staging integration test 需要外部環境，刻意不放入無憑證的本機測試鏈；migration rollback 的相同 SQL 是歷史還原快照。
+- **未使用依賴：** 未發現。`pg`、AWS Secrets Manager SDK 與 `fflate` 均有實際 runtime／Artifact packaging 引用。
+- **低風險修正：** 將自包含的 Auth0 Staging initiation 測試加入完整測試鏈，並將該測試與人工 Staging acceptance 工具加入語法檢查，避免安全入口在一般品質檢查中漂移。
+- **技術債：** ADR `0011` 歷史編號重複；package test command 過長；跨層 helper 重複；舊 PWA 仍依賴多個全域 script。這些不影響目前執行，但需在獨立、具回歸證據的重構 Sprint 處理。
+- **商業上線完成度：79%（維持不變）。** 本次提升維護與驗證完整性，沒有完成新的 Production 能力，因此不提高百分比。
+- **是否適合正式上線：No。** AWS Staging 真實資源／事件 E2E、前端正式 API cutover、跨裝置 E2E、observability 與 release operations 仍未完成。
+
+> 本節是 2026-07-20 的最新現況。下方較早的百分比與未完成項目保留作歷史稽核，不應覆蓋本節。
+
 ## 2026-07-20 — Lambda artifact packaging
 
 - Lambda Artifact is now reproducible from the committed pnpm lockfile with an explicit package-manager version, no install scripts and a project-local dependency cache.

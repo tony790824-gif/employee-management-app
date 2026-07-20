@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { access, readFile } from 'node:fs/promises';
 
-const [app, management, cloud, config, environmentConfig, serviceWorker, enhancements, projectFiles] = await Promise.all([
+const [app, management, cloud, config, environmentConfig, serviceWorker, enhancements, projectFiles, packageJson, runbook] = await Promise.all([
   readFile('app.js', 'utf8'),
   readFile('management-actions.js', 'utf8'),
   readFile('google-sheets-cloud.js', 'utf8'),
@@ -9,7 +9,9 @@ const [app, management, cloud, config, environmentConfig, serviceWorker, enhance
   readFile('environment-config.js', 'utf8'),
   readFile('service-worker.js', 'utf8'),
   readFile('enhancements.js', 'utf8'),
-  readFile('scripts/project-files.mjs', 'utf8')
+  readFile('scripts/project-files.mjs', 'utf8'),
+  readFile('package.json', 'utf8'),
+  readFile('docs/RUNBOOK.md', 'utf8')
 ]);
 
 for (const formId of ['employeeForm', 'shiftForm', 'attendanceForm']) {
@@ -38,6 +40,8 @@ assert.match(enhancements, /window\.shiftBossData\.persist\(before, next/, '薪�
 
 assert.match(projectFiles, /'management-actions\.js'/);
 assert.doesNotMatch(projectFiles, /'fallback-actions\.js'/);
+assert.match(packageJson, /node tests\/staging-auth-initiation\.test\.mjs/, 'Auth0 Staging 啟動測試必須納入完整測試鏈');
+assert.match(runbook, /scripts\/staging-acceptance\.mjs/, '人工 Staging 驗收腳本必須由 Runbook 明確引用');
 
 for (const removed of [
   'fallback-actions.js',

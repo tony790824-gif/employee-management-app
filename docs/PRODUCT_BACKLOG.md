@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-20 — Project cleanup review completed
+
+- **完成：** tracked source／依賴／測試入口／文件引用／migration rollback 去重盤點，補齊 Auth0 Staging initiation 回歸與人工 Staging 工具語法檢查。
+- **未刪除：** 沒有檔案或套件符合「無引用且可證明不影響 runtime、migration、rollback 或 Runbook」的刪除標準。
+- **技術債：** 跨層 helper 重複、過長的串行 test command、歷史 ADR `0011` 編號衝突與舊 PWA global-script coupling；需各自獨立驗收，本次不處理。
+- **優先順序不變：** 下一個唯一 P0 仍是經外部明確核准後，對 AWS Staging 執行 CloudFormation `ValidateTemplate` 與 disabled-gate change-set review；本次不建立資源或開始該工作。
+- **完成度：79%，維持不變。** 清理工作降低維護風險，但未增加 Production 功能或外部 E2E 證據。
+
 ## 2026-07-20 — Lambda artifact packaging completed locally
 
 - **Completed:** deterministic Node.js 22 ZIP, frozen production dependency install with a project-local cache, explicit AWS SDK and PostgreSQL dependencies, SHA256 checksum, CycloneDX 1.5 SBOM and isolated local Handler invocation.
