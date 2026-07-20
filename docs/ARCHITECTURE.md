@@ -1,5 +1,13 @@
 # 班客邦 Current Architecture
 
+## PostgreSQL frontend integration status — 2026-07-20
+
+The active product path remains `PWA -> Apps Script -> Google Sheets`. A browser transport factory for the formal `Node API -> Auth0 -> PostgreSQL controlled functions` path is now packaged and tested, but is deliberately inert: `dataBackend` remains `local_preview` or `google_sheets`, and `postgresApiUrl` is empty in every committed environment profile.
+
+The factory is a strangler-boundary preparation, not a cutover. It centralizes HTTPS-only transport, bearer/session failure handling, Workspace request scope, idempotency, byte limits and timeouts without giving the client authority over tenant membership. The server and database must continue to derive authorization from verified subject, active Session and live Membership.
+
+Activation remains blocked until an isolated Staging Node API is deployed, the complete read/bootstrap surface is available, migration reconciliation/rollback is rehearsed, and boss/employee E2E proves no fallback or cache contamination. Production and the existing Netlify Draft Preview were not deployed or modified.
+
 更新日期：2026-07-20  
 文件性質：目前實作盤點；本文件不變更既有架構決策，決策仍以 `docs/adr/` 為準。
 

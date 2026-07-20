@@ -1,5 +1,17 @@
 # 班客邦 Release Checklist
 
+## PostgreSQL frontend cutover gate — 2026-07-20
+
+- [x] A single reviewed browser API transport factory is packaged in reproducible builds.
+- [x] Remote HTTP, credential-bearing URLs, oversized requests/responses, invalid Workspace IDs and unknown commands fail closed.
+- [x] Session-invalid responses produce a non-sensitive event and never log bearer tokens.
+- [x] Local, Staging and Production committed profiles keep `postgresApiUrl` empty; Staging/Production remain on Google Sheets.
+- [x] Existing Netlify Draft Preview was not rebuilt, replaced or deployed by this Sprint.
+- [ ] Deploy the Node API to an isolated Staging endpoint with secret-managed Auth0/PostgreSQL configuration.
+- [ ] Complete the read/bootstrap API required to render both roles without Google Sheets fallback.
+- [ ] Pass reconciliation, rollback, cache isolation, weak-network and boss/employee Staging cutover E2E.
+- [ ] Obtain explicit approval before any Production endpoint, frontend switch or deployment.
+
 ## Project cleanup and technical-debt gate — 2026-07-20
 
 - [x] 正式來源、建置白名單、runtime loader、package scripts 與 Runbook 引用已交叉盤點；未發現可安全刪除的 dead source。

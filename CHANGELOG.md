@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-20 — PostgreSQL frontend integration boundary
+
+- Added a strict browser-side PostgreSQL API client for health/readiness, authenticated session lifecycle, employee reads, and the six existing command routes.
+- Added HTTPS/loopback URL validation, request/response byte limits, timeout handling, idempotency validation, no-store/omit-credentials transport defaults, and safe invalid-session signaling.
+- Added environment gates that keep Local on `local_preview` and Staging/Production on `google_sheets`; every `postgresApiUrl` remains empty, so no PostgreSQL cutover or network traffic is activated.
+- Added focused transport and environment-isolation regression coverage and included the client in reproducible build/service-worker asset lists.
+- No database schema/data, Production deployment, Auth0, Apps Script, Google Sheets, or existing Netlify Draft Preview was changed. Commercial readiness is assessed at 80%; live Staging API/cutover evidence remains outstanding.
+
 ## 2026-07-20 — Project cleanup and technical-debt review
 
 - Audited tracked source, build/runtime references, package dependencies, migration history and documentation links; no safe dead-source or unused-dependency deletion was identified.

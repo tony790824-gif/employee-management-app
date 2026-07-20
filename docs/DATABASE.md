@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Frontend integration boundary — 2026-07-20
+
+This Sprint added no table, column, role, function, migration, seed or business data. The existing Production PostgreSQL schema and least-privilege role remain unchanged. The browser build now contains an inactive API client factory only; committed environment profiles do not contain a PostgreSQL API URL and do not switch the active Google Sheets data store.
+
+Before any cutover, an isolated Staging API must prove database target validation, controlled-function-only access, live Session/Membership authorization, reconciliation and rollback. A browser-provided Workspace identifier remains request scope only and is never sufficient database authority.
+
 ## 2026-07-19 Auth0 Staging security-event inbox
 
 Migration `0009_auth0_security_event_inbox` adds `app_private.security_event_inbox` and the single controlled `app_private.ingest_auth0_security_event(...)` function. The inbox stores bounded event metadata and a SHA-256 payload fingerprint, never a raw Auth0 payload or token. Its composite primary key `(environment, issuer, event_id)` and `ON CONFLICT DO NOTHING` make duplicate delivery idempotent. Inbox insertion and the matching `auth_sessions` state transition run in one transaction.

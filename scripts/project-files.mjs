@@ -11,6 +11,7 @@ export const deployFiles = Object.freeze([
   'employee-layout.css',
   'environment.css',
   'environment-config.js',
+  'postgres-api-client.js',
   'google-sheets-config.js',
   'state-store.js',
   'account-security.js',

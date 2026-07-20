@@ -21,7 +21,9 @@ const runtimeConfig = `(() => {
   const config = Object.freeze(${JSON.stringify({
     name: profile.name,
     label: profile.label,
+    dataBackend: profile.dataBackend,
     backendUrl: profile.backendUrl,
+    postgresApiUrl: profile.postgresApiUrl,
     storagePrefix: profile.storagePrefix,
     serviceWorkerUrl: './service-worker.js',
     ...(profile.auth ? { auth: profile.auth } : {})

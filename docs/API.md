@@ -1,5 +1,13 @@
 # API 文件（現況與目標）
 
+## Browser PostgreSQL API transport boundary — 2026-07-20
+
+`postgres-api-client.js` is the single reviewed browser transport factory for the existing formal API. It exposes unauthenticated `health`/`readiness`, authenticated Session establishment/logout and employee listing, plus the six existing command names. It sends a bearer token, a requested `X-Workspace-Id`, a random request ID and command idempotency key; the Workspace header is never an authorization source and must be re-authorized against live server-side Membership.
+
+Safety controls include HTTPS-only remote URLs (HTTP only on loopback), rejection of embedded credentials/query/fragment, 1 MiB request and 2 MiB response limits, 15-second abort timeout, `credentials: omit`, `cache: no-store`, redirect rejection, structured errors and a non-sensitive invalid-session browser event on 401/403.
+
+This transport is not activated. All committed `postgresApiUrl` values are empty and the active Staging/Production data backend remains Google Sheets. No Production endpoint is documented or inferred by the client.
+
 ## Internal Auth0 Staging security-event consumer — 2026-07-19
 
 This is not a browser/public HTTP API. Auth0 Staging events enter through an AWS partner EventBridge source and an exact SQS queue; Lambda consumes SQS records and calls only `app_private.ingest_auth0_security_event(...)`. The trusted envelope fields are validated before any database call. Failures use SQS partial batch responses, while application logs include only bounded result codes and an irreversible message fingerprint.

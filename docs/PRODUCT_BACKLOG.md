@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## 2026-07-20 — PostgreSQL Production Integration boundary
+
+- **Completed:** one strict, reusable browser transport factory for the existing Node/PostgreSQL API; build/service-worker inclusion; environment fail-closed defaults; focused transport and isolation tests.
+- **Not activated:** Staging and Production remain on Google Sheets and have no committed PostgreSQL API URL. No database, deployment, Auth0, Apps Script, Google Sheets, or Draft Preview change occurred.
+- **Completion:** 80% (previously 79%). The increase reflects a tested cutover boundary, not a live Production integration.
+- **Next unique priority:** deploy the existing Node API to an isolated Staging endpoint, complete the missing read/bootstrap surface, and run a reversible boss/employee cutover rehearsal. Do not switch Production during that Sprint.
+
 ## 2026-07-20 — Project cleanup review completed
 
 - **完成：** tracked source／依賴／測試入口／文件引用／migration rollback 去重盤點，補齊 Auth0 Staging initiation 回歸與人工 Staging 工具語法檢查。

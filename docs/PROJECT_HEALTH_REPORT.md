@@ -1,5 +1,12 @@
 # 班客邦 Project Health Report
 
+## 2026-07-20 — PostgreSQL Production Integration health update
+
+- **Commercial readiness: 80% (previously 79%).** A tested browser transport boundary now exists for the formal PostgreSQL API, while every committed environment remains fail-closed and on the current data backend.
+- **Confirmed safe:** no Production/PostgreSQL deployment, no schema/data change, no Netlify Draft Preview change, no client-selected tenant authority, and no secret or endpoint committed.
+- **Remaining P0/P1:** deploy an isolated Staging Node API; complete read/bootstrap endpoints; prove Session/Membership authorization, data reconciliation, rollback, weak-network behavior and boss/employee E2E before any Production switch.
+- **Release verdict:** No. The integration boundary is production-oriented, but the live API path and reversible cutover have not been accepted in Staging.
+
 ## 2026-07-20 — Project Cleanup & Technical Debt Review
 
 - **範圍：** 正式來源、建置／測試入口、依賴、migration、文件引用與 Git 發布邊界；沒有變更 Architecture、Auth0、AWS、Production 或資料庫。

@@ -15,6 +15,12 @@ assert.equal(environmentProfiles.production.storagePrefix, '', 'Production å¿…é 
 assert.equal(environmentProfiles.staging.storagePrefix, 'banke:staging:');
 assert.equal(environmentProfiles.local.storagePrefix, 'banke:local:');
 assert.notEqual(environmentProfiles.staging.backendUrl, environmentProfiles.production.backendUrl);
+assert.equal(environmentProfiles.local.dataBackend, 'local_preview');
+assert.equal(environmentProfiles.staging.dataBackend, 'google_sheets');
+assert.equal(environmentProfiles.production.dataBackend, 'google_sheets');
+for (const profile of Object.values(environmentProfiles)) {
+  assert.equal(profile.postgresApiUrl, '', `${profile.name} must not activate PostgreSQL before cutover approval`);
+}
 
 const stagingFiles = await readdir('dist-staging');
 const stagingText = (await Promise.all(stagingFiles

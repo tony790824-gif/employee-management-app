@@ -1,5 +1,11 @@
 # 班客邦
 
+## PostgreSQL browser integration boundary — 2026-07-20
+
+- 新增 `postgres-api-client.js`，提供正式 Node/PostgreSQL API 的嚴格瀏覽器傳輸邊界；包含 HTTPS／loopback 限制、Bearer 與 Workspace request scope、idempotency、大小限制、timeout、結構化錯誤及撤銷 Session 事件。
+- `local`、`staging`、`production` build 都包含同一個受測 factory，但目前設定仍分別維持 `local_preview`／`google_sheets`，且 `postgresApiUrl` 為空；因此不會送出 PostgreSQL API request，也不會改變既有 Google Sheets 流程。
+- 本次沒有資料庫異動、Production 部署或 Netlify Draft Preview 重新部署。正式切換仍須先完成隔離 Staging API 部署、完整 read/bootstrap surface 與 cutover rehearsal。
+
 ## Project cleanup status — 2026-07-20
 
 - 完成正式來源、測試入口、依賴與文件引用盤點；未發現可安全刪除的正式來源或未使用套件。
@@ -93,9 +99,9 @@ pnpm release:check
 ```
 
 - `npm run check`：檢查 JavaScript／Apps Script 語法、manifest、HTML 資產引用與發布白名單。
-- `npm test`：執行目前已建立的 25 組前端 P0、Apps Script、PostgreSQL、OIDC、Auth0 Staging、安全事件、IaC 與 Lambda Artifact 防回歸檢查。
+- `npm test`：執行目前已建立的 26 組前端 P0、Apps Script、PostgreSQL、OIDC、Auth0 Staging、安全事件、IaC 與 Lambda Artifact 防回歸檢查。
 - `npm run build`：建立乾淨的 `dist/` 靜態部署輸出，不包含 ZIP、後端原始碼或未啟用雲端設定。
-- `pnpm release:check`：執行全部品質檢查、25 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
+- `pnpm release:check`：執行全部品質檢查、26 組回歸與 build，再逐檔驗證 `dist/` 白名單並確認後端維運文件；正式發布前仍須在 Apps Script 執行線上 readiness check。
 
 本機預覽可用靜態 HTTP server 開啟 `local-preview.html`。員工介面無限更新與登入前敏感 DOM 曝露已修復；其餘 P0 問題仍列於健康報告。
 

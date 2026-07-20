@@ -27,7 +27,7 @@ for (const source of authenticatedScripts) {
 
 assert.deepEqual(
   staticScripts,
-  ['environment-config.js', 'google-sheets-config.js', 'state-store.js', 'account-security.js', 'cloud-sync.js', 'google-sheets-cloud.js', 'login.js', 'pwa.js'],
+  ['environment-config.js', 'postgres-api-client.js', 'google-sheets-config.js', 'state-store.js', 'account-security.js', 'cloud-sync.js', 'google-sheets-cloud.js', 'login.js', 'pwa.js'],
   '登入前只能載入設定、資料容錯、驗證連線、登入與 PWA 安裝程式'
 );
 assert.match(app, /^if \(window\.SHIFT_AUTHORIZED !== true\) throw new Error/m, '管理程式必須拒絕未授權啟動');
