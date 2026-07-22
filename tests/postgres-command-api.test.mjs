@@ -1,12 +1,18 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
+import { readFile } from 'node:fs/promises';
 import { createApiServer } from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
 import { assertApiDatabaseTarget, createPool, expectedApiDatabase } from '../server/db.mjs';
 import { createOidcVerifier } from '../server/jwt-verifier.mjs';
 import { createTenantContextSigner } from '../server/tenant-context.mjs';
 import { validateCommand } from '../server/validation.mjs';
+
+const serverEntry = await readFile('server/index.mjs', 'utf8');
+assert.match(serverEntry, /BANK_API_BIND_HOST/);
+assert.match(serverEntry, /\['127\.0\.0\.1', '0\.0\.0\.0'\]/,
+  'API bind host must remain an explicit allowlist');
 
 assert.equal(validateCommand('employees.create', {
   name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200
@@ -31,6 +37,7 @@ const pool = {
     if (sql.includes('api_establish_session')) return { rows: [{ result: { ok: true, sessionExpiresAt: 1_800_028_800 } }] };
     if (sql.includes('api_logout_session')) return { rows: [{ result: { ok: true } }] };
     if (sql.includes('api_list_employees')) return { rows: [{ result: { ok: true, data: [] } }] };
+    if (sql.includes('api_bootstrap')) return { rows: [{ result: { ok: true, role: 'boss', data: {} } }] };
     if (sql.includes('api_execute_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic' } } }] };
     throw new Error(`Unexpected SQL: ${sql}`);
   }
@@ -45,8 +52,9 @@ await service.execute({
   input: { name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200 }
 });
 await service.listEmployees({ identity, workspaceId });
+await service.bootstrap({ identity, workspaceId });
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 4);
+assert.equal(queries.length, 5);
 assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
 assert.ok(queries.every(item => !/\b(?:FROM|INTO|UPDATE|DELETE FROM)\s+(?:employees|workspaces|workspace_members)\b/i.test(item.sql)),
   'API never directly queries tenant tables');
@@ -152,7 +160,8 @@ const api = createApiServer({
   verifyAccessToken: async () => identity,
   commandService: {
     establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
-    execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] })
+    execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }),
+    bootstrap: async () => ({ ok: true, role: 'boss', data: { employees: [] } })
   }
 });
 api.listen(0, '127.0.0.1');
@@ -164,6 +173,9 @@ try {
   };
   const sessionResponse = await fetch(`${base}/v1/auth/session`, { method: 'POST', headers: commonHeaders });
   assert.equal(sessionResponse.status, 201);
+  const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
+  assert.equal(bootstrapResponse.status, 200);
+  assert.equal((await bootstrapResponse.json()).role, 'boss');
   const missingWorkspace = await fetch(`${base}/v1/employees`, { headers: {
     Origin: 'https://staging.example', Authorization: 'Bearer a.b.c'
   } });

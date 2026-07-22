@@ -165,6 +165,7 @@
       establishSession: () => request('/auth/session', { method: 'POST' }),
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),
+      bootstrap: () => request('/bootstrap'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {
           throw new PostgresApiError('Command 不在允許清單。', { code: 'COMMAND_NOT_FOUND', status: 404 });

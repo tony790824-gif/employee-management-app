@@ -61,6 +61,7 @@ const client = createClient({
   fetchImpl: async (url, options) => {
     calls.push({ url, options });
     if (url.endsWith('/employees')) return response(200, { employees: [] });
+    if (url.endsWith('/bootstrap')) return response(200, { ok: true, role: 'boss', data: {} });
     if (url.endsWith('/commands/attendance.clock-in')) return response(201, { ok: true, replayed: false });
     if (url.endsWith('/health')) return response(200, { ok: true });
     return response(404, { error: 'not found', code: 'ROUTE_NOT_FOUND', requestId: 'safe-request-id' });
@@ -83,15 +84,19 @@ assert.equal(calls[1].options.headers.Authorization, `Bearer ${accessToken}`);
 assert.equal(calls[1].options.headers['X-Workspace-Id'], workspaceId);
 assert.match(calls[1].options.headers['X-Request-Id'], /^request-\d{4}$/);
 
+const bootstrapPayload = await client.bootstrap();
+assert.equal(bootstrapPayload.role, 'boss');
+assert.equal(calls[2].url, 'https://api.staging.example/v1/bootstrap');
+
 const commandPayload = await client.executeCommand(
   'attendance.clock-in', {}, { idempotencyKey: 'clock-in-0001' }
 );
 assert.equal(commandPayload.ok, true);
 assert.equal(commandPayload.replayed, false);
-assert.equal(calls[2].options.method, 'POST');
-assert.equal(calls[2].options.headers['Idempotency-Key'], 'clock-in-0001');
-assert.equal(calls[2].options.headers['Content-Type'], 'application/json');
-assert.equal(calls[2].options.body, '{}');
+assert.equal(calls[3].options.method, 'POST');
+assert.equal(calls[3].options.headers['Idempotency-Key'], 'clock-in-0001');
+assert.equal(calls[3].options.headers['Content-Type'], 'application/json');
+assert.equal(calls[3].options.body, '{}');
 assert.equal(commandNames.length, 6);
 assert.throws(() => client.executeCommand('admin.drop-all', {}), error =>
   error instanceof PostgresApiError && error.code === 'COMMAND_NOT_FOUND');

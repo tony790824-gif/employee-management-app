@@ -11,6 +11,7 @@ export const API_FUNCTIONS = Object.freeze([
   'app_private.api_establish_session(text,text,text)',
   'app_private.api_logout_session(text,text,text)',
   'app_private.api_list_employees(text,text,text)',
+  'app_private.api_bootstrap(text,text,text)',
   'app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'
 ]);
 

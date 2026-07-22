@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { databaseConfig, loadMigrations } from '../database/migrate.mjs';
 
 const migrations = await loadMigrations();
-assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009']);
+assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009', '0011']);
 assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
 for (const migration of migrations) {
   assert.match(migration.checksum, /^[a-f0-9]{64}$/);
@@ -12,6 +12,8 @@ for (const migration of migrations) {
 }
 
 const sql = (await Promise.all(migrations.map(item => item.upSql))).join('\n');
+assert.match(sql, /FUNCTION app_private\.api_bootstrap\(/);
+assert.match(sql, /verify_tenant_context\(signed_payload, signed_signature, signing_key_id, 'read', true\)/);
 const tenantTables = [
   'workspaces', 'workspace_members', 'employees', 'shifts', 'leave_selections',
   'attendance_records', 'payroll_adjustments', 'command_receipts', 'audit_logs',

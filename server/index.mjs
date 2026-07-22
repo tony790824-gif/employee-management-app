@@ -28,11 +28,15 @@ const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => 
 const commandService = createCommandService({ pool, tenantContextSigner });
 const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins });
 const port = Number(process.env.PORT || 8080);
+const bindHost = String(process.env.BANK_API_BIND_HOST || '127.0.0.1').trim();
+if (!['127.0.0.1', '0.0.0.0'].includes(bindHost)) {
+  throw new Error('BANK_API_BIND_HOST must be 127.0.0.1 or 0.0.0.0.');
+}
 
 async function start() {
   await assertApiDatabaseTarget(pool);
-  server.listen(port, '127.0.0.1', () => {
-    console.log(JSON.stringify({ level: 'info', message: 'Banke API listening', environment, port }));
+  server.listen(port, bindHost, () => {
+    console.log(JSON.stringify({ level: 'info', message: 'Banke API listening', environment, port, bindHost }));
   });
 }
 

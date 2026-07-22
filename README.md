@@ -13,6 +13,13 @@
 - 已知 helper 重複、ADR 歷史編號衝突及長串測試指令列為技術債，本次未跨安全邊界重構。
 - 目前架構與模組責任請見 [Current Architecture](docs/ARCHITECTURE.md)。本次沒有改變架構、雲端資源、Production 或部署狀態。
 
+## Isolated PostgreSQL Staging rehearsal — 2026-07-22
+
+- `GET /v1/bootstrap` now renders the existing boss or employee UI from live, server-authorized PostgreSQL membership data without a Google Sheets fallback.
+- `pnpm build:staging:postgres` creates the separate `dist-staging-postgres/` rehearsal bundle only when a credential-free HTTPS API URL and synthetic Staging workspace ID are provided through the build environment.
+- The rehearsal uses separate PWA identity, cache, local/session storage, Auth0 session verification and logout handling. The normal Staging build and Production build remain on Google Sheets.
+- A public Node API deployment was **not** created by this source-only step because no approved hosting resource or secret configuration is present. See [PostgreSQL migration runbook](docs/POSTGRESQL_MIGRATION.md) before live E2E.
+
 ## Frontend environments
 
 - `pnpm build:local` creates `dist-local/` for local preview.

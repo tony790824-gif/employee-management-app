@@ -96,6 +96,10 @@ export function createRequestHandler({ commandService, verifyAccessToken, pool, 
         json(response, 200, await commandService.listEmployees({ identity, workspaceId }), requestId);
         return;
       }
+      if (request.method === 'GET' && url.pathname === '/v1/bootstrap') {
+        json(response, 200, await commandService.bootstrap({ identity, workspaceId }), requestId);
+        return;
+      }
       const match = request.method === 'POST' && /^\/v1\/commands\/([a-z.-]+)$/.exec(url.pathname);
       if (match) {
         const input = await readJson(request);

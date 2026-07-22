@@ -125,9 +125,12 @@
     overlay.hidden = true;
   }
 
+  window.shiftAppSession = Object.freeze({ enter });
+
   // 本機預覽只用來檢查畫面，絕不能等待 Google Sheets 或要求登入。
   const isLocalPreview = window.LOCAL_PREVIEW === true;
-  const useSheets = () => !isLocalPreview && Boolean(window.sheetsCloud && window.GOOGLE_SHEETS_WEB_APP_URL);
+  const useSheets = () => !isLocalPreview && window.shiftEnvironment?.dataBackend === 'google_sheets'
+    && Boolean(window.sheetsCloud && window.GOOGLE_SHEETS_WEB_APP_URL);
   async function sheetsLogin(role, number, code, activationCode = '') {
     const response = await window.sheetsCloud.login(role, number, code, read(), activationCode);
     if (!response?.ok) {
@@ -219,6 +222,12 @@
       });
     });
   } else if (sessionStorage.getItem(storageKey('shift-signed-in')) === 'yes') {
+    if (window.shiftEnvironment?.dataBackend === 'postgres') {
+      // Auth0 owns restoration for the isolated PostgreSQL rehearsal. Never
+      // interpret its namespaced session as a Google Sheets session.
+      overlay.hidden = false;
+      return;
+    }
     const savedRole = localStorage.getItem(storageKey('shift-session-role')) || 'boss';
     const savedEmployee = savedRole === 'employee' ? localStorage.getItem(storageKey('shift-person')) || '' : '';
     const savedCloudSession = isLocalPreview ? null : sheetsSession();
@@ -256,7 +265,12 @@
     document.body.classList.remove('app-authenticated', 'employee-mode');
     overlay.hidden = false;
     purgeRenderedData();
-    if (!isLocalPreview && window.sheetsCloud) {
+    if (window.shiftEnvironment?.dataBackend === 'postgres' && window.shiftPostgresCloud) {
+      await Promise.race([
+        window.shiftPostgresCloud.logout(),
+        new Promise(resolve => setTimeout(resolve, 3000))
+      ]);
+    } else if (!isLocalPreview && window.sheetsCloud) {
       await Promise.race([
         window.sheetsCloud.logout(),
         new Promise(resolve => setTimeout(resolve, 3000))

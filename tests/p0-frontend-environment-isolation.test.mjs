@@ -8,6 +8,16 @@ const build = environment => {
   assert.equal(result.status, 0, result.stderr || `Failed to build ${environment}`);
 };
 
+const rehearsalBuild = spawnSync(process.execPath, ['scripts/build.mjs', '--environment=staging', '--postgres-rehearsal'], {
+  encoding: 'utf8',
+  env: {
+    ...process.env,
+    BANKE_STAGING_POSTGRES_API_URL: 'https://api.staging.example/v1',
+    BANKE_STAGING_WORKSPACE_ID: `ws_${'a'.repeat(32)}`
+  }
+});
+assert.equal(rehearsalBuild.status, 0, rehearsalBuild.stderr || 'Failed to build isolated PostgreSQL rehearsal');
+
 build('local');
 build('staging');
 
@@ -35,6 +45,14 @@ assert.match(stagingEnvironment, /"storagePrefix": "banke:staging:"/);
 
 const entryHtml = await readFile('index.html', 'utf8');
 assert.match(entryHtml, /LOCAL_PREVIEW = window\.shiftEnvironment\?\.name === 'local'/);
+assert.ok(
+  entryHtml.indexOf('state-store.js') < entryHtml.indexOf('postgres-cloud.js'),
+  'PostgreSQL adapter must load after the state store it depends on'
+);
+
+const loginSource = await readFile('login.js', 'utf8');
+assert.match(loginSource, /dataBackend === 'postgres'[\s\S]*Auth0 owns restoration/,
+  'PostgreSQL rehearsal reload must not resume a Google Sheets session');
 assert.doesNotMatch(entryHtml, /has\('preview'\)/, 'URL 參數不得在 Staging 或 Production 繞過登入');
 
 const stagingWorker = await readFile('dist-staging/service-worker.js', 'utf8');
@@ -42,6 +60,15 @@ assert.match(stagingWorker, /const CACHE_PREFIX='banke-staging-'/);
 assert.match(stagingWorker, /const CACHE='banke-staging-v1'/);
 assert.match(stagingWorker, /key\.startsWith\(CACHE_PREFIX\)/, 'Service Worker 只能清除同環境 cache');
 assert.doesNotMatch(stagingWorker, /banke-production-/);
+
+const rehearsalEnvironment = await readFile('dist-staging-postgres/environment-config.js', 'utf8');
+assert.match(rehearsalEnvironment, /"dataBackend": "postgres"/);
+assert.match(rehearsalEnvironment, /https:\/\/api\.staging\.example\/v1/);
+assert.match(rehearsalEnvironment, /"storagePrefix": "banke:staging-postgres:"/);
+assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
+assert.match(rehearsalWorker, /banke-staging-postgres-v1/);
+assert.doesNotMatch(rehearsalWorker, /banke-production-/);
 
 const stagingManifest = JSON.parse(await readFile('dist-staging/manifest.webmanifest', 'utf8'));
 assert.equal(stagingManifest.id, './?app=banke-staging');

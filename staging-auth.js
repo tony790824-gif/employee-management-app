@@ -89,9 +89,19 @@
 
     if (await client.isAuthenticated()) {
       const verification = await verifySessionClaim();
-      setStatus(verification.exists && verification.nonEmptyString && verification.matchesAuth0SessionId
-        ? 'Auth0 Staging login succeeded; the session claim is present and matches the Auth0 session ID.'
-        : 'Auth0 Staging login succeeded, but the session claim could not be matched to the Auth0 session ID.');
+      if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
+        throw new Error('Auth0 session claim validation failed closed.');
+      }
+      if (environment.dataBackend === 'postgres') {
+        setStatus('Auth0 驗證成功，正在載入 PostgreSQL Staging 資料…');
+        const bootstrap = await window.shiftPostgresCloud.connect({
+          getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } })
+        });
+        await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
+        setStatus('PostgreSQL Staging 資料載入完成。');
+      } else {
+        setStatus('Auth0 Staging login succeeded; the session claim is present and matches the Auth0 session ID.');
+      }
       loginButton.textContent = 'Auth0 已登入';
       loginButton.disabled = true;
       return;
@@ -124,6 +134,7 @@
 
   window.shiftStagingAuth = Object.freeze({
     loginWithRedirect,
+    getAccessToken: () => client?.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
     getClaimVerification: () => claimVerification,
     redirectUri,
     audience: authConfig?.audience || ''

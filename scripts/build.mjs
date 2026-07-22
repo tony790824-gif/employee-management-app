@@ -6,7 +6,34 @@ const requestedEnvironment = process.argv.find(value => value.startsWith('--envi
   || process.env.BANKE_BUILD_ENV
   || 'production';
 const profile = getEnvironmentProfile(requestedEnvironment);
-const outputDirectory = profile.name === 'production' ? 'dist' : `dist-${profile.name}`;
+const postgresRehearsal = requestedEnvironment === 'staging' && process.argv.includes('--postgres-rehearsal');
+const rehearsalApiUrl = String(process.env.BANKE_STAGING_POSTGRES_API_URL || '').trim();
+const rehearsalWorkspaceId = String(process.env.BANKE_STAGING_WORKSPACE_ID || '').trim();
+if (postgresRehearsal) {
+  const url = new URL(rehearsalApiUrl);
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
+    throw new Error('BANKE_STAGING_POSTGRES_API_URL must be a credential-free HTTPS URL.');
+  }
+  if (!/^ws_[a-f0-9]{32}$/.test(rehearsalWorkspaceId)) {
+    throw new Error('BANKE_STAGING_WORKSPACE_ID format is invalid.');
+  }
+}
+const effectiveProfile = postgresRehearsal ? Object.freeze({
+  ...profile,
+  label: 'STAGING POSTGRES',
+  dataBackend: 'postgres',
+  postgresApiUrl: rehearsalApiUrl.replace(/\/$/, ''),
+  postgresWorkspaceId: rehearsalWorkspaceId,
+  storagePrefix: 'banke:staging-postgres:',
+  cachePrefix: 'banke-staging-postgres-',
+  cacheName: 'banke-staging-postgres-v1',
+  manifest: Object.freeze({
+    id: './?app=banke-staging-postgres', name: '班表管理 STAGING POSTGRES',
+    shortName: '班表 STG PG', startUrl: './?app=banke-staging-postgres'
+  })
+}) : profile;
+const outputDirectory = postgresRehearsal ? 'dist-staging-postgres'
+  : profile.name === 'production' ? 'dist' : `dist-${profile.name}`;
 const auth0SdkUrl = 'https://cdn.auth0.com/js/auth0-spa-js/2.11/auth0-spa-js.production.js';
 const auth0SdkIntegrity = 'sha384-6cnw/e3NUTHp0Du1Qjh1PjnZ6N0XOX/NW2oX3rXiTDHPJ9hjENz/8G2qT1RzUDWd';
 
@@ -19,12 +46,13 @@ for (const file of deployFiles) {
 
 const runtimeConfig = `(() => {
   const config = Object.freeze(${JSON.stringify({
-    name: profile.name,
-    label: profile.label,
-    dataBackend: profile.dataBackend,
-    backendUrl: profile.backendUrl,
-    postgresApiUrl: profile.postgresApiUrl,
-    storagePrefix: profile.storagePrefix,
+    name: effectiveProfile.name,
+    label: effectiveProfile.label,
+    dataBackend: effectiveProfile.dataBackend,
+    backendUrl: effectiveProfile.backendUrl,
+    postgresApiUrl: effectiveProfile.postgresApiUrl,
+    ...(effectiveProfile.postgresWorkspaceId ? { postgresWorkspaceId: effectiveProfile.postgresWorkspaceId } : {}),
+    storagePrefix: effectiveProfile.storagePrefix,
     serviceWorkerUrl: './service-worker.js',
     ...(profile.auth ? { auth: profile.auth } : {})
   }, null, 2)});
@@ -46,15 +74,15 @@ const runtimeConfig = `(() => {
 await writeFile(`${outputDirectory}/environment-config.js`, runtimeConfig, 'utf8');
 
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
-manifest.id = profile.manifest.id;
-manifest.name = profile.manifest.name;
-manifest.short_name = profile.manifest.shortName;
-manifest.start_url = profile.manifest.startUrl;
+manifest.id = effectiveProfile.manifest.id;
+manifest.name = effectiveProfile.manifest.name;
+manifest.short_name = effectiveProfile.manifest.shortName;
+manifest.start_url = effectiveProfile.manifest.startUrl;
 await writeFile(`${outputDirectory}/manifest.webmanifest`, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
 const serviceWorker = (await readFile('service-worker.js', 'utf8'))
-  .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${profile.cachePrefix}';`)
-  .replace("const CACHE='banke-production-v1';", `const CACHE='${profile.cacheName}';`);
+  .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${effectiveProfile.cachePrefix}';`)
+  .replace("const CACHE='banke-production-v1';", `const CACHE='${effectiveProfile.cacheName}';`);
 await writeFile(`${outputDirectory}/service-worker.js`, serviceWorker, 'utf8');
 
 if (profile.name === 'staging') {

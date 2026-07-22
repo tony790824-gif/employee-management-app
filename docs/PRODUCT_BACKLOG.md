@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-22 — Isolated PostgreSQL UI bootstrap foundation
+
+- **Completed:** controlled PostgreSQL bootstrap function/API, boss/employee state hydration, fail-closed Auth0 session handoff, logout cleanup, deploy-safe bind-host allowlist and a separately namespaced `STAGING POSTGRES` build.
+- **Verified locally:** API/client contracts, migration/role allowlists, environment isolation, cache/storage separation and reversible adapter rehearsal.
+- **Not completed:** no approved public Node hosting target exists in the repository; migration `0011` was not applied and no live browser-to-PostgreSQL Staging E2E is claimed.
+- **Completion:** 81% (previously 80%). The increase counts the tested source boundary only, not deployment or live cutover acceptance.
+- **Next unique priority:** provision or link one approved isolated Staging Node API service, configure secrets outside Git, apply `0011` plus exact grants, and complete live boss/employee E2E with rollback evidence.
+
 ## 2026-07-20 — PostgreSQL Production Integration boundary
 
 - **Completed:** one strict, reusable browser transport factory for the existing Node/PostgreSQL API; build/service-worker inclusion; environment fail-closed defaults; focused transport and isolation tests.

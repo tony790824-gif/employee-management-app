@@ -1,5 +1,16 @@
 # 班客邦 Release Checklist
 
+## Isolated PostgreSQL UI rehearsal gate — 2026-07-22
+
+- [x] Authenticated read/bootstrap exists behind a controlled database function and live Session/Membership verification.
+- [x] Boss and employee bootstrap payloads are scoped by the server-authorized role; the frontend cannot select the trusted tenant.
+- [x] A separate `STAGING POSTGRES` build has isolated manifest, cache, storage and session namespaces.
+- [x] Normal Staging and Production remain on Google Sheets; the existing Draft Preview is unchanged.
+- [x] Local adapter rehearsal covers readiness, session establishment, bootstrap, state hydration and logout cleanup.
+- [ ] Create an approved isolated public Node API hosting resource and configure Staging-only secrets.
+- [ ] Apply `0011_ui_bootstrap` and refresh the exact API function allowlist in Staging.
+- [ ] Complete live boss/employee read reconciliation, reload/logout, timeout/weak-network, rollback and browser E2E.
+
 ## PostgreSQL frontend cutover gate — 2026-07-20
 
 - [x] A single reviewed browser API transport factory is packaged in reproducible builds.
@@ -8,7 +19,7 @@
 - [x] Local, Staging and Production committed profiles keep `postgresApiUrl` empty; Staging/Production remain on Google Sheets.
 - [x] Existing Netlify Draft Preview was not rebuilt, replaced or deployed by this Sprint.
 - [ ] Deploy the Node API to an isolated Staging endpoint with secret-managed Auth0/PostgreSQL configuration.
-- [ ] Complete the read/bootstrap API required to render both roles without Google Sheets fallback.
+- [x] Complete the read/bootstrap API required to render both roles without Google Sheets fallback (source and local rehearsal).
 - [ ] Pass reconciliation, rollback, cache isolation, weak-network and boss/employee Staging cutover E2E.
 - [ ] Obtain explicit approval before any Production endpoint, frontend switch or deployment.
 

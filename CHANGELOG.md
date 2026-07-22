@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-22 — Isolated PostgreSQL Staging UI bootstrap
+
+- Added a least-privilege PostgreSQL bootstrap migration, authenticated Node read endpoint and browser adapter that hydrates the existing boss/employee UI from live Session/Membership-scoped data.
+- Added a separately named and namespaced `STAGING POSTGRES` build so its PWA manifest, cache, storage and session cannot collide with normal Staging or Production.
+- Added fail-closed Auth0 claim handoff, PostgreSQL logout cleanup, reload isolation from Google Sheets session recovery and an explicit API bind-host allowlist.
+- Added focused API/client/migration/role/environment and reversible cutover rehearsal tests.
+- No public endpoint, database migration, business data, Production deployment, Google Sheets, Apps Script, Auth0 configuration or existing Netlify Draft Preview was changed. Commercial readiness is assessed at 81%; live Staging deployment and E2E remain pending.
+
 ## 2026-07-20 — PostgreSQL frontend integration boundary
 
 - Added a strict browser-side PostgreSQL API client for health/readiness, authenticated session lifecycle, employee reads, and the six existing command routes.

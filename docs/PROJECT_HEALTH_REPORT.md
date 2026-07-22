@@ -1,5 +1,12 @@
 # 班客邦 Project Health Report
 
+## 2026-07-22 — PostgreSQL UI bootstrap health update
+
+- **Commercial readiness: 81% (previously 80%).** The controlled read/bootstrap path and isolated reversible frontend bundle are implemented and locally tested.
+- **Confirmed safe:** normal Staging/Production remain on Google Sheets; no database migration, business data, public endpoint, Auth0 configuration, Production deployment or Draft Preview changed.
+- **Remaining P0/P1:** create the approved isolated API host, apply `0011` and role grants in Staging, then prove live boss/employee reconciliation, rollback, timeout/weak-network and browser E2E.
+- **Release verdict: No.** Source readiness is not equivalent to a deployed or accepted Staging cutover.
+
 ## 2026-07-20 — PostgreSQL Production Integration health update
 
 - **Commercial readiness: 80% (previously 79%).** A tested browser transport boundary now exists for the formal PostgreSQL API, while every committed environment remains fail-closed and on the current data backend.

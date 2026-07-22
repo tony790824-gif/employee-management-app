@@ -111,6 +111,13 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       return databaseCall(pool,
         'SELECT app_private.api_list_employees($1, $2, $3) AS result',
         [signed.payload, signed.signature, signed.keyId]);
+    },
+
+    async bootstrap({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      return databaseCall(pool,
+        'SELECT app_private.api_bootstrap($1, $2, $3) AS result',
+        [signed.payload, signed.signature, signed.keyId]);
     }
   });
 }
