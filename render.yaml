@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: bankeban-staging-node-api
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: off
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod
+    startCommand: node server/index.mjs
+    healthCheckPath: /v1/readiness
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: BANK_ENV
+        value: staging
+      - key: BANK_API_BIND_HOST
+        value: 0.0.0.0
+      - key: DATABASE_SSL
+        value: require
+      - key: DATABASE_POOL_MAX
+        value: 5
+      - key: BANK_OIDC_AUDIENCE
+        value: https://bankeban-staging-api
+      - key: BANK_OIDC_SESSION_CLAIM
+        value: https://banke.tw/session_id
+      - key: DATABASE_API_URL
+        sync: false
+      - key: BANK_STAGING_DATABASE_HOST
+        sync: false
+      - key: BANK_OIDC_ISSUER
+        sync: false
+      - key: BANK_OIDC_JWKS_URL
+        sync: false
+      - key: BANK_TENANT_CONTEXT_KEY
+        sync: false
+      - key: BANK_TENANT_CONTEXT_KEY_ID
+        sync: false
+      - key: BANK_ALLOWED_ORIGINS
+        sync: false

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-07-22 — Isolated Staging Node API hosting preparation
+
+- Added a Render Blueprint for the existing Node API with a fixed Staging environment, Singapore Free instance, disabled automatic deploys, readiness health checks and graceful shutdown.
+- Kept PostgreSQL, Auth0, tenant-context and CORS values in Render's protected environment-variable flow; no credential or endpoint secret is committed.
+- Added deployment-boundary tests and a Staging hosting runbook. The Blueprint contains no migration/import command, does not apply `0011_ui_bootstrap`, and does not switch any frontend or Production traffic.
+
 ## 2026-07-22 — Isolated PostgreSQL Staging UI bootstrap
 
 - Added a least-privilege PostgreSQL bootstrap migration, authenticated Node read endpoint and browser adapter that hydrates the existing boss/employee UI from live Session/Membership-scoped data.

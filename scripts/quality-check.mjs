@@ -31,6 +31,7 @@ const backendSourceFiles = [
   'tests/oidc-readiness.test.mjs',
   'tests/staging-auth-initiation.test.mjs',
   'tests/lambda-artifact-packaging.test.mjs',
+  'tests/staging-node-hosting.test.mjs',
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'
 ];

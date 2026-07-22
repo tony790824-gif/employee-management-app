@@ -7,7 +7,8 @@
 - [x] A separate `STAGING POSTGRES` build has isolated manifest, cache, storage and session namespaces.
 - [x] Normal Staging and Production remain on Google Sheets; the existing Draft Preview is unchanged.
 - [x] Local adapter rehearsal covers readiness, session establishment, bootstrap, state hydration and logout cleanup.
-- [ ] Create an approved isolated public Node API hosting resource and configure Staging-only secrets.
+- [x] Define the approved isolated Render Staging Node API resource with automatic deploys disabled and protected Staging-only configuration.
+- [ ] Create/link the Render resource, enter protected values and verify the first healthy deployment.
 - [ ] Apply `0011_ui_bootstrap` and refresh the exact API function allowlist in Staging.
 - [ ] Complete live boss/employee read reconciliation, reload/logout, timeout/weak-network, rollback and browser E2E.
 
@@ -18,7 +19,8 @@
 - [x] Session-invalid responses produce a non-sensitive event and never log bearer tokens.
 - [x] Local, Staging and Production committed profiles keep `postgresApiUrl` empty; Staging/Production remain on Google Sheets.
 - [x] Existing Netlify Draft Preview was not rebuilt, replaced or deployed by this Sprint.
-- [ ] Deploy the Node API to an isolated Staging endpoint with secret-managed Auth0/PostgreSQL configuration.
+- [x] Add the reviewed Render Blueprint and secret/configuration boundary for the isolated Staging endpoint.
+- [ ] Create/link the Render resource and verify its HTTPS health/readiness endpoints.
 - [x] Complete the read/bootstrap API required to render both roles without Google Sheets fallback (source and local rehearsal).
 - [ ] Pass reconciliation, rollback, cache isolation, weak-network and boss/employee Staging cutover E2E.
 - [ ] Obtain explicit approval before any Production endpoint, frontend switch or deployment.
