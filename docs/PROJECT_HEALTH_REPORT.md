@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-07-22 — Neon Staging bootstrap acceptance
+
+- **Commercial readiness: 83% (previously 81%).** Migration 0011, exact function grants, live boss/employee read/bootstrap isolation and rollback/reapply are now proven against Neon Staging.
+- **Confirmed safe:** runtime calls used the minimum API role; direct tables remained denied; the synchronized key ID was unchanged; 0009/0010 stayed pending; Render readiness remained healthy.
+- **No Production impact:** Production, Google Sheets, Apps Script, Auth0, current frontend data source and Production deployment were not changed.
+- **Remaining P0/P1:** reversible browser cutover/reconciliation, weak-network and expired-session behavior, real desktop/phone/tablet acceptance, observability/alerting and release operations.
+- **Release verdict: No.** A backend data-layer E2E is not yet complete browser or cross-device acceptance and does not authorize Production traffic.
+
 ## 2026-07-22 — PostgreSQL UI bootstrap health update
 
 - **Commercial readiness: 81% (previously 80%).** The controlled read/bootstrap path and isolated reversible frontend bundle are implemented and locally tested.

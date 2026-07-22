@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## 2026-07-22 — Neon Staging UI bootstrap accepted
+
+- **Completed:** applied only `0011_ui_bootstrap` to Neon Staging, converged least-privilege grants, passed live boss/employee read/bootstrap and cross-Workspace isolation, completed rollback/reapply, and reconfirmed Render readiness.
+- **Not changed:** 0009/0010 remain pending; no Production, Google Sheets, Apps Script, Auth0 or frontend traffic/data-source switch occurred.
+- **Completion:** 83% (previously 81%). The increase counts live database/API isolation and rollback evidence, not a browser cutover or Production readiness.
+- **Next unique priority:** run the reversible Staging browser cutover using the existing isolated `STAGING POSTGRES` build, including reconciliation, weak-network/session failure and rollback checks. Do not switch Production.
+
 ## 2026-07-22 — Isolated PostgreSQL UI bootstrap foundation
 
 - **Completed:** controlled PostgreSQL bootstrap function/API, boss/employee state hydration, fail-closed Auth0 session handoff, logout cleanup, deploy-safe bind-host allowlist and a separately namespaced `STAGING POSTGRES` build.

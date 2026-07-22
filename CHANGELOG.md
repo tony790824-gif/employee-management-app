@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-22 — Neon Staging UI bootstrap acceptance
+
+- Added an exact-version Staging migration controller that applies or rolls back only `0011_ui_bootstrap`, verifies its checksum/ledger/function state, requires the approved synchronized Key ID, and deliberately leaves 0009/0010 pending.
+- Applied 0011 to Neon Staging, reconverged the five-function minimum API allowlist and passed live boss/employee bootstrap plus Session/Membership/role/cross-Workspace isolation E2E using the runtime API role.
+- Completed rollback, absence verification, reapply and post-rollback E2E; Render Staging readiness remained HTTP 200 and the synchronized key was not regenerated or changed.
+- Updated the Staging hosting status and release/backlog/health evidence. Production, Google Sheets, Apps Script, Auth0 and frontend traffic were not modified or deployed.
+
 ## 2026-07-22 — Isolated Staging Node API hosting preparation
 
 - Added a Render Blueprint for the existing Node API with a fixed Staging environment, Singapore Free instance, disabled automatic deploys, readiness health checks and graceful shutdown.

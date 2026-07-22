@@ -53,7 +53,8 @@ assert.doesNotMatch(blueprint, /postgres(?:ql)?:\/\//i, 'Database credentials mu
 assert.doesNotMatch(blueprint, /preDeployCommand|db:migrate|0011_ui_bootstrap/i, 'Hosting must not apply migrations.');
 assert.doesNotMatch(blueprint, /autoDeployTrigger:\s*(?:commit|checksPass)/i, 'Automatic deployment must remain disabled.');
 assert.match(packageJson.scripts.test, /tests\/staging-node-hosting\.test\.mjs/);
-assert.match(runbook, /0011_ui_bootstrap.*not applied/i);
+assert.match(runbook, /Blueprint never applies migrations/i);
+assert.match(runbook, /0011_ui_bootstrap.*applied separately.*Neon Staging/i);
 assert.match(runbook, /Production.*not modified/i);
 
 console.log('Isolated Staging Node hosting configuration tests passed.');

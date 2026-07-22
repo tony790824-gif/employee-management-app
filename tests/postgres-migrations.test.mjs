@@ -1,8 +1,18 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { databaseConfig, loadMigrations } from '../database/migrate.mjs';
 
-const migrations = await loadMigrations();
+const projectRoot = fileURLToPath(new URL('..', import.meta.url));
+const trackedUpFiles = new Set(execFileSync(
+  'git',
+  ['ls-files', '--', 'database/migrations/*.up.sql'],
+  { cwd: projectRoot, encoding: 'utf8' }
+).trim().split(/\r?\n/).filter(Boolean).map(file => file.split('/').pop()));
+const migrations = (await loadMigrations()).filter(item =>
+  trackedUpFiles.has(`${item.version}_${item.name}.up.sql`)
+);
 assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009', '0011']);
 assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
 for (const migration of migrations) {

@@ -1,5 +1,20 @@
 # 班客邦 Release Checklist
 
+## Neon Staging UI bootstrap acceptance — 2026-07-22
+
+- [x] Confirmed `BANK_ENV=staging`, the approved Neon Staging host/database and separate API/migration roles before mutation.
+- [x] Confirmed migrations 0001–0008 and the active synchronized key ID `render-staging-20260722-49a11f` before applying 0011.
+- [x] Applied only `0011_ui_bootstrap`; 0009 and 0010 remain intentionally pending.
+- [x] Recorded checksum `0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf` and verified ledger/function consistency.
+- [x] Reapplied the least-privilege API allowlist: zero table grants and five controlled functions.
+- [x] Passed live boss/employee bootstrap, Session/Membership/role scope and cross-Workspace denial E2E.
+- [x] Completed a transactional rollback, confirmed absence, reapplied 0011 and reran the E2E successfully.
+- [x] Confirmed the synchronized key was neither regenerated nor changed.
+- [x] Confirmed Render Staging `/v1/readiness` returns HTTP 200 and `ok: true`.
+- [ ] Complete browser-side reversible Staging PostgreSQL cutover, reconciliation, weak-network and rollback acceptance before changing any frontend data source.
+
+Production, Google Sheets, Apps Script, Auth0 and the Production frontend were not modified or deployed.
+
 ## Isolated PostgreSQL UI rehearsal gate — 2026-07-22
 
 - [x] Authenticated read/bootstrap exists behind a controlled database function and live Session/Membership verification.

@@ -4,7 +4,7 @@
 
 `render.yaml` defines one isolated Render web service named `bankeban-staging-node-api`. It runs the existing `server/index.mjs` entry point without changing the API, frontend, Production, Google Sheets, or Apps Script paths.
 
-This hosting step does **not** switch frontend traffic. Migration `0011_ui_bootstrap` is not applied by the Blueprint and remains a separate, explicitly approved Staging database step.
+This hosting step does **not** switch frontend traffic. The Blueprint never applies migrations. Migration `0011_ui_bootstrap` was applied separately to the approved Neon Staging database on 2026-07-22 through the controlled procedure in `docs/STAGING_UI_BOOTSTRAP_ACCEPTANCE.md`.
 
 Production is not modified or deployed by this hosting definition.
 
@@ -48,4 +48,4 @@ Render Free web services can spin down when idle, so a cold start is acceptable 
 
 ## Rollback
 
-If creation or startup validation fails, suspend or delete only `bankeban-staging-node-api`. Because no frontend route is switched and no migration is run, the existing Google Sheets paths and all Production systems remain unchanged.
+If creation or startup validation fails, suspend or delete only `bankeban-staging-node-api`. This does not roll back the independently managed Staging database migration. Follow `docs/STAGING_UI_BOOTSTRAP_ACCEPTANCE.md` for the separately confirmed 0011 rollback procedure. No frontend route was switched, so the existing Google Sheets paths and all Production systems remain unchanged.
