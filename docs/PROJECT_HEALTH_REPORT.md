@@ -1,5 +1,17 @@
 # 班客邦 Project Health Report
 
+## 2026-07-22 — Staging browser cutover preflight health update
+
+- **Commercial readiness: 83%, unchanged.** This was a read-only configuration/evidence review, not a browser cutover or new acceptance result.
+- **Frontend source — ready with gates:** `scripts/build.mjs` can emit a separately named and namespaced `STAGING POSTGRES` bundle only when an HTTPS Staging API URL and valid Workspace ID are supplied. Normal Staging and Production remain on Google Sheets.
+- **Render API — ready:** the isolated service `bankeban-staging-node-api` returned a healthy live `/v1/readiness` response. Its blueprint keeps automatic deploy disabled and requires protected database, OIDC, tenant-context and exact-origin settings outside Git.
+- **Auth0 — conditionally ready:** repository configuration and prior real PKCE/session-claim acceptance match the Staging tenant and audience `https://bankeban-staging-api`. The next Draft origin is not yet known/verified in Auth0 allowlists, and the local ignored environment currently lacks the OIDC readiness variables needed to independently rerun that check.
+- **Neon Staging — ready:** a fresh read-only status check confirmed database `neondb`, migration `0011_ui_bootstrap`, checksum `0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf`, controlled function consistency and approved key ID `render-staging-20260722-49a11f`. Migrations 0009/0010 remain deliberately pending; no new migration is needed for this cutover.
+- **Netlify Draft Preview — not ready for PostgreSQL rehearsal:** the current Draft URL is a `LOCAL PREVIEW` that loads Google Sheets assets, not the isolated `STAGING POSTGRES` build. No deploy or Site configuration was changed during this review.
+- **Test identities — external gate:** the repository intentionally contains no reusable credentials. The full Sprint needs a non-real Auth0 Staging boss and employee, each mapped to the expected active database user/session/Membership; a second Workspace identity is needed for negative isolation evidence.
+- **Production safety:** no Production endpoint, build, database, Auth0 setting, Netlify Production deploy, Google Sheets or Apps Script setting was readied for mutation or changed.
+- **Release verdict: No.** The next Sprint may proceed once protected public build variables, exact origin allowlists and synthetic identities are confirmed. It must still prove browser routing, reconciliation, authorization, failure behavior, cache isolation and rollback before Staging cutover acceptance.
+
 ## 2026-07-22 — Neon Staging bootstrap acceptance
 
 - **Commercial readiness: 83% (previously 81%).** Migration 0011, exact function grants, live boss/employee read/bootstrap isolation and rollback/reapply are now proven against Neon Staging.

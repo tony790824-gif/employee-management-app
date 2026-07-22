@@ -1,5 +1,54 @@
 # 班客邦 Release Checklist
 
+## Staging browser PostgreSQL cutover preflight — 2026-07-22
+
+### Read-only configuration evidence
+
+- [x] Confirmed normal Staging and Production remain on Google Sheets and have no committed PostgreSQL endpoint.
+- [x] Confirmed the isolated `STAGING POSTGRES` build has separate manifest, service-worker/cache, localStorage and Session namespaces.
+- [x] Confirmed Render Staging `https://bankeban-staging-node-api.onrender.com/v1/readiness` responds successfully.
+- [x] Confirmed Neon Staging `neondb` has accepted `0011_ui_bootstrap`, the controlled function, approved checksum and key ID `render-staging-20260722-49a11f`.
+- [x] Confirmed no additional Migration is required; 0009/0010 remain deliberately pending and must not be bundled into the cutover.
+- [x] Confirmed Auth0 Staging source configuration uses PKCE S256, the Staging API audience and the accepted namespaced Session claim.
+- [x] Inspected the current Netlify Draft Preview without changing it; it is `LOCAL PREVIEW`／Google Sheets and is not eligible for the PostgreSQL rehearsal.
+- [x] Confirmed `.env` and `.env.production` remain Git-ignored and no credential is committed in this checklist.
+- [x] Confirmed this Preflight performed no browser switch, full E2E, deploy, database mutation or Production change.
+
+### External gates before the full Sprint
+
+- [ ] Supply `BANKE_STAGING_POSTGRES_API_URL` from the approved Render Staging endpoint through the protected Draft build environment.
+- [ ] Supply the approved synthetic `BANKE_STAGING_WORKSPACE_ID` through the protected Draft build environment; never commit it as a Production default.
+- [ ] Choose a stable HTTPS Draft/branch origin and add the exact origin to Render's allowlist.
+- [ ] Add the same exact origin and callback/logout routes to Auth0 Staging Allowed Callback URLs, Allowed Logout URLs, Allowed Web Origins and CORS.
+- [ ] Confirm one synthetic Auth0 Staging boss and one synthetic employee; both must have active database identities, Sessions and Memberships in the approved synthetic Workspace.
+- [ ] Confirm a second synthetic Workspace/identity is available for cross-tenant denial checks. Do not record credentials here.
+
+### Next full Sprint execution and expected results
+
+1. Record baseline Render readiness, Neon `0011` status/checksum/key ID and the unchanged Google Sheets Staging behavior.
+2. Verify the synthetic boss/employee identities and live Membership/role state without exposing credentials.
+3. Build only with `pnpm build:staging:postgres`; reject any output not visibly labelled `STAGING POSTGRES`.
+4. Create a Netlify Draft deploy only. Do not publish to the Site's Production deploy or change Production aliases.
+5. Bind the resulting exact Draft origin in Render/Auth0, then initiate Auth0 login from the App using Authorization Code + PKCE.
+6. In browser Network/Console, prove every PostgreSQL data request uses only the approved Render HTTPS origin; no Apps Script, Google Sheets or Production API request is allowed, and there must be no JavaScript error.
+7. Boss bootstrap must show the approved Workspace and employee roster; employee bootstrap must show only employee-authorized data; a client-supplied alternate Workspace and the second Workspace must be rejected.
+8. Reconcile employee count, identifiers, role-visible schedule/leave/attendance/payroll fields and revision metadata against the accepted Staging snapshot without writing new business data.
+9. Reload and logout must preserve/clear only the isolated Staging-PostgreSQL namespace; expired/revoked Session and removed Membership must fail closed without Google Sheets fallback.
+10. Exercise API timeout, offline/weak network and repeated navigation: show a bounded error/retry state, never silent backend fallback, duplicate mutation or infinite spinner.
+11. Verify the service worker and Cache Storage use only the Staging-PostgreSQL names; no Local, normal Staging or Production cached response may hydrate the App.
+12. Run the rollback: stop using the Draft, clear only its isolated Session/storage/cache, reopen the unchanged normal Staging Google Sheets path, and reconfirm Render/Neon status without schema or data mutation.
+
+### Immediate stop and rollback conditions
+
+- [ ] Any request targets Production, Apps Script or Google Sheets while the PostgreSQL rehearsal is active.
+- [ ] Render/Auth0 accepts an unlisted origin, or callback/logout returns to an unapproved host.
+- [ ] Boss/employee role scope, live Membership or cross-Workspace denial differs from the accepted API evidence.
+- [ ] Bootstrap reconciliation differs from the accepted snapshot or causes an unexpected write.
+- [ ] Console error, infinite loading, silent timeout fallback, duplicate request/mutation or cache namespace pollution occurs.
+- [ ] The unchanged Google Sheets Staging path cannot be restored immediately.
+
+When any condition occurs: stop the Draft rehearsal, do not promote it, preserve logs without tokens or personal data, clear only the isolated Draft state, restore the unchanged Google Sheets Staging surface, and open a narrowly scoped defect. Production remains untouched.
+
 ## Neon Staging UI bootstrap acceptance — 2026-07-22
 
 - [x] Confirmed `BANK_ENV=staging`, the approved Neon Staging host/database and separate API/migration roles before mutation.
@@ -23,8 +72,8 @@ Production, Google Sheets, Apps Script, Auth0 and the Production frontend were n
 - [x] Normal Staging and Production remain on Google Sheets; the existing Draft Preview is unchanged.
 - [x] Local adapter rehearsal covers readiness, session establishment, bootstrap, state hydration and logout cleanup.
 - [x] Define the approved isolated Render Staging Node API resource with automatic deploys disabled and protected Staging-only configuration.
-- [ ] Create/link the Render resource, enter protected values and verify the first healthy deployment.
-- [ ] Apply `0011_ui_bootstrap` and refresh the exact API function allowlist in Staging.
+- [x] Create/link the Render resource, enter protected values and verify the first healthy deployment.
+- [x] Apply `0011_ui_bootstrap` and refresh the exact API function allowlist in Staging.
 - [ ] Complete live boss/employee read reconciliation, reload/logout, timeout/weak-network, rollback and browser E2E.
 
 ## PostgreSQL frontend cutover gate — 2026-07-20

@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## 2026-07-22 — Staging browser data-layer cutover preflight completed
+
+- **Read-only evidence:** the isolated `STAGING POSTGRES` build path is present; Render Staging `/v1/readiness` returned `ok: true`; Neon Staging reports `0011_ui_bootstrap` applied with the approved checksum, controlled function present and key ID `render-staging-20260722-49a11f`; the previously accepted Auth0 Staging PKCE/session-claim configuration remains the required identity boundary.
+- **Current Draft Preview is not a cutover candidate:** the live Netlify Draft at `https://6a5d97d81702870d2782b93d--inspiring-sunshine-9eab99.netlify.app/` identifies itself as `LOCAL PREVIEW` and loads the Google Sheets adapter. It was inspected only and was not rebuilt, replaced or deployed.
+- **External gates still required:** provide the protected `BANKE_STAGING_POSTGRES_API_URL` and `BANKE_STAGING_WORKSPACE_ID` build values; choose an exact, stable Draft/branch origin; add that exact origin to Render CORS and the Auth0 callback/logout/web-origin/CORS allowlists; confirm one synthetic Staging boss and one synthetic Staging employee with active Membership in the approved synthetic Workspace. No credential is stored in Git or this document.
+- **No migration required:** `0011` is already active and accepted in Neon Staging. Migrations 0009/0010 remain deliberately pending and are outside the browser cutover.
+- **Next full Sprint execution list:** capture baseline readiness/status; verify the two synthetic identities and live Memberships; build only `STAGING POSTGRES`; create a Netlify Draft deploy; bind the exact Draft origin in Render/Auth0; prove that browser Network traffic reaches only Render (never Apps Script/Google Sheets); run boss/employee bootstrap, role and cross-Workspace denial, reload/logout/session-expiry, timeout/weak-network and cache-isolation checks; reconcile the returned snapshot; then execute and document the rollback.
+- **Rollback condition:** stop the rehearsal immediately on wrong-backend traffic, origin/auth failure, role or tenant leakage, data mismatch, JavaScript error, stale Production/Google Sheets cache, timeout fallback or inability to restore the unchanged Google Sheets Staging path.
+- **Completion:** 83%, unchanged. This work removed ambiguity and documented the gate; it did not perform the browser switch, E2E, deployment or Product capability.
+
 ## 2026-07-22 — Neon Staging UI bootstrap accepted
 
 - **Completed:** applied only `0011_ui_bootstrap` to Neon Staging, converged least-privilege grants, passed live boss/employee read/bootstrap and cross-Workspace isolation, completed rollback/reapply, and reconfirmed Render readiness.
