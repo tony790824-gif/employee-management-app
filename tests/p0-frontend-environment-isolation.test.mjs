@@ -67,7 +67,7 @@ assert.match(rehearsalEnvironment, /https:\/\/api\.staging\.example\/v1/);
 assert.match(rehearsalEnvironment, /"storagePrefix": "banke:staging-postgres:"/);
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
-assert.match(rehearsalWorker, /banke-staging-postgres-v1/);
+assert.match(rehearsalWorker, /banke-staging-postgres-v4/);
 assert.doesNotMatch(rehearsalWorker, /banke-production-/);
 
 const stagingManifest = JSON.parse(await readFile('dist-staging/manifest.webmanifest', 'utf8'));

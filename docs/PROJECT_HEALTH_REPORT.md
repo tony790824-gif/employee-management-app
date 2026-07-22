@@ -1,5 +1,15 @@
 # 班客邦 Project Health Report
 
+## 2026-07-22 — Staging browser cutover health update
+
+- **Commercial readiness: 85% (previously 83%).** A reversible desktop-browser PostgreSQL cutover is now accepted against the isolated Staging stack; this is not Production approval.
+- **Functional result:** real boss and employee Auth0 sessions rendered the existing UI from PostgreSQL bootstrap data. Employee leave/clock and boss attendance-hour persistence were exercised; employee/shift command wiring and post-command snapshot refresh passed focused regression. Temporary attendance/leave values were restored.
+- **Security result:** the Draft was fixed to Workspace A, and a valid Workspace B boss identity failed closed before any business view loaded. Live database regression reconfirmed Session, Membership, role and cross-Workspace boundaries and zero runtime-role table access.
+- **Reliability result:** network-unavailable and bounded-timeout errors are covered without silent backend fallback; Session-invalid signaling, command idempotency and PostgreSQL cache isolation remain green. Browser Console showed no JavaScript error during the accepted and rolled-back views.
+- **Rollback result:** the fixed Draft was returned to normal Google Sheets Staging, the service worker advanced to the normal Staging cache, and the visible label returned from `STAGING POSTGRES` to `STAGING`. Production remained untouched.
+- **Release verdict: No.** Real phone/tablet/desktop matrix, accessibility/touch acceptance, observability and release operations are still required before Production promotion.
+- **Remaining P0/P1:** real-device responsive/PWA E2E; production runbook/monitoring thresholds; final release candidate acceptance and explicit approval. Migrations 0009/0010 remain outside this cutover.
+
 ## 2026-07-22 — Staging browser cutover preflight health update
 
 - **Commercial readiness: 83%, unchanged.** This was a read-only configuration/evidence review, not a browser cutover or new acceptance result.

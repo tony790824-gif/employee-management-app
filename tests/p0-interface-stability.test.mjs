@@ -34,6 +34,16 @@ assert.doesNotMatch(
   '工時增強不可監聽整個 document body'
 );
 assert.match(
+  bossHours,
+  /const revision = Number\(target\.revision\)/,
+  '老闆核定工時必須使用該筆出勤紀錄的 revision'
+);
+assert.doesNotMatch(
+  bossHours,
+  /const revision = Number\(before\.sync\?\.revision\)/,
+  '老闆核定工時不得使用整份快照的固定 revision'
+);
+assert.match(
   employeeLayoutCss,
   /#schedule \.calendar-grid\{grid-template-columns:repeat\(7,minmax\(0,1fr\)\);min-width:0\}/,
   '手機日曆七欄必須允許縮小，避免姓名撐開頁面'

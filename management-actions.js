@@ -11,8 +11,23 @@
     [...form.querySelectorAll('button.primary')].forEach(button => { button.disabled = value; });
   }
 
-  async function persistBossChange(before, next, failureMessage) {
+  async function persistBossChange(before, next, failureMessage, postgresOperation) {
     write(next);
+    if (window.shiftEnvironment?.dataBackend === 'postgres') {
+      if (typeof postgresOperation !== 'function') {
+        write(before);
+        alert(`${failureMessage}：PostgreSQL Staging 尚未開放這項異動。`);
+        return false;
+      }
+      try {
+        await postgresOperation();
+        return true;
+      } catch (error) {
+        write(before);
+        alert(`${failureMessage}：${error?.message || '請稍後再試。'}`);
+        return false;
+      }
+    }
     if (!window.sheetsCloud?.saveBossData) return true;
     try {
       await window.sheetsCloud.saveBossData(next);
@@ -94,7 +109,15 @@
 
     next.employees = next.employees.filter(employee => employee.id !== id);
     next.employees.push(record);
-    if (!await persistBossChange(before, next, '員工資料未成功寫入雲端')) return;
+    const postgresOperation = existing
+      ? undefined
+      : () => {
+          if (typeof window.shiftPostgresCloud?.createEmployee !== 'function') {
+            throw new Error('PostgreSQL Staging 員工 Command 尚未連線。');
+          }
+          return window.shiftPostgresCloud.createEmployee(record);
+        };
+    if (!await persistBossChange(before, next, '員工資料未成功寫入雲端', postgresOperation)) return;
     $('#employeeDialog').close();
     invite(record, activationCode);
     location.reload();
@@ -124,8 +147,19 @@
     if (clash && !confirm('這位員工在同一時段已有班次，仍要新增嗎？')) return;
     const leaves = next.leaves?.[`${employeeId}-${date.slice(0, 7)}`] || [];
     if (leaves.includes(date) && !confirm('這天已核准休假，仍要新增班次嗎？')) return;
-    next.shifts.push({ id: uid(), employeeId, date, start, end, note: $('#shiftNote').value });
-    if (!await persistBossChange(before, next, '班次未成功寫入雲端')) return;
+    const shift = { id: uid(), employeeId, date, start, end, note: $('#shiftNote').value };
+    next.shifts.push(shift);
+    if (!await persistBossChange(
+      before,
+      next,
+      '班次未成功寫入雲端',
+      () => {
+        if (typeof window.shiftPostgresCloud?.createShift !== 'function') {
+          throw new Error('PostgreSQL Staging 班次 Command 尚未連線。');
+        }
+        return window.shiftPostgresCloud.createShift(shift);
+      }
+    )) return;
     $('#shiftDialog').close();
     location.reload();
   }));

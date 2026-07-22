@@ -15,6 +15,9 @@
   const write = data => stateStore.write(data);
   const currentMonth = () => $('#monthPicker').value;
   const requestKey = () => `${mine}-${currentMonth()}`;
+  const employeeCloud = () => window.shiftEnvironment?.dataBackend === 'postgres'
+    ? window.shiftPostgresCloud
+    : window.sheetsCloud;
   const normal = list => (list || []).map(item => typeof item === 'string' ? { date: item, type: '休假', reason: '', portion: '全天' } : item);
   const allowedEmployeeMonth = value => {
     const now = new Date();
@@ -91,8 +94,9 @@
     if (button) { button.disabled = true; button.textContent = '儲存中…'; }
     try {
       if (!window.LOCAL_PREVIEW) {
-        if (!window.sheetsCloud?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');
-        await window.sheetsCloud.saveEmployeeLeave(currentMonth(), dates);
+        const cloud = employeeCloud();
+        if (!cloud?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');
+        await cloud.saveEmployeeLeave(currentMonth(), dates);
       } else {
         const data = read();
         data.leaves ||= {};

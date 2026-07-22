@@ -158,10 +158,16 @@ assert.match(cloudSource, /auth\.role\s*!==\s*'boss'/, '員工 localStorage 變�
 assert.match(cloudSource, /employeeSaveLeave/);
 assert.match(cloudSource, /employeeClockIn/);
 assert.match(cloudSource, /employeeClockOut/);
-assert.match(accessSource, /sheetsCloud\.saveEmployeeLeave/);
+assert.match(accessSource, /const employeeCloud = \(\) => window\.shiftEnvironment\?\.dataBackend === 'postgres'/);
+assert.match(accessSource, /window\.shiftPostgresCloud/);
+assert.match(accessSource, /window\.sheetsCloud/);
+assert.match(accessSource, /cloud\.saveEmployeeLeave/);
 assert.match(accessSource, /員工登入狀態已失效/);
-assert.match(workSource, /sheetsCloud\.clockInEmployee/);
-assert.match(workSource, /sheetsCloud\.clockOutEmployee/);
+assert.match(workSource, /const employeeCloud = \(\) => window\.shiftEnvironment\?\.dataBackend === 'postgres'/);
+assert.match(workSource, /window\.shiftPostgresCloud/);
+assert.match(workSource, /window\.sheetsCloud/);
+assert.match(workSource, /employeeCloud\(\)\.clockInEmployee/);
+assert.match(workSource, /employeeCloud\(\)\.clockOutEmployee/);
 assert.match(workSource, /員工登入狀態已失效/);
 
 console.log('P0 employee authorization tests passed');

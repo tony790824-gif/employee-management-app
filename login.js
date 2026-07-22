@@ -262,6 +262,7 @@
   }
 
   window.shiftLogout = async () => {
+    const postgresSession = window.shiftEnvironment?.dataBackend === 'postgres';
     document.body.classList.remove('app-authenticated', 'employee-mode');
     overlay.hidden = false;
     purgeRenderedData();
@@ -279,6 +280,10 @@
     clearSession();
     clearCloudSensitiveCache();
     window.SHIFT_AUTHORIZED = false;
+    if (postgresSession && typeof window.shiftStagingAuth?.logoutProvider === 'function') {
+      await window.shiftStagingAuth.logoutProvider();
+      return;
+    }
     location.reload();
   };
 

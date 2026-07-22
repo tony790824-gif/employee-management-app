@@ -6,14 +6,26 @@
   const month = () => document.querySelector('#monthPicker')?.value || '';
   const label = record => !record.clockIn ? '手動紀錄' : record.clockOut ? '已打卡・已下班' : '已打卡・上班中';
 
-  function saveHours(recordId, value) {
+  async function saveHours(recordId, value) {
     if (!Number.isFinite(value) || value < 0) return alert('工作時數必須是 0 或正數。');
     const data = read();
+    const before = structuredClone(data);
     const target = data.attendance.find(item => item.id === recordId);
     if (!target) return;
     target.hours = value;
     target.clockVerified = true;
     write(data);
+    if (window.shiftEnvironment?.dataBackend === 'postgres') {
+      try {
+        const revision = Number(target.revision);
+        if (!Number.isSafeInteger(revision) || revision < 0) throw new Error('Staging revision 格式不正確。');
+        await window.shiftPostgresCloud.approveAttendanceHours(recordId, value, revision);
+      } catch (error) {
+        write(before);
+        alert(error?.message || '工作時數未成功寫入 PostgreSQL Staging。');
+        return;
+      }
+    }
     document.dispatchEvent(new CustomEvent('boss-hours-updated'));
   }
 
@@ -54,8 +66,10 @@
         input.step = '0.5';
         input.setAttribute('aria-label', `${record.date} 工作時數`);
         hoursCell.append(input, document.createTextNode(' 小時'));
-        input.addEventListener('change', event => {
-          saveHours(record.id, Number(event.target.value));
+        input.addEventListener('change', async event => {
+          input.disabled = true;
+          await saveHours(record.id, Number(event.target.value));
+          input.disabled = false;
           enhanceAttendance();
         });
       }

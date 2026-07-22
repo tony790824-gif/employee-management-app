@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## 2026-07-22 — Reversible Staging browser cutover completed
+
+- **Accepted:** the fixed Netlify Draft origin ran the isolated `STAGING POSTGRES` build against Render/Neon Staging. Real Auth0 boss and employee sessions loaded role-scoped bootstrap data; employee leave/clock and boss attendance-hour changes persisted without Google Sheets fallback. Employee/shift management command wiring passed focused adapter regression.
+- **Authorization evidence:** a synthetic Workspace B boss was denied by the fixed Workspace A Draft; the live bootstrap regression independently passed boss/employee scope, Session/Membership/role checks, direct-table denial and both cross-Workspace denial cases with the approved unchanged key ID.
+- **Reliability evidence:** unavailable and bounded-timeout client failures remain explicit; mutation idempotency and invalid-session behavior remain covered. PostgreSQL cache namespace `v4` activated independently, and browser Console remained free of JavaScript errors.
+- **Reconciliation and rollback:** the authoritative snapshot returned the expected employee/leave/attendance/revision data after each command. The attendance-hour test value was restored, employee leave dates were restored, and the same Draft origin was returned to the unchanged Google Sheets Staging build (`STAGING`).
+- **Production safety:** no Production deploy, Production endpoint, Production database, Google Sheets data, Apps Script, or Production Auth0 setting changed. Migrations 0009/0010 remain pending.
+- **Completion:** 85% (previously 83%). Browser cutover, role flows, persistence, isolation, reconciliation and frontend rollback are accepted on desktop Staging; real phone/tablet coverage and release operations remain.
+- **Next unique priority:** execute the documented real-device Staging matrix on phone, tablet and desktop, including installability, responsive layout, touch interactions and accessibility. Do not promote the Draft or switch Production.
+
 ## 2026-07-22 — Staging browser data-layer cutover preflight completed
 
 - **Read-only evidence:** the isolated `STAGING POSTGRES` build path is present; Render Staging `/v1/readiness` returned `ok: true`; Neon Staging reports `0011_ui_bootstrap` applied with the approved checksum, controlled function present and key ID `render-staging-20260722-49a11f`; the previously accepted Auth0 Staging PKCE/session-claim configuration remains the required identity boundary.

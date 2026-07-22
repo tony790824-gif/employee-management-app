@@ -122,6 +122,11 @@
     }
   };
 
+  const logoutProvider = async () => {
+    if (!client) return;
+    await client.logout({ logoutParams: { returnTo: redirectUri } });
+  };
+
   for (const legacyControl of [phoneLabel, pinLabel, activationLabel, employeeLoginButton]) {
     if (!legacyControl) continue;
     legacyControl.hidden = true;
@@ -134,6 +139,7 @@
 
   window.shiftStagingAuth = Object.freeze({
     loginWithRedirect,
+    logoutProvider,
     getAccessToken: () => client?.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
     getClaimVerification: () => claimVerification,
     redirectUri,

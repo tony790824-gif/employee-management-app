@@ -1,5 +1,22 @@
 # 班客邦 Release Checklist
 
+## Reversible Staging browser PostgreSQL cutover — 2026-07-22
+
+- [x] Built the isolated `STAGING POSTGRES` bundle with a fixed Render Staging API and approved synthetic Workspace scope; no Production build or deploy was promoted.
+- [x] Deployed only to the fixed Netlify Draft origin and confirmed Auth0 login was initiated by the App with the Staging audience and approved callback origin.
+- [x] Completed real employee UI leave and clock flows and real boss UI attendance-hour persistence; restored temporary leave and hour values after verification.
+- [x] Exercised boss employee/shift command wiring and authoritative bootstrap refresh through focused regression coverage.
+- [x] Confirmed the browser UI was hydrated from the PostgreSQL adapter and did not silently fall back to Apps Script/Google Sheets while `STAGING POSTGRES` was active.
+- [x] Reconciled live boss/employee bootstrap scope, revision metadata and expected employee/leave/attendance values; the live Staging test passed with the approved unchanged key ID.
+- [x] Confirmed a valid Workspace B boss cannot enter the Workspace A Draft and receives a fail-closed authorization/command validation error.
+- [x] Confirmed Session/Membership/role and direct-table boundaries through live Staging regression; invalid Session and membership loss remain covered by the existing security suite.
+- [x] Confirmed network unavailable and the 15-second bounded-timeout path produce explicit errors without silent fallback; idempotency prevents duplicate command execution.
+- [x] Advanced the isolated PostgreSQL cache namespace to `banke-staging-postgres-v4`; no Local, normal Staging or Production cache name is reused.
+- [x] Confirmed the browser Console had no JavaScript error in the accepted PostgreSQL view and after rollback.
+- [x] Rolled the fixed Draft origin back to normal Google Sheets Staging and verified its label changed from `STAGING POSTGRES` to `STAGING` after service-worker activation.
+- [x] Confirmed Production, Production database/Auth0/Netlify, Google Sheets data and Apps Script were not modified or deployed.
+- [ ] Complete the separate real phone/tablet/desktop, installability, touch and accessibility acceptance before any Production promotion.
+
 ## Staging browser PostgreSQL cutover preflight — 2026-07-22
 
 ### Read-only configuration evidence

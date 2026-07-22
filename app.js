@@ -66,6 +66,12 @@ window.restoreEmployee=id=>{const archived=data.removedEmployees.find(r=>r.emplo
 window.deleteArchivedEmployee=id=>{if(!confirm('確定要立即永久刪除這位員工及其保留資料嗎？'))return;data.removedEmployees=data.removedEmployees.filter(r=>r.employee.id!==id);save();};
 window.removeAttendance=id=>{if(confirm('確定刪除此紀錄嗎？')){data.attendance=data.attendance.filter(a=>a.id!==id);save();}};
 $('#calendarEmployee').onchange=e=>{calendarEmployeeId=e.target.value;renderCalendar();};$('#monthPicker').onchange=e=>{month=e.target.value;render();};
+document.addEventListener('postgres-bootstrap-refreshed',()=>{
+  data=stateStore.read();
+  if(!data.employees.some(item=>item.id===calendarEmployeeId)) calendarEmployeeId=data.employees[0]?.id||'';
+  render();
+  document.dispatchEvent(new CustomEvent('employee-view-update'));
+});
 if($('#logoutBtn')) $('#logoutBtn').onclick=()=>window.shiftLogout();
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab],.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');});
 $('#printBtn').onclick=()=>window.print();$('#exportBtn').onclick=()=>{const rows=[['員工','時薪','工時','出勤筆數','實際薪資'],...data.employees.map(e=>{const t=actual(e);return[e.name,e.rate,t.h,t.count,t.pay]})],a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download=`薪資實付-${month}.csv`;a.click();};

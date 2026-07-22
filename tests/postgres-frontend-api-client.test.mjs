@@ -153,4 +153,27 @@ const oversizedResponseClient = createClient({
 await assert.rejects(oversizedResponseClient.listEmployees(), error =>
   error instanceof PostgresApiError && error.code === 'POSTGRES_API_RESPONSE_TOO_LARGE');
 
+const unavailableClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  fetchImpl: async () => { throw new TypeError('synthetic network failure'); }
+});
+await assert.rejects(unavailableClient.bootstrap(), error =>
+  error instanceof PostgresApiError && error.code === 'POSTGRES_API_UNAVAILABLE');
+
+const timeoutClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  timeoutMs: 1_000,
+  fetchImpl: async (_url, { signal }) => new Promise((_resolve, reject) => {
+    signal.addEventListener('abort', () => {
+      const error = new Error('synthetic timeout');
+      error.name = 'AbortError';
+      reject(error);
+    }, { once: true });
+  })
+});
+await assert.rejects(timeoutClient.bootstrap(), error =>
+  error instanceof PostgresApiError && error.code === 'POSTGRES_API_TIMEOUT');
+
 console.log('PostgreSQL frontend API client tests passed.');

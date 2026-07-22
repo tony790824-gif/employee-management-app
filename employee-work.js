@@ -9,9 +9,12 @@
   const month = () => $('#monthPicker').value;
   const currentId = () => document.body.dataset.employeeId || '';
   const roundedHours = iso => Math.round(((Date.now() - new Date(iso).getTime()) / 3600000) * 2) / 2;
+  const employeeCloud = () => window.shiftEnvironment?.dataBackend === 'postgres'
+    ? window.shiftPostgresCloud
+    : window.sheetsCloud;
   const requireCloudSession = () => {
     if (window.LOCAL_PREVIEW) return false;
-    if (!window.sheetsCloud?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');
+    if (!employeeCloud()?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');
     return true;
   };
   let clockBusy = false;
@@ -58,7 +61,7 @@
     clockBusy = true;
     render();
     try {
-      if (requireCloudSession()) await window.sheetsCloud.clockInEmployee();
+      if (requireCloudSession()) await employeeCloud().clockInEmployee();
       else {
         const data = read();
         if (activeRecord(data, employeeId)) return;
@@ -80,7 +83,7 @@
     clockBusy = true;
     render();
     try {
-      if (requireCloudSession()) await window.sheetsCloud.clockOutEmployee();
+      if (requireCloudSession()) await employeeCloud().clockOutEmployee();
       else {
         const data = read();
         const record = activeRecord(data, employeeId);

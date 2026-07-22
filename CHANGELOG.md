@@ -1,5 +1,14 @@
 # Change Log
 
+## 2026-07-22 — Reversible Staging browser PostgreSQL cutover accepted
+
+- Deployed the isolated `STAGING POSTGRES` bundle to the fixed Netlify Draft origin, without a Production deploy, and completed real Auth0 boss and employee browser flows against Render Staging and Neon Staging.
+- Connected existing UI actions to the reviewed PostgreSQL commands for leave replacement, clock in/out, employee creation, shift creation and attendance-hour approval; every mutation refreshes the authoritative bootstrap snapshot.
+- Fixed attendance approval to use the selected attendance row revision rather than the snapshot revision, and advanced the isolated PostgreSQL service-worker cache to `banke-staging-postgres-v4` so the corrected Draft assets activate predictably.
+- Verified employee-scoped UI, boss visibility, persisted leave/attendance/hour updates, live snapshot reconciliation and a Workspace B identity being rejected by the fixed Workspace A Draft.
+- Added bounded unavailable/timeout client regression coverage and reconfirmed Session/Membership/role isolation with the live Staging bootstrap test.
+- Rolled the fixed Draft origin back to the unchanged Google Sheets Staging build and verified the visible environment returned from `STAGING POSTGRES` to `STAGING` with no browser JavaScript error. Production was not modified or deployed.
+
 ## 2026-07-22 — Neon Staging UI bootstrap acceptance
 
 - Added an exact-version Staging migration controller that applies or rolls back only `0011_ui_bootstrap`, verifies its checksum/ledger/function state, requires the approved synchronized Key ID, and deliberately leaves 0009/0010 pending.
