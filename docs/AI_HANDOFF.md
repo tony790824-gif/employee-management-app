@@ -1,7 +1,7 @@
 # AI Handoff
 
-更新日期：2026-07-24
-產品程式基準：本文件所在 Commit（上一個驗收 Commit：`701169468407df9a9965e9b9e325ecef1d120326`）
+更新日期：2026-07-25
+產品程式基準：本文件所在 Commit（本輪驗收起始 Commit：`b47eceec6356fc0b1c70e4784ef4ba29a4fe9b63`）
 
 ## 最近完成的 Sprint
 
@@ -42,6 +42,20 @@
 - Windows Edge、iPhone Safari／PWA、Android Chrome／PWA、iPad Safari、Android Tablet Chrome、macOS Safari／Chrome：缺少可操作的指定真實裝置或瀏覽器，標記 `BLOCKED`。
 - 本輪只修改 PWA build／Service Worker 與相關回歸測試；沒有資料庫、Migration、Deploy 或 Production 異動。
 
+## 2026-07-25 裝置矩陣續驗紀錄
+
+- 沿用既有 Draft `https://6a63614eb402881cdc7fd7f2--inspiring-sunshine-9eab99.netlify.app/`；未重建 Site、未建立新 Draft、未部署 Production。
+- Windows Chrome：
+  - 真實瀏覽器第一次載入及重新整理均為 Google Sheets `STAGING`，沒有 `STAGING POSTGRES`，版本化 Manifest 正確，Console error 0。
+  - Auth0 Staging allowlist 完成後，真實 PKCE 回呼、Access Token Session Claim 與 Auth0 `sid` 一致性均通過。
+  - 重新整理後 Staging 驗證頁因 `cacheLocation: memory` 回到登入按鈕；再次登入可沿用 Auth0 Provider Session 且重新驗證 Claim。完整老闆／員工產品 UI、PWA 安裝及登出仍缺人工證據。
+- Windows Edge：
+  - 真實 Edge 引擎以隔離設定檔完成第一次載入及第二次載入；均顯示 `STAGING`、未顯示 `STAGING POSTGRES`，版本化 Manifest、Service Worker、Cache Storage 及 Script Cache 均有證據。
+  - 互動式 Auth0、PWA 安裝、Narrator、高對比與完整核心流程仍為 `BLOCKED`。
+- Draft 公開資產確認 `dataBackend=google_sheets`、未含 PostgreSQL Endpoint；PWA id／start URL 與 Staging cache identity 正確。
+- 品質檢查 PASS；29／29 自動回歸 PASS。iPhone、Android、iPad、Android Tablet、macOS Safari／Chrome 因無指定真實裝置，維持 `BLOCKED`，不得視為 PASS。
+- 沒有程式、資料庫、Migration、Production、Google Sheets 或 Apps Script 異動；僅更新本輪驗收文件。
+
 ## Git 與環境唯讀健康檢查摘要
 
 以下為交接時已提供的唯讀確認，不包含 Secret 或憑證：
@@ -63,8 +77,9 @@
 
 ## 已知 BLOCKED 項目
 
-- 真實 iPhone、Android、iPad、Android Tablet、Windows Edge 與 macOS 瀏覽器需要人工裝置／瀏覽器操作，不能用 viewport 模擬冒充通過。
-- Windows Chrome 仍需人工 Auth0 老闆／員工測試身分與登入後流程；已修正的首次載入行為仍需在固定 Draft 的既有安裝與乾淨瀏覽器各取得一次真實證據。
+- 真實 iPhone、Android、iPad、Android Tablet 與 macOS 瀏覽器需要人工裝置／瀏覽器操作，不能用 viewport 模擬冒充通過。
+- Windows Chrome 已完成真實 PKCE 與首次／重新載入，但完整老闆／員工產品 UI、PWA 安裝與登出仍需人工驗收。
+- Windows Edge 已完成真實引擎首次／第二次載入與 PWA 儲存建立；互動式 Auth0、PWA 安裝、Narrator、高對比及完整核心流程仍需人工驗收。
 - Render Staging 的受保護 API 驗收需要合法 Auth0 Staging 測試身分與有效 Membership；不得略過或偽造授權。
 - 固定 Draft 目前已回滾為 Google Sheets `STAGING`。若本次矩陣需要重驗 PostgreSQL，必須先依既有可回復 runbook 取得明確核准並建立隔離 Draft，不得直接切換 Production。
 - Safari Service Worker／Cache、PWA 安裝、背景／前景與動態字級尚缺真實裝置證據。

@@ -1,7 +1,7 @@
 # Codex Context
 
-更新日期：2026-07-24
-產品程式基準：本文件所在 Commit（上一個驗收 Commit：`701169468407df9a9965e9b9e325ecef1d120326`）
+更新日期：2026-07-25
+產品程式基準：本文件所在 Commit（本輪驗收起始 Commit：`b47eceec6356fc0b1c70e4784ef4ba29a4fe9b63`）
 
 ## 目前有效狀態
 
@@ -33,9 +33,19 @@
 - 本輪未修改資料庫、Migration、Production、Auth0、Neon、Google Sheets、Apps Script 或正式資料，也未部署 Production。
 - 真實裝置、PWA 安裝、Safari lifecycle、人工 Auth0 老闆／員工登入後流程仍須由下一個裝置矩陣 Sprint 驗收。
 
+## 2026-07-25 Staging 裝置矩陣續驗
+
+- 核准的 Google Sheets `STAGING` Draft 為 `https://6a63614eb402881cdc7fd7f2--inspiring-sunshine-9eab99.netlify.app/`；本輪未建立新 Draft，也未部署 Production。
+- Windows Chrome 真瀏覽器第一次載入及重新整理均直接顯示 `STAGING`，未再出現 `STAGING POSTGRES`；Manifest 使用 `banke-staging-v1`，Console JavaScript error 為 0。
+- Auth0 Staging allowlist 完成後，真實 Authorization Code + PKCE 回呼成功，Session Claim 存在且與 Auth0 Session ID 一致；重新整理後重新發起登入可沿用 Auth0 Provider Session 完成驗證。前端採記憶體 Token Cache，重新整理後登入按鈕回到未驗證狀態屬既有 Staging 驗證頁設計，並未宣稱為完整產品 Session UI。
+- Windows Edge 真實引擎的隔離設定檔完成第一次載入與第二次載入；兩次均顯示 `STAGING`、未出現 `STAGING POSTGRES`，且已建立 Staging Service Worker／Cache Storage／Script Cache。互動式 Auth0、安裝 PWA 與可及性仍需人工操作。
+- 公開 Draft 資產唯讀檢查確認資料層為 `google_sheets`、沒有 PostgreSQL API Endpoint；Manifest id／start URL 為 `./?app=banke-staging`，Service Worker 使用 Staging cache、`skipWaiting()`／`clients.claim()`，且未使用跨 cache 的全域 `caches.match()`。
+- 品質檢查 PASS；29／29 自動回歸 PASS。iPhone、Android、iPad、Android Tablet 與 macOS 真實瀏覽器仍缺裝置證據，維持 `BLOCKED`；因此專案完成度維持 86%。
+- 本輪未修改資料庫、Migration、Production、Google Sheets、Apps Script 或產品功能；隔離 Edge 測試設定檔已清除。
+
 ## 下一個唯一最高優先 Sprint
 
-**完成 Staging 真實裝置人工矩陣**
+**補齊 Staging 真實裝置人工矩陣**
 
 在指定真實手機、平板與桌面瀏覽器補齊登入後核心流程、PWA 安裝、觸控、可及性、Session／Membership 失效、跨 Workspace，並以既有安裝與乾淨瀏覽器複驗已修正的 Service Worker 首次載入行為。不得藉此新增功能、套用 Migration、切換資料來源或推進 Production。
 

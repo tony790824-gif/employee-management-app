@@ -17,7 +17,7 @@
 - 不得用 viewport 模擬、裝置模擬器或自動化結果冒充真實裝置 PASS；可用於輔助定位，但證據必須標明來源。
 - 發現缺陷時記錄最小重現證據並依停止條件中止；不得在同一 Sprint 順便新增功能或大規模重構。
 
-## 2026-07-24 目前矩陣狀態
+## 2026-07-25 目前矩陣狀態
 
 | 編號 | 狀態 | 已完成證據 | 尚缺證據 |
 |---|---|---|---|
@@ -25,12 +25,19 @@
 | D2 Android Chrome／PWA | BLOCKED | 360×800 輔助 viewport 無水平溢位 | 真機 Chrome、觸控、PWA、TalkBack、離線與核心流程 |
 | D3 iPad Safari | BLOCKED | 768×1024 輔助 viewport 無水平溢位 | 真機 Safari、旋轉／Split View、PWA、VoiceOver 與核心流程 |
 | D4 Android Tablet Chrome | BLOCKED | 768×1024 輔助 viewport 無水平溢位 | 真機 Chrome、旋轉／分割畫面、PWA、TalkBack 與核心流程 |
-| D5 Windows Chrome | BLOCKED（快取自動驗收 PASS） | 真 Chrome 首頁、按鈕、重新整理、Console、1280×800 版面；同 origin 舊 Worker 首次載入、更新、離線回復與 29 組回歸通過 | 需固定 Draft 的人工登入後流程、既有 PWA 安裝及乾淨瀏覽器複驗 |
-| D6 Windows Edge | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 Edge、安裝、追蹤防護、Narrator、登入後流程 |
+| D5 Windows Chrome | BLOCKED（首次載入、PKCE、Claim PASS） | 真 Chrome 首次／重新載入均為 Google Sheets `STAGING`；Manifest 正確、Console error 0；Auth0 allowlist 後真實 PKCE、Session Claim 與 `sid` 一致性通過；Provider Session 可重用 | 完整老闆／員工產品 UI、PWA 安裝、登出、多分頁及可及性人工驗收 |
+| D6 Windows Edge | BLOCKED（首次載入、PWA 儲存 PASS） | 真 Edge 隔離設定檔首次／第二次載入均為 `STAGING`；Manifest、Service Worker、Cache Storage、Script Cache 有證據 | 互動式 Auth0、PWA 安裝、追蹤防護、Narrator、高對比與完整核心流程 |
 | D7 macOS Safari | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 macOS Safari、ITP、PWA／Dock、VoiceOver、登入後流程 |
 | D8 macOS Chrome | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 macOS Chrome、PWA、VoiceOver、多分頁及登入後流程 |
 
-PWA Cache 修正輪次的品質檢查 PASS、自動回歸 29／29 PASS；同 origin 舊 PostgreSQL Worker 控制下，Google Sheets Staging 第一次載入、重新整理、Worker 更新與離線回復均為 PASS。D1–D8 尚未全部取得真實裝置 PASS，因此真實裝置矩陣 Sprint **尚未完成**，專案完成度為 86%。
+PWA Cache 修正輪次的品質檢查 PASS、自動回歸 29／29 PASS；同 origin 舊 PostgreSQL Worker 控制下，Google Sheets Staging 第一次載入、重新整理、Worker 更新與離線回復均為 PASS。2026-07-25 續驗亦確認 Draft 僅含 Google Sheets Staging 設定，Chrome 與 Edge 首次載入均未再出現 `STAGING POSTGRES`。D1–D8 尚未全部取得真實裝置 PASS，因此真實裝置矩陣 Sprint **尚未完成**，專案完成度維持 86%。
+
+## 下一輪最小人工操作
+
+1. 先用 iPhone Safari、Android Chrome、iPad Safari、Android Tablet Chrome、macOS Safari／Chrome 各開啟核准 Draft；記錄裝置、OS、瀏覽器版本及第一次／重新載入結果。
+2. 在支援裝置安裝 PWA，驗證 Staging 名稱、standalone 啟動、Service Worker 更新、離線／重連與 Cache 不跨環境。
+3. 在 Windows Chrome／Edge 補完整產品老闆／員工流程、登出、多分頁、PWA 安裝與可及性；不得只以 Auth0 驗證頁視為產品 UI PASS。
+4. 每個裝置獨立記錄 PASS／FAIL／BLOCKED；任何 Production request、錯誤環境、跨 Workspace 或資料不一致立即停止。
 
 ## 最少人工真機驗收步驟
 
