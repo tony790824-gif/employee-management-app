@@ -29,7 +29,9 @@ assert.doesNotMatch(cloud, /https:\/\/script\.google\.com\/macros\/s\//, '雲端
 assert.match(cloud, /缺少 Google Sheets Web App URL 設定/, '缺少 API 設定時必須明確失敗');
 
 assert.match(serviceWorker, /request\.mode==='navigate'/, '只有導覽請求可以回退至 app shell');
-assert.equal((serviceWorker.match(/caches\.match\('\.\/index\.html'\)/g) || []).length, 1, '非導覽資產失敗時不得回傳 HTML');
+assert.equal((serviceWorker.match(/matchCurrentCache\('\.\/index\.html'\)/g) || []).length, 1, '非導覽資產失敗時不得回傳 HTML');
+assert.match(serviceWorker, /caches\.open\(CACHE\)\.then\(cache=>cache\.match\(request\)\)/, '資產只能從目前環境的 cache 讀取');
+assert.doesNotMatch(serviceWorker, /caches\.match\(/, '不得跨 cache namespace 搜尋同名資產');
 assert.match(serviceWorker, /management-actions\.js/, '離線快取必須包含單一管理模組');
 assert.doesNotMatch(serviceWorker, /fallback-actions\.js/, '離線快取不得保留已移除模組');
 

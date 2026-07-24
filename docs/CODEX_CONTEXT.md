@@ -1,11 +1,11 @@
 # Codex Context
 
 更新日期：2026-07-24
-產品程式基準 Commit：`24e82a9886b95aa8077cf86fe2e1426458dd6cbc`
+產品程式基準：本文件所在 Commit（上一個驗收 Commit：`701169468407df9a9965e9b9e325ecef1d120326`）
 
 ## 目前有效狀態
 
-- 專案整體完成度：**85%**。
+- 專案整體完成度：**86%**。
 - 架構成熟度：約 **85%**。
 - Production 準備度：約 **75%**。
 - 正式上線判定：**No**；尚缺真實裝置矩陣、Production 監控／CI/CD 與最終發布驗收。
@@ -22,29 +22,29 @@
 - 老闆／員工 read/bootstrap、角色資料範圍、Session／Membership 即時檢查及跨 Workspace 拒絕已在隔離 Staging 通過。
 - 固定 Draft 曾完成可回復的桌機瀏覽器 PostgreSQL 資料層切換；排假、打卡、老闆核定工時、員工／班次命令接線、資料對帳、弱網／逾時與 rollback 均有驗收證據。
 - rollback 後已確認 Draft 回到 Google Sheets `STAGING`、正常 Staging cache namespace，且瀏覽器 Console 無 JavaScript error。
+- Google Sheets／PostgreSQL Staging 共用 Draft origin 的 PWA 更新邊界已補強：環境設定與 Manifest 使用各 build 專屬版本 URL，Service Worker 僅從目前 cache 讀取，Staging activation 會淘汰同 origin 的另一個 Staging 變體 cache。
 
-## 2026-07-24 裝置矩陣自動驗收進度
+## 2026-07-24 PWA Cache／Service Worker 修正結果
 
-- `main`、`origin/main` 與基準 Commit `24e82a9886b95aa8077cf86fe2e1426458dd6cbc` 已確認一致。
-- 既有品質檢查通過；29 組自動回歸測試全部通過；追蹤檔敏感資訊掃描未發現 Token／Private Key 類型內容。
-- Windows Chrome 真瀏覽器已完成未登入首頁、重新整理、Console 與響應式基礎檢查；390×844、360×800、768×1024、1280×800 輔助 viewport 均無水平溢位，登入按鈕可操作。
-- 輔助 viewport 只能作為版面預檢，不能取代 iPhone、Android、iPad、Android Tablet 或 macOS 的真實裝置 PASS。
-- Windows Chrome 首次開啟固定 Draft 時曾載入舊的 `STAGING POSTGRES` Service Worker 畫面；重新整理後切回正確的 Google Sheets `STAGING`，Console 無 error／warning。此首次載入的舊快取風險尚未完成真機矩陣驗收，不能視為已修正。
-- 因缺少人工 Auth0 測試登入及指定真實裝置，老闆／員工登入後核心流程、PWA 安裝、觸控、Session 失效、角色與跨 Workspace 實機證據仍為 `BLOCKED`。
-- 本輪未修改程式碼、資料庫、Migration、Build、Deploy、Production、Auth0、Neon 或正式資料。
+- 根因已在同一 localhost origin 重現：舊 PostgreSQL Worker 對未版本化的 `environment-config.js`／Manifest 使用全域 Cache Storage 的 cache-first 命中，導致新版 Google Sheets HTML 與舊環境資源混用。
+- 修正後，以仍受舊 PostgreSQL Worker 控制的瀏覽器第一次切回 Google Sheets Staging，即直接顯示 `STAGING`；不需要人工重新整理才能恢復。
+- 同 origin 的 Google Sheets → PostgreSQL → Google Sheets 雙向更新、重新整理、Worker 更新與停止伺服器後的離線 app-shell 回復均維持正確環境識別。
+- 品質檢查通過；29／29 自動回歸通過；Staging build 產生版本化環境設定與 Manifest，且 cache cleanup 不會觸及 Local 或 Production prefix。
+- 本輪未修改資料庫、Migration、Production、Auth0、Neon、Google Sheets、Apps Script 或正式資料，也未部署 Production。
+- 真實裝置、PWA 安裝、Safari lifecycle、人工 Auth0 老闆／員工登入後流程仍須由下一個裝置矩陣 Sprint 驗收。
 
 ## 下一個唯一最高優先 Sprint
 
-**完成 Staging 真實裝置人工矩陣與舊 Service Worker 首次載入驗收**
+**完成 Staging 真實裝置人工矩陣**
 
-延續同一驗收範圍，在指定真實手機、平板與桌面瀏覽器補齊登入後核心流程、PWA 安裝、觸控、可及性、Session／Membership 失效、跨 Workspace 與舊 Service Worker 首次載入證據。不得藉此新增功能、套用 Migration、切換資料來源或推進 Production。
+在指定真實手機、平板與桌面瀏覽器補齊登入後核心流程、PWA 安裝、觸控、可及性、Session／Membership 失效、跨 Workspace，並以既有安裝與乾淨瀏覽器複驗已修正的 Service Worker 首次載入行為。不得藉此新增功能、套用 Migration、切換資料來源或推進 Production。
 
 執行規格以 [`docs/NEXT_SPRINT.md`](NEXT_SPRINT.md) 為準。
 
 ## 已知風險
 
 - Safari 的 Service Worker 更新、Cache 失效、返回前景與安裝後版本切換尚缺真實裝置證據。
-- Windows Chrome 曾在首次開啟固定 Draft 時呈現舊 `STAGING POSTGRES` 快取，重新整理後才恢復 Google Sheets `STAGING`；需以乾淨與既有安裝兩種真機狀態確認更新／回滾行為。
+- Windows Chrome 的同 origin 舊快取缺陷已完成自動重現與修正；仍需以固定 Draft 的乾淨與既有安裝狀態完成人工驗收，才能取得真實裝置證據。
 - 真實觸控、鍵盤遮擋、動態字級、旋轉與不同尺寸的響應式畫面尚未完成矩陣驗收。
 - Google Sheets 與 PostgreSQL 過渡資料層並存，環境設定或快取污染可能造成錯誤後端或靜默 fallback。
 - Production 監控、告警、CI/CD、發布 runbook 與發布後觀測尚未完成。

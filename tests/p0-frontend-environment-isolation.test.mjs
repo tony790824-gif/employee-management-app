@@ -56,9 +56,18 @@ assert.match(loginSource, /dataBackend === 'postgres'[\s\S]*Auth0 owns restorati
 assert.doesNotMatch(entryHtml, /has\('preview'\)/, 'URL 參數不得在 Staging 或 Production 繞過登入');
 
 const stagingWorker = await readFile('dist-staging/service-worker.js', 'utf8');
+const stagingIndex = await readFile('dist-staging/index.html', 'utf8');
 assert.match(stagingWorker, /const CACHE_PREFIX='banke-staging-'/);
 assert.match(stagingWorker, /const CACHE='banke-staging-v1'/);
-assert.match(stagingWorker, /key\.startsWith\(CACHE_PREFIX\)/, 'Service Worker 只能清除同環境 cache');
+assert.match(stagingWorker, /key\.startsWith\(CACHE_PREFIX\)/, 'Service Worker 只能清除 Staging cache family');
+assert.match(stagingWorker, /environment-config\.js\?v=banke-staging-v1/);
+assert.match(stagingWorker, /manifest\.webmanifest\?v=banke-staging-v1/);
+assert.match(stagingIndex, /src="environment-config\.js\?v=banke-staging-v1"/);
+assert.match(stagingIndex, /href="manifest\.webmanifest\?v=banke-staging-v1"/);
+assert.doesNotMatch(stagingIndex, /src="environment-config\.js"/);
+assert.doesNotMatch(stagingIndex, /href="manifest\.webmanifest"/);
+assert.match(stagingWorker, /caches\.open\(CACHE\)\.then\(cache=>cache\.match\(request\)\)/);
+assert.doesNotMatch(stagingWorker, /caches\.match\(/);
 assert.doesNotMatch(stagingWorker, /banke-production-/);
 
 const rehearsalEnvironment = await readFile('dist-staging-postgres/environment-config.js', 'utf8');
@@ -67,13 +76,27 @@ assert.match(rehearsalEnvironment, /https:\/\/api\.staging\.example\/v1/);
 assert.match(rehearsalEnvironment, /"storagePrefix": "banke:staging-postgres:"/);
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
+const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
+assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL rehearsal 與正常 Staging 必須共用清除範圍');
 assert.match(rehearsalWorker, /banke-staging-postgres-v4/);
+assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v4/);
+assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v4/);
+assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v4"/);
+assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v4"/);
+assert.notEqual(
+  stagingIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
+  rehearsalIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
+  'Google Sheets 與 PostgreSQL Staging 的環境設定 URL 不得相同'
+);
 assert.doesNotMatch(rehearsalWorker, /banke-production-/);
 
 const stagingManifest = JSON.parse(await readFile('dist-staging/manifest.webmanifest', 'utf8'));
 assert.equal(stagingManifest.id, './?app=banke-staging');
 assert.equal(stagingManifest.name, '班表管理 STAGING');
 assert.equal(stagingManifest.start_url, './?app=banke-staging');
+
+const pwaSource = await readFile('pwa.js', 'utf8');
+assert.match(pwaSource, /updateViaCache:\s*'none'/, 'Service Worker 更新檢查不得使用舊 HTTP cache');
 
 for (const file of ['state-store.js', 'access.js', 'cloud-sync.js', 'google-sheets-cloud.js', 'login.js']) {
   const source = await readFile(file, 'utf8');

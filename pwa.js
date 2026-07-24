@@ -5,7 +5,7 @@
   let deferred;
   const installed = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const serviceWorkerUrl = window.shiftEnvironment?.serviceWorkerUrl || './service-worker.js';
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register(serviceWorkerUrl).catch(() => {}));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' }).catch(() => {}));
   if (button) button.hidden = installed();
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();

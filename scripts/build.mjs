@@ -34,6 +34,8 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
 }) : profile;
 const outputDirectory = postgresRehearsal ? 'dist-staging-postgres'
   : profile.name === 'production' ? 'dist' : `dist-${profile.name}`;
+const cacheRevision = encodeURIComponent(effectiveProfile.cacheName);
+const cacheCleanupPrefix = profile.name === 'staging' ? profile.cachePrefix : effectiveProfile.cachePrefix;
 const auth0SdkUrl = 'https://cdn.auth0.com/js/auth0-spa-js/2.11/auth0-spa-js.production.js';
 const auth0SdkIntegrity = 'sha384-6cnw/e3NUTHp0Du1Qjh1PjnZ6N0XOX/NW2oX3rXiTDHPJ9hjENz/8G2qT1RzUDWd';
 
@@ -81,24 +83,34 @@ manifest.start_url = effectiveProfile.manifest.startUrl;
 await writeFile(`${outputDirectory}/manifest.webmanifest`, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
 const serviceWorker = (await readFile('service-worker.js', 'utf8'))
-  .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${effectiveProfile.cachePrefix}';`)
-  .replace("const CACHE='banke-production-v1';", `const CACHE='${effectiveProfile.cacheName}';`);
+  .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${cacheCleanupPrefix}';`)
+  .replace("const CACHE='banke-production-v1';", `const CACHE='${effectiveProfile.cacheName}';`)
+  .replace("'./environment-config.js'", `'./environment-config.js?v=${cacheRevision}'`)
+  .replace("'./manifest.webmanifest'", `'./manifest.webmanifest?v=${cacheRevision}'`);
 await writeFile(`${outputDirectory}/service-worker.js`, serviceWorker, 'utf8');
+
+const indexPath = `${outputDirectory}/index.html`;
+const originalIndexHtml = await readFile(indexPath, 'utf8');
+let builtIndexHtml = originalIndexHtml
+  .replace('src="environment-config.js"', `src="environment-config.js?v=${cacheRevision}"`)
+  .replace('href="manifest.webmanifest"', `href="manifest.webmanifest?v=${cacheRevision}"`);
+if (builtIndexHtml === originalIndexHtml) {
+  throw new Error('Unable to add the environment cache revision to the frontend entry point.');
+}
 
 if (profile.name === 'staging') {
   await cp('staging-auth.js', `${outputDirectory}/staging-auth.js`);
-  const indexPath = `${outputDirectory}/index.html`;
-  const indexHtml = await readFile(indexPath, 'utf8');
   const stagingAuthScripts = [
     `    <script src="${auth0SdkUrl}" integrity="${auth0SdkIntegrity}" crossorigin="anonymous"></script>`,
     '    <script src="staging-auth.js"></script>'
   ].join('\n');
-  const stagingIndexHtml = indexHtml.replace(
+  const stagingIndexHtml = builtIndexHtml.replace(
     '    <script src="pwa.js"></script>',
     `${stagingAuthScripts}\n    <script src="pwa.js"></script>`
   );
-  if (stagingIndexHtml === indexHtml) throw new Error('Unable to inject the Staging Auth0 entry point.');
-  await writeFile(indexPath, stagingIndexHtml, 'utf8');
+  if (stagingIndexHtml === builtIndexHtml) throw new Error('Unable to inject the Staging Auth0 entry point.');
+  builtIndexHtml = stagingIndexHtml;
 }
+await writeFile(indexPath, builtIndexHtml, 'utf8');
 
 console.log(`Built ${profile.name} frontend (${deployFiles.length} assets) in ${outputDirectory}/.`);
