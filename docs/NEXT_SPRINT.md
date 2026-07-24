@@ -8,7 +8,7 @@
 
 ## 基準與限制
 
-- 產品程式基準 Commit：`682f86b0d9f51f8a1aa145aea4a074cb7300788c`。
+- 產品程式基準 Commit：`24e82a9886b95aa8077cf86fe2e1426458dd6cbc`。
 - 專案完成度基準：85%。
 - 固定 Draft 目前狀態：Google Sheets `STAGING`。
 - Production 前端、API、Auth0、PostgreSQL、Netlify 與資料不得修改、連線作業或部署。
@@ -16,6 +16,34 @@
 - 不得重新產生 tenant context key、建立真實使用者、使用 Production 資料或輸出任何 Secret／Token／Session ID／密碼。
 - 不得用 viewport 模擬、裝置模擬器或自動化結果冒充真實裝置 PASS；可用於輔助定位，但證據必須標明來源。
 - 發現缺陷時記錄最小重現證據並依停止條件中止；不得在同一 Sprint 順便新增功能或大規模重構。
+
+## 2026-07-24 目前矩陣狀態
+
+| 編號 | 狀態 | 已完成證據 | 尚缺證據 |
+|---|---|---|---|
+| D1 iPhone Safari／PWA | BLOCKED | 390×844 輔助 viewport 無水平溢位 | 真機 Safari、觸控、PWA、VoiceOver、Session 與核心流程 |
+| D2 Android Chrome／PWA | BLOCKED | 360×800 輔助 viewport 無水平溢位 | 真機 Chrome、觸控、PWA、TalkBack、離線與核心流程 |
+| D3 iPad Safari | BLOCKED | 768×1024 輔助 viewport 無水平溢位 | 真機 Safari、旋轉／Split View、PWA、VoiceOver 與核心流程 |
+| D4 Android Tablet Chrome | BLOCKED | 768×1024 輔助 viewport 無水平溢位 | 真機 Chrome、旋轉／分割畫面、PWA、TalkBack 與核心流程 |
+| D5 Windows Chrome | FAIL（可回復） | 真 Chrome 首頁、按鈕、重新整理、Console、1280×800 版面；29 組回歸通過 | 首次開啟曾顯示舊 `STAGING POSTGRES` 快取；需人工登入後流程及既有 PWA 更新驗證 |
+| D6 Windows Edge | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 Edge、安裝、追蹤防護、Narrator、登入後流程 |
+| D7 macOS Safari | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 macOS Safari、ITP、PWA／Dock、VoiceOver、登入後流程 |
+| D8 macOS Chrome | BLOCKED | 共用自動回歸與靜態隔離測試 | 真 macOS Chrome、PWA、VoiceOver、多分頁及登入後流程 |
+
+本輪品質檢查 PASS、自動回歸 29／29 PASS、追蹤檔敏感資訊掃描 0 命中、瀏覽器 Console 0 error／warning。D1–D8 尚未全部取得真實裝置 PASS，因此本 Sprint **未完成**，專案完成度維持 85%。
+
+## 最少人工真機驗收步驟
+
+每一個 D1–D8 必須獨立執行並記錄裝置、OS、瀏覽器版本與不含敏感資訊的畫面證據：
+
+1. 以固定 Draft HTTPS URL 開啟，先確認畫面只顯示紫色 `STAGING`；若出現 `STAGING POSTGRES`、Production 或 Local，立即停止並記錄。
+2. 既有安裝／曾開啟過的裝置先直接開啟一次，再重新整理一次；確認兩次都不載入錯誤資料來源。另以乾淨瀏覽器或清除「僅此 Staging 網域」的網站資料重測。
+3. 使用合成 Staging 老闆登入，驗證員工、班次、排假、出勤、工時核定、頁面返回／重新整理及登出；不得記錄密碼、Token 或 Session ID。
+4. 使用合成 Staging 員工登入，驗證當月／次月日曆、額度內排假、打卡、工時／收入、重新整理及登出。
+5. 使用第二 Workspace 合成身分嘗試目標 Workspace，確認 Read／Command 皆拒絕；再驗證 Session 過期或 Membership 失效後 fail closed。
+6. 直向／橫向或 100%／125% 縮放重跑核心頁面，確認無溢位、遮擋、軟鍵盤覆蓋、無法點擊或連續點選跳頁。
+7. 安裝 PWA（支援時），驗證名稱含 Staging、關閉重開、背景／前景、離線／重連、Service Worker 更新及 Cache namespace；不得與 Local／Production 共用 Session 或資料。
+8. 檢查 Console／Network：不得有未捕捉錯誤，不得出現 Production／未知後端；完成資料對帳與合成測試資料恢復後，為該裝置標記 PASS／FAIL／BLOCKED。
 
 ## 目標裝置與瀏覽器
 

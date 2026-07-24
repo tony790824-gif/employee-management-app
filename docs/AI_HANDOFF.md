@@ -1,7 +1,7 @@
 # AI Handoff
 
-更新日期：2026-07-22
-產品程式基準 Commit：`682f86b0d9f51f8a1aa145aea4a074cb7300788c`
+更新日期：2026-07-24
+產品程式基準 Commit：`24e82a9886b95aa8077cf86fe2e1426458dd6cbc`
 
 ## 最近完成的 Sprint
 
@@ -28,11 +28,24 @@
 - Browser Console JavaScript error：未發現。
 - 真實手機／平板／macOS 矩陣：**尚未執行，不得視為 PASS**。
 
-## Cloud Shell 唯讀健康檢查摘要
+## 2026-07-24 裝置矩陣執行紀錄
+
+- 品質檢查：PASS。
+- 自動回歸：29／29 PASS。
+- 敏感資訊掃描：追蹤檔 0 個疑似 Token／Private Key 命中。
+- Windows Chrome 真瀏覽器：
+  - 未登入首頁、STAGING 識別、登入按鈕、重新整理及 Console：已執行。
+  - 390×844、360×800、768×1024、1280×800 輔助 viewport：無水平溢位；此結果不得代替真實行動裝置。
+  - 首次開啟曾顯示舊 `STAGING POSTGRES` 快取；重新整理後顯示正確 Google Sheets `STAGING`，且 Console 無 error／warning。
+  - 未取得人工 Auth0 測試身分操作，因此登入後老闆／員工、Session、Membership 與 Workspace 流程尚未驗收。
+- Windows Edge、iPhone Safari／PWA、Android Chrome／PWA、iPad Safari、Android Tablet Chrome、macOS Safari／Chrome：缺少可操作的指定真實裝置或瀏覽器，標記 `BLOCKED`。
+- 本輪沒有程式、資料庫、Migration、Build、Deploy 或 Production 異動。
+
+## Git 與環境唯讀健康檢查摘要
 
 以下為交接時已提供的唯讀確認，不包含 Secret 或憑證：
 
-- GitHub `main` 已同步，HEAD 為 `682f86b0d9f51f8a1aa145aea4a074cb7300788c`。
+- GitHub `main` 已同步，驗收基準 HEAD 為 `24e82a9886b95aa8077cf86fe2e1426458dd6cbc`。
 - 文件中的最新專案完成度為 85%，唯一下一優先工作為真實裝置矩陣驗收。
 - Render Staging 可連線；受保護驗收操作需要合法授權。
 - Netlify 固定 Draft 目前為 Google Sheets `STAGING`。
@@ -49,7 +62,8 @@
 
 ## 已知 BLOCKED 項目
 
-- 真實 iPhone、Android、iPad、Android Tablet、Windows 與 macOS 瀏覽器需要人工裝置／瀏覽器操作，不能用 viewport 模擬冒充通過。
+- 真實 iPhone、Android、iPad、Android Tablet、Windows Edge 與 macOS 瀏覽器需要人工裝置／瀏覽器操作，不能用 viewport 模擬冒充通過。
+- Windows Chrome 仍需人工 Auth0 老闆／員工測試身分與登入後流程；首次載入舊 `STAGING POSTGRES` Service Worker 的現象也需在既有安裝與乾淨瀏覽器各重驗一次。
 - Render Staging 的受保護 API 驗收需要合法 Auth0 Staging 測試身分與有效 Membership；不得略過或偽造授權。
 - 固定 Draft 目前已回滾為 Google Sheets `STAGING`。若本次矩陣需要重驗 PostgreSQL，必須先依既有可回復 runbook 取得明確核准並建立隔離 Draft，不得直接切換 Production。
 - Safari Service Worker／Cache、PWA 安裝、背景／前景與動態字級尚缺真實裝置證據。
