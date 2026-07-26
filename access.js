@@ -40,6 +40,12 @@
     return leaveDraft;
   }
 
+  function resetLeaveDraftFromServer() {
+    draftKey = '';
+    leaveDraft = [];
+    return loadDraft();
+  }
+
   function ensureSavePanel() {
     let panel = $('#employeeLeaveSave');
     if (!panel) {
@@ -172,6 +178,10 @@
   person.onchange = () => { mine = person.value; localStorage.setItem(storageKey('shift-person'), mine); draftKey = ''; apply(); };
   $('#monthPicker').addEventListener('change', () => { draftKey = ''; apply(); });
   $('#calendarEmployee').addEventListener('change', showBossCalendarNames);
+  document.addEventListener('postgres-bootstrap-refreshed', () => {
+    resetLeaveDraftFromServer();
+    updateLeaveDraftView();
+  });
 
   document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', event => {
     event.preventDefault();

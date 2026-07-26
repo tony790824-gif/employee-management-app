@@ -32,9 +32,13 @@ function renderCalendar(){
   const blanks=Array.from({length:start},()=>dom.element('span',{className:'calendar-blank'}));
   const days=Array.from({length:count},(_,i)=>{const d=i+1,date=`${month}-${String(d).padStart(2,'0')}`,off=leaves.includes(date);return dom.element('button',{className:`calendar-day ${off?'is-leave':''}`.trim(),text:d,title:off?'取消休假':'設定休假',dataset:{date},attributes:{type:'button'}});});
   dom.replace($('#calendarGrid'),...blanks,...days);
-  document.querySelectorAll('.calendar-day').forEach(button=>button.onclick=()=>toggleLeave(button.dataset.date));
+  document.querySelectorAll('.calendar-day').forEach(button=>{
+    button.onclick=document.body.classList.contains('employee-mode')
+      ? null
+      : ()=>toggleLeave(button.dataset.date);
+  });
 }
-function toggleLeave(date){ if(!calendarEmployeeId) return; const key=leaveKey(), values=[...(data.leaves[key]||[])], at=values.indexOf(date), quota=employee(calendarEmployeeId)?.leaveQuota??8; if(at>=0) values.splice(at,1); else { if(values.length>=quota) return alert(`這位員工本月已設定 ${quota} 天休假；若要調整，請先取消其中一天。`); values.push(date); } data.leaves[key]=values.sort(); save(); }
+function toggleLeave(date){ if(document.body.classList.contains('employee-mode')||!calendarEmployeeId) return; const key=leaveKey(), values=[...(data.leaves[key]||[])], at=values.indexOf(date), quota=employee(calendarEmployeeId)?.leaveQuota??8; if(at>=0) values.splice(at,1); else { if(values.length>=quota) return alert(`這位員工本月已設定 ${quota} 天休假；若要調整，請先取消其中一天。`); values.push(date); } data.leaves[key]=values.sort(); save(); }
 function render(){
   $('#monthTitle').textContent=new Date(month+'-01T00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long'}); $('#monthPicker').value=month;
   const p=data.employees.map(planned), a=data.employees.map(actual), attendance=data.attendance.filter(a=>a.date.startsWith(month));
