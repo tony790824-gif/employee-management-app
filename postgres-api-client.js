@@ -4,6 +4,7 @@
   const DEFAULT_TIMEOUT_MS = 15_000;
   const WORKSPACE_PATTERN = /^ws_[a-f0-9]{32}$/;
   const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
+  const SESSION_INVALID_CODES = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
   const COMMAND_NAMES = Object.freeze([
     'employees.create',
     'shifts.create',
@@ -144,8 +145,8 @@
             requestId: typeof payload?.requestId === 'string' ? payload.requestId : ''
           }
         );
-        if ([401, 403].includes(response.status) && typeof eventTarget?.dispatchEvent === 'function') {
-          eventTarget.dispatchEvent(new CustomEvent('shift-postgres-session-invalid', {
+        if (SESSION_INVALID_CODES.has(error.code) && typeof eventTarget?.dispatchEvent === 'function') {
+          eventTarget.dispatchEvent(new CustomEvent('shift-session-invalid', {
             detail: Object.freeze({ code: error.code, status: error.status })
           }));
         }

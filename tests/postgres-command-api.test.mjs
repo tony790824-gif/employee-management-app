@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
-import { createApiServer, stagingAuthorizationDiagnostic } from '../server/app.mjs';
+import {
+  createApiServer,
+  stagingAuthorizationDiagnostic,
+  stagingCommandDiagnostic
+} from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
 import { assertApiDatabaseTarget, createPool, expectedApiDatabase } from '../server/db.mjs';
 import { createOidcVerifier } from '../server/jwt-verifier.mjs';
@@ -53,6 +57,33 @@ try {
   assert.equal(diagnosticLines.length, 1);
   assert.doesNotMatch(diagnosticLines[0], /bearer|cookie|secret|password|access.?token|refresh.?token/i,
     'Staging diagnostic must not include credentials or token material');
+  assert.equal(stagingCommandDiagnostic({
+    environment: 'production',
+    requestId: 'request-production-0002',
+    status: 403,
+    code: 'COMMAND_FORBIDDEN',
+    commandName: 'shifts.create'
+  }), null, 'Production must not emit Staging command diagnostics');
+  const commandDiagnostic = stagingCommandDiagnostic({
+    environment: 'staging',
+    requestId: 'request-staging-0002',
+    status: 403,
+    code: 'COMMAND_FORBIDDEN',
+    commandName: 'shifts.create'
+  });
+  assert.deepEqual(
+    Object.keys(commandDiagnostic).sort(),
+    ['code', 'commandName', 'requestId', 'status'],
+    'Staging command diagnostics must contain only approved fields'
+  );
+  assert.deepEqual(commandDiagnostic, {
+    requestId: 'request-staging-0002',
+    status: 403,
+    code: 'COMMAND_FORBIDDEN',
+    commandName: 'shifts.create'
+  });
+  assert.doesNotMatch(diagnosticLines.at(-1), /bearer|cookie|secret|password|access.?token|refresh.?token|email|payload/i,
+    'Staging command diagnostic must not include credentials, personal data or payloads');
 } finally {
   console.warn = originalWarn;
 }

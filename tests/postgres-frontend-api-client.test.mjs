@@ -132,9 +132,44 @@ await assert.rejects(rejectedClient.listEmployees(), error => {
   return true;
 });
 assert.equal(rejectedEvents.length, 1);
-assert.equal(rejectedEvents[0].type, 'shift-postgres-session-invalid');
+assert.equal(rejectedEvents[0].type, 'shift-session-invalid');
 assert.equal(rejectedEvents[0].detail.code, 'SESSION_INVALID');
 assert.equal(rejectedEvents[0].detail.status, 401);
+
+for (const { status, code } of [
+  { status: 400, code: 'COMMAND_INVALID' },
+  { status: 403, code: 'COMMAND_FORBIDDEN' },
+  { status: 403, code: 'WORKSPACE_ACCESS_DENIED' },
+  { status: 404, code: 'RELATED_RESOURCE_NOT_FOUND' },
+  { status: 409, code: 'REVISION_CONFLICT' }
+]) {
+  const events = [];
+  const ordinaryErrorClient = createClient({
+    ...baseConfig,
+    baseUrl: 'https://api.staging.example/v1',
+    fetchImpl: async () => response(status, { error: 'safe error', code, requestId: 'safe-request-id' }),
+    eventTarget: { dispatchEvent: event => events.push(event) }
+  });
+  await assert.rejects(
+    ordinaryErrorClient.executeCommand('shifts.create', {}, { idempotencyKey: `ordinary-${status}-${code}` }),
+    error => error.code === code && error.status === status
+  );
+  assert.equal(events.length, 0, `${status} ${code} must not invalidate the signed-in session`);
+}
+
+const tokenSessionEvents = [];
+const tokenSessionClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  fetchImpl: async () => response(401, {
+    error: 'token session invalid', code: 'TOKEN_SESSION_INVALID', requestId: 'safe-request-id'
+  }),
+  eventTarget: { dispatchEvent: event => tokenSessionEvents.push(event) }
+});
+await assert.rejects(tokenSessionClient.bootstrap(), error => error.code === 'TOKEN_SESSION_INVALID');
+assert.equal(tokenSessionEvents.length, 1);
+assert.equal(tokenSessionEvents[0].type, 'shift-session-invalid');
+assert.equal(tokenSessionEvents[0].detail.code, 'TOKEN_SESSION_INVALID');
 
 const invalidWorkspaceClient = createClient({
   ...baseConfig,

@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-27 — Staging PostgreSQL shift creation stability
+
+- Removed the full-page reload after a successful `shifts.create`; the existing PostgreSQL bootstrap refresh now supplies the authoritative snapshot and rerenders the schedule in place.
+- Restricted automatic session invalidation to `SESSION_INVALID` and `TOKEN_SESSION_INVALID`, and standardized the browser event as `shift-session-invalid`.
+- Added Staging-only command diagnostics containing only request ID, HTTP status, error code and command name.
+- Added regression coverage for immediate and persisted shift rendering, rapid duplicate submission, ordinary command errors that retain login state, and the two explicit session-invalid codes.
+- Updated the schedule copy to state that shift update and deletion are not yet available. Production, migrations, Auth0, Membership, Workspace data and Google Sheets Staging were not modified.
+
 ## 2026-07-26 — Staging PostgreSQL boss leave cancellation persistence
 
 - Fixed the boss leave-calendar path so PostgreSQL cancellations use the existing `leaves.replace-month` Command API with the selected employee, month and authoritative date set.

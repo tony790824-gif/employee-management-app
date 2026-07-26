@@ -161,7 +161,6 @@
       }
     )) return;
     $('#shiftDialog').close();
-    location.reload();
   }));
 
   $('#addAttendance').addEventListener('click', event => {

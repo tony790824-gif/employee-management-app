@@ -76,6 +76,13 @@ export function stagingAuthorizationDiagnostic({ environment, requestId, route, 
   return diagnostic;
 }
 
+export function stagingCommandDiagnostic({ environment, requestId, status, code, commandName }) {
+  if (environment !== 'staging' || !commandName) return null;
+  const diagnostic = Object.freeze({ requestId, status, code, commandName });
+  console.warn(JSON.stringify(diagnostic));
+  return diagnostic;
+}
+
 export function createRequestHandler({
   commandService,
   verifyAccessToken,
@@ -88,9 +95,13 @@ export function createRequestHandler({
     const requestId = /^[A-Za-z0-9._:-]{8,128}$/.test(String(request.headers['x-request-id'] || ''))
       ? String(request.headers['x-request-id']) : randomUUID();
     let route = '';
+    let commandName = '';
     try {
       const url = new URL(request.url || '/', 'http://localhost');
       route = url.pathname;
+      commandName = request.method === 'POST'
+        ? (/^\/v1\/commands\/([a-z.-]+)$/.exec(route)?.[1] || '')
+        : '';
       const origin = String(request.headers.origin || '');
       if (!originAllowed(origin, origins)) throw new ApiError(403, 'ORIGIN_NOT_ALLOWED', 'Origin 不允許。');
       if (origin) {
@@ -131,13 +142,12 @@ export function createRequestHandler({
         json(response, 200, await commandService.bootstrap({ identity, workspaceId }), requestId);
         return;
       }
-      const match = request.method === 'POST' && /^\/v1\/commands\/([a-z.-]+)$/.exec(url.pathname);
-      if (match) {
+      if (commandName) {
         const input = await readJson(request);
         const result = await commandService.execute({
           identity,
           workspaceId,
-          commandName: match[1],
+          commandName,
           input,
           idempotencyKey: String(request.headers['idempotency-key'] || ''),
           requestId
@@ -151,7 +161,10 @@ export function createRequestHandler({
       const code = error instanceof ApiError ? error.code : 'INTERNAL_ERROR';
       const message = error instanceof ApiError ? error.message : '伺服器發生未預期錯誤。';
       stagingAuthorizationDiagnostic({ environment, requestId, route, code });
-      if (!(error instanceof ApiError)) console.error(JSON.stringify({ level: 'error', requestId, code, message: error.message }));
+      stagingCommandDiagnostic({ environment, requestId, status, code, commandName });
+      if (!(error instanceof ApiError) && !commandName) {
+        console.error(JSON.stringify({ level: 'error', requestId, code, message: error.message }));
+      }
       json(response, status, { ok: false, error: message, code, requestId, ...(error.details ? { details: error.details } : {}) }, requestId);
     }
   };
