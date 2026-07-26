@@ -15,6 +15,7 @@ if (recoveredState) requestAnimationFrame(() => alert(
 const initialDate = new Date();
 let month = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(initialDate).slice(0, 7);
 let calendarEmployeeId = data.employees[0]?.id || '';
+let bossLeaveSaving = false;
 const $ = s => document.querySelector(s); const employee = id => data.employees.find(e => e.id === id);
 const dom = window.shiftDomSafety;
 const money = n => new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(n);
@@ -38,7 +39,34 @@ function renderCalendar(){
       : ()=>toggleLeave(button.dataset.date);
   });
 }
-function toggleLeave(date){ if(document.body.classList.contains('employee-mode')||!calendarEmployeeId) return; const key=leaveKey(), values=[...(data.leaves[key]||[])], at=values.indexOf(date), quota=employee(calendarEmployeeId)?.leaveQuota??8; if(at>=0) values.splice(at,1); else { if(values.length>=quota) return alert(`這位員工本月已設定 ${quota} 天休假；若要調整，請先取消其中一天。`); values.push(date); } data.leaves[key]=values.sort(); save(); }
+async function toggleLeave(date){
+  if(document.body.classList.contains('employee-mode')||!calendarEmployeeId||bossLeaveSaving) return;
+  const key=leaveKey(), values=[...(data.leaves[key]||[])], at=values.indexOf(date), quota=employee(calendarEmployeeId)?.leaveQuota??8;
+  if(at>=0) values.splice(at,1);
+  else {
+    if(values.length>=quota) return alert(`這位員工本月已設定 ${quota} 天休假；若要調整，請先取消其中一天。`);
+    values.push(date);
+  }
+  values.sort();
+  if(window.shiftEnvironment?.dataBackend==='postgres'&&!window.LOCAL_PREVIEW){
+    const cloud=window.shiftPostgresCloud;
+    if(!cloud?.isConnected?.()||typeof cloud.saveBossLeave!=='function'){
+      return alert('休假更新失敗：PostgreSQL Staging 尚未連線，資料未變更。');
+    }
+    bossLeaveSaving=true;
+    try {
+      await cloud.saveBossLeave(calendarEmployeeId,month,values);
+    } catch(error) {
+      const code=typeof error?.code==='string'?error.code:'REQUEST_FAILED';
+      alert(`休假更新失敗，資料未變更。（${code}）`);
+    } finally {
+      bossLeaveSaving=false;
+    }
+    return;
+  }
+  data.leaves[key]=values;
+  save();
+}
 function render(){
   $('#monthTitle').textContent=new Date(month+'-01T00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long'}); $('#monthPicker').value=month;
   const p=data.employees.map(planned), a=data.employees.map(actual), attendance=data.attendance.filter(a=>a.date.startsWith(month));

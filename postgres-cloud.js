@@ -57,6 +57,10 @@
   }
 
   const saveEmployeeLeave = (month, dates) => executeAndRefresh('leaves.replace-month', { month, dates });
+  const saveBossLeave = (employeeId, month, dates) => executeAndRefresh(
+    'leaves.replace-month',
+    { employeeId, month, dates }
+  );
   const clockInEmployee = () => executeAndRefresh('attendance.clock-in', {});
   const clockOutEmployee = () => executeAndRefresh('attendance.clock-out', {});
   const createEmployee = employee => executeAndRefresh('employees.create', {
@@ -90,6 +94,7 @@
     logout,
     refreshBootstrap,
     saveEmployeeLeave,
+    saveBossLeave,
     clockInEmployee,
     clockOutEmployee,
     createEmployee,

@@ -66,6 +66,7 @@ assert.equal(context.window.shiftPostgresCloud.hasEmployeeSession(), true);
 assert.equal(cloudStatus.textContent, 'PostgreSQL Staging');
 
 await context.window.shiftPostgresCloud.saveEmployeeLeave('2026-07', ['2026-07-23']);
+await context.window.shiftPostgresCloud.saveBossLeave('employee-1', '2026-07', []);
 await context.window.shiftPostgresCloud.clockInEmployee();
 await context.window.shiftPostgresCloud.clockOutEmployee();
 await context.window.shiftPostgresCloud.createEmployee({
@@ -80,6 +81,7 @@ const commandCalls = calls.filter(entry => Array.isArray(entry) && entry[0] === 
 const plain = value => JSON.parse(JSON.stringify(value));
 assert.deepEqual(commandCalls.map(entry => entry[1]), [
   'leaves.replace-month',
+  'leaves.replace-month',
   'attendance.clock-in',
   'attendance.clock-out',
   'employees.create',
@@ -87,14 +89,15 @@ assert.deepEqual(commandCalls.map(entry => entry[1]), [
   'attendance.approve-hours'
 ]);
 assert.deepEqual(plain(commandCalls[0][2]), { month: '2026-07', dates: ['2026-07-23'] });
-assert.deepEqual(plain(commandCalls[3][2]), {
+assert.deepEqual(plain(commandCalls[1][2]), { employeeId: 'employee-1', month: '2026-07', dates: [] });
+assert.deepEqual(plain(commandCalls[4][2]), {
   name: 'Synthetic second employee', phone: '0911222333', jobTitle: 'Tester', hourlyRate: 220, leaveQuota: 7
 });
-assert.deepEqual(plain(commandCalls[4][2]), {
+assert.deepEqual(plain(commandCalls[5][2]), {
   employeeId: 'employee-1', date: '2026-07-25', startTime: '09:00', endTime: '18:00', note: 'Synthetic shift'
 });
-assert.deepEqual(plain(commandCalls[5][2]), { attendanceId: 'attendance-1', hours: 8, baseRevision: 4 });
-assert.equal(written.length, 7, 'Each successful command must refresh the authoritative bootstrap snapshot');
+assert.deepEqual(plain(commandCalls[6][2]), { attendanceId: 'attendance-1', hours: 8, baseRevision: 4 });
+assert.equal(written.length, 8, 'Each successful command must refresh the authoritative bootstrap snapshot');
 await context.window.shiftPostgresCloud.logout();
 assert.equal(context.window.shiftPostgresCloud.isConnected(), false);
 assert.equal(removed[0], 'banke:staging-postgres:shift-postgres-auth');

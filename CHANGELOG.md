@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-26 — Staging PostgreSQL boss leave cancellation persistence
+
+- Fixed the boss leave-calendar path so PostgreSQL cancellations use the existing `leaves.replace-month` Command API with the selected employee, month and authoritative date set.
+- Removed the false-success UI behavior: PostgreSQL state now changes only after a successful command and refreshed server bootstrap; failed commands keep the prior state and show a bounded error code.
+- Added HTTP boundary, browser-adapter and rollback-only live Neon Staging coverage proving a boss can set and cancel an employee leave day and the employee bootstrap immediately reflects the cancellation.
+- Production, migrations, Auth0, Google Sheets and the existing Google Sheets Staging Draft were not modified.
+
 ## 2026-07-22 — Reversible Staging browser PostgreSQL cutover accepted
 
 - Deployed the isolated `STAGING POSTGRES` bundle to the fixed Netlify Draft origin, without a Production deploy, and completed real Auth0 boss and employee browser flows against Render Staging and Neon Staging.

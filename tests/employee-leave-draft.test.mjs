@@ -124,8 +124,18 @@ assert.match(
 );
 assert.match(
   appSource,
-  /function toggleLeave\(date\)\{\s*if\(document\.body\.classList\.contains\('employee-mode'\)\|\|!calendarEmployeeId\) return;/,
+  /async function toggleLeave\(date\)\{\s*if\(document\.body\.classList\.contains\('employee-mode'\)\|\|!calendarEmployeeId\|\|bossLeaveSaving\) return;/,
   '舊休假切換函式必須拒絕員工模式呼叫'
+);
+assert.match(
+  appSource,
+  /await cloud\.saveBossLeave\(calendarEmployeeId,month,values\);/,
+  'PostgreSQL 老闆休假異動必須透過 Command API 儲存'
+);
+assert.match(
+  appSource,
+  /catch\(error\)[\s\S]*休假更新失敗，資料未變更。[\s\S]*return;\s*\}\s*data\.leaves\[key\]=values;/,
+  'PostgreSQL Command 失敗不得先更新本機畫面'
 );
 assert.match(
   accessSource,

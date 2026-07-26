@@ -202,6 +202,21 @@ try {
   const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
   assert.equal(bootstrapResponse.status, 200);
   assert.equal((await bootstrapResponse.json()).role, 'boss');
+  const cancelLeaveResponse = await fetch(`${base}/v1/commands/leaves.replace-month`, {
+    method: 'POST',
+    headers: {
+      ...commonHeaders,
+      'Content-Type': 'application/json',
+      'Idempotency-Key': 'leave-cancel-0001'
+    },
+    body: JSON.stringify({ employeeId: 'employee-1', month: '2026-07', dates: [] })
+  });
+  assert.equal(cancelLeaveResponse.status, 201);
+  assert.deepEqual((await cancelLeaveResponse.json()).data, {
+    employeeId: 'employee-1',
+    month: '2026-07',
+    dates: []
+  });
   const missingWorkspace = await fetch(`${base}/v1/employees`, { headers: {
     Origin: 'https://staging.example', Authorization: 'Bearer a.b.c'
   } });

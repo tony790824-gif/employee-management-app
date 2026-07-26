@@ -35,18 +35,25 @@ function identity(subject) {
   });
 }
 
-async function apiRequest(baseUrl, path, token, workspaceId, expectedStatus) {
+async function apiRequest(baseUrl, path, token, workspaceId, expectedStatus, {
+  method = path === '/v1/auth/session' ? 'POST' : 'GET',
+  body,
+  idempotencyKey
+} = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Origin: TEST_ORIGIN,
-      'X-Workspace-Id': workspaceId
+      'X-Workspace-Id': workspaceId,
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {})
     },
-    method: path === '/v1/auth/session' ? 'POST' : 'GET'
+    method,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
   });
-  const body = await response.json();
-  assert.equal(response.status, expectedStatus, `${path} returned ${response.status} (${body.code || 'no-code'})`);
-  return body;
+  const payload = await response.json();
+  assert.equal(response.status, expectedStatus, `${path} returned ${response.status} (${payload.code || 'no-code'})`);
+  return payload;
 }
 
 function assertEmployeeScope(data, employeeId) {
@@ -60,6 +67,7 @@ function assertEmployeeScope(data, employeeId) {
 
 await migrator.connect();
 let api;
+let apiConnection;
 let originalMembershipAuth = [];
 try {
   const databaseState = await migrator.query(
@@ -139,7 +147,25 @@ try {
     key: keyResult.rows[0].secret.toString('base64url'),
     keyId: STAGING_TENANT_CONTEXT_KEY_ID
   });
-  const commandService = createCommandService({ pool: apiPool, tenantContextSigner });
+  apiConnection = await apiPool.connect();
+  await apiConnection.query('BEGIN');
+  let savepointSequence = 0;
+  const rollbackOnlyPool = {
+    async query(sql, params) {
+      const savepoint = `e2e_request_${++savepointSequence}`;
+      await apiConnection.query(`SAVEPOINT ${savepoint}`);
+      try {
+        const result = await apiConnection.query(sql, params);
+        await apiConnection.query(`RELEASE SAVEPOINT ${savepoint}`);
+        return result;
+      } catch (error) {
+        await apiConnection.query(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+        await apiConnection.query(`RELEASE SAVEPOINT ${savepoint}`);
+        throw error;
+      }
+    }
+  };
+  const commandService = createCommandService({ pool: rollbackOnlyPool, tenantContextSigner });
   api = createApiServer({ commandService, verifyAccessToken, pool: apiPool, allowedOrigins: [TEST_ORIGIN] });
   api.listen(0, '127.0.0.1');
   await once(api, 'listening');
@@ -165,6 +191,44 @@ try {
   assert.equal(employeeBootstrap.role, 'employee');
   assert.equal(employeeBootstrap.employeeId, employeeA.employee_id);
   assertEmployeeScope(employeeBootstrap.data, employeeA.employee_id);
+
+  const leaveMonth = '2098-12';
+  const leaveKey = `${employeeA.employee_id}-${leaveMonth}`;
+  const setLeave = await apiRequest(
+    baseUrl,
+    '/v1/commands/leaves.replace-month',
+    principals[0].token,
+    bossA.workspace_id,
+    201,
+    {
+      method: 'POST',
+      idempotencyKey: `boss-leave-set-${randomUUID()}`,
+      body: { employeeId: employeeA.employee_id, month: leaveMonth, dates: [`${leaveMonth}-23`] }
+    }
+  );
+  assert.equal(setLeave.ok, true);
+  const employeeAfterSet = await apiRequest(
+    baseUrl, '/v1/bootstrap', principals[1].token, employeeA.workspace_id, 200
+  );
+  assert.deepEqual(employeeAfterSet.data.leaves[leaveKey], [`${leaveMonth}-23`]);
+
+  const cancelLeave = await apiRequest(
+    baseUrl,
+    '/v1/commands/leaves.replace-month',
+    principals[0].token,
+    bossA.workspace_id,
+    201,
+    {
+      method: 'POST',
+      idempotencyKey: `boss-leave-cancel-${randomUUID()}`,
+      body: { employeeId: employeeA.employee_id, month: leaveMonth, dates: [] }
+    }
+  );
+  assert.equal(cancelLeave.ok, true);
+  const employeeAfterCancel = await apiRequest(
+    baseUrl, '/v1/bootstrap', principals[1].token, employeeA.workspace_id, 200
+  );
+  assert.deepEqual(employeeAfterCancel.data.leaves[leaveKey] || [], []);
 
   const bossBBootstrap = await apiRequest(baseUrl, '/v1/bootstrap', principals[2].token,
     bossB.workspace_id, 200);
@@ -208,6 +272,7 @@ try {
   console.log(JSON.stringify({
     bossBootstrap: 'passed',
     employeeBootstrap: 'passed',
+    bossLeaveSetAndCancel: 'passed',
     sessionMembershipRoleIsolation: 'passed',
     crossWorkspaceBoss: 'denied',
     crossWorkspaceEmployee: 'denied',
@@ -219,6 +284,10 @@ try {
   if (api) {
     api.close();
     await once(api, 'close');
+  }
+  if (apiConnection) {
+    try { await apiConnection.query('ROLLBACK'); } catch { /* preserve the primary result */ }
+    apiConnection.release();
   }
   try {
     await migrator.query('DELETE FROM app_private.identity_principals WHERE issuer = $1', [TEST_ISSUER]);
