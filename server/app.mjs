@@ -53,13 +53,44 @@ function originAllowed(origin, allowedOrigins) {
   return !origin || allowedOrigins.has(origin);
 }
 
-export function createRequestHandler({ commandService, verifyAccessToken, pool, allowedOrigins = [] }) {
+const STAGING_AUTHORIZATION_CODES = new Set([
+  'IDENTITY_ACCESS_DENIED',
+  'WORKSPACE_ACCESS_DENIED',
+  'SESSION_INVALID',
+  'TOKEN_SESSION_INVALID'
+]);
+
+export function stagingAuthorizationDiagnostic({ environment, requestId, route, code }) {
+  if (environment !== 'staging' || !STAGING_AUTHORIZATION_CODES.has(code)) return null;
+  const diagnostic = Object.freeze({
+    level: 'warn',
+    event: 'staging_authorization_decision',
+    requestId,
+    route,
+    code,
+    identityIdentification: code === 'IDENTITY_ACCESS_DENIED' ? 'not_resolved' : 'resolved',
+    workspaceMembership: code === 'WORKSPACE_ACCESS_DENIED' ? 'denied' : 'not_evaluated',
+    session: ['SESSION_INVALID', 'TOKEN_SESSION_INVALID'].includes(code) ? 'invalid' : 'not_evaluated'
+  });
+  console.warn(JSON.stringify(diagnostic));
+  return diagnostic;
+}
+
+export function createRequestHandler({
+  commandService,
+  verifyAccessToken,
+  pool,
+  allowedOrigins = [],
+  environment = 'local'
+}) {
   const origins = new Set(allowedOrigins);
   return async (request, response) => {
     const requestId = /^[A-Za-z0-9._:-]{8,128}$/.test(String(request.headers['x-request-id'] || ''))
       ? String(request.headers['x-request-id']) : randomUUID();
+    let route = '';
     try {
       const url = new URL(request.url || '/', 'http://localhost');
+      route = url.pathname;
       const origin = String(request.headers.origin || '');
       if (!originAllowed(origin, origins)) throw new ApiError(403, 'ORIGIN_NOT_ALLOWED', 'Origin 不允許。');
       if (origin) {
@@ -119,6 +150,7 @@ export function createRequestHandler({ commandService, verifyAccessToken, pool, 
       const status = error instanceof ApiError ? error.status : 500;
       const code = error instanceof ApiError ? error.code : 'INTERNAL_ERROR';
       const message = error instanceof ApiError ? error.message : '伺服器發生未預期錯誤。';
+      stagingAuthorizationDiagnostic({ environment, requestId, route, code });
       if (!(error instanceof ApiError)) console.error(JSON.stringify({ level: 'error', requestId, code, message: error.message }));
       json(response, status, { ok: false, error: message, code, requestId, ...(error.details ? { details: error.details } : {}) }, requestId);
     }

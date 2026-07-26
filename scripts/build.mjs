@@ -22,6 +22,7 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
   ...profile,
   label: 'STAGING POSTGRES',
   dataBackend: 'postgres',
+  backendUrl: '',
   postgresApiUrl: rehearsalApiUrl.replace(/\/$/, ''),
   postgresWorkspaceId: rehearsalWorkspaceId,
   storagePrefix: 'banke:staging-postgres:',

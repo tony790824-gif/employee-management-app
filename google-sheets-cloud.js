@@ -1,5 +1,5 @@
 (() => {
-  if (window.LOCAL_PREVIEW) return;
+  if (window.LOCAL_PREVIEW || window.shiftEnvironment?.dataBackend === 'postgres') return;
   const storageKey = key => window.shiftEnvironment?.storageKey?.(key) || key;
   const stateKey = storageKey('shift-app-data-v3');
   const endpoint = String(window.GOOGLE_SHEETS_WEB_APP_URL || '').trim();

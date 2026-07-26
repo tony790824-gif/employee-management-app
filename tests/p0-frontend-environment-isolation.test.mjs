@@ -74,6 +74,10 @@ const rehearsalEnvironment = await readFile('dist-staging-postgres/environment-c
 assert.match(rehearsalEnvironment, /"dataBackend": "postgres"/);
 assert.match(rehearsalEnvironment, /https:\/\/api\.staging\.example\/v1/);
 assert.match(rehearsalEnvironment, /"storagePrefix": "banke:staging-postgres:"/);
+assert.match(rehearsalEnvironment, /"backendUrl": ""/,
+  'PostgreSQL rehearsal must not embed a Google Sheets backend URL');
+assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.staging.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+  'PostgreSQL rehearsal must not load the Google Sheets Staging iframe');
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
@@ -97,6 +101,10 @@ assert.equal(stagingManifest.start_url, './?app=banke-staging');
 
 const pwaSource = await readFile('pwa.js', 'utf8');
 assert.match(pwaSource, /updateViaCache:\s*'none'/, 'Service Worker 更新檢查不得使用舊 HTTP cache');
+
+const googleSheetsCloudSource = await readFile('google-sheets-cloud.js', 'utf8');
+assert.match(googleSheetsCloudSource, /shiftEnvironment\?\.dataBackend === 'postgres'/,
+  'Google Sheets adapter must fail closed when the PostgreSQL backend is active');
 
 for (const file of ['state-store.js', 'access.js', 'cloud-sync.js', 'google-sheets-cloud.js', 'login.js']) {
   const source = await readFile(file, 'utf8');

@@ -26,7 +26,7 @@ const tenantContextSigner = createTenantContextSigner({
 });
 const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => value.trim()).filter(Boolean);
 const commandService = createCommandService({ pool, tenantContextSigner });
-const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins });
+const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins, environment });
 const port = Number(process.env.PORT || 8080);
 const bindHost = String(process.env.BANK_API_BIND_HOST || '127.0.0.1').trim();
 if (!['127.0.0.1', '0.0.0.0'].includes(bindHost)) {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { once } from 'node:events';
 import { readFile } from 'node:fs/promises';
-import { createApiServer } from '../server/app.mjs';
+import { createApiServer, stagingAuthorizationDiagnostic } from '../server/app.mjs';
 import { createCommandService } from '../server/commands.mjs';
 import { assertApiDatabaseTarget, createPool, expectedApiDatabase } from '../server/db.mjs';
 import { createOidcVerifier } from '../server/jwt-verifier.mjs';
@@ -30,6 +30,32 @@ const contextSigner = createTenantContextSigner({
   key: Buffer.alloc(32, 7).toString('base64url'), keyId: 'local-test-v1',
   now: () => 1_800_000_000_000, nonceFactory: () => '00000000-0000-4000-8000-000000000001'
 });
+const originalWarn = console.warn;
+const diagnosticLines = [];
+console.warn = line => diagnosticLines.push(String(line));
+try {
+  assert.equal(stagingAuthorizationDiagnostic({
+    environment: 'production',
+    requestId: 'request-production-0001',
+    route: '/v1/bootstrap',
+    code: 'WORKSPACE_ACCESS_DENIED'
+  }), null, 'Production must not emit Staging authorization diagnostics');
+  const diagnostic = stagingAuthorizationDiagnostic({
+    environment: 'staging',
+    requestId: 'request-staging-0001',
+    route: '/v1/bootstrap',
+    code: 'WORKSPACE_ACCESS_DENIED'
+  });
+  assert.equal(diagnostic.code, 'WORKSPACE_ACCESS_DENIED');
+  assert.equal(diagnostic.identityIdentification, 'resolved');
+  assert.equal(diagnostic.workspaceMembership, 'denied');
+  assert.equal(diagnostic.session, 'not_evaluated');
+  assert.equal(diagnosticLines.length, 1);
+  assert.doesNotMatch(diagnosticLines[0], /bearer|cookie|secret|password|access.?token|refresh.?token/i,
+    'Staging diagnostic must not include credentials or token material');
+} finally {
+  console.warn = originalWarn;
+}
 const queries = [];
 const pool = {
   async query(sql, params = []) {
