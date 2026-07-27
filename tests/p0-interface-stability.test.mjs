@@ -5,6 +5,7 @@ const employeeLayout = await readFile('employee-layout.js', 'utf8');
 const employeeLayoutCss = await readFile('employee-layout.css', 'utf8');
 const bossHours = await readFile('boss-hours.js', 'utf8');
 const app = await readFile('app.js', 'utf8');
+const index = await readFile('index.html', 'utf8');
 
 assert.match(
   app,
@@ -12,6 +13,26 @@ assert.match(
   'APP 啟動必須經過共用 state store'
 );
 assert.doesNotMatch(app, /const sample\s*=/, '正式 APP 不得內建範例員工資料');
+assert.match(
+  index,
+  /<th>員工<\/th><th>時薪<\/th><th>排班時數<\/th><th>實際工時<\/th><th>預估薪資<\/th><th>實際薪資<\/th>/,
+  '薪資試算表必須明確呈現排班、實際工時及兩種薪資'
+);
+assert.match(
+  app,
+  /const estimated=p\[i\],recorded=a\[i\]/,
+  '薪資明細必須同時使用排班與出勤計算結果'
+);
+assert.match(
+  app,
+  /dom\.cell\(`\$\{estimated\.h\} 小時`\).*dom\.cell\(`\$\{recorded\.h\} 小時`\).*money\(estimated\.pay\).*money\(recorded\.pay\)/,
+  '薪資明細列不得遺漏排班時數、實際工時、預估薪資或實際薪資'
+);
+assert.match(
+  app,
+  /dom\.emptyRow\(6,'尚無資料'\)/,
+  '薪資空資料列欄數必須與六欄表頭一致'
+);
 
 assert.match(
   employeeLayout,

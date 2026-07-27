@@ -69,7 +69,7 @@
 
       <section id="payroll" class="panel tab-panel">
         <div class="panel-head"><div><h2>薪資試算</h2><p>以目前排定的班次及時薪計算；實際薪資請依公司規則確認。</p></div><button class="primary" id="exportBtn">匯出薪資資料</button></div>
-        <div class="table-wrap"><table><thead><tr><th>員工</th><th>時薪</th><th>正常工時</th><th>班次數</th><th>預估薪資</th></tr></thead><tbody id="payrollBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>員工</th><th>時薪</th><th>排班時數</th><th>實際工時</th><th>預估薪資</th><th>實際薪資</th></tr></thead><tbody id="payrollBody"></tbody></table></div>
       </section>
     </main>
     <dialog id="employeeDialog"><form method="dialog" id="employeeForm"><div class="dialog-head"><h2 id="employeeDialogTitle">新增員工</h2><button class="icon" type="button" data-close-dialog>×</button></div><input type="hidden" id="employeeId" /><label>姓名<input id="employeeName" required placeholder="例如：王小明" /></label><label>電話號碼<input id="employeePhone" required inputmode="tel" placeholder="例如：0912345678" /></label><p class="cloud-help">新增員工後會產生一次性啟用碼。員工第一次登入時輸入啟用碼，再自行設定 6 位數 PIN；不會發送簡訊。</p><label>職稱<input id="employeeRole" required placeholder="例如：門市人員" /></label><label>時薪（元）<input id="employeeRate" required min="0" type="number" placeholder="190" /></label><label>每月休假額度（天）<input id="employeeLeaveQuota" required min="0" max="31" type="number" value="8" /></label><menu><button type="button" data-close-dialog>取消</button><button class="primary" value="default">儲存</button></menu></form></dialog>
