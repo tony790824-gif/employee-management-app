@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import vm from 'node:vm';
 import { environmentProfiles } from '../config/environments.mjs';
 
 const result = spawnSync(process.execPath, ['scripts/build.mjs', '--environment=staging'], { encoding: 'utf8' });
@@ -39,5 +40,72 @@ assert.doesNotMatch(authSource, /getClient:\s*\(\)\s*=>\s*client/, 'Staging auth
 assert.match(authSource, /phoneLabel, pinLabel, activationLabel, employeeLoginButton/);
 assert.match(authSource, /legacyControl\.style\.display = 'none'/);
 assert.doesNotMatch(authSource, /console\.(?:log|info|debug)/, 'Staging auth entry must not expose tokens in logs.');
+
+const sessionId = 'synthetic-session-id';
+const accessTokenPayload = Buffer.from(JSON.stringify({
+  'https://banke.tw/session_id': sessionId
+})).toString('base64url');
+const loginButton = { disabled: false, textContent: '', onclick: null };
+const hint = { textContent: '' };
+const removedSessionKeys = [];
+let sensitiveStateCleared = 0;
+let providerLogoutCalls = 0;
+let appSessionEntries = 0;
+const authClient = {
+  isAuthenticated: async () => true,
+  getTokenSilently: async () => `header.${accessTokenPayload}.signature`,
+  getIdTokenClaims: async () => ({ sid: sessionId }),
+  logout: async ({ logoutParams }) => {
+    providerLogoutCalls += 1;
+    assert.equal(logoutParams.returnTo, 'https://draft.staging.example/');
+  }
+};
+const sandbox = {
+  window: {
+    shiftEnvironment: {
+      name: 'staging',
+      dataBackend: 'postgres',
+      auth: {
+        domain: profile.auth.domain,
+        clientId: profile.auth.clientId,
+        audience: profile.auth.audience
+      },
+      storageKey: key => `staging:${key}`
+    },
+    location: { href: 'https://draft.staging.example/' },
+    history: { replaceState() {} },
+    auth0: { createAuth0Client: async () => authClient },
+    shiftPostgresCloud: {
+      connect: async () => {
+        const error = new Error('Authorization or command validation failed.');
+        error.code = 'SESSION_INVALID';
+        throw error;
+      }
+    },
+    shiftAppSession: { enter: async () => { appSessionEntries += 1; } },
+    shiftStateStore: { clearSensitive: () => { sensitiveStateCleared += 1; } }
+  },
+  document: {
+    title: 'Staging',
+    querySelector: selector => selector === '#bossLogin' ? loginButton : selector === '#loginHint' ? hint : null
+  },
+  sessionStorage: { removeItem: key => removedSessionKeys.push(key) },
+  URL,
+  URLSearchParams,
+  TextDecoder,
+  Uint8Array,
+  atob: value => Buffer.from(value, 'base64').toString('binary'),
+  setTimeout,
+  clearTimeout
+};
+vm.runInNewContext(authSource, sandbox, { filename: 'staging-auth.js' });
+await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 0));
+
+assert.equal(providerLogoutCalls, 1, 'Expired local sessions must trigger Auth0 provider reauthentication.');
+assert.equal(sensitiveStateCleared, 1, 'Expired local sessions must clear cached sensitive state.');
+assert.deepEqual(removedSessionKeys, ['staging:shift-postgres-auth']);
+assert.equal(appSessionEntries, 0, 'The application must not enter an invalid PostgreSQL session.');
+assert.match(hint.textContent, /正在安全重新登入/);
 
 console.log('Staging Auth0 PKCE initiation tests passed.');

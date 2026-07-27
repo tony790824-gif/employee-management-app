@@ -14,6 +14,7 @@
   const auth0Sdk = window.auth0;
   const redirectUri = new URL('./', window.location.href).href;
   const sessionClaimName = 'https://banke.tw/session_id';
+  const sessionReauthenticationCodes = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
   let client;
   let claimVerification = Object.freeze({
     checked: false,
@@ -127,6 +128,30 @@
     await client.logout({ logoutParams: { returnTo: redirectUri } });
   };
 
+  const recoverInvalidPostgresSession = async error => {
+    if (environment.dataBackend !== 'postgres' || !sessionReauthenticationCodes.has(error?.code)) return false;
+
+    sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
+    window.shiftStateStore?.clearSensitive?.();
+    setStatus('PostgreSQL Staging 登入階段已過期，正在安全重新登入…');
+    if (loginButton) {
+      loginButton.disabled = true;
+      loginButton.textContent = '正在重新登入…';
+    }
+
+    try {
+      await logoutProvider();
+    } catch {
+      setStatus('PostgreSQL Staging 登入階段已過期，請按「重新登入」。');
+      if (loginButton) {
+        loginButton.disabled = false;
+        loginButton.textContent = '重新登入';
+        loginButton.onclick = logoutProvider;
+      }
+    }
+    return true;
+  };
+
   for (const legacyControl of [phoneLabel, pinLabel, activationLabel, employeeLoginButton]) {
     if (!legacyControl) continue;
     legacyControl.hidden = true;
@@ -146,7 +171,8 @@
     audience: authConfig?.audience || ''
   });
 
-  initialize().catch(error => {
+  initialize().catch(async error => {
+    if (await recoverInvalidPostgresSession(error)) return;
     setStatus(`Auth0 Staging 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
     if (loginButton) loginButton.disabled = true;
   });
