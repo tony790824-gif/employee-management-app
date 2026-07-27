@@ -46,33 +46,84 @@
     return loadDraft();
   }
 
+  const dateValues = list => [...new Set(
+    (list || [])
+      .map(item => typeof item === 'string' ? item : item?.date)
+      .filter(Boolean)
+  )].sort();
+
+  function savedLeaveDates() {
+    return dateValues(read().leaves?.[requestKey()]);
+  }
+
+  function leaveDraftDates() {
+    return dateValues(loadDraft());
+  }
+
+  function leaveChangeCount() {
+    const saved = new Set(savedLeaveDates());
+    const draft = new Set(leaveDraftDates());
+    return [...new Set([...saved, ...draft])]
+      .filter(date => saved.has(date) !== draft.has(date))
+      .length;
+  }
+
+  function hasUnsavedLeaveDraft() {
+    return mode === 'employee' && Boolean(mine) && leaveChangeCount() > 0;
+  }
+
+  function setLeaveStatus(message = '', tone = '') {
+    const status = $('#employeeLeaveStatus');
+    if (!status) return;
+    status.hidden = !message || mode !== 'employee';
+    status.textContent = message;
+    status.classList.toggle('is-success', tone === 'success');
+    status.classList.toggle('is-error', tone === 'error');
+  }
+
   function ensureSavePanel() {
     let panel = $('#employeeLeaveSave');
     if (!panel) {
       panel = document.createElement('section');
       panel.id = 'employeeLeaveSave';
       panel.className = 'leave-save-panel';
-      const hint = dom.element('span', { text: '選好休假日期後，按儲存即可同步到老闆的日曆。' });
+      const hint = dom.element('span', { text: '尚有 0 天變更未儲存' });
       hint.id = 'leaveSaveHint';
+      const actions = dom.element('div', { className: 'leave-save-actions' });
+      const cancelButton = dom.element('button', { text: '取消變更', attributes: { type: 'button' } });
+      cancelButton.id = 'cancelLeaveDraft';
       const saveButton = dom.element('button', { className: 'primary', text: '儲存休假', attributes: { type: 'button' } });
       saveButton.id = 'saveLeaveDraft';
-      panel.append(hint, saveButton);
-      $('#schedule .calendar-box').insertAdjacentElement('afterend', panel);
+      actions.append(cancelButton, saveButton);
+      panel.append(hint, actions);
+      const status = dom.element('p', { className: 'leave-save-status', attributes: { role: 'status', 'aria-live': 'polite' } });
+      status.id = 'employeeLeaveStatus';
+      status.hidden = true;
+      const calendar = $('#schedule .calendar-box');
+      calendar.insertAdjacentElement('afterend', status);
+      calendar.insertAdjacentElement('afterend', panel);
+      $('#cancelLeaveDraft').onclick = cancelLeaveDraft;
       $('#saveLeaveDraft').onclick = saveLeaveDraft;
     }
-    panel.hidden = mode !== 'employee';
+    panel.hidden = mode !== 'employee' || !hasUnsavedLeaveDraft();
+    if (mode !== 'employee') setLeaveStatus('');
   }
 
   function updateLeaveDraftView() {
-    if (mode !== 'employee' || !mine) return;
+    const panel = $('#employeeLeaveSave');
+    if (mode !== 'employee' || !mine) {
+      if (panel) panel.hidden = true;
+      setLeaveStatus('');
+      return;
+    }
     const data = read();
     const key = requestKey();
     const employee = data.employees.find(item => item.id === mine);
     const quota = employee?.leaveQuota ?? 8;
     const employeeName = employee?.name || '';
     const draft = loadDraft();
-    const savedDates = new Set(data.leaves?.[key] || []);
-    const offDates = new Set(draft.map(item => item.date));
+    const savedDates = new Set(dateValues(data.leaves?.[key]));
+    const offDates = new Set(dateValues(draft));
     $('#leaveRemaining').textContent = Math.max(0, quota - draft.length);
     document.querySelectorAll('.calendar-day').forEach(day => {
       const isOff = offDates.has(day.dataset.date);
@@ -88,16 +139,32 @@
       }
       day.onclick = null;
     });
+    const changedCount = leaveChangeCount();
     const hint = $('#leaveSaveHint');
-    if (hint) hint.textContent = draft.length ? `已選擇 ${draft.length} 天；按儲存後會直接同步到老闆日曆。` : '選好休假日期後，按儲存即可同步到老闆日曆。';
+    if (hint) hint.textContent = `尚有 ${changedCount} 天變更未儲存`;
+    if (panel) panel.hidden = changedCount === 0;
+    const cancelButton = $('#cancelLeaveDraft');
+    const saveButton = $('#saveLeaveDraft');
+    if (cancelButton) cancelButton.disabled = leaveSaving;
+    if (saveButton) saveButton.disabled = leaveSaving;
+  }
+
+  function cancelLeaveDraft() {
+    if (mode !== 'employee' || !mine || leaveSaving || !hasUnsavedLeaveDraft()) return;
+    resetLeaveDraftFromServer();
+    setLeaveStatus('');
+    updateLeaveDraftView();
   }
 
   async function saveLeaveDraft() {
-    if (mode !== 'employee' || !mine || leaveSaving) return;
+    if (mode !== 'employee' || !mine || leaveSaving || !hasUnsavedLeaveDraft()) return;
     const button = $('#saveLeaveDraft');
-    const dates = loadDraft().map(item => item.date).sort();
+    const cancelButton = $('#cancelLeaveDraft');
+    const dates = leaveDraftDates();
     leaveSaving = true;
+    setLeaveStatus('');
     if (button) { button.disabled = true; button.textContent = '儲存中…'; }
+    if (cancelButton) cancelButton.disabled = true;
     try {
       if (!window.LOCAL_PREVIEW) {
         const cloud = employeeCloud();
@@ -110,16 +177,17 @@
         if (data.leaveRequests) delete data.leaveRequests[requestKey()];
         write(data);
       }
-      draftKey = '';
-      loadDraft();
+      resetLeaveDraftFromServer();
       updateLeaveDraftView();
-      const hint = $('#leaveSaveHint');
-      if (hint) hint.textContent = '已儲存，老闆的休假日曆會同步更新。';
+      setLeaveStatus('休假已儲存，老闆端會同步更新', 'success');
     } catch (error) {
-      alert(error.message || '休假儲存失敗，請稍後再試。');
+      console.warn('Employee leave save failed', { code: error?.code || 'LEAVE_SAVE_FAILED' });
+      setLeaveStatus('休假儲存失敗，未儲存變更仍保留，請稍後再試。', 'error');
     } finally {
       leaveSaving = false;
       if (button) { button.disabled = false; button.textContent = '儲存休假'; }
+      if (cancelButton) cancelButton.disabled = false;
+      updateLeaveDraftView();
     }
   }
 
@@ -180,7 +248,25 @@
   $('#calendarEmployee').addEventListener('change', showBossCalendarNames);
   document.addEventListener('postgres-bootstrap-refreshed', () => {
     resetLeaveDraftFromServer();
+    setLeaveStatus('');
     updateLeaveDraftView();
+  });
+
+  function confirmLeaveDraftNavigation() {
+    const changedCount = leaveChangeCount();
+    if (!hasUnsavedLeaveDraft()) return true;
+    return window.confirm(`尚有 ${changedCount} 天休假變更未儲存，確定要離開排班表嗎？`);
+  }
+
+  window.shiftEmployeeLeaveDraft = Object.freeze({
+    hasUnsavedChanges: hasUnsavedLeaveDraft,
+    confirmNavigation: confirmLeaveDraftNavigation
+  });
+
+  window.addEventListener('beforeunload', event => {
+    if (!hasUnsavedLeaveDraft()) return;
+    event.preventDefault();
+    event.returnValue = '';
   });
 
   document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', event => {
@@ -210,6 +296,7 @@
         if (approved + draft.length >= quota) return alert(`本月休假額度為 ${quota} 天，不能再選擇日期。`);
         draft.push({ date: day.dataset.date, type: '休假', reason: '', portion: '全天', createdAt: new Date().toISOString() });
       }
+      setLeaveStatus('');
       updateLeaveDraftView();
       return;
     }

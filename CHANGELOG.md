@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-27 — Employee leave save controls returned to the calendar
+
+- Kept the existing explicit `leaves.replace-month` save model while moving the employee save controls from “我的出勤／收入” back beneath the leave calendar.
+- Added authoritative bootstrap-to-draft comparison, changed-day counts, cancel-to-server-state behavior, duplicate-submit protection, safe failure retention and success feedback.
+- Added unsaved-change protection before switching to the work/income tab or leaving the page, plus a mobile two-button layout with 44px touch targets.
+- Added regression coverage for hidden clean state, multiple edits, cancel, persistence, failed saves, rapid clicks, navigation protection, boss isolation and iPhone-width layout. Production, migrations, Auth0, Workspace, Membership, PostgreSQL schema and Google Sheets Staging were not modified.
+
 ## 2026-07-27 — Social in-app browser login guidance
 
 - Added a Staging-only compatibility notice before Auth0 initialization for LINE, Facebook, Messenger and Instagram in-app browsers.

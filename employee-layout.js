@@ -24,7 +24,6 @@
   const secondary = $('#employeeSecondaryContent');
   let tableAnchor;
   let workAnchor;
-  let leaveAnchor;
   let wasEmployee = false;
 
   function activate(id) {
@@ -46,12 +45,6 @@
       if (!workAnchor.parentNode) work.before(workAnchor);
       secondary.prepend(work);
     }
-    const leave = $('#employeeLeaveSave');
-    if (leave) {
-      leaveAnchor ||= document.createComment('employee-leave-anchor');
-      if (!leaveAnchor.parentNode) leave.before(leaveAnchor);
-      secondary.append(leave);
-    }
   }
 
   function restoreSchedule() {
@@ -59,8 +52,6 @@
     if (table && tableAnchor?.parentNode) tableAnchor.after(table);
     const work = secondary.querySelector('#employeeWorkPanel');
     if (work && workAnchor?.parentNode) workAnchor.after(work);
-    const leave = secondary.querySelector('#employeeLeaveSave');
-    if (leave && leaveAnchor?.parentNode) leaveAnchor.after(leave);
   }
 
   function update() {
@@ -77,7 +68,11 @@
     wasEmployee = employeeMode;
   }
 
-  tab.addEventListener('click', event => { event.preventDefault(); activate('employee-work'); });
+  tab.addEventListener('click', event => {
+    event.preventDefault();
+    if (window.shiftEmployeeLeaveDraft?.confirmNavigation?.() === false) return;
+    activate('employee-work');
+  });
   const observer = new MutationObserver(update);
   // update() 會搬移面板節點；若監聽 childList/subtree，搬移本身會再次觸發
   // observer，造成員工介面永遠無法穩定。身份切換只需要監聽 body class。

@@ -116,6 +116,8 @@ class FakeEvent {
 
 const appSource = await readFile('app.js', 'utf8');
 const accessSource = await readFile('access.js', 'utf8');
+const employeeLayoutSource = await readFile('employee-layout.js', 'utf8');
+const accessCss = await readFile('access.css', 'utf8');
 
 assert.match(
   appSource,
@@ -141,6 +143,27 @@ assert.match(
   accessSource,
   /document\.addEventListener\('postgres-bootstrap-refreshed',[\s\S]*resetLeaveDraftFromServer\(\);[\s\S]*updateLeaveDraftView\(\);/,
   'PostgreSQL bootstrap 更新後必須以伺服器資料重建員工草稿'
+);
+assert.doesNotMatch(
+  employeeLayoutSource,
+  /employeeLeaveSave/,
+  '休假儲存面板不得再搬到「我的出勤／收入」頁面'
+);
+assert.match(
+  employeeLayoutSource,
+  /shiftEmployeeLeaveDraft\?\.confirmNavigation\?\.\(\) === false/,
+  '切換到「我的出勤／收入」前必須確認未儲存草稿'
+);
+assert.match(
+  accessSource,
+  /window\.addEventListener\('beforeunload',[\s\S]*hasUnsavedLeaveDraft\(\)/,
+  '重新整理或離開頁面前必須保護未儲存草稿'
+);
+assert.match(accessCss, /\.leave-save-actions button\{min-height:44px\}/, '操作按鈕高度至少 44px');
+assert.match(
+  accessCss,
+  /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/,
+  'iPhone 寬度下的操作區不得造成橫向捲動'
 );
 
 const document = new FakeDocument();
@@ -225,6 +248,13 @@ const context = {
   alert: message => alerts.push(message),
   location: { reload() {} }
 };
+const windowListeners = new Map();
+context.addEventListener = (type, listener) => {
+  const listeners = windowListeners.get(type) || [];
+  listeners.push(listener);
+  windowListeners.set(type, listeners);
+};
+context.confirm = () => true;
 context.window = context;
 context.window.shiftEnvironment = {
   dataBackend: 'postgres',
@@ -235,6 +265,23 @@ context.window.shiftStateStore = {
   write: next => { state = next; }
 };
 context.window.shiftDomSafety = domSafety;
+let saveCalls = 0;
+let saveShouldFail = false;
+context.window.shiftPostgresCloud = {
+  hasEmployeeSession: () => true,
+  async saveEmployeeLeave(requestMonth, dates) {
+    saveCalls += 1;
+    if (saveShouldFail) throw Object.assign(new Error('server details must not be shown'), { code: 'COMMAND_INVALID' });
+    state = {
+      ...state,
+      leaves: {
+        ...(state.leaves || {}),
+        [`employee-1-${requestMonth}`]: [...dates]
+      }
+    };
+    document.dispatchEvent(new FakeEvent('postgres-bootstrap-refreshed'));
+  }
+};
 
 vm.runInNewContext(accessSource, context, { filename: 'access.js' });
 role.value = 'employee';
@@ -272,4 +319,67 @@ document.dispatchEvent(new FakeEvent('postgres-bootstrap-refreshed'));
 assert.equal(document.getElementById('leaveRemaining').textContent, 2, 'bootstrap 更新後應依最新 6 天正式資料重建草稿');
 assert.equal(document.days[7].classList.contains('is-leave'), false, 'bootstrap 更新後舊草稿第 8 天不得殘留');
 
-console.log('員工休假草稿同步與單一點擊處理回歸測試通過。');
+const savePanel = document.getElementById('employeeLeaveSave');
+const saveHint = document.getElementById('leaveSaveHint');
+const saveButton = document.getElementById('saveLeaveDraft');
+const cancelButton = document.getElementById('cancelLeaveDraft');
+const saveStatus = document.getElementById('employeeLeaveStatus');
+
+assert.equal(savePanel.hidden, true, '正式資料與草稿相同時不顯示儲存操作區');
+
+click(7);
+assert.equal(savePanel.hidden, false, '選取一天後顯示儲存操作區');
+assert.equal(saveHint.textContent, '尚有 1 天變更未儲存', '選取一天應顯示 1 天未儲存');
+click(8);
+assert.equal(saveHint.textContent, '尚有 2 天變更未儲存', '多選日期後差異數量必須正確');
+click(7);
+assert.equal(saveHint.textContent, '尚有 1 天變更未儲存', '取消單一日期後差異數量必須立即更新');
+
+cancelButton.onclick();
+assert.equal(saveCalls, 0, '取消變更不得呼叫 API');
+assert.equal(savePanel.hidden, true, '取消變更後應隱藏儲存操作區');
+assert.equal(document.getElementById('leaveRemaining').textContent, 2, '取消變更後應恢復正式剩餘天數');
+assert.equal(document.days[7].classList.contains('is-leave'), false, '取消變更後應恢復正式日曆');
+
+click(7);
+const firstSave = saveButton.onclick();
+const duplicateSave = saveButton.onclick();
+await Promise.all([firstSave, duplicateSave]);
+assert.equal(saveCalls, 1, '快速連按儲存只能送出一次請求');
+assert.equal(state.leaves[`employee-1-${month}`].length, 7, '儲存成功後正式資料必須持久化');
+assert.equal(savePanel.hidden, true, '儲存成功後操作區應回到無未儲存狀態');
+assert.equal(saveStatus.hidden, false, '儲存成功後應顯示同步成功訊息');
+assert.equal(saveStatus.textContent, '休假已儲存，老闆端會同步更新', '成功訊息必須符合產品文案');
+
+document.dispatchEvent(new FakeEvent('postgres-bootstrap-refreshed'));
+assert.equal(document.days[6].classList.contains('is-leave'), true, '重新取得 bootstrap 後已儲存休假仍必須存在');
+
+click(8);
+saveShouldFail = true;
+await saveButton.onclick();
+assert.equal(saveCalls, 2, '失敗案例應只送出一次請求');
+assert.equal(state.leaves[`employee-1-${month}`].length, 7, 'API 失敗不得修改正式資料');
+assert.equal(document.days[7].classList.contains('is-leave'), true, 'API 失敗必須保留目前草稿');
+assert.equal(savePanel.hidden, false, 'API 失敗後操作區必須保留以供重試');
+assert.equal(saveStatus.classList.contains('is-error'), true, 'API 失敗必須顯示安全錯誤狀態');
+assert.doesNotMatch(saveStatus.textContent, /server details/, '錯誤訊息不得洩漏伺服器細節');
+
+const unloadEvent = new FakeEvent('beforeunload');
+for (const listener of windowListeners.get('beforeunload') || []) listener(unloadEvent);
+assert.equal(unloadEvent.defaultPrevented, true, '未儲存草稿時重新整理必須觸發離頁保護');
+assert.equal(unloadEvent.returnValue, '', 'beforeunload 必須要求瀏覽器顯示原生確認');
+
+let confirmCalls = 0;
+context.confirm = () => { confirmCalls += 1; return false; };
+assert.equal(context.window.shiftEmployeeLeaveDraft.confirmNavigation(), false, '使用者取消提示時不得切換頁籤');
+assert.equal(confirmCalls, 1, '切換頁籤提示只應出現一次');
+
+cancelButton.onclick();
+assert.equal(savePanel.hidden, true, '取消失敗後保留的草稿應恢復正式資料');
+assert.equal(document.days[7].classList.contains('is-leave'), false, '取消變更後不得殘留未儲存日期');
+
+role.value = 'boss';
+role.onchange();
+assert.equal(savePanel.hidden, true, '老闆模式不得顯示員工草稿儲存區');
+
+console.log('員工休假草稿、儲存、取消、離頁保護與手機操作區回歸測試通過。');
