@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-27 — Authoritative current-user UI
+
+- Added a responsive authenticated-user label that displays the formal `bootstrap.currentUser.displayName` and normalized manager/employee role while retaining the separate `STAGING POSTGRES` environment badge.
+- Kept `bootstrap.currentUser` as the sole UI identity source; the browser does not infer the displayed user from role selectors, employee lists, Auth0 profile fields, email addresses or test-account strings.
+- Added safe `尚未設定姓名` handling for a null formal name and fail-closed hiding for an unknown role.
+- Added regression coverage for manager, employee, null-name, unknown-role and mobile overflow behavior. APIs, PostgreSQL schema, migrations, Auth0, Production and business rules were not modified.
+
 ## 2026-07-27 — Authoritative current-user bootstrap
 
 - Added nullable, Workspace-scoped `workspace_members.display_name` as the formal manager-name source; employee names remain authoritative in `employees.name`.

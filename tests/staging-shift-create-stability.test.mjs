@@ -48,6 +48,12 @@ const postgresWindow = {
           workspaceId,
           role: 'boss',
           employeeId: '',
+          currentUser: {
+            displayName: 'Synthetic Manager',
+            role: 'boss',
+            employeeId: null,
+            workspaceId
+          },
           data: structuredClone(serverData)
         }),
         async executeCommand(commandName, input) {

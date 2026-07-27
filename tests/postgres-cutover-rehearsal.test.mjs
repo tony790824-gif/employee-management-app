@@ -12,6 +12,12 @@ const bootstrap = {
   workspaceId,
   role: 'employee',
   employeeId: 'employee-1',
+  currentUser: {
+    displayName: 'Synthetic employee',
+    role: 'employee',
+    employeeId: 'employee-1',
+    workspaceId
+  },
   data: {
     workspace: { id: workspaceId, name: 'Synthetic workspace' },
     sync: { revision: 0, schemaVersion: 1 },

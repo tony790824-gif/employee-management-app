@@ -13,6 +13,7 @@
   const defaultHint = hint.textContent;
   const APP_SCRIPTS = Object.freeze([
     'dom-safety.js',
+    'current-user-ui.js',
     'app.js',
     'access.js',
     'employee-work.js',

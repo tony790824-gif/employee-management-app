@@ -8,8 +8,36 @@
   const workspacePattern = /^ws_[a-f0-9]{32}$/;
   let client = null;
   let currentSession = null;
+  let currentUser = null;
 
   const isEmployeeSession = () => currentSession?.role === 'employee' && Boolean(currentSession.employeeId);
+
+  function validateCurrentUser(value, payload) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new Error('PostgreSQL bootstrap currentUser format is invalid.');
+    }
+    const displayName = value.displayName === null
+      ? null
+      : typeof value.displayName === 'string' && value.displayName === value.displayName.trim()
+        && value.displayName.length > 0 && value.displayName.length <= 120
+        ? value.displayName
+        : undefined;
+    if (displayName === undefined) throw new Error('PostgreSQL bootstrap currentUser display name is invalid.');
+    if (!['boss', 'employee'].includes(value.role) || value.role !== payload.role) {
+      throw new Error('PostgreSQL bootstrap currentUser role is inconsistent.');
+    }
+    const employeeId = value.employeeId === null ? null : value.employeeId;
+    if (value.role === 'employee' && (typeof employeeId !== 'string' || employeeId !== payload.employeeId)) {
+      throw new Error('PostgreSQL bootstrap currentUser employee identity is inconsistent.');
+    }
+    if (value.role === 'boss' && employeeId !== null) {
+      throw new Error('PostgreSQL bootstrap currentUser manager identity is invalid.');
+    }
+    if (value.workspaceId !== payload.workspaceId || !workspacePattern.test(value.workspaceId)) {
+      throw new Error('PostgreSQL bootstrap currentUser Workspace is inconsistent.');
+    }
+    return Object.freeze({ displayName, role: value.role, employeeId, workspaceId: value.workspaceId });
+  }
 
   function validateBootstrap(payload) {
     if (!payload || payload.ok !== true || !payload.data || typeof payload.data !== 'object') {
@@ -24,7 +52,7 @@
     }
     const normalized = stateStore.normalize(payload.data);
     if (normalized.workspace.id !== payload.workspaceId) throw new Error('PostgreSQL bootstrap 資料邊界不一致。');
-    return { ...payload, data: normalized };
+    return { ...payload, currentUser: validateCurrentUser(payload.currentUser, payload), data: normalized };
   }
 
   async function refreshBootstrap() {
@@ -32,6 +60,7 @@
     const bootstrap = validateBootstrap(await client.bootstrap());
     stateStore.write(bootstrap.data);
     currentSession = Object.freeze({ role: bootstrap.role, employeeId: bootstrap.employeeId || '' });
+    currentUser = bootstrap.currentUser;
     sessionStorage.setItem(environment.storageKey('shift-postgres-auth'), JSON.stringify(currentSession));
     document.dispatchEvent(new CustomEvent('postgres-bootstrap-refreshed'));
     return bootstrap;
@@ -85,6 +114,7 @@
   async function logout() {
     if (client) await client.logout();
     currentSession = null;
+    currentUser = null;
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     stateStore.clearSensitive();
   }
@@ -102,7 +132,8 @@
     approveAttendanceHours,
     hasEmployeeSession: isEmployeeSession,
     isConnected: () => Boolean(currentSession),
-    getSession: () => currentSession
+    getSession: () => currentSession,
+    getCurrentUser: () => currentUser
   });
 
   const cloudStatus = document.querySelector('#cloudStatus');
