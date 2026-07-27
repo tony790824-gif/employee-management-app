@@ -15,7 +15,12 @@
   const redirectUri = new URL('./', window.location.href).href;
   const sessionClaimName = 'https://banke.tw/session_id';
   const sessionReauthenticationCodes = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
+  const inAppBrowserPattern = /(?:\bLine\/|\bFBAN\/|\bFBAV\/|\bFB_IAB\/|\bInstagram\b|\bMessenger\b)/i;
+  const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches === true
+    || window.navigator?.standalone === true;
+  const inAppBrowser = !standalone && inAppBrowserPattern.test(window.navigator?.userAgent || '');
   let client;
+  let inAppBrowserNotice;
   let claimVerification = Object.freeze({
     checked: false,
     exists: false,
@@ -62,7 +67,107 @@
     loginButton.textContent = busy ? '正在連接 Auth0…' : '使用 Auth0 登入';
   };
 
+  const copyPreviewUrl = async feedback => {
+    let copied = false;
+    try {
+      if (typeof window.navigator?.clipboard?.writeText === 'function') {
+        await window.navigator.clipboard.writeText(redirectUri);
+        copied = true;
+      }
+    } catch {
+      copied = false;
+    }
+
+    if (!copied) {
+      const input = document.createElement('textarea');
+      input.value = redirectUri;
+      input.readOnly = true;
+      input.setAttribute('aria-hidden', 'true');
+      document.body.append(input);
+      input.select();
+      try {
+        copied = document.execCommand?.('copy') === true;
+      } catch {
+        copied = false;
+      }
+      input.remove();
+    }
+
+    feedback.textContent = copied
+      ? '網址已複製，請貼到 Safari 或預設瀏覽器開啟。'
+      : '無法自動複製，請長按上方網址後複製。';
+  };
+
+  const createInAppBrowserNotice = () => {
+    if (inAppBrowserNotice) return inAppBrowserNotice;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'stagingInAppBrowserNotice';
+    overlay.className = 'login-overlay';
+    overlay.hidden = true;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'stagingInAppBrowserTitle');
+
+    const card = document.createElement('section');
+    card.className = 'login-card';
+    const mark = document.createElement('span');
+    mark.className = 'login-mark';
+    mark.textContent = '↗';
+    const title = document.createElement('h1');
+    title.id = 'stagingInAppBrowserTitle';
+    title.textContent = '請改用外部瀏覽器';
+    const message = document.createElement('p');
+    message.textContent = '目前使用的是 App 內建瀏覽器，登入可能無法完成。請按右上角「⋯」，選擇「使用 Safari 開啟」或「使用預設瀏覽器開啟」。';
+    const urlLabel = document.createElement('label');
+    urlLabel.textContent = '預覽網址';
+    const urlField = document.createElement('input');
+    urlField.value = redirectUri;
+    urlField.readOnly = true;
+    urlField.setAttribute('aria-label', '可複製的預覽網址');
+    urlField.addEventListener('focus', () => urlField.select());
+    urlLabel.append(urlField);
+    const actions = document.createElement('div');
+    actions.className = 'login-actions';
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = 'primary';
+    copyButton.textContent = '複製網址';
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'ghost';
+    closeButton.textContent = '關閉提示';
+    const feedback = document.createElement('small');
+    feedback.setAttribute('role', 'status');
+    feedback.setAttribute('aria-live', 'polite');
+    copyButton.addEventListener('click', () => copyPreviewUrl(feedback));
+    closeButton.addEventListener('click', () => {
+      overlay.hidden = true;
+      loginButton?.focus();
+    });
+    actions.append(copyButton, closeButton);
+    card.append(mark, title, message, urlLabel, actions, feedback);
+    overlay.append(card);
+    document.body.append(overlay);
+    inAppBrowserNotice = overlay;
+    return overlay;
+  };
+
+  const showInAppBrowserNotice = () => {
+    if (!inAppBrowser) return false;
+    const notice = createInAppBrowserNotice();
+    notice.hidden = false;
+    notice.querySelector('.primary')?.focus();
+    setStatus('目前使用 App 內建瀏覽器，請改用 Safari 或預設瀏覽器登入。');
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = '查看開啟方式';
+    }
+    return true;
+  };
+
   const initialize = async () => {
+    if (showInAppBrowserNotice()) return;
     if (!authConfig?.domain || !authConfig?.clientId || authConfig?.audience !== 'https://bankeban-staging-api') {
       throw new Error('Staging Auth0 public configuration is incomplete.');
     }
@@ -113,6 +218,7 @@
   };
 
   const loginWithRedirect = async () => {
+    if (showInAppBrowserNotice()) return;
     if (!client) return;
     setBusy(true);
     try {

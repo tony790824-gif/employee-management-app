@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-27 — Social in-app browser login guidance
+
+- Added a Staging-only compatibility notice before Auth0 initialization for LINE, Facebook, Messenger and Instagram in-app browsers.
+- Added a safe copy-URL action that copies only the clean Draft root URL and never copies Auth0 callback parameters, tokens or session data.
+- Kept Safari, Chrome and installed PWA flows unchanged, and deliberately avoided unreliable attempts to force-open Safari or another external browser.
+- Added mobile browser regression coverage for the supported in-app browser signatures, normal Safari/Chrome and standalone PWA behavior. Production, Auth0, APIs, databases and migrations were not modified.
+
 ## 2026-07-27 — Staging PostgreSQL shift creation stability
 
 - Removed the full-page reload after a successful `shifts.create`; the existing PostgreSQL bootstrap refresh now supplies the authoritative snapshot and rerenders the schedule in place.
