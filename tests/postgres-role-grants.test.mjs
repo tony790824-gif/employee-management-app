@@ -55,7 +55,9 @@ assert.deepEqual(API_FUNCTIONS, [
   'app_private.api_logout_session(text,text,text)',
   'app_private.api_list_employees(text,text,text)',
   'app_private.api_bootstrap(text,text,text)',
-  'app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'
+  'app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)',
+  'app_private.api_list_time_off_requests(text,text,text)',
+  'app_private.api_execute_time_off_command(text,text,text,text,jsonb,text,text,text)'
 ]);
 
 const source = await readFile(new URL('../database/apply-role-grants.mjs', import.meta.url), 'utf8');

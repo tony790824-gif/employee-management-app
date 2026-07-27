@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-27 — Time-off workflow Phase 1 completed
+
+- **Completed:** additive `0013_time_off_requests` schema, forced RLS, least-privilege grants, controlled read API, employee submit/cancel commands, boss/manager approve/reject commands, idempotency, privacy, Workspace isolation, audit/outbox integration, and a full Staging rollback/reapply rehearsal.
+- **Legacy boundary:** existing `leave_selections` rows were not reclassified. Only an explicit approval of a new scheduled-leave request updates the authoritative final monthly leave dates.
+- **Not completed:** employee “我的排休／我要請假” UI, manager review queues/history/store overview, confirmation dialogs, mobile acceptance, and a new Draft Preview.
+- **Completion:** 87%. The backend security and transaction phase is accepted in Staging; the user-facing workflow remains incomplete and is not Production-ready.
+- **Next unique priority:** Time-off workflow Phase 2 — connect the existing frontend to the new read/command boundary, implement role-scoped employee/manager UI, and complete iPhone/Android Staging acceptance without adding another API or migration unless evidence proves it necessary.
+
 ## 2026-07-22 — Reversible Staging browser cutover completed
 
 - **Accepted:** the fixed Netlify Draft origin ran the isolated `STAGING POSTGRES` build against Render/Neon Staging. Real Auth0 boss and employee sessions loaded role-scoped bootstrap data; employee leave/clock and boss attendance-hour changes persisted without Google Sheets fallback. Employee/shift management command wiring passed focused adapter regression.

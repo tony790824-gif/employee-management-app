@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-07-27 current state — time-off workflow Phase 1
+
+- Overall completion: **87%**.
+- `0013_time_off_requests` is applied only to Neon Staging and has passed down/up rollback rehearsal with checksum `f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2`.
+- Formal schema and controlled APIs now separate fixed scheduled leave from ad-hoc leave. Employee self-service and manager review authorization, reason privacy, same-store approved schedule visibility, idempotency, RLS, and Workspace isolation passed.
+- Legacy `leave_selections` is unchanged and was not auto-classified. Production, Auth0, Google Sheets, Apps Script, payroll, attendance, employee management, shift behavior, and frontend UI were not changed.
+- The frontend feature is **not complete**. The next single Sprint is Phase 2: employee “我的排休／我要請假” UI plus manager review queues/history/store overview, using only the existing new read/command API.
+- Do not add a parallel API, do not convert old leaves by assumption, do not apply `0013` to Production, and do not include the unrelated untracked `0010_commission_rules` files.
+
 更新日期：2026-07-25
 產品程式基準：本文件所在 Commit（本輪驗收起始 Commit：`b47eceec6356fc0b1c70e4784ef4ba29a4fe9b63`）
 

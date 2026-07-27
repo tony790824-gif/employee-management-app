@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-18.2
+  version: 2026-07-27.1
   description: Implemented Staging transition API. Auth0 OIDC validation and local session boundaries exist, but external Auth0 PKCE/refresh integration and Production cutover are not approved.
 servers:
   - url: http://127.0.0.1:8080/v1
@@ -44,6 +44,16 @@ paths:
         '200': { description: Active employees visible to boss or manager }
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
+  /time-off-requests:
+    get:
+      summary: Read role-scoped scheduled-leave and ad-hoc-leave request data
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Own requests, manager review data, and privacy-filtered same-store approved coverage
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
   /commands/{commandName}:
     post:
       parameters:
@@ -53,7 +63,19 @@ paths:
           required: true
           schema:
             type: string
-            enum: [employees.create, shifts.create, leaves.replace-month, attendance.clock-in, attendance.clock-out, attendance.approve-hours]
+            enum:
+              - employees.create
+              - shifts.create
+              - leaves.replace-month
+              - attendance.clock-in
+              - attendance.clock-out
+              - attendance.approve-hours
+              - schedule-leave-requests.submit
+              - schedule-leave-requests.cancel
+              - leave-requests.submit
+              - leave-requests.cancel
+              - time-off-requests.approve
+              - time-off-requests.reject
         - in: header
           name: Idempotency-Key
           required: true

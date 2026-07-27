@@ -2,6 +2,20 @@
 
 `database/migrations/` is the executable source of truth for the formal PostgreSQL schema. `docs/schema.sql` remains a historical design reference only.
 
+## Time-off request migration
+
+`0013_time_off_requests` separates fixed monthly scheduled leave from ad-hoc leave requests. It is additive, leaves historical `leave_selections` untouched, forces RLS on both new tables, and exposes only controlled read/command functions to the runtime API role.
+
+Staging-only verification commands:
+
+```powershell
+pnpm db:status
+pnpm db:time-off-requests:staging
+pnpm test:time-off:staging
+```
+
+Rollback is permitted only in Local/Staging with the existing destructive-migration confirmation gate. Do not apply this migration to Production until the separate frontend/review UI Sprint, release acceptance, and an explicit Production migration approval are complete.
+
 ## Safety gates
 
 - Migration/import commands require a direct `DATABASE_MIGRATOR_URL`; the runtime API requires a separate least-privilege `DATABASE_API_URL`. Secrets are never stored in Git.

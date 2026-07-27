@@ -1,5 +1,27 @@
 # API 文件（現況與目標）
 
+## Time-off request API — Staging backend phase (2026-07-27)
+
+The existing authenticated PostgreSQL boundary now supports two explicit request kinds without introducing a second transport:
+
+- `schedule-leave-requests.submit`
+- `schedule-leave-requests.cancel`
+- `leave-requests.submit`
+- `leave-requests.cancel`
+- `time-off-requests.approve`
+- `time-off-requests.reject`
+
+All mutations use `POST /v1/commands/{commandName}`, `X-Workspace-Id`, `Idempotency-Key`, verified Auth0 access token, a live Bankeban Session, and live Membership authorization. Employee submit/cancel operations are self-only; review operations are boss/manager-only. Replaying the same idempotency key returns the existing result, while reviewing an already processed request is rejected.
+
+`GET /v1/time-off-requests` is the controlled read surface. It returns:
+
+- the caller's own full request/status data;
+- pending and processed request data, including private reasons, only to an authorized boss/manager;
+- approved scheduled-leave coworker name/date data for the same Workspace;
+- approved ad-hoc leave coverage as date/count only, without another employee's reason.
+
+The browser-provided Workspace ID remains untrusted request scope. The server and database functions resolve identity, Session, Membership, role, and Workspace again. No runtime role received direct table access.
+
 ## Browser PostgreSQL API transport boundary — 2026-07-20
 
 `postgres-api-client.js` is the single reviewed browser transport factory for the existing formal API. It exposes unauthenticated `health`/`readiness`, authenticated Session establishment/logout and employee listing, plus the six existing command names. It sends a bearer token, a requested `X-Workspace-Id`, a random request ID and command idempotency key; the Workspace header is never an authorization source and must be re-authorized against live server-side Membership.

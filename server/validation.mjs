@@ -5,6 +5,7 @@ const DATE_PATTERN = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
+const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const IDEMPOTENCY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
 
 function plainObject(value) {
@@ -32,6 +33,25 @@ function validDate(value, field = 'date') {
   const date = new Date(Date.UTC(year, month - 1, day));
   assert(date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day, 400, 'COMMAND_INVALID', `${field} 不是有效日期。`);
   return value;
+}
+
+function validRequestId(value, field = 'requestId') {
+  assert(typeof value === 'string' && UUID_PATTERN.test(value), 400, 'COMMAND_INVALID', `${field} must be a UUID.`);
+  return value;
+}
+
+function validRevision(value) {
+  assert(Number.isSafeInteger(value) && value >= 0, 400, 'COMMAND_INVALID', 'baseRevision must be a non-negative integer.');
+  return value;
+}
+
+function requestReference(input) {
+  const hasId = Object.prototype.hasOwnProperty.call(input, 'requestId');
+  const hasRevision = Object.prototype.hasOwnProperty.call(input, 'baseRevision');
+  assert(hasId === hasRevision, 400, 'COMMAND_INVALID', 'requestId and baseRevision must be supplied together.');
+  return hasId
+    ? { requestId: validRequestId(input.requestId), baseRevision: validRevision(input.baseRevision) }
+    : {};
 }
 
 export function validateIdempotencyKey(value) {
@@ -75,6 +95,51 @@ export function validateCommand(name, input) {
     assert(dates.every(value => value.startsWith(`${input.month}-`)), 400, 'COMMAND_INVALID', '所有休假日必須屬於指定月份。');
     return { employeeId: input.employeeId, month: input.month, dates };
   }
+  if (name === 'schedule-leave-requests.submit') {
+    exactKeys(input, ['requestId', 'baseRevision', 'month', 'dates'], ['month', 'dates']);
+    assert(typeof input.month === 'string' && MONTH_PATTERN.test(input.month), 400, 'COMMAND_INVALID', 'month must use YYYY-MM.');
+    assert(Array.isArray(input.dates) && input.dates.length <= 31, 400, 'COMMAND_INVALID', 'dates must contain at most 31 dates.');
+    const validatedDates = input.dates.map(value => validDate(value));
+    assert(new Set(validatedDates).size === validatedDates.length, 400, 'COMMAND_INVALID', 'dates must not contain duplicates.');
+    assert(validatedDates.every(value => value.startsWith(`${input.month}-`)), 400, 'COMMAND_INVALID', 'Every date must be inside month.');
+    return {
+      ...requestReference(input),
+      month: input.month,
+      dates: [...validatedDates].sort()
+    };
+  }
+  if (name === 'schedule-leave-requests.cancel') {
+    exactKeys(input, ['requestId', 'baseRevision'], ['requestId', 'baseRevision']);
+    return { requestId: validRequestId(input.requestId), baseRevision: validRevision(input.baseRevision) };
+  }
+  if (name === 'leave-requests.submit') {
+    exactKeys(input, ['requestId', 'baseRevision', 'startDate', 'endDate', 'leaveType', 'reason'],
+      ['startDate', 'endDate', 'leaveType', 'reason']);
+    const startDate = validDate(input.startDate, 'startDate');
+    const endDate = validDate(input.endDate, 'endDate');
+    assert(endDate >= startDate, 400, 'COMMAND_INVALID', 'endDate must not be before startDate.');
+    const duration = Math.round((Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / 86_400_000) + 1;
+    assert(duration >= 1 && duration <= 31, 400, 'COMMAND_INVALID', 'A leave request may cover at most 31 days.');
+    return {
+      ...requestReference(input),
+      startDate,
+      endDate,
+      leaveType: text(input.leaveType, 'leaveType', { min: 1, max: 60 }),
+      reason: text(input.reason, 'reason', { min: 1, max: 2000 })
+    };
+  }
+  if (name === 'leave-requests.cancel') {
+    exactKeys(input, ['requestId', 'baseRevision'], ['requestId', 'baseRevision']);
+    return { requestId: validRequestId(input.requestId), baseRevision: validRevision(input.baseRevision) };
+  }
+  if (name === 'time-off-requests.approve' || name === 'time-off-requests.reject') {
+    exactKeys(input, ['requestId', 'baseRevision', 'reviewNote'], ['requestId', 'baseRevision']);
+    return {
+      requestId: validRequestId(input.requestId),
+      baseRevision: validRevision(input.baseRevision),
+      reviewNote: text(input.reviewNote ?? '', 'reviewNote', { max: 1000 })
+    };
+  }
   if (name === 'attendance.clock-in' || name === 'attendance.clock-out') {
     exactKeys(input, []);
     return {};
@@ -95,5 +160,20 @@ export const commandNames = Object.freeze([
   'leaves.replace-month',
   'attendance.clock-in',
   'attendance.clock-out',
-  'attendance.approve-hours'
+  'attendance.approve-hours',
+  'schedule-leave-requests.submit',
+  'schedule-leave-requests.cancel',
+  'leave-requests.submit',
+  'leave-requests.cancel',
+  'time-off-requests.approve',
+  'time-off-requests.reject'
+]);
+
+export const timeOffCommandNames = Object.freeze([
+  'schedule-leave-requests.submit',
+  'schedule-leave-requests.cancel',
+  'leave-requests.submit',
+  'leave-requests.cancel',
+  'time-off-requests.approve',
+  'time-off-requests.reject'
 ]);

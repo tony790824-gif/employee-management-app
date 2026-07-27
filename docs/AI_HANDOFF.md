@@ -1,5 +1,14 @@
 # AI Handoff
 
+## 2026-07-27 handoff — time-off workflow Phase 1
+
+- Completed additive Staging migration `0013_time_off_requests`, controlled read/command API, role grants, tests, and rollback/reapply rehearsal.
+- Live Staging E2E passed employee own request access, manager review, employee review denial, approved coworker scheduled-leave visibility, pending visibility denial, private reason containment, minimal approved ad-hoc coverage, idempotent replay, duplicate-review rejection, Workspace isolation, and direct-table denial.
+- The migration checksum is `f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2`. Migrations `0009` and the unrelated untracked `0010` remain outside this work.
+- No Production, frontend, Auth0, Google Sheets, Apps Script, payroll, attendance, employee, or shift change was made.
+- Current completion is **87%**. The request workflow is backend-ready in Staging but not user-facing.
+- Next start condition: implement Phase 2 UI against `GET /v1/time-off-requests` and the six existing commands; do not introduce another data flow or migration unless a reproducible contract gap is proven.
+
 更新日期：2026-07-25
 產品程式基準：本文件所在 Commit（本輪驗收起始 Commit：`b47eceec6356fc0b1c70e4784ef4ba29a4fe9b63`）
 

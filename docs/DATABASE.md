@@ -1,5 +1,26 @@
 # Database 文件（現況與目標）
 
+## Migration 0013 — time-off requests (Staging only, 2026-07-27)
+
+Migration `0013_time_off_requests` adds:
+
+- `time_off_requests`: Workspace-scoped request header, request kind, status, applicant, employee, optional schedule month/type/reason, reviewer, review time, and timestamps.
+- `time_off_request_dates`: normalized requested dates with a composite Workspace/request foreign key.
+- forced RLS policies, tenant-safe composite foreign keys, supporting indexes, state/kind constraints, and controlled read/command functions.
+
+The runtime role has zero direct privileges on these tables and may execute only the reviewed controlled functions. Employee operations are self-only; manager review is role-checked; cross-Workspace access is denied. Same-store visibility exposes approved scheduled-leave employee names/dates but never another employee's ad-hoc reason.
+
+Legacy `leave_selections` is not converted. It remains final schedule input and changes only when a new scheduled-leave request is explicitly approved. Rejected/cancelled requests do not consume the official eight-day quota. Approved ad-hoc leave does not modify that quota or the legacy payroll/schedule inputs.
+
+Neon Staging evidence:
+
+- checksum: `f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2`
+- up migration: PASS
+- down rollback: PASS
+- reapply with the same checksum: PASS
+- API role: zero table privilege; seven controlled function grants after reapplication
+- Production: not applied
+
 ## Frontend integration boundary — 2026-07-20
 
 This Sprint added no table, column, role, function, migration, seed or business data. The existing Production PostgreSQL schema and least-privilege role remain unchanged. The browser build now contains an inactive API client factory only; committed environment profiles do not contain a PostgreSQL API URL and do not switch the active Google Sheets data store.

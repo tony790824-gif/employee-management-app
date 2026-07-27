@@ -4,7 +4,12 @@ import { deployFiles } from './project-files.mjs';
 const failures = [];
 const fail = message => failures.push(message);
 const expectedFiles = [...deployFiles].sort();
-const generatedEnvironmentFiles = new Set(['environment-config.js', 'manifest.webmanifest']);
+const generatedBuildFiles = new Set([
+  'environment-config.js',
+  'index.html',
+  'manifest.webmanifest',
+  'service-worker.js'
+]);
 let actualFiles = [];
 
 try {
@@ -23,7 +28,7 @@ if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
 for (const file of expectedFiles) {
   try {
     const [source, built] = await Promise.all([readFile(file), readFile(`dist/${file}`)]);
-    if (!generatedEnvironmentFiles.has(file) && !source.equals(built)) fail(`建置檔案與來源不一致：${file}`);
+    if (!generatedBuildFiles.has(file) && !source.equals(built)) fail(`建置檔案與來源不一致：${file}`);
   } catch (error) {
     fail(`無法驗證發布檔案 ${file}：${error.message}`);
   }

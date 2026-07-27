@@ -1,4 +1,43 @@
-# Next Sprint — Staging 真實裝置矩陣驗收
+# Next Sprint — Time-off workflow Phase 2 UI and approval acceptance
+
+## Single goal
+
+Connect the existing employee and manager frontend to the already accepted `0013_time_off_requests` read/command boundary. Do not create a second API, change the eight-day quota, convert legacy leaves, or apply a new migration unless a reproducible backend contract gap proves it necessary.
+
+## Employee acceptance
+
+- Separate “我的排休” and “我要請假” entry points.
+- Show own draft/local edits, pending, approved, rejected, and cancelled statuses.
+- Scheduled leave shows the existing eight-day used/remaining quota.
+- Ad-hoc leave supports a single day or bounded date range, type, and private reason.
+- Show coworkers' approved scheduled-leave names/dates only, plus minimal approved ad-hoc coverage without reasons.
+- Employee may submit/cancel only their own requests.
+
+## Manager acceptance
+
+- Separate pending scheduled-leave and ad-hoc-leave queues.
+- Show processed history and same-store approved scheduled-leave overview.
+- Confirm approve/reject actions and prevent duplicate submission.
+- Never expose another Workspace.
+
+## Mobile and failure acceptance
+
+- Minimum 44px touch targets, no horizontal overflow, bounded long names/reasons.
+- Success refreshes bootstrap/read state without full-page reload.
+- Failures keep the form/draft, show a safe actionable message, and do not log out for ordinary business errors.
+- Run iPhone Safari and Android Chrome acceptance on an isolated non-Production Draft.
+
+## Stop conditions
+
+- Stop on a missing backend contract, privacy leak, Workspace leak, Session regression, unexpected legacy-data conversion, need for Production access, or need for a new migration.
+
+## Prohibited
+
+- Production deploy/migration; Auth0 redesign; Google Sheets/Apps Script changes; shifts update/delete; employees update; PWA work; unrelated refactoring; inclusion of `.codex`, `.netlify`, build outputs, or untracked `0010_commission_rules`.
+
+---
+
+## Historical next-sprint record
 
 ## 唯一目標
 

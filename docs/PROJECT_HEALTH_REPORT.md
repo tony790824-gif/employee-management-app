@@ -1,5 +1,15 @@
 # 班客邦 Project Health Report
 
+## 2026-07-27 — Time-off request backend health update
+
+- **Overall completion: 87%.** The formal Staging data/command foundation for separating scheduled leave and ad-hoc leave is complete; frontend UI and real-device acceptance remain.
+- **Accepted evidence:** migration checksum/ledger, transactional up/down/reapply, forced RLS, zero direct API-role table access, employee self-only submission/cancellation, manager-only review, reason privacy, approved same-store schedule visibility, idempotency, duplicate-review rejection, and Workspace A/B denial.
+- **No Production change:** Production database, Auth0, Netlify, Google Sheets, Apps Script, payroll, attendance, employee management, and shift behavior were not changed.
+- **P0 before feature acceptance:** build the Phase 2 role-scoped UI and prove the complete employee/manager flow on isolated Staging.
+- **P1:** decide and document historical-data conversion only if the business later requires it; no automatic classification is currently safe.
+- **Known limitation:** an ad-hoc request is bounded to 31 dates as an input/abuse guard. This is not a new leave entitlement rule.
+- **Release status:** No. The backend phase is healthy, but end users cannot yet submit or review the new request workflow through the UI.
+
 ## 2026-07-22 — Staging browser cutover health update
 
 - **Commercial readiness: 85% (previously 83%).** A reversible desktop-browser PostgreSQL cutover is now accepted against the isolated Staging stack; this is not Production approval.

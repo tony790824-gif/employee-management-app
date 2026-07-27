@@ -24,6 +24,39 @@ assert.equal(validateCommand('employees.create', {
 assert.throws(() => validateCommand('employees.create', {
   name: 'Synthetic employee', phone: '0912345678', hourlyRate: 200, workspaceId: 'attacker'
 }), error => error.code === 'COMMAND_INVALID');
+assert.deepEqual(validateCommand('schedule-leave-requests.submit', {
+  month: '2026-08',
+  dates: ['2026-08-02', '2026-08-09']
+}), { month: '2026-08', dates: ['2026-08-02', '2026-08-09'] });
+assert.throws(() => validateCommand('schedule-leave-requests.submit', {
+  month: '2026-08',
+  dates: ['2026-08-02', '2026-08-02']
+}), error => error.code === 'COMMAND_INVALID');
+assert.deepEqual(validateCommand('leave-requests.submit', {
+  startDate: '2026-08-12',
+  endDate: '2026-08-13',
+  leaveType: 'Personal',
+  reason: 'Synthetic reason'
+}), {
+  startDate: '2026-08-12',
+  endDate: '2026-08-13',
+  leaveType: 'Personal',
+  reason: 'Synthetic reason'
+});
+assert.throws(() => validateCommand('leave-requests.submit', {
+  startDate: '2026-08-13',
+  endDate: '2026-08-12',
+  leaveType: 'Personal',
+  reason: 'Synthetic reason'
+}), error => error.code === 'COMMAND_INVALID');
+assert.deepEqual(validateCommand('time-off-requests.approve', {
+  requestId: '00000000-0000-4000-8000-000000000010',
+  baseRevision: 0
+}), {
+  requestId: '00000000-0000-4000-8000-000000000010',
+  baseRevision: 0,
+  reviewNote: ''
+});
 
 const workspaceId = 'ws_0123456789abcdef0123456789abcdef';
 const identity = Object.freeze({
@@ -95,6 +128,8 @@ const pool = {
     if (sql.includes('api_logout_session')) return { rows: [{ result: { ok: true } }] };
     if (sql.includes('api_list_employees')) return { rows: [{ result: { ok: true, data: [] } }] };
     if (sql.includes('api_bootstrap')) return { rows: [{ result: { ok: true, role: 'boss', data: {} } }] };
+    if (sql.includes('api_list_time_off_requests')) return { rows: [{ result: { ok: true, ownRequests: [] } }] };
+    if (sql.includes('api_execute_time_off_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic-time-off' } } }] };
     if (sql.includes('api_execute_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic' } } }] };
     throw new Error(`Unexpected SQL: ${sql}`);
   }
@@ -110,8 +145,19 @@ await service.execute({
 });
 await service.listEmployees({ identity, workspaceId });
 await service.bootstrap({ identity, workspaceId });
+await service.listTimeOffRequests({ identity, workspaceId });
+await service.execute({
+  identity,
+  workspaceId,
+  commandName: 'schedule-leave-requests.submit',
+  idempotencyKey: 'schedule-leave-submit-0001',
+  requestId: 'request-0002',
+  input: { month: '2026-08', dates: ['2026-08-02'] }
+});
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 5);
+assert.equal(queries.length, 7);
+assert.ok(queries.some(item => item.sql.includes('api_execute_time_off_command')),
+  'Time-off commands use their controlled database function');
 assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
 assert.ok(queries.every(item => !/\b(?:FROM|INTO|UPDATE|DELETE FROM)\s+(?:employees|workspaces|workspace_members)\b/i.test(item.sql)),
   'API never directly queries tenant tables');
@@ -218,7 +264,8 @@ const api = createApiServer({
   commandService: {
     establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
     execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }),
-    bootstrap: async () => ({ ok: true, role: 'boss', data: { employees: [] } })
+    bootstrap: async () => ({ ok: true, role: 'boss', data: { employees: [] } }),
+    listTimeOffRequests: async () => ({ ok: true, ownRequests: [], approvedSchedule: [] })
   }
 });
 api.listen(0, '127.0.0.1');
@@ -233,6 +280,9 @@ try {
   const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
   assert.equal(bootstrapResponse.status, 200);
   assert.equal((await bootstrapResponse.json()).role, 'boss');
+  const timeOffResponse = await fetch(`${base}/v1/time-off-requests`, { headers: commonHeaders });
+  assert.equal(timeOffResponse.status, 200);
+  assert.deepEqual((await timeOffResponse.json()).approvedSchedule, []);
   const cancelLeaveResponse = await fetch(`${base}/v1/commands/leaves.replace-month`, {
     method: 'POST',
     headers: {

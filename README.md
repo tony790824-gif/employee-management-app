@@ -1,5 +1,14 @@
 # 班客邦
 
+## Time-off request workflow (Staging backend phase, 2026-07-27)
+
+- Fixed monthly scheduled leave and ad-hoc leave are now separate PostgreSQL request kinds in the Staging backend.
+- Scheduled leave keeps the existing eight-day monthly quota and becomes authoritative only after boss/manager approval. Ad-hoc leave does not consume that quota.
+- The existing Command API now supports employee submit/cancel and manager approve/reject operations with live Session, Membership, Workspace, idempotency, audit, outbox, RLS, and least-privilege function boundaries.
+- Coworkers can read only approved scheduled-leave names/dates; ad-hoc reasons remain visible only to the applicant and authorized manager.
+- Existing `leave_selections` rows are not automatically converted. Production, Google Sheets, Apps Script, Auth0, and the frontend UI were not changed in this phase.
+- See [ADR 0015](docs/adr/0015-time-off-request-workflow.md), [API documentation](docs/API.md), and [database documentation](docs/DATABASE.md).
+
 ## PostgreSQL browser integration boundary — 2026-07-20
 
 - 新增 `postgres-api-client.js`，提供正式 Node/PostgreSQL API 的嚴格瀏覽器傳輸邊界；包含 HTTPS／loopback 限制、Bearer 與 Workspace request scope、idempotency、大小限制、timeout、結構化錯誤及撤銷 Session 事件。

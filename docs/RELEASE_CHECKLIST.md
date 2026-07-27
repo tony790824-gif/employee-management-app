@@ -1,5 +1,22 @@
 # 班客邦 Release Checklist
 
+## Time-off workflow Phase 1 — Staging backend
+
+- [x] Scheduled leave and ad-hoc leave use distinct request kinds.
+- [x] Pending requests do not alter authoritative schedule, hours, or payroll inputs.
+- [x] Only approved scheduled leave updates final monthly `leave_selections`.
+- [x] Ad-hoc leave does not consume the fixed eight-day scheduled-leave quota.
+- [x] Employee submit/cancel is self-only; manager approve/reject is server-authorized.
+- [x] Approved coworker scheduled leave exposes only name/date in the same Workspace.
+- [x] Ad-hoc leave reasons are private to the applicant and authorized manager.
+- [x] Cross-Workspace, unknown-role, direct-table, duplicate-submit, and duplicate-review tests fail closed.
+- [x] Migration `0013` up/down/reapply and checksum verification passed on Neon Staging.
+- [x] Production, Google Sheets, Apps Script, Auth0, and frontend UI were not changed.
+- [ ] Phase 2 employee/manager UI is implemented and accepted.
+- [ ] iPhone Safari and Android Chrome workflows pass on a non-Production Draft.
+- [ ] Product owner approves any future legacy-data conversion rule.
+- [ ] Explicit Production migration approval is granted.
+
 ## Reversible Staging browser PostgreSQL cutover — 2026-07-22
 
 - [x] Built the isolated `STAGING POSTGRES` bundle with a fixed Render Staging API and approved synthetic Workspace scope; no Production build or deploy was promoted.

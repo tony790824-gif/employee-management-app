@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { ApiError, assert } from './errors.mjs';
-import { commandNames, validateCommand, validateIdempotencyKey } from './validation.mjs';
+import { commandNames, timeOffCommandNames, validateCommand, validateIdempotencyKey } from './validation.mjs';
 
 const DATABASE_ERROR_STATUS = Object.freeze({
   TENANT_CONTEXT_INVALID: 401,
@@ -17,7 +17,9 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   LEAVE_QUOTA_EXCEEDED: 409,
   ATTENDANCE_NOT_CLOCKED_IN: 409,
   REVISION_CONFLICT: 409,
-  IDEMPOTENCY_KEY_REUSED: 409
+  IDEMPOTENCY_KEY_REUSED: 409,
+  TIME_OFF_REQUEST_NOT_FOUND: 404,
+  TIME_OFF_REQUEST_ALREADY_PROCESSED: 409
 });
 
 function stableJson(value) {
@@ -40,6 +42,7 @@ function translateDatabaseError(error) {
   }
   if (error?.code === '23505') return new ApiError(409, 'RESOURCE_CONFLICT', 'The requested resource already exists.');
   if (error?.code === '23503') return new ApiError(404, 'RELATED_RESOURCE_NOT_FOUND', 'A related resource was not found.');
+  if (error?.code === '23514') return new ApiError(400, 'COMMAND_INVALID', 'Command values violate a data constraint.');
   if (['22007', '22008', '22P02', '22023'].includes(error?.code)) {
     return new ApiError(400, 'COMMAND_INVALID', 'Command values are invalid.');
   }
@@ -56,6 +59,9 @@ function internalInput(commandName, validated, idFactory, clock) {
     return { ...validated, generatedId: idFactory(), occurredAt: clock().toISOString() };
   }
   if (commandName === 'attendance.clock-out') return { ...validated, occurredAt: clock().toISOString() };
+  if (commandName === 'schedule-leave-requests.submit' || commandName === 'leave-requests.submit') {
+    return validated.requestId ? validated : { ...validated, generatedId: idFactory() };
+  }
   return validated;
 }
 
@@ -98,8 +104,11 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const validated = validateCommand(commandName, input);
       const signed = context(identity, workspaceId, 'command');
       const prepared = internalInput(commandName, validated, idFactory, clock);
+      const databaseFunction = timeOffCommandNames.includes(commandName)
+        ? 'app_private.api_execute_time_off_command'
+        : 'app_private.api_execute_command';
       return databaseCall(pool,
-        `SELECT app_private.api_execute_command(
+        `SELECT ${databaseFunction}(
           $1, $2, $3, $4, $5::jsonb, $6, $7, $8
         ) AS result`,
         [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
@@ -117,6 +126,13 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const signed = context(identity, workspaceId, 'read');
       return databaseCall(pool,
         'SELECT app_private.api_bootstrap($1, $2, $3) AS result',
+        [signed.payload, signed.signature, signed.keyId]);
+    },
+
+    async listTimeOffRequests({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      return databaseCall(pool,
+        'SELECT app_private.api_list_time_off_requests($1, $2, $3) AS result',
         [signed.payload, signed.signature, signed.keyId]);
     }
   });

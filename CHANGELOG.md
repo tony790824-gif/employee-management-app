@@ -1,5 +1,16 @@
 # Change Log
 
+## 2026-07-27 — Scheduled-leave and ad-hoc-leave backend separation
+
+- Added additive Staging migration `0013_time_off_requests` with Workspace-scoped request/date tables, forced RLS, controlled functions, constraints, indexes, review metadata, private reasons, and a complete down migration.
+- Added six commands to the existing PostgreSQL Command API: scheduled-leave submit/cancel, ad-hoc-leave submit/cancel, and manager approve/reject.
+- Added a role-scoped read endpoint that exposes own requests, manager review data, approved coworker scheduled-leave names/dates, and only minimal approved ad-hoc coverage.
+- Kept legacy `leave_selections` unchanged; it is updated only when a new scheduled-leave request is explicitly approved. No historical row was guessed or converted.
+- Applied, rolled back, and reapplied `0013` only on Neon Staging with checksum `f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2`.
+- Added static migration/grant/command tests and live Staging E2E for permissions, privacy, idempotency, duplicate review rejection, Workspace isolation, and direct-table denial.
+- Corrected the release gate's generated-asset allowlist so the intentional cache-revision rewrites in `index.html` and `service-worker.js` are validated by environment/PWA checks instead of being falsely reported as source drift.
+- Frontend employee/manager request UI is intentionally deferred to the next single Sprint. Production was not modified or deployed.
+
 ## 2026-07-27 — Authoritative current-user UI
 
 - Added a responsive authenticated-user label that displays the formal `bootstrap.currentUser.displayName` and normalized manager/employee role while retaining the separate `STAGING POSTGRES` environment badge.
