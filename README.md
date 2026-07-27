@@ -2,18 +2,23 @@
 
 ## Time-off request workflow (Staging backend phase, 2026-07-27)
 
+- Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion: **87%**.
+- Migration `0013_time_off_requests` is applied only to Neon Staging. Production and the pending `0009`／`0010` migrations were not changed or applied.
 - Fixed monthly scheduled leave and ad-hoc leave are now separate PostgreSQL request kinds in the Staging backend.
 - Scheduled leave keeps the existing eight-day monthly quota and becomes authoritative only after boss/manager approval. Ad-hoc leave does not consume that quota.
-- The existing Command API now supports employee submit/cancel and manager approve/reject operations with live Session, Membership, Workspace, idempotency, audit, outbox, RLS, and least-privilege function boundaries.
+- The existing Command API now supports `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`; the controlled read route is `GET /v1/time-off-requests`.
+- These APIs retain live Session, Membership, Workspace, idempotency, audit, outbox, RLS, and least-privilege function boundaries.
 - Coworkers can read only approved scheduled-leave names/dates; ad-hoc reasons remain visible only to the applicant and authorized manager.
 - Existing `leave_selections` rows are not automatically converted. Production, Google Sheets, Apps Script, Auth0, and the frontend UI were not changed in this phase.
+- This phase completed only the data model and Command/read API. The frontend UI, a feature-specific non-Production Draft Preview, and iPhone UI acceptance are not complete.
+- The next and only Sprint is **「前端排休／請假 UI 與老闆審核接線」**.
 - See [ADR 0015](docs/adr/0015-time-off-request-workflow.md), [API documentation](docs/API.md), and [database documentation](docs/DATABASE.md).
 
-## PostgreSQL browser integration boundary — 2026-07-20
+## PostgreSQL browser integration boundary — 2026-07-20 (historical)
 
 - 新增 `postgres-api-client.js`，提供正式 Node/PostgreSQL API 的嚴格瀏覽器傳輸邊界；包含 HTTPS／loopback 限制、Bearer 與 Workspace request scope、idempotency、大小限制、timeout、結構化錯誤及撤銷 Session 事件。
-- `local`、`staging`、`production` build 都包含同一個受測 factory，但目前設定仍分別維持 `local_preview`／`google_sheets`，且 `postgresApiUrl` 為空；因此不會送出 PostgreSQL API request，也不會改變既有 Google Sheets 流程。
-- 本次沒有資料庫異動、Production 部署或 Netlify Draft Preview 重新部署。正式切換仍須先完成隔離 Staging API 部署、完整 read/bootstrap surface 與 cutover rehearsal。
+- 當時 `local`、`staging`、`production` build 都包含同一個受測 factory，但設定仍分別維持 `local_preview`／`google_sheets`，且 `postgresApiUrl` 為空。此狀態已由後續隔離的 `STAGING POSTGRES` API／Draft 驗收取代；Production 仍未切換。
+- 當時沒有資料庫異動、Production 部署或 Netlify Draft Preview 重新部署。後續已完成隔離 Staging API、read/bootstrap 與可回復 cutover rehearsal；這段保留為歷史脈絡。
 
 ## Project cleanup status — 2026-07-20
 
@@ -27,7 +32,7 @@
 - `GET /v1/bootstrap` now renders the existing boss or employee UI from live, server-authorized PostgreSQL membership data without a Google Sheets fallback.
 - `pnpm build:staging:postgres` creates the separate `dist-staging-postgres/` rehearsal bundle only when a credential-free HTTPS API URL and synthetic Staging workspace ID are provided through the build environment.
 - The rehearsal uses separate PWA identity, cache, local/session storage, Auth0 session verification and logout handling. The normal Staging build and Production build remain on Google Sheets.
-- A public Node API deployment was **not** created by this source-only step because no approved hosting resource or secret configuration is present. See [PostgreSQL migration runbook](docs/POSTGRESQL_MIGRATION.md) before live E2E.
+- At this source-only step, a public Node API deployment was **not** created. A later isolated Render Staging deployment and reversible browser rehearsal superseded that limitation; Production remains unchanged. See [PostgreSQL migration runbook](docs/POSTGRESQL_MIGRATION.md) before any future Production work.
 
 ## Frontend environments
 
@@ -57,7 +62,7 @@ Run database commands only with an explicitly configured PostgreSQL environment.
 
 > 2026-07-18 Managed Staging PostgreSQL 驗收：Neon PostgreSQL 18.4 的隔離 Staging 已完成三階段 Migration、checksum／transaction／advisory-lock／重複執行、非敏感 snapshot dry-run／apply／replay、雙 Workspace FORCE RLS 正反向、Command API、查詢計畫及官方 `pg_dump`／`pg_restore` 還原演練。Migration 採 direct owner endpoint，API 採 pooler + `NOINHERIT` 最小權限角色，並以固定 Staging host 防止環境誤標。Production、Google Sheets 與現行前端均未切換或部署。
 
-> 2026-07-18 Sprint 3 Identity/Tenant foundation：PostgreSQL runtime role 已降為零 business-table 權限，只能執行四個受控函式；API 驗證 RS256 OIDC/JWKS 後，簽發 30 秒、單次使用的內部 context，資料庫再以 issuer/subject、user、workspace、membership、role 與可撤銷 session 建立 tenant boundary。偽造 token workspace、custom GUC、跨租戶、停權／移除、已撤銷 session 及 context replay 均在真實 Staging 被拒絕。Auth0 Staging 外部設定與真實 PKCE/refresh-reuse E2E 尚未完成，因此正式 Identity Provider 不可視為已接通，Production 未修改。
+> 2026-07-18 Sprint 3 Identity/Tenant foundation（歷史狀態）：PostgreSQL runtime role 已降為零 business-table 權限，只能執行四個受控函式；API 驗證 RS256 OIDC/JWKS 後，簽發 30 秒、單次使用的內部 context，資料庫再以 issuer/subject、user、workspace、membership、role 與可撤銷 session 建立 tenant boundary。偽造 token workspace、custom GUC、跨租戶、停權／移除、已撤銷 session 及 context replay 均在真實 Staging 被拒絕。當時尚未完成的 Auth0 Staging PKCE／refresh-reuse E2E 已於後續 Sprint 驗收；Production 仍未修改。
 
 > 2026-07-17 P0 Staging 驗收：已建立與正式資料隔離的 Google Sheet、Apps Script 專案及 Web App 部署，完成老闆／員工登入、員工管理、排班、排假、打卡、revision conflict、session 撤銷及備份還原演練。Staging 實測發現 Apps Script 在全域 lock 內執行 4096 次 HMAC 會逾時，已改為有版本、固定成本的 `hmac-sha256-v2` 過渡 credential；既有 v1 成功登入後自動遷移。正式站未發布，產品仍不可正式上線。
 
@@ -127,7 +132,7 @@ Google Sheet 主資料與本機復原策略不同：A1 若不是有效 JSON obje
 
 正式頁面採分階段啟動：登入前只載入設定、雲端驗證、登入與 PWA 必要程式；驗證成功後才載入管理畫面與公司資料。這是前端資料最小化，不等於正式後端 authorization。
 
-Google Sheets 過渡後端已停止接受員工全量 `save`。員工登入／讀取只回傳本人所需資料，排假、上班打卡、下班打卡分別由伺服器驗證身份後執行。老闆全量 snapshot 已加入 revision 衝突拒絕，PIN 也已採過渡期 server-side salted credential；但多租戶、正式 Identity Provider、正式資料庫與 command API 尚未完成，因此產品仍不可正式上線。
+Google Sheets 過渡後端已停止接受員工全量 `save`。員工登入／讀取只回傳本人所需資料，排假、上班打卡、下班打卡分別由伺服器驗證身份後執行。老闆全量 snapshot 已加入 revision 衝突拒絕，PIN 也已採過渡期 server-side salted credential。此段原先記錄的多租戶、Identity Provider、PostgreSQL 與 Command API 缺口已由後續 Staging 基礎補齊；產品仍因前端排休／請假 UI、真機驗收與 Production 發布閘門未完成而不可正式上線。
 
 ## 過渡期帳號初始化
 
@@ -140,7 +145,7 @@ Google Sheets 過渡後端已停止接受員工全量 `save`。員工登入／�
 
 第一次建立任何新 credential 時，後端會在 Apps Script Script Properties 自動建立 `SHIFT_APP_CREDENTIAL_PEPPER`。此密鑰不得放進 Sheet、前端或 Git，且必須受控備份；遺失或損壞會使既有 PIN 無法驗證。
 
-這是 Google Sheets 過渡後端的 P0 止血，不是正式 authentication。正式版仍須完成正式 Identity Provider／記憶體困難密碼雜湊、refresh/device management、audit、密鑰輪替、備份演練與多租戶資料列隔離。
+這段是 Google Sheets 過渡後端的歷史 P0 止血紀錄，不代表目前 Staging Identity 狀態。後續已完成 Auth0 Staging PKCE／refresh、可撤銷 Session、多租戶資料列隔離與受控 Command API；Production 身分服務啟用、監控、備份演練與正式發布閘門仍須另行驗收。
 
 ## 過渡期備份與發布
 

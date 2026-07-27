@@ -2,19 +2,23 @@
 
 ## 2026-07-27 current state — time-off workflow Phase 1
 
+- Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.
 - Overall completion: **87%**.
 - `0013_time_off_requests` is applied only to Neon Staging and has passed down/up rollback rehearsal with checksum `f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2`.
-- Formal schema and controlled APIs now separate fixed scheduled leave from ad-hoc leave. Employee self-service and manager review authorization, reason privacy, same-store approved schedule visibility, idempotency, RLS, and Workspace isolation passed.
+- Formal schema and controlled APIs now separate fixed scheduled leave from ad-hoc leave. The accepted surface is `GET /v1/time-off-requests` plus `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`.
+- Employee self-service and manager review authorization, reason privacy, same-store approved schedule visibility, idempotency, RLS, and Workspace isolation passed.
 - Legacy `leave_selections` is unchanged and was not auto-classified. Production, Auth0, Google Sheets, Apps Script, payroll, attendance, employee management, shift behavior, and frontend UI were not changed.
-- The frontend feature is **not complete**. The next single Sprint is Phase 2: employee “我的排休／我要請假” UI plus manager review queues/history/store overview, using only the existing new read/command API.
+- The frontend feature, feature-specific Draft, and iPhone UI acceptance are **not complete**. The next and only Sprint is **「前端排休／請假 UI 與老闆審核接線」**: employee “我的排休／我要請假”, quota/status, approved same-store overview, manager pending/processed queues, confirmed review actions, mobile privacy presentation, a new non-Production Draft, and iPhone acceptance.
 - Do not add a parallel API, do not convert old leaves by assumption, do not apply `0013` to Production, and do not include the unrelated untracked `0010_commission_rules` files.
+
+## Historical context — 2026-07-25 (superseded by the current state above)
 
 更新日期：2026-07-25
 產品程式基準：本文件所在 Commit（本輪驗收起始 Commit：`b47eceec6356fc0b1c70e4784ef4ba29a4fe9b63`）
 
-## 目前有效狀態
+### Historical status snapshot
 
-- 專案整體完成度：**86%**。
+- 當時專案整體完成度：**86%**（不再是目前完成度）。
 - 架構成熟度：約 **85%**。
 - Production 準備度：約 **75%**。
 - 正式上線判定：**No**；尚缺真實裝置矩陣、Production 監控／CI/CD 與最終發布驗收。
@@ -52,7 +56,7 @@
 - 品質檢查 PASS；29／29 自動回歸 PASS。iPhone、Android、iPad、Android Tablet 與 macOS 真實瀏覽器仍缺裝置證據，維持 `BLOCKED`；因此專案完成度維持 86%。
 - 本輪未修改資料庫、Migration、Production、Google Sheets、Apps Script 或產品功能；隔離 Edge 測試設定檔已清除。
 
-## 下一個唯一最高優先 Sprint
+## Historical next priority at that time
 
 **補齊 Staging 真實裝置人工矩陣**
 

@@ -2,11 +2,14 @@
 
 ## 2026-07-27 — Time-off workflow Phase 1 completed
 
-- **Completed:** additive `0013_time_off_requests` schema, forced RLS, least-privilege grants, controlled read API, employee submit/cancel commands, boss/manager approve/reject commands, idempotency, privacy, Workspace isolation, audit/outbox integration, and a full Staging rollback/reapply rehearsal.
+- **Baseline:** commit `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion **87%**.
+- **Completed:** additive `0013_time_off_requests` schema on Neon Staging, forced RLS, least-privilege grants, `GET /v1/time-off-requests`, six controlled commands (`schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, `time-off-requests.reject`), idempotency, privacy, Workspace isolation, audit/outbox integration, and a full Staging rollback/reapply rehearsal.
 - **Legacy boundary:** existing `leave_selections` rows were not reclassified. Only an explicit approval of a new scheduled-leave request updates the authoritative final monthly leave dates.
 - **Not completed:** employee “我的排休／我要請假” UI, manager review queues/history/store overview, confirmation dialogs, mobile acceptance, and a new Draft Preview.
-- **Completion:** 87%. The backend security and transaction phase is accepted in Staging; the user-facing workflow remains incomplete and is not Production-ready.
-- **Next unique priority:** Time-off workflow Phase 2 — connect the existing frontend to the new read/command boundary, implement role-scoped employee/manager UI, and complete iPhone/Android Staging acceptance without adding another API or migration unless evidence proves it necessary.
+- **Environment safety:** Production, Auth0, Google Sheets, and Apps Script were not modified. `0013` was not applied to Production; `0009`／`0010` were not changed or applied.
+- **Next unique priority:** **「前端排休／請假 UI 與老闆審核接線」** — employee “我的排休”／“我要請假”, quota/status, approved same-store schedule overview, manager pending/processed queues, confirmed approve/reject actions, mobile privacy presentation, a new non-Production Draft, and iPhone acceptance. Do not add another API or migration unless evidence proves it necessary.
+
+> 下方較早日期的完成度、阻擋與「下一步」均為歷史工作紀錄；凡與本節衝突，以本節的 87% 基準、已驗收 Auth0／PostgreSQL Staging 邊界及下一個唯一 Sprint 為準。
 
 ## 2026-07-22 — Reversible Staging browser cutover completed
 

@@ -1,4 +1,13 @@
-# Next Sprint — Time-off workflow Phase 2 UI and approval acceptance
+# 下一個唯一 Sprint — 前端排休／請假 UI 與老闆審核接線
+
+## Current baseline
+
+- Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.
+- Overall completion: **87%**.
+- Neon Staging migration: `0013_time_off_requests`; it is not applied to Production. Migrations `0009`／`0010` were not changed or applied.
+- Existing contracts only: `GET /v1/time-off-requests`; `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`.
+- Production, Auth0, Google Sheets, and Apps Script were not modified in Phase 1.
+- Phase 1 completed only the data model and controlled read/Command API. No feature-specific Draft or iPhone UI acceptance exists yet.
 
 ## Single goal
 
@@ -19,6 +28,7 @@ Connect the existing employee and manager frontend to the already accepted `0013
 - Show processed history and same-store approved scheduled-leave overview.
 - Confirm approve/reject actions and prevent duplicate submission.
 - Never expose another Workspace.
+- Build a new non-Production Draft and complete the approved iPhone workflow only after the role-scoped UI is ready.
 
 ## Mobile and failure acceptance
 
@@ -37,7 +47,7 @@ Connect the existing employee and manager frontend to the already accepted `0013
 
 ---
 
-## Historical next-sprint record
+## Historical next-sprint record (superseded; does not override the 87% baseline above)
 
 ## 唯一目標
 

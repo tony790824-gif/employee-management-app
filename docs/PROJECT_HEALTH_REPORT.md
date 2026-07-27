@@ -2,13 +2,18 @@
 
 ## 2026-07-27 — Time-off request backend health update
 
+- **Baseline commit:** `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.
 - **Overall completion: 87%.** The formal Staging data/command foundation for separating scheduled leave and ad-hoc leave is complete; frontend UI and real-device acceptance remain.
-- **Accepted evidence:** migration checksum/ledger, transactional up/down/reapply, forced RLS, zero direct API-role table access, employee self-only submission/cancellation, manager-only review, reason privacy, approved same-store schedule visibility, idempotency, duplicate-review rejection, and Workspace A/B denial.
+- **Accepted evidence:** Neon Staging migration `0013_time_off_requests`, checksum/ledger, transactional up/down/reapply, forced RLS, zero direct API-role table access, employee self-only submission/cancellation, manager-only review, reason privacy, approved same-store schedule visibility, idempotency, duplicate-review rejection, and Workspace A/B denial.
+- **Accepted API:** `GET /v1/time-off-requests`; `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`.
 - **No Production change:** Production database, Auth0, Netlify, Google Sheets, Apps Script, payroll, attendance, employee management, and shift behavior were not changed.
-- **P0 before feature acceptance:** build the Phase 2 role-scoped UI and prove the complete employee/manager flow on isolated Staging.
+- **Not completed:** frontend UI, feature-specific non-Production Draft, and iPhone UI acceptance.
+- **P0 before feature acceptance:** complete **「前端排休／請假 UI 與老闆審核接線」**, including employee quota/status and same-store overview, manager pending/processed review, confirmed approve/reject, privacy-safe mobile presentation, a new non-Production Draft, and iPhone acceptance.
 - **P1:** decide and document historical-data conversion only if the business later requires it; no automatic classification is currently safe.
 - **Known limitation:** an ad-hoc request is bounded to 31 dates as an input/abuse guard. This is not a new leave entitlement rule.
 - **Release status:** No. The backend phase is healthy, but end users cannot yet submit or review the new request workflow through the UI.
+
+> 下方較早日期的百分比、阻擋與建議為歷史健康快照；凡與本節衝突，以本節 87% 基準及已完成的 Auth0／PostgreSQL Staging 安全邊界為準。
 
 ## 2026-07-22 — Staging browser cutover health update
 
@@ -65,7 +70,7 @@
 - **商業上線完成度：79%（維持不變）。** 本次提升維護與驗證完整性，沒有完成新的 Production 能力，因此不提高百分比。
 - **是否適合正式上線：No。** AWS Staging 真實資源／事件 E2E、前端正式 API cutover、跨裝置 E2E、observability 與 release operations 仍未完成。
 
-> 本節是 2026-07-20 的最新現況。下方較早的百分比與未完成項目保留作歷史稽核，不應覆蓋本節。
+> 本節是 2026-07-20 的歷史現況。下方更早的百分比與未完成項目同樣保留作歷史稽核，不應覆蓋文件最上方的 2026-07-27 現況。
 
 ## 2026-07-20 — Lambda artifact packaging
 

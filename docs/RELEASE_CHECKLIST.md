@@ -2,6 +2,7 @@
 
 ## Time-off workflow Phase 1 — Staging backend
 
+- [x] Baseline commit is `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; documented overall completion is 87%.
 - [x] Scheduled leave and ad-hoc leave use distinct request kinds.
 - [x] Pending requests do not alter authoritative schedule, hours, or payroll inputs.
 - [x] Only approved scheduled leave updates final monthly `leave_selections`.
@@ -10,9 +11,12 @@
 - [x] Approved coworker scheduled leave exposes only name/date in the same Workspace.
 - [x] Ad-hoc leave reasons are private to the applicant and authorized manager.
 - [x] Cross-Workspace, unknown-role, direct-table, duplicate-submit, and duplicate-review tests fail closed.
-- [x] Migration `0013` up/down/reapply and checksum verification passed on Neon Staging.
+- [x] Migration `0013_time_off_requests` up/down/reapply and checksum verification passed on Neon Staging; it is not applied to Production and `0009`／`0010` were not changed or applied.
+- [x] `GET /v1/time-off-requests` and the six reviewed commands are documented consistently in OpenAPI and API documentation.
+- [x] The six commands are `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`.
 - [x] Production, Google Sheets, Apps Script, Auth0, and frontend UI were not changed.
-- [ ] Phase 2 employee/manager UI is implemented and accepted.
+- [ ] **「前端排休／請假 UI 與老闆審核接線」** is implemented: employee “我的排休”／“我要請假”, quota/status, approved same-store overview, manager pending/processed review, confirmed approve/reject, and privacy-safe mobile presentation.
+- [ ] A new non-Production Draft is created for this feature and iPhone UI acceptance passes.
 - [ ] iPhone Safari and Android Chrome workflows pass on a non-Production Draft.
 - [ ] Product owner approves any future legacy-data conversion rule.
 - [ ] Explicit Production migration approval is granted.

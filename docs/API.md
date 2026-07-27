@@ -2,6 +2,8 @@
 
 ## Time-off request API — Staging backend phase (2026-07-27)
 
+Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`. Overall completion: **87%**. Migration `0013_time_off_requests` is applied only to Neon Staging; Production and pending migrations `0009`／`0010` were not changed or applied. Production, Auth0, Google Sheets, and Apps Script were not modified.
+
 The existing authenticated PostgreSQL boundary now supports two explicit request kinds without introducing a second transport:
 
 - `schedule-leave-requests.submit`
@@ -22,13 +24,15 @@ All mutations use `POST /v1/commands/{commandName}`, `X-Workspace-Id`, `Idempote
 
 The browser-provided Workspace ID remains untrusted request scope. The server and database functions resolve identity, Session, Membership, role, and Workspace again. No runtime role received direct table access.
 
-## Browser PostgreSQL API transport boundary — 2026-07-20
+This phase completed only the data model and controlled API. The frontend, feature-specific Draft Preview, and iPhone UI acceptance remain incomplete. The next and only Sprint is **「前端排休／請假 UI 與老闆審核接線」**.
+
+## Browser PostgreSQL API transport boundary — 2026-07-20 (historical)
 
 `postgres-api-client.js` is the single reviewed browser transport factory for the existing formal API. It exposes unauthenticated `health`/`readiness`, authenticated Session establishment/logout and employee listing, plus the six existing command names. It sends a bearer token, a requested `X-Workspace-Id`, a random request ID and command idempotency key; the Workspace header is never an authorization source and must be re-authorized against live server-side Membership.
 
 Safety controls include HTTPS-only remote URLs (HTTP only on loopback), rejection of embedded credentials/query/fragment, 1 MiB request and 2 MiB response limits, 15-second abort timeout, `credentials: omit`, `cache: no-store`, redirect rejection, structured errors and a non-sensitive invalid-session browser event on 401/403.
 
-This transport is not activated. All committed `postgresApiUrl` values are empty and the active Staging/Production data backend remains Google Sheets. No Production endpoint is documented or inferred by the client.
+At that date this transport was not activated and committed `postgresApiUrl` values were empty. Later isolated `STAGING POSTGRES` API/Draft rehearsals activated the boundary only in Staging. Production still uses its unchanged approved path and no Production endpoint is inferred by the browser client.
 
 ## Internal Auth0 Staging security-event consumer — 2026-07-19
 
@@ -40,11 +44,11 @@ See [Auth0 Staging security event pipeline](AUTH0_SECURITY_EVENT_PIPELINE.md). E
 
 已實作且隔離的過渡 API 定義於 [openapi-postgres.yaml](openapi-postgres.yaml)。目前提供 health/readiness、老闆／管理員員工清單，以及新增員工、新增班次、取代單月排假、員工上下班打卡、核定出勤工時等 Transaction/Command API。每個 mutation 必須提供 `Idempotency-Key`；tenant context 只來自已驗證 RS256 JWT，且會在同一交易內重新確認 active workspace membership。
 
-本實作不包含 login/refresh/logout；[openapi.yaml](openapi.yaml) 中相關路由仍是未來正式 Identity Provider Sprint 的目標規格。現有 Google Sheets API 仍為正式環境使用路徑，本次未變更 Production route。
+此為 2026-07-18 歷史狀態：當時實作不包含 login/refresh/logout；後續已完成 Auth0 Staging PKCE／refresh 與本機可撤銷 Session 邊界。Production route 仍未因這些 Staging 驗收而切換。
 
-2026-07-18 Managed Staging 實測已通過：新增員工、建立班次、取代單月排假、上下班打卡、核定工時與員工清單；兩個 Workspace 的正向讀取、跨租戶讀寫拒絕及無 tenant context 拒絕均通過。API 使用獨立最小權限 role，不可讀 Migration ledger 或執行 DDL。這仍是 Staging transition API，尚未接上正式 Identity Provider 或現行前端。
+2026-07-18 Managed Staging 實測已通過：新增員工、建立班次、取代單月排假、上下班打卡、核定工時與員工清單；兩個 Workspace 的正向讀取、跨租戶讀寫拒絕及無 tenant context 拒絕均通過。API 使用獨立最小權限 role，不可讀 Migration ledger 或執行 DDL。當時尚未接上的 Auth0 Staging Identity 與隔離前端 rehearsal 已由後續 Sprint 驗收；這不代表 Production cutover。
 
-信任邊界限制：tenant context 目前由 backend 以 transaction-local custom GUC 設定；RLS 不會自行驗證 JWT。若共用 API database credential 外洩，攻擊者可偽造 GUC。Production 必須在正式 Identity Sprint 加入不可偽造的簽章 context／受信任連線代理後才可切換。
+歷史風險（已由後續 Identity/Tenant migrations 與受控 Function 邊界解決）：當時 tenant context 只由 backend 以 transaction-local custom GUC 設定，單獨取得共用 API database credential 可能偽造 GUC。現在 custom GUC 不是授權來源；受控函式會重新驗證簽章 context、Session、Membership、Workspace 與角色，runtime role 亦無直接查表權限。Production 仍須通過獨立發布閘門才可切換。
 
 > 2026-07-16 `doPost` 傳輸層上限為 1 MiB（1,048,576 UTF-8 bytes）；超限在 JSON 解析、schema 驗證與資料寫入前回 `REQUEST_PAYLOAD_TOO_LARGE`。A1 snapshot 及老闆 `save.data` 現對現有電話、credential 表示、薪資／金額、日期／時間執行嚴格值驗證。API action 與成功 response schema 未變，本次未部署 Apps Script。
 
@@ -141,8 +145,8 @@ See [Auth0 Staging security event pipeline](AUTH0_SECURITY_EVENT_PIPELINE.md). E
 
 ## 已知 Critical 問題
 
-- ~~`phone + pinHash` 被當長期 bearer credential。~~ **2026-07-15 已改為只在登入使用，成功後採 8 小時 session、revoke 與 rate limit；正式 refresh/device management 仍未完成。**
-- ~~Sheet 保存快速、無 salt 的 PIN hash。~~ **2026-07-15 已改為過渡期 server-side salted credential 並支援登入時舊資料遷移；正式 Identity Provider 與記憶體困難密碼雜湊仍未完成。**
+- ~~`phone + pinHash` 被當長期 bearer credential。~~ **2026-07-15 已改為只在登入使用，成功後採 8 小時 session、revoke 與 rate limit；後續 Auth0 Staging refresh rotation／reuse 驗收與本機 Session 撤銷邊界亦已完成。Production 啟用仍受發布閘門管控。**
+- ~~Sheet 保存快速、無 salt 的 PIN hash。~~ **2026-07-15 已改為過渡期 server-side salted credential 並支援登入時舊資料遷移；後續 Staging 已使用 Auth0 正式 OIDC 邊界，Google Sheets credential 僅保留為未切換 Production 的歷史相容路徑。**
 - 首次帳號搶先認領：**2026-07-15 已止血**；這不是正式 session/auth 的替代品。
 - `employeeLogin/pull` 全公司資料外洩：**2026-07-15 已止血**，目前只回本人 projection。
 - 員工以 `save` 覆寫公司資料：**2026-07-15 已止血**，目前伺服器拒絕員工全量儲存。

@@ -2,6 +2,8 @@
 
 ## Migration 0013 — time-off requests (Staging only, 2026-07-27)
 
+Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion: **87%**. Production, Auth0, Google Sheets, and Apps Script were not modified. Migration `0013_time_off_requests` is not applied to Production, and pending migrations `0009`／`0010` were not changed or applied.
+
 Migration `0013_time_off_requests` adds:
 
 - `time_off_requests`: Workspace-scoped request header, request kind, status, applicant, employee, optional schedule month/type/reason, reviewer, review time, and timestamps.
@@ -20,6 +22,8 @@ Neon Staging evidence:
 - reapply with the same checksum: PASS
 - API role: zero table privilege; seven controlled function grants after reapplication
 - Production: not applied
+
+The controlled application surface is `GET /v1/time-off-requests` plus `schedule-leave-requests.submit`, `schedule-leave-requests.cancel`, `leave-requests.submit`, `leave-requests.cancel`, `time-off-requests.approve`, and `time-off-requests.reject`. This phase did not implement the frontend, create a feature-specific Draft, or complete iPhone UI acceptance. The next and only Sprint is **「前端排休／請假 UI 與老闆審核接線」**.
 
 ## Frontend integration boundary — 2026-07-20
 
@@ -61,7 +65,7 @@ Context signing key 是高敏感 service secret：API environment/secret manager
 
 本次沒有新增或變更 Migration／資料表 schema。`banke_restore_sprint2` 只保留於隔離 Staging 作還原證據；Production 與 Google Sheets A1 snapshot 均未修改。
 
-目前 RLS 的 tenant context 由受信任 API transaction 設定。無 Context 與已綁定 A 後查 B 均會被阻擋；但單獨取得共用 API database credential 的攻擊者仍可偽造 custom GUC。這是 Production 阻擋，下一個正式 Identity Sprint 必須加入簽章 context／受信任連線代理，不能把 database credential secrecy 當成唯一租戶邊界。
+> 歷史風險（已由 migrations `0004`–`0008` 與上方 Identity/Tenant 安全邊界解決）：當時 RLS tenant context 只由受信任 API transaction 的 custom GUC 設定，單獨取得共用 API database credential 可能偽造 GUC。現在 custom GUC 不是授權來源；受控函式先驗證簽章 context、Session、Membership、Workspace 與角色，且 runtime role 無直接查表權限。此歷史段落保留作威脅模型脈絡。
 
 ## 2026-07-18 可執行 PostgreSQL 基礎
 
@@ -91,7 +95,7 @@ Apps Script Script Properties 新增兩類暫存記錄：
 - `SHIFT_APP_LAST_BACKUP_FILE_ID`：最新已驗證復原包的 Drive 檔案 ID。
 - `SHIFT_APP_RESTORE_CONFIRMATION`：管理員復原前手動設定的一次性確認值；讀取後立即刪除，不進入備份。
 
-Sheet 新 credential 使用 `hmac-sha256-v2` object，包含每筆獨立 salt、固定成本 HMAC 與 hash。既有 `iterated-hmac-sha256-v1`、`access.bossPinHash`、`employees[].pinHash`、`employees[].activationCodeHash` 只作登入時相容遷移來源；成功驗證後會被 v2 取代。所有新舊 credential 都禁止回傳瀏覽器。這仍不符合正式商業資料庫標準：沒有 Argon2id／正式 Identity Provider、tenant、session table、audit、migration ledger 與企業級 PITR，正式上線前必須遷移。
+Sheet 新 credential 使用 `hmac-sha256-v2` object，包含每筆獨立 salt、固定成本 HMAC 與 hash。既有 `iterated-hmac-sha256-v1`、`access.bossPinHash`、`employees[].pinHash`、`employees[].activationCodeHash` 只作登入時相容遷移來源；成功驗證後會被 v2 取代。所有新舊 credential 都禁止回傳瀏覽器。此段是 Google Sheets 過渡路徑的歷史限制；後續 Staging 已具 Auth0 OIDC、tenant、session、audit 與 migration ledger，Production 啟用及企業級復原能力仍須通過獨立發布閘門。
 
 ## 現況
 

@@ -1,8 +1,11 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-27.1
-  description: Implemented Staging transition API. Auth0 OIDC validation and local session boundaries exist, but external Auth0 PKCE/refresh integration and Production cutover are not approved.
+  version: 2026-07-27.2
+  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, and the Phase 1 time-off request data/command surface. The time-off frontend UI and Production cutover are not approved.
+  x-baseline-commit: a3da8c39e0f7b012a24c47fd21073b8b4da1bec3
+  x-project-completion: 87
+  x-staging-migration: 0013_time_off_requests
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only
