@@ -112,11 +112,14 @@
   );
 
   async function logout() {
-    if (client) await client.logout();
+    const activeClient = client;
+    client = null;
     currentSession = null;
     currentUser = null;
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     stateStore.clearSensitive();
+    document.dispatchEvent(new CustomEvent('postgres-session-cleared'));
+    if (activeClient) await activeClient.logout();
   }
 
   window.shiftPostgresCloud = Object.freeze({

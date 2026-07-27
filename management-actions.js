@@ -174,6 +174,20 @@
 
   $('#employeeLeaveBtn').addEventListener('click', event => {
     event.preventDefault();
+    if (
+      window.shiftEnvironment?.dataBackend === 'postgres'
+      && document.body.classList.contains('employee-mode')
+    ) {
+      document.querySelector('[data-tab="schedule"]')?.click();
+      window.requestAnimationFrame(() => {
+        document.querySelector('#schedule .calendar-box')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+        document.querySelector('.calendar-day')?.focus();
+      });
+      return;
+    }
     const employeeId = $('#employeeModeSelect').value;
     if (!employeeId) return;
     window.fillEmployeeSelect($('#attendanceEmployee'));

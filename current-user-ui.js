@@ -27,6 +27,7 @@
   }
 
   document.addEventListener('postgres-bootstrap-refreshed', render);
+  document.addEventListener('postgres-session-cleared', render);
   render();
 
   window.shiftCurrentUserUI = Object.freeze({ render });

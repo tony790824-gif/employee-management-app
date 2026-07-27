@@ -160,6 +160,7 @@ assert.match(
   '重新整理或離開頁面前必須保護未儲存草稿'
 );
 assert.match(accessCss, /\.leave-save-actions button\{min-height:44px\}/, '操作按鈕高度至少 44px');
+assert.doesNotMatch(accessCss, /\.access-controls #employeeLeaveBtn/, '員工請假捷徑不得被全域 CSS 強制隱藏');
 assert.match(
   accessCss,
   /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/,
@@ -287,6 +288,8 @@ vm.runInNewContext(accessSource, context, { filename: 'access.js' });
 role.value = 'employee';
 role.onchange();
 
+assert.equal(document.getElementById('employeeLeaveBtn').hidden, false, '員工 PostgreSQL 介面必須顯示明確請假入口');
+assert.equal(document.getElementById('employeeLeaveBtn').textContent, '我要請假', '請假入口文案必須清楚');
 assert.equal(document.getElementById('leaveRemaining').textContent, 1, '已休 7 天時應剩餘 1 天');
 assert.equal(document.days[7].onclick, null, '員工月曆只能保留草稿點擊處理');
 
@@ -380,6 +383,7 @@ assert.equal(document.days[7].classList.contains('is-leave'), false, '取消變�
 
 role.value = 'boss';
 role.onchange();
+assert.equal(document.getElementById('employeeLeaveBtn').hidden, true, '老闆模式不得顯示員工請假捷徑');
 assert.equal(savePanel.hidden, true, '老闆模式不得顯示員工草稿儲存區');
 
 console.log('員工休假草稿、儲存、取消、離頁保護與手機操作區回歸測試通過。');

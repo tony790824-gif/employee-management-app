@@ -87,6 +87,10 @@
 
   function clearCloudSensitiveCache() {
     if (isLocalPreview) return;
+    if (window.shiftEnvironment?.dataBackend === 'postgres') {
+      stateStore.clearSensitive();
+      return;
+    }
     try {
       const cloud = JSON.parse(localStorage.getItem(storageKey('shift-cloud-config')) || '{}');
       if (cloud.mode === 'google_sheets') stateStore.clearSensitive();
@@ -267,22 +271,34 @@
     document.body.classList.remove('app-authenticated', 'employee-mode');
     overlay.hidden = false;
     purgeRenderedData();
-    if (window.shiftEnvironment?.dataBackend === 'postgres' && window.shiftPostgresCloud) {
-      await Promise.race([
-        window.shiftPostgresCloud.logout(),
-        new Promise(resolve => setTimeout(resolve, 3000))
-      ]);
-    } else if (!isLocalPreview && window.sheetsCloud) {
-      await Promise.race([
-        window.sheetsCloud.logout(),
-        new Promise(resolve => setTimeout(resolve, 3000))
-      ]);
-    }
     clearSession();
     clearCloudSensitiveCache();
     window.SHIFT_AUTHORIZED = false;
+    try {
+      if (window.shiftEnvironment?.dataBackend === 'postgres' && window.shiftPostgresCloud) {
+        await Promise.race([
+          window.shiftPostgresCloud.logout(),
+          new Promise(resolve => setTimeout(resolve, 3000))
+        ]);
+      } else if (!isLocalPreview && window.sheetsCloud) {
+        await Promise.race([
+          window.sheetsCloud.logout(),
+          new Promise(resolve => setTimeout(resolve, 3000))
+        ]);
+      }
+    } catch (error) {
+      console.warn('Remote logout failed after local state was cleared', {
+        code: error?.code || 'LOGOUT_REQUEST_FAILED'
+      });
+    }
     if (postgresSession && typeof window.shiftStagingAuth?.logoutProvider === 'function') {
-      await window.shiftStagingAuth.logoutProvider();
+      try {
+        await window.shiftStagingAuth.logoutProvider();
+      } catch (error) {
+        console.warn('Auth0 logout redirect failed after local state was cleared', {
+          code: error?.code || 'AUTH0_LOGOUT_FAILED'
+        });
+      }
       return;
     }
     location.reload();

@@ -26,6 +26,7 @@ let storedBootstrap = structuredClone(initialData);
 let serverData = structuredClone(initialData);
 let commandCalls = 0;
 let employeeCommandCalls = 0;
+let sensitiveStateClearCalls = 0;
 const sessionValues = new Map();
 const postgresWindow = {
   shiftEnvironment: {
@@ -37,7 +38,7 @@ const postgresWindow = {
   shiftStateStore: {
     normalize: value => structuredClone(value),
     write: value => { storedBootstrap = structuredClone(value); },
-    clearSensitive() {}
+    clearSensitive() { sensitiveStateClearCalls += 1; }
   },
   BankePostgresApi: {
     createClient() {
@@ -82,7 +83,9 @@ const postgresWindow = {
           });
           return { ok: true, data: structuredClone(serverData.employees.at(-1)) };
         },
-        logout: async () => ({ ok: true })
+        logout: async () => {
+          throw Object.assign(new Error('Synthetic remote logout failure'), { code: 'UPSTREAM_UNAVAILABLE' });
+        }
       };
     }
   }
@@ -139,6 +142,21 @@ assert.deepEqual(
   bootstrapEvents.map(event => event.type),
   ['postgres-bootstrap-refreshed'],
   'successful employee creation must notify the existing UI rerender path'
+);
+
+bootstrapEvents.length = 0;
+await assert.rejects(
+  postgresWindow.shiftPostgresCloud.logout(),
+  error => error?.code === 'UPSTREAM_UNAVAILABLE'
+);
+assert.equal(postgresWindow.shiftPostgresCloud.getSession(), null, 'local Session must clear even when remote logout fails');
+assert.equal(postgresWindow.shiftPostgresCloud.getCurrentUser(), null, 'currentUser must clear even when remote logout fails');
+assert.equal(sessionValues.has('staging:shift-postgres-auth'), false, 'cached PostgreSQL Session must be removed on logout');
+assert.equal(sensitiveStateClearCalls, 1, 'logout must clear the canonical UI cache');
+assert.deepEqual(
+  bootstrapEvents.map(event => event.type),
+  ['postgres-session-cleared'],
+  'logout must notify current-user UI to hide stale identity'
 );
 
 const managementSource = await readFile('management-actions.js', 'utf8');
@@ -268,12 +286,18 @@ const employeeSubmitSource = managementSource.slice(
   managementSource.indexOf("$('#employeeForm').addEventListener"),
   managementSource.indexOf("$('#addShift').addEventListener")
 );
+const employeeLeaveEntrySource = managementSource.slice(
+  managementSource.indexOf("$('#employeeLeaveBtn').addEventListener"),
+  managementSource.indexOf("$('#attendanceForm').addEventListener")
+);
 
 assert.doesNotMatch(shiftSubmitSource, /location\.reload\(\)/);
 assert.doesNotMatch(employeeSubmitSource, /location\.reload\(\)/);
+assert.match(employeeLeaveEntrySource, /dataBackend === 'postgres'[\s\S]*\[data-tab="schedule"\][\s\S]*calendar-box/);
 assert.match(appSource, /postgres-bootstrap-refreshed[\s\S]*stateStore\.read\(\)[\s\S]*render\(\)/);
 assert.match(indexSource, /目前可新增班次，修改與刪除功能尚未開放。/);
 assert.match(loginSource, /addEventListener\('shift-session-invalid'/);
+assert.match(loginSource, /clearSession\(\);\s*clearCloudSensitiveCache\(\);\s*window\.SHIFT_AUTHORIZED = false;\s*try \{/);
 assert.match(apiClientSource, /new CustomEvent\('shift-session-invalid'/);
 assert.doesNotMatch(apiClientSource, /shift-postgres-session-invalid/);
 

@@ -110,7 +110,15 @@ assert.equal(providerLogoutCalls, 1, 'Expired local sessions must trigger Auth0 
 assert.equal(sensitiveStateCleared, 1, 'Expired local sessions must clear cached sensitive state.');
 assert.deepEqual(removedSessionKeys, ['staging:shift-postgres-auth']);
 assert.equal(appSessionEntries, 0, 'The application must not enter an invalid PostgreSQL session.');
-assert.match(hint.textContent, /正在安全重新登入/);
+assert.equal(hint.textContent, 'STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
+assert.equal(loginButton.textContent, '使用 Auth0 登入');
+assert.equal(loginButton.disabled, false);
+assert.equal(sandbox.window.shiftStagingAuth.getClaimVerification().checked, false);
+
+await sandbox.window.shiftStagingAuth.logoutProvider();
+assert.equal(providerLogoutCalls, 2, 'manual logout must invoke Auth0 provider logout');
+assert.equal(loginButton.textContent, '使用 Auth0 登入', 'logout must restore the login action immediately');
+assert.equal(hint.textContent, 'STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
 
 const createElement = tagName => {
   const listeners = new Map();

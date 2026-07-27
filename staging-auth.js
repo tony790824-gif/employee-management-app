@@ -21,13 +21,14 @@
   const inAppBrowser = !standalone && inAppBrowserPattern.test(window.navigator?.userAgent || '');
   let client;
   let inAppBrowserNotice;
-  let claimVerification = Object.freeze({
+  const emptyClaimVerification = () => Object.freeze({
     checked: false,
     exists: false,
     nonEmptyString: false,
     auth0SessionIdAvailable: false,
     matchesAuth0SessionId: false
   });
+  let claimVerification = emptyClaimVerification();
 
   const decodeJwtPayload = token => {
     const encoded = String(token || '').split('.')[1];
@@ -229,7 +230,18 @@
     }
   };
 
+  const resetLoggedOutUi = () => {
+    claimVerification = emptyClaimVerification();
+    setStatus('STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = '使用 Auth0 登入';
+      loginButton.onclick = loginWithRedirect;
+    }
+  };
+
   const logoutProvider = async () => {
+    resetLoggedOutUi();
     if (!client) return;
     await client.logout({ logoutParams: { returnTo: redirectUri } });
   };

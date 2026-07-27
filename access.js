@@ -222,7 +222,11 @@
     role.value = mode;
     role.parentElement.hidden = mode === 'employee';
     wrap.hidden = true;
-    $('#employeeLeaveBtn').hidden = true;
+    const employeeLeaveButton = $('#employeeLeaveBtn');
+    const canOpenEmployeeLeave = mode === 'employee'
+      && window.shiftEnvironment?.dataBackend === 'postgres';
+    employeeLeaveButton.hidden = !canOpenEmployeeLeave;
+    if (canOpenEmployeeLeave) employeeLeaveButton.textContent = '我要請假';
     const locked = !allowedEmployeeMonth(currentMonth());
     document.body.classList.toggle('employee-mode', mode === 'employee');
     document.body.classList.toggle('calendar-locked', locked);
