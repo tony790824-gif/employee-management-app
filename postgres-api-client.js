@@ -145,7 +145,8 @@
             requestId: typeof payload?.requestId === 'string' ? payload.requestId : ''
           }
         );
-        if (SESSION_INVALID_CODES.has(error.code) && typeof eventTarget?.dispatchEvent === 'function') {
+        if ([401, 403].includes(error.status) && SESSION_INVALID_CODES.has(error.code)
+          && typeof eventTarget?.dispatchEvent === 'function') {
           eventTarget.dispatchEvent(new CustomEvent('shift-session-invalid', {
             detail: Object.freeze({ code: error.code, status: error.status })
           }));

@@ -120,7 +120,6 @@
     if (!await persistBossChange(before, next, '員工資料未成功寫入雲端', postgresOperation)) return;
     $('#employeeDialog').close();
     invite(record, activationCode);
-    location.reload();
   }));
 
   $('#addShift').addEventListener('click', event => {

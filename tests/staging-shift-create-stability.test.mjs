@@ -25,6 +25,7 @@ const bootstrapEvents = [];
 let storedBootstrap = structuredClone(initialData);
 let serverData = structuredClone(initialData);
 let commandCalls = 0;
+let employeeCommandCalls = 0;
 const sessionValues = new Map();
 const postgresWindow = {
   shiftEnvironment: {
@@ -58,16 +59,28 @@ const postgresWindow = {
         }),
         async executeCommand(commandName, input) {
           commandCalls += 1;
-          assert.equal(commandName, 'shifts.create');
-          serverData.shifts.push({
-            id: 'shift-server-1',
-            employeeId: input.employeeId,
-            date: input.date,
-            start: input.startTime,
-            end: input.endTime,
-            note: input.note
+          if (commandName === 'shifts.create') {
+            serverData.shifts.push({
+              id: 'shift-server-1',
+              employeeId: input.employeeId,
+              date: input.date,
+              start: input.startTime,
+              end: input.endTime,
+              note: input.note
+            });
+            return { ok: true, data: structuredClone(serverData.shifts[0]) };
+          }
+          assert.equal(commandName, 'employees.create');
+          employeeCommandCalls += 1;
+          serverData.employees.push({
+            id: 'employee-server-2',
+            name: input.name,
+            phone: input.phone,
+            role: input.jobTitle,
+            rate: input.hourlyRate,
+            leaveQuota: input.leaveQuota
           });
-          return { ok: true, data: structuredClone(serverData.shifts[0]) };
+          return { ok: true, data: structuredClone(serverData.employees.at(-1)) };
         },
         logout: async () => ({ ok: true })
       };
@@ -111,11 +124,29 @@ assert.deepEqual(
 await postgresWindow.shiftPostgresCloud.refreshBootstrap();
 assert.equal(storedBootstrap.shifts.length, 1, 'the created shift must still exist after a later bootstrap refresh');
 
+bootstrapEvents.length = 0;
+await postgresWindow.shiftPostgresCloud.createEmployee({
+  name: 'Synthetic second employee',
+  phone: '0911222333',
+  role: 'Tester',
+  rate: 220,
+  leaveQuota: 7
+});
+assert.equal(employeeCommandCalls, 1);
+assert.equal(storedBootstrap.employees.length, 2, 'successful employee creation must refresh the canonical bootstrap');
+assert.equal(storedBootstrap.employees[1].id, 'employee-server-2');
+assert.deepEqual(
+  bootstrapEvents.map(event => event.type),
+  ['postgres-bootstrap-refreshed'],
+  'successful employee creation must notify the existing UI rerender path'
+);
+
 const managementSource = await readFile('management-actions.js', 'utf8');
 const listeners = new Map();
-let dialogCloseCount = 0;
+const dialogCloseCount = new Map();
 let reloadCount = 0;
 let createShiftCalls = 0;
+let createEmployeeCalls = 0;
 let releaseCreateShift;
 let currentData = structuredClone(initialData);
 const primaryButton = { disabled: false };
@@ -131,7 +162,7 @@ function element(selector) {
       return [primaryButton];
     },
     close() {
-      if (selector === '#shiftDialog') dialogCloseCount += 1;
+      dialogCloseCount.set(selector, (dialogCloseCount.get(selector) || 0) + 1);
     },
     showModal() {}
   };
@@ -147,6 +178,12 @@ getElement('#shiftDate').value = '2026-07-24';
 getElement('#shiftStart').value = '09:00';
 getElement('#shiftEnd').value = '17:00';
 getElement('#shiftNote').value = 'Synthetic shift';
+getElement('#employeeId').value = '';
+getElement('#employeeName').value = 'Synthetic new employee';
+getElement('#employeePhone').value = '0911555777';
+getElement('#employeeRole').value = 'Tester';
+getElement('#employeeRate').value = '230';
+getElement('#employeeLeaveQuota').value = '8';
 
 const managementWindow = {
   shiftStateStore: {
@@ -160,6 +197,10 @@ const managementWindow = {
   },
   shiftEnvironment: { dataBackend: 'postgres' },
   shiftPostgresCloud: {
+    createEmployee: async () => {
+      createEmployeeCalls += 1;
+      return { ok: true };
+    },
     createShift: async () => {
       createShiftCalls += 1;
       await new Promise(resolve => { releaseCreateShift = resolve; });
@@ -184,6 +225,18 @@ const managementContext = vm.createContext({
 });
 vm.runInContext(managementSource, managementContext, { filename: 'management-actions.js' });
 
+const employeeSubmit = listeners.get('#employeeForm:submit');
+assert.equal(typeof employeeSubmit, 'function');
+await employeeSubmit({
+  currentTarget: getElement('#employeeForm'),
+  submitter: null,
+  preventDefault() {}
+});
+assert.equal(createEmployeeCalls, 1);
+assert.equal(dialogCloseCount.get('#employeeDialog'), 1);
+assert.equal(reloadCount, 0, 'successful employee creation must not reload the whole page');
+assert.equal(currentData.employees.some(employee => employee.phone === '0911555777'), true);
+
 const shiftSubmit = listeners.get('#shiftForm:submit');
 assert.equal(typeof shiftSubmit, 'function');
 const shiftForm = getElement('#shiftForm');
@@ -198,7 +251,7 @@ await secondSubmit;
 assert.equal(createShiftCalls, 1, 'rapid repeated submit must issue only one shifts.create command');
 releaseCreateShift();
 await firstSubmit;
-assert.equal(dialogCloseCount, 1);
+assert.equal(dialogCloseCount.get('#shiftDialog'), 1);
 assert.equal(reloadCount, 0, 'successful shift creation must not reload the whole page');
 assert.equal(currentData.shifts.length, 1);
 assert.equal(primaryButton.disabled, false);
@@ -211,8 +264,13 @@ const shiftSubmitSource = managementSource.slice(
   managementSource.indexOf("$('#shiftForm').addEventListener"),
   managementSource.indexOf("$('#addAttendance').addEventListener")
 );
+const employeeSubmitSource = managementSource.slice(
+  managementSource.indexOf("$('#employeeForm').addEventListener"),
+  managementSource.indexOf("$('#addShift').addEventListener")
+);
 
 assert.doesNotMatch(shiftSubmitSource, /location\.reload\(\)/);
+assert.doesNotMatch(employeeSubmitSource, /location\.reload\(\)/);
 assert.match(appSource, /postgres-bootstrap-refreshed[\s\S]*stateStore\.read\(\)[\s\S]*render\(\)/);
 assert.match(indexSource, /目前可新增班次，修改與刪除功能尚未開放。/);
 assert.match(loginSource, /addEventListener\('shift-session-invalid'/);

@@ -171,6 +171,27 @@ assert.equal(tokenSessionEvents.length, 1);
 assert.equal(tokenSessionEvents[0].type, 'shift-session-invalid');
 assert.equal(tokenSessionEvents[0].detail.code, 'TOKEN_SESSION_INVALID');
 
+const invalidCodeWithBusinessStatusEvents = [];
+const invalidCodeWithBusinessStatusClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  fetchImpl: async () => response(400, {
+    error: 'invalid command', code: 'SESSION_INVALID', requestId: 'safe-request-id'
+  }),
+  eventTarget: { dispatchEvent: event => invalidCodeWithBusinessStatusEvents.push(event) }
+});
+await assert.rejects(
+  invalidCodeWithBusinessStatusClient.executeCommand(
+    'employees.create', {}, { idempotencyKey: 'employee-create-400-session-code' }
+  ),
+  error => error.code === 'SESSION_INVALID' && error.status === 400
+);
+assert.equal(
+  invalidCodeWithBusinessStatusEvents.length,
+  0,
+  'a business-validation response must not invalidate the session even if its code is malformed'
+);
+
 const invalidWorkspaceClient = createClient({
   ...baseConfig,
   baseUrl: 'https://api.staging.example/v1',
