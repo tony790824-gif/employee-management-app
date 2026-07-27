@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-27 — Authoritative current-user bootstrap
+
+- Added nullable, Workspace-scoped `workspace_members.display_name` as the formal manager-name source; employee names remain authoritative in `employees.name`.
+- Extended the existing least-privilege PostgreSQL bootstrap with a backward-compatible `currentUser` object containing `displayName`, normalized role, employee ID and Workspace ID.
+- Applied only controlled migration `0012_current_user_bootstrap` to Neon Staging, completed a transactional down/up rollback rehearsal and reran boss/employee/cross-Workspace/API-role validation.
+- Production, frontend UI, Auth0, Google Sheets, Apps Script, employee records and business rules were not modified.
+
 ## 2026-07-27 — Employee leave save controls returned to the calendar
 
 - Kept the existing explicit `leaves.replace-month` save model while moving the employee save controls from “我的出勤／收入” back beneath the leave calendar.

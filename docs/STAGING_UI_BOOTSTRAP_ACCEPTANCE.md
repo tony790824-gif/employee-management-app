@@ -57,3 +57,31 @@ pnpm test:ui-bootstrap:staging
 ```
 
 Rollback is Staging-only and requires explicit approval. Do not add its confirmation value to a shared environment file, Render, Git or documentation automation.
+
+## Current-user contract extension — 2026-07-27
+
+Controlled migration `0012_current_user_bootstrap` was applied only to Neon Staging after the `0011` boundary had been verified. It adds nullable `workspace_members.display_name` and a backward-compatible `currentUser` bootstrap object. Employee names are resolved from `employees.name`; manager names are resolved from the authorized Workspace Membership. Unknown roles fail closed.
+
+The recorded SHA256 checksum is:
+
+`c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797`
+
+The Staging validation proved:
+
+- a manager receives the formal name stored on that manager's Membership;
+- an employee receives the name from the employee record already visible in that employee's scoped bootstrap;
+- a nullable manager name returns `null` without failing the bootstrap;
+- neither Workspace can observe the other Workspace's manager name;
+- legacy bootstrap fields remain present;
+- the runtime API role still has zero direct employee/session table access and only executes the approved bootstrap function;
+- the synchronized tenant-context key remains unchanged.
+
+The rollback rehearsal used only the explicit one-process confirmation for `0012`, restored the exact `0011` function, removed the new column and ledger row, verified absence, then reapplied `0012` and reran the complete live E2E. Migrations `0009` and `0010` remain deliberately pending.
+
+Repeatable Staging-only commands:
+
+```powershell
+pnpm db:current-user-bootstrap:staging status
+pnpm db:current-user-bootstrap:staging up
+pnpm test:ui-bootstrap:staging
+```

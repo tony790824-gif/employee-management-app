@@ -97,7 +97,8 @@ try {
   };
 
   const memberships = await migrator.query(
-    `SELECT member.workspace_id, member.user_id, member.role, member.employee_id, member.auth_status
+    `SELECT member.workspace_id, member.user_id, member.role, member.employee_id,
+            member.auth_status, member.display_name
        FROM workspace_members member
        JOIN workspaces workspace ON workspace.id = member.workspace_id
        JOIN users app_user ON app_user.id = member.user_id
@@ -115,12 +116,34 @@ try {
   originalMembershipAuth = [bossA, employeeA, bossB].map(member => ({
     workspaceId: member.workspace_id,
     userId: member.user_id,
-    authStatus: member.auth_status
+    authStatus: member.auth_status,
+    displayName: member.display_name
   }));
+  await assert.rejects(
+    migrator.query(
+      'UPDATE workspace_members SET role = $3 WHERE workspace_id = $1 AND user_id = $2',
+      [bossA.workspace_id, bossA.user_id, 'unknown']
+    ),
+    error => error?.code === '23514',
+    'the database role constraint must reject an unknown Membership role'
+  );
+  const displayNames = new Map([
+    [`${bossA.workspace_id}:${bossA.user_id}`, 'Staging Manager'],
+    [`${bossB.workspace_id}:${bossB.user_id}`, null]
+  ]);
   for (const member of originalMembershipAuth) {
     await migrator.query(
-      'UPDATE workspace_members SET auth_status = $3 WHERE workspace_id = $1 AND user_id = $2',
-      [member.workspaceId, member.userId, 'active']
+      `UPDATE workspace_members
+          SET auth_status = $3, display_name = $4
+        WHERE workspace_id = $1 AND user_id = $2`,
+      [
+        member.workspaceId,
+        member.userId,
+        'active',
+        displayNames.has(`${member.workspaceId}:${member.userId}`)
+          ? displayNames.get(`${member.workspaceId}:${member.userId}`)
+          : member.displayName
+      ]
     );
   }
 
@@ -183,6 +206,12 @@ try {
   assert.equal(bossBootstrap.workspaceId, bossA.workspace_id);
   assert.equal(bossBootstrap.role, 'boss');
   assert.equal(bossBootstrap.employeeId, null);
+  assert.deepEqual(bossBootstrap.currentUser, {
+    displayName: 'Staging Manager',
+    role: 'boss',
+    employeeId: null,
+    workspaceId: bossA.workspace_id
+  });
   assert.ok(bossBootstrap.data.employees.some(row => row.id === employeeA.employee_id));
 
   const employeeBootstrap = await apiRequest(baseUrl, '/v1/bootstrap', principals[1].token,
@@ -190,6 +219,13 @@ try {
   assert.equal(employeeBootstrap.ok, true);
   assert.equal(employeeBootstrap.role, 'employee');
   assert.equal(employeeBootstrap.employeeId, employeeA.employee_id);
+  const employeeRecord = employeeBootstrap.data.employees.find(row => row.id === employeeA.employee_id);
+  assert.deepEqual(employeeBootstrap.currentUser, {
+    displayName: employeeRecord.name,
+    role: 'employee',
+    employeeId: employeeA.employee_id,
+    workspaceId: employeeA.workspace_id
+  });
   assertEmployeeScope(employeeBootstrap.data, employeeA.employee_id);
 
   const leaveMonth = '2098-12';
@@ -233,8 +269,15 @@ try {
   const bossBBootstrap = await apiRequest(baseUrl, '/v1/bootstrap', principals[2].token,
     bossB.workspace_id, 200);
   assert.equal(bossBBootstrap.workspaceId, bossB.workspace_id);
+  assert.deepEqual(bossBBootstrap.currentUser, {
+    displayName: null,
+    role: 'boss',
+    employeeId: null,
+    workspaceId: bossB.workspace_id
+  });
   assert.equal(JSON.stringify(bossBootstrap).includes(bossB.workspace_id), false);
   assert.equal(JSON.stringify(bossBBootstrap).includes(bossA.workspace_id), false);
+  assert.equal(JSON.stringify(bossBBootstrap).includes('Staging Manager'), false);
 
   const crossBoss = await apiRequest(baseUrl, '/v1/bootstrap', principals[0].token, bossB.workspace_id, 403);
   assert.equal(crossBoss.code, 'WORKSPACE_ACCESS_DENIED');
@@ -272,6 +315,10 @@ try {
   console.log(JSON.stringify({
     bossBootstrap: 'passed',
     employeeBootstrap: 'passed',
+    bossFormalDisplayName: 'passed',
+    employeeFormalDisplayName: 'passed',
+    nullDisplayNameFallback: 'passed',
+    unknownRoleElevation: 'denied',
     bossLeaveSetAndCancel: 'passed',
     sessionMembershipRoleIsolation: 'passed',
     crossWorkspaceBoss: 'denied',
@@ -293,8 +340,10 @@ try {
     await migrator.query('DELETE FROM app_private.identity_principals WHERE issuer = $1', [TEST_ISSUER]);
     for (const member of originalMembershipAuth) {
       await migrator.query(
-        'UPDATE workspace_members SET auth_status = $3 WHERE workspace_id = $1 AND user_id = $2',
-        [member.workspaceId, member.userId, member.authStatus]
+        `UPDATE workspace_members
+            SET auth_status = $3, display_name = $4
+          WHERE workspace_id = $1 AND user_id = $2`,
+        [member.workspaceId, member.userId, member.authStatus, member.displayName]
       );
     }
   } catch {
