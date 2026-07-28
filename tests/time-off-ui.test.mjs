@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 
 const [ui, css, cloud, access, login, projectFiles, serviceWorker] = await Promise.all([
   readFile('time-off-ui.js', 'utf8'),
@@ -73,5 +74,198 @@ assert.match(ui, /postgres-session-cleared[\s\S]*publishApprovedLeaveCoverage\(\
   'Session 清除後不得保留上一位登入者的請假覆蓋資料');
 assert.match(css, /\.calendar-day\.has-approved-leave::before\{content:'請假 ' attr\(data-approved-leave-count\) ' 人'/,
   '日曆必須以不含姓名與原因的核准臨時請假人數呈現');
+
+class FakeElement {
+  constructor(tagName) {
+    this.tagName = tagName;
+    this.nodeType = 1;
+    this.children = [];
+    this.dataset = {};
+    this.attributes = {};
+    this.listeners = {};
+    this.textContent = '';
+    this.value = '';
+    this.id = '';
+    this.className = '';
+    this.hidden = false;
+    const classes = new Set();
+    this.classList = {
+      add: (...values) => values.forEach(value => classes.add(value)),
+      remove: (...values) => values.forEach(value => classes.delete(value)),
+      toggle: (value, enabled) => {
+        if (enabled) classes.add(value);
+        else classes.delete(value);
+      }
+    };
+  }
+
+  append(...children) {
+    this.children.push(...children.filter(Boolean));
+  }
+
+  replaceChildren(...children) {
+    this.children = children.filter(Boolean);
+  }
+
+  addEventListener(type, listener) {
+    (this.listeners[type] ||= []).push(listener);
+  }
+
+  setAttribute(name, value) {
+    this.attributes[name] = String(value);
+    if (name === 'id') this.id = String(value);
+  }
+
+  async emit(type) {
+    for (const listener of this.listeners[type] || []) {
+      await listener({ preventDefault() {} });
+    }
+  }
+}
+
+const descendants = root => [root, ...root.children.flatMap(child =>
+  child?.nodeType === 1 ? descendants(child) : []
+)];
+
+async function createTimeOffScenario(initialPayload, refreshedPayload = initialPayload) {
+  const tabs = new FakeElement('nav');
+  const main = new FakeElement('main');
+  const monthPicker = new FakeElement('input');
+  monthPicker.value = '2026-07';
+  const submitted = [];
+  let listCalls = 0;
+  const documentListeners = {};
+  const document = {
+    createElement: tagName => new FakeElement(tagName),
+    createTextNode: text => ({ nodeType: 3, textContent: String(text) }),
+    querySelector: selector => ({
+      '.tabs': tabs,
+      main,
+      '#monthPicker': monthPicker
+    })[selector] || null,
+    querySelectorAll: () => [],
+    addEventListener(type, listener) {
+      (documentListeners[type] ||= []).push(listener);
+    },
+    dispatchEvent() {}
+  };
+  const cloud = {
+    getCurrentUser: () => ({
+      role: 'employee',
+      employeeId: 'employee-a',
+      workspaceId: 'workspace-a'
+    }),
+    listTimeOffRequests: async () => (listCalls++ ? refreshedPayload : initialPayload),
+    submitScheduleLeaveRequest: async input => submitted.push(structuredClone(input)),
+    cancelScheduleLeaveRequest: async () => {},
+    submitLeaveRequest: async () => {},
+    cancelLeaveRequest: async () => {},
+    approveTimeOffRequest: async () => {},
+    rejectTimeOffRequest: async () => {}
+  };
+  const window = {
+    shiftEnvironment: { dataBackend: 'postgres' },
+    shiftPostgresCloud: cloud,
+    shiftStateStore: {},
+    confirm: () => true
+  };
+  window.window = window;
+  const context = vm.createContext({
+    window,
+    document,
+    console,
+    Intl,
+    Date,
+    CustomEvent: class {
+      constructor(type, options) {
+        this.type = type;
+        this.detail = options?.detail;
+      }
+    }
+  });
+  vm.runInContext(await readFile('dom-safety.js', 'utf8'), context);
+  vm.runInContext(ui, context);
+  window.shiftTimeOffUi.activate();
+  await window.shiftTimeOffUi.refresh();
+  return {
+    submitted,
+    findById: id => descendants(main).find(element => element.id === id),
+    findButton: label => descendants(main).find(element =>
+      element.tagName === 'button' && element.textContent.includes(label)
+    )
+  };
+}
+
+const julyApproved = {
+  ownRequests: [],
+  approvedSchedule: [
+    { employeeId: 'employee-a', employeeName: 'A', date: '2026-07-12' },
+    { employeeId: 'employee-b', employeeName: 'B', date: '2026-07-09' },
+    { employeeId: 'employee-a', employeeName: 'A', date: '2026-08-03' }
+  ],
+  approvedLeaveCoverage: []
+};
+const pendingFullMonth = {
+  ...julyApproved,
+  ownRequests: [{
+    id: 'request-july',
+    requestKind: 'schedule_leave',
+    status: 'pending',
+    scheduleMonth: '2026-07',
+    revision: 1,
+    dates: ['2026-07-02', '2026-07-12']
+  }]
+};
+
+const appendScenario = await createTimeOffScenario(julyApproved, pendingFullMonth);
+assert.match(appendScenario.findButton('2026/07/12')?.textContent || '', /已核准/,
+  '開啟月份時應預載並標示員工既有的已核准排休');
+assert.equal(appendScenario.findButton('2026/07/09'), undefined,
+  '不得預載同 Workspace 其他員工的已核准排休');
+appendScenario.findById('timeOffScheduleDate').value = '2026-07-02';
+await appendScenario.findButton('加入日期').emit('click');
+await appendScenario.findButton('送出排休申請').emit('click');
+assert.deepEqual(appendScenario.submitted[0]?.dates, ['2026-07-02', '2026-07-12'],
+  '新增 7/2 時必須送出包含既有 7/12 的整月完整集合');
+assert.ok(appendScenario.findButton('2026/07/02') && appendScenario.findButton('2026/07/12'),
+  '送出後重新載入的待審核完整版本必須保留兩個日期');
+
+const approvedBothScenario = await createTimeOffScenario({
+  ...julyApproved,
+  approvedSchedule: [
+    ...julyApproved.approvedSchedule,
+    { employeeId: 'employee-a', employeeName: 'A', date: '2026-07-02' }
+  ]
+});
+assert.ok(approvedBothScenario.findButton('2026/07/02')
+  && approvedBothScenario.findButton('2026/07/12'),
+  '核准完整版本後 7/2 與原有 7/12 必須同時保留');
+
+const removeScenario = await createTimeOffScenario(julyApproved, {
+  ...julyApproved,
+  ownRequests: [{
+    id: 'request-remove-july',
+    requestKind: 'schedule_leave',
+    status: 'pending',
+    scheduleMonth: '2026-07',
+    revision: 1,
+    dates: ['2026-07-02']
+  }]
+});
+await removeScenario.findButton('2026/07/12').emit('click');
+removeScenario.findById('timeOffScheduleDate').value = '2026-07-02';
+await removeScenario.findButton('加入日期').emit('click');
+await removeScenario.findButton('送出排休申請').emit('click');
+assert.deepEqual(removeScenario.submitted[0]?.dates, ['2026-07-02'],
+  '只有員工主動移除既有日期時，完整集合才可排除該日期');
+
+const monthScenario = await createTimeOffScenario(julyApproved);
+const scheduleMonth = monthScenario.findById('timeOffScheduleMonth');
+scheduleMonth.value = '2026-08';
+await scheduleMonth.emit('change');
+assert.ok(monthScenario.findButton('2026/08/03'),
+  '切換月份時應預載該月份既有已核准排休');
+assert.equal(monthScenario.findButton('2026/07/12'), undefined,
+  '跨月份資料不得殘留在新的月份草稿');
 
 console.log('Time-Off frontend UI tests passed.');

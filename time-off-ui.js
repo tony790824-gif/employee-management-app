@@ -43,6 +43,29 @@
 
   const currentUser = () => cloud.getCurrentUser?.() || null;
   const currentRole = () => currentUser()?.role || '';
+  const scheduleRequestForMonth = month => (payload?.ownRequests || []).find(item =>
+    item.requestKind === 'schedule_leave'
+      && item.status === 'pending'
+      && item.scheduleMonth === month
+  );
+  const approvedScheduleDatesForMonth = month => {
+    const employeeId = currentUser()?.employeeId;
+    if (!employeeId || !/^\d{4}-\d{2}$/.test(month || '')) return new Set();
+    return new Set((payload?.approvedSchedule || [])
+      .filter(item => item?.employeeId === employeeId
+        && typeof item?.date === 'string'
+        && item.date.startsWith(`${month}-`)
+      )
+      .map(item => item.date)
+    );
+  };
+  const scheduleDraftForMonth = month => {
+    const pending = scheduleRequestForMonth(month);
+    const source = pending ? pending.dates : [...approvedScheduleDatesForMonth(month)];
+    return new Set((Array.isArray(source) ? source : [])
+      .filter(value => typeof value === 'string' && value.startsWith(`${month}-`))
+    );
+  };
   const canViewReason = request => {
     const user = currentUser();
     if (user?.role === 'boss') return true;
@@ -186,9 +209,11 @@
     const hint = dom.element('p', { className: 'form-hint', text: '排休占用每月固定額度，核准後才成為正式排休。' });
 
     const renderDates = () => {
+      const approvedDates = approvedScheduleDatesForMonth(month.value);
       selected.replaceChildren();
       for (const value of [...scheduleDates].sort()) {
-        const chip = actionButton(`${dateLabel(value)}　×`, 'date-chip', () => {
+        const sourceLabel = approvedDates.has(value) ? '（已核准）' : '（新增）';
+        const chip = actionButton(`${dateLabel(value)} ${sourceLabel} ×`, 'date-chip', () => {
           scheduleDates.delete(value);
           renderDates();
         });
@@ -198,7 +223,7 @@
       if (!scheduleDates.size) selected.append(empty('尚未選擇日期'));
     };
     month.addEventListener('change', () => {
-      scheduleDates = new Set();
+      scheduleDates = scheduleDraftForMonth(month.value);
       date.value = '';
       renderDates();
     });
@@ -216,9 +241,7 @@
         setMessage('請至少選擇一個排休日期。', 'error');
         return;
       }
-      const existing = (payload?.ownRequests || []).find(item =>
-        item.requestKind === 'schedule_leave' && item.status === 'pending' && item.scheduleMonth === month.value
-      );
+      const existing = scheduleRequestForMonth(month.value);
       await performAction(async () => {
         const input = { month: month.value, dates: [...scheduleDates].sort() };
         if (existing) Object.assign(input, { requestId: existing.id, baseRevision: existing.revision });
@@ -237,6 +260,7 @@
       submit
     ]);
     container.append(form);
+    scheduleDates = scheduleDraftForMonth(month.value);
     renderDates();
   }
 
