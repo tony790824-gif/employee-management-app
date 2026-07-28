@@ -1,5 +1,15 @@
 # 班客邦
 
+## PostgreSQL foreground polling synchronization (Sprint 22, 2026-07-28)
+
+- The existing Sprint 21 synchronization controller now runs one authenticated, visible-page PostgreSQL refresh every 15 seconds. It does not introduce WebSocket, SSE, a second controller, or a new API.
+- Polling stops while hidden, offline, logged out, Session-cleared, or unloading, and resumes after a valid foreground/online signal. A single timeout and the existing shared in-flight promise prevent duplicate timers and overlapping requests.
+- The existing server revision remains authoritative. Unchanged revisions do not replace state or rerender; changed revisions use the existing bootstrap render path. Time-off reads continue to preserve unsent forms.
+- Continuous network failures retain the current screen and emit only one safe warning per failure streak; a later successful cycle resets recovery state.
+- Google Sheets and Production paths install no PostgreSQL polling listeners. No Production deploy, database operation, migration, Auth0, Google Sheets, Apps Script, Render, or Netlify architecture change occurred.
+- Automated checks pass. Windows and iPhone Safari/PWA “stay in foreground while another Session approves” acceptance remains **PENDING USER VERIFICATION**.
+- Current assessed completion: **89%**. The only next step is the documented Sprint 22 signed-in real-device acceptance.
+
 ## PostgreSQL foreground synchronization (Sprint 21, 2026-07-28)
 
 - PostgreSQL boss and employee views now perform a safe bootstrap refresh when the page becomes visible, the browser/PWA returns through `pageshow`, or the window regains focus.

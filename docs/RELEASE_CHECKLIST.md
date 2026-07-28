@@ -1,5 +1,20 @@
 # 班客邦 Release Checklist
 
+## Sprint 22 — PostgreSQL foreground polling synchronization
+
+- [x] Poll interval is centralized at 15 seconds and runs only for authenticated, visible, online PostgreSQL views.
+- [x] The implementation extends the single Sprint 21 controller and reuses its debounce, cooldown, shared in-flight request, bootstrap validation, and Session handling.
+- [x] Hidden, offline, logout, Session clear, `pagehide`, and `beforeunload` stop scheduled cycles.
+- [x] Visible, `pageshow`, focus, and online recovery resume one polling timer without duplicates.
+- [x] Unchanged server revision does not replace state or rerender; changed revision follows the existing bootstrap render path.
+- [x] Poll failures retain current UI, do not force logout, retry on a later cycle, and do not flood Console warnings.
+- [x] Google Sheets and Production paths install no PostgreSQL polling listeners.
+- [x] No WebSocket, SSE, dependency, API, database, migration, Auth0, Render, Netlify, Google Sheets, or Apps Script change was introduced.
+- [x] Fake-timer focused tests, build, check, full regression, release gate, environment isolation, sensitive-information scan, and dependency audit pass.
+- [ ] Windows signed-in boss/employee foreground polling acceptance shows approval within 20 seconds without manual reload, flicker, duplicate request, Console error, or form/navigation loss.
+- [ ] iPhone Safari/PWA signed-in foreground polling acceptance passes; status remains **PENDING USER VERIFICATION**.
+- [ ] Product owner records the final Sprint 22 release decision before Sprint 23 begins.
+
 ## Sprint 21 — PostgreSQL foreground synchronization
 
 - [x] Foreground refresh is limited to authenticated PostgreSQL mode.

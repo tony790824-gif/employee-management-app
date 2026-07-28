@@ -1,5 +1,14 @@
 # Change Log
 
+## 2026-07-28 — Sprint 22 foreground polling sync
+
+- Extended the existing PostgreSQL foreground synchronization controller with one 15-second visible/authenticated polling cycle.
+- Reused the existing 250 ms debounce, 1-second cooldown, shared in-flight request, server revision comparison, bootstrap render path, and time-off read refresh.
+- Polling stops on hidden/offline/logout/Session-clear/unload and resumes on visible/pageshow/focus/online without duplicate timers.
+- Unchanged revisions do not rewrite or rerender state; network failures retain the current screen and suppress repeated warning spam.
+- Added fake-timer regression for start/stop/resume, duplicate timer prevention, in-flight deduplication, changed/unchanged revisions, offline recovery, unload/logout cleanup, and Google Sheets/Production isolation.
+- No Production, database, migration, Auth0, Google Sheets, Apps Script, Render, or Netlify deployment/configuration was changed. Real Windows and iPhone foreground polling acceptance remains pending.
+
 ## 2026-07-28 — PostgreSQL foreground synchronization
 
 - Added debounced `visibilitychange`, `pageshow`, and `focus` synchronization for authenticated PostgreSQL views without polling.

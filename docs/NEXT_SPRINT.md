@@ -1,4 +1,54 @@
-# 下一個唯一 Sprint — Staging foreground-sync real-device acceptance and release decision
+# 下一個唯一工作 — Sprint 22 foreground-polling real-device acceptance and release decision
+
+## Sprint 22 automated baseline
+
+- Overall assessed completion: **89%**.
+- The accepted Sprint 21 controller now runs one 15-second polling cycle only while the PostgreSQL App is authenticated, visible, and online.
+- Hidden/offline/logout/Session-clear/unload stops polling; visible/pageshow/focus/online resumes one timer.
+- The existing debounce, cooldown, in-flight promise, validated bootstrap, deterministic server revision, and time-off form preservation remain unchanged.
+- Unchanged revisions do not replace state or render. Changed revisions use the existing bootstrap/UI path.
+- Automated lifecycle, fake-timer, retry, environment-isolation, build, check, regression, release, sensitive-information, and dependency checks pass.
+- Production, databases, migrations, Auth0, Google Sheets, Apps Script, Render, and Netlify architecture/configuration were not modified or deployed.
+
+## Single goal
+
+Collect real signed-in evidence that foreground polling shows a manager approval to an employee within 20 seconds while the employee App remains visible. Do not change code or start Sprint 23 unless the evidence exposes a reproducible defect.
+
+## Windows — PENDING USER VERIFICATION
+
+1. Open the approved `STAGING POSTGRES` Draft in Windows Chrome and sign in as the manager.
+2. Open a separate signed-in employee Session and submit one synthetic scheduled-leave or ad-hoc-leave request.
+3. Keep the employee request/status page visible; do not refresh, switch tab, hide the window, or navigate away.
+4. Approve the request in the manager Session.
+5. Start timing when the manager success response appears.
+6. Verify the employee status changes within 20 seconds without manual refresh.
+7. Verify the employee remains on the same tab; scroll, modal, and unsent fields remain stable; no full-page flash or duplicate success message appears.
+8. In DevTools, verify there is no overlapping bootstrap request, no repeated Console error, and no Production/Google Sheets endpoint.
+
+## iPhone Safari/PWA — PENDING USER VERIFICATION
+
+1. Open the approved `STAGING POSTGRES` Draft in Safari or the installed Staging PWA and sign in as the employee.
+2. Submit one synthetic scheduled-leave or ad-hoc-leave request, then keep the request/status screen visible and the device unlocked.
+3. Approve the request from a separate manager device/Session.
+4. Do not refresh, background Safari/PWA, switch page, or navigate.
+5. Verify the approval appears within 20 seconds.
+6. Verify there is no screen flash, navigation reset, form loss, duplicate notification, logout, or Session error.
+7. Repeat once after an offline/online recovery: disconnect before one cycle, reconnect, then verify a later cycle updates without clearing the current screen.
+
+## PASS / FAIL / BLOCKED
+
+- **PASS:** both real Windows and iPhone cases update within 20 seconds and all UI/network/security expectations hold.
+- **FAIL:** stale state exceeds 20 seconds while online/visible, requests overlap, UI rerenders unnecessarily, form/navigation state is lost, Console floods, or Session/environment isolation regresses.
+- **BLOCKED:** the approved Draft, valid Staging identities/Memberships, required device, or external Staging service is unavailable.
+
+## Stop conditions
+
+- Stop on Production/unknown endpoint traffic, migration/database need, cross-role/Workspace data, Session fail-open, repeated mutation, data loss, or a requirement to redesign the synchronization API.
+- Do not deploy Production or begin Sprint 23 before the owner records both real-device results.
+
+---
+
+## Historical Sprint 21 acceptance record
 
 ## Sprint 21 acceptance baseline
 

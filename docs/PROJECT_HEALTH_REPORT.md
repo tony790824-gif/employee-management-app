@@ -1,5 +1,17 @@
 # 班客邦 Project Health Report
 
+## 2026-07-28 — Sprint 22 foreground polling health update
+
+- **Overall completion: 89%.** The foreground polling implementation and automated acceptance are complete; signed-in Windows and iPhone evidence remains pending.
+- **Reliability:** one 15-second timeout runs only while the authenticated PostgreSQL App is visible and online. Lifecycle signals, polling, and commands share the accepted synchronization boundary and one in-flight request.
+- **Render stability:** deterministic server revision equality produces no state replacement or render. Revision changes use the existing bootstrap path; time-off forms remain preserved.
+- **Offline/failure behavior:** hidden/offline/unload/logout stop scheduling. One network failure does not clear UI or log out, later cycles retry, and continuous failures do not flood warnings.
+- **Performance:** no high-frequency polling, overlapping requests, or duplicate timers. The existing bootstrap is currently the authoritative revision transport; a revision-only endpoint is not introduced in this Sprint.
+- **Security:** Session, Workspace, Membership, role, API-role, RLS, Auth0, and environment isolation are unchanged. Google Sheets and Production do not install the polling logic.
+- **Known acceptance risk:** Safari/PWA timer throttling and real mobile foreground behavior require owner verification. These are explicitly **PENDING USER VERIFICATION**.
+- **Release status: No.** Complete Windows and iPhone “approval visible within 20 seconds while staying foreground” evidence before release promotion.
+- **Next unique priority:** Sprint 22 real-device acceptance and release decision only.
+
 ## 2026-07-28 — Sprint 21 foreground synchronization health update
 
 - **Overall completion: 88%.** The PostgreSQL foreground synchronization implementation and automated quality gates are complete; real Windows and iPhone acceptance is still pending.

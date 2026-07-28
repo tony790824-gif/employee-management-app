@@ -1,5 +1,17 @@
 # AI Handoff
 
+## 2026-07-28 handoff — Sprint 22 foreground polling
+
+- Source baseline: Sprint 21 commit `228849eec38128f6093e638991699bc61e509a63`; current assessed completion: **89%**.
+- Added a 15-second foreground polling cycle inside the existing PostgreSQL synchronization controller. No second controller, endpoint, WebSocket, SSE, dependency, or architecture was introduced.
+- The cycle runs only for a visible, online, authenticated PostgreSQL view; hidden/offline/logout/Session-clear/page unload stop it, while visible/pageshow/focus/online resume it.
+- One timer plus the existing debounce/cooldown/in-flight promise prevents duplicate work. Server revision equality prevents state replacement and full render; changes use the accepted bootstrap path.
+- Continuous network failures preserve the current UI and log only the first safe warning in a failure streak. Google Sheets and Production paths remain untouched.
+- Fake-timer regression covers all Sprint 22 lifecycle/deduplication/revision/failure boundaries. Full quality, release, environment, sensitive-information, and dependency checks must remain green in the Sprint commit.
+- Windows and iPhone Safari/PWA acceptance is **PENDING USER VERIFICATION**. Required result: approval appears within 20 seconds while the employee page stays foreground, with no reload/flicker/form loss/duplicate request/Session issue.
+- No Production, database, migration, Auth0, Google Sheets, Apps Script, Render, or Netlify change/deployment is part of this Sprint.
+- Next unique work is only the real-device evidence and release decision documented in `docs/NEXT_SPRINT.md`.
+
 ## 2026-07-28 handoff — Sprint 21 foreground synchronization
 
 - Starting source baseline: `e0e0111a3c8d411d0075c176cb5a6a0fbaf798b5`; current assessed completion: **88%**.

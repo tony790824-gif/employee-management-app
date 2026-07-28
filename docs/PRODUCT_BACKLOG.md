@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-28 — Sprint 22 foreground polling implemented
+
+- **Completion:** **89%**. The existing PostgreSQL foreground controller now adds one 15-second visible/authenticated polling cycle without WebSocket, SSE, a new API, or a second synchronization controller.
+- **Accepted automatically:** visible/login start, hidden/offline/unload/logout stop, visible/online resume, single timer, in-flight deduplication, unchanged revision without render, changed revision update, retry without UI loss, warning suppression, and Google Sheets/Production isolation.
+- **Pending acceptance:** signed-in Windows and iPhone Safari/PWA must prove that an employee who remains in the foreground sees a manager approval within 20 seconds, without reload, flicker, duplicate request, form loss, navigation reset, or Session error.
+- **Production safety:** no Production deploy, database/migration operation, Auth0, Google Sheets, Apps Script, Render, or Netlify architecture/configuration change.
+- **Next unique priority:** **Sprint 22 real-device foreground-polling acceptance and release decision**. Do not begin Sprint 23 until the owner reports both device results.
+
 ## 2026-07-28 — Sprint 21 foreground synchronization implemented
 
 - **Completion:** **88%**. PostgreSQL foreground refresh, request deduplication, server revision comparison, time-off list refresh, and unsent-form preservation are implemented and covered by automated regression.

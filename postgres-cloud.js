@@ -9,11 +9,14 @@
   let client = null;
   let currentSession = null;
   let currentUser = null;
-  let foregroundTimer = null;
+  let foregroundDebounceTimer = null;
+  let foregroundPollTimer = null;
   let foregroundPromise = null;
+  let foregroundFailureReported = false;
   let lastForegroundCompletedAt = 0;
   const FOREGROUND_DEBOUNCE_MS = 250;
   const FOREGROUND_COOLDOWN_MS = 1000;
+  const FOREGROUND_POLL_INTERVAL_MS = 15_000;
 
   const isEmployeeSession = () => currentSession?.role === 'employee' && Boolean(currentSession.employeeId);
 
@@ -84,29 +87,45 @@
     return { ...bootstrap, changed: true };
   }
 
-  function cancelForegroundSync() {
-    if (foregroundTimer !== null) clearTimeout(foregroundTimer);
-    foregroundTimer = null;
+  const canRunForegroundSync = () => Boolean(
+    client
+    && currentSession
+    && document.visibilityState === 'visible'
+    && window.navigator?.onLine !== false
+  );
+
+  function cancelForegroundDebounce() {
+    if (foregroundDebounceTimer !== null) clearTimeout(foregroundDebounceTimer);
+    foregroundDebounceTimer = null;
+  }
+
+  function stopForegroundPolling() {
+    if (foregroundPollTimer !== null) clearTimeout(foregroundPollTimer);
+    foregroundPollTimer = null;
   }
 
   async function runForegroundSync() {
-    if (!client || !currentSession) return null;
+    if (!canRunForegroundSync()) return null;
     if (foregroundPromise) return foregroundPromise;
     foregroundPromise = (async () => {
       try {
         const bootstrap = await refreshBootstrap({ onlyIfChanged: true, source: 'foreground' });
         if (!bootstrap?.stale) {
+          foregroundFailureReported = false;
           document.dispatchEvent(new CustomEvent('postgres-foreground-synced', {
             detail: { changed: Boolean(bootstrap?.changed), revision: bootstrapRevision(bootstrap) }
           }));
         }
         return bootstrap;
       } catch (error) {
-        console.warn('PostgreSQL foreground sync failed', {
-          code: error?.code || 'FOREGROUND_SYNC_FAILED',
-          status: Number(error?.status || 0),
-          requestId: error?.requestId || ''
-        });
+        if (!foregroundFailureReported) {
+          console.warn('PostgreSQL foreground sync failed', {
+            code: error?.code || 'FOREGROUND_SYNC_FAILED',
+            status: Number(error?.status || 0),
+            requestId: error?.requestId || ''
+          });
+          foregroundFailureReported = true;
+        }
         return null;
       } finally {
         foregroundPromise = null;
@@ -117,13 +136,33 @@
   }
 
   function scheduleForegroundSync() {
-    if (!client || !currentSession || document.visibilityState === 'hidden') return;
+    if (!canRunForegroundSync()) return;
     if (foregroundPromise || Date.now() - lastForegroundCompletedAt < FOREGROUND_COOLDOWN_MS) return;
-    cancelForegroundSync();
-    foregroundTimer = setTimeout(() => {
-      foregroundTimer = null;
+    cancelForegroundDebounce();
+    foregroundDebounceTimer = setTimeout(() => {
+      foregroundDebounceTimer = null;
       void runForegroundSync();
     }, FOREGROUND_DEBOUNCE_MS);
+  }
+
+  function startForegroundPolling() {
+    stopForegroundPolling();
+    if (!canRunForegroundSync()) return;
+    foregroundPollTimer = setTimeout(() => {
+      foregroundPollTimer = null;
+      void runForegroundSync().finally(startForegroundPolling);
+    }, FOREGROUND_POLL_INTERVAL_MS);
+  }
+
+  function stopForegroundSync() {
+    cancelForegroundDebounce();
+    stopForegroundPolling();
+  }
+
+  function handleForegroundEntry() {
+    if (!canRunForegroundSync()) return;
+    scheduleForegroundSync();
+    startForegroundPolling();
   }
 
   async function connect({ getAccessToken }) {
@@ -137,6 +176,7 @@
     await client.establishSession();
     const bootstrap = await refreshBootstrap();
     lastForegroundCompletedAt = Date.now();
+    startForegroundPolling();
     return bootstrap;
   }
 
@@ -197,10 +237,11 @@
 
   async function logout() {
     const activeClient = client;
-    cancelForegroundSync();
+    stopForegroundSync();
     client = null;
     currentSession = null;
     currentUser = null;
+    foregroundFailureReported = false;
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     stateStore.clearSensitive();
     document.dispatchEvent(new CustomEvent('postgres-session-cleared'));
@@ -208,11 +249,16 @@
   }
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') scheduleForegroundSync();
+    if (document.visibilityState === 'visible') handleForegroundEntry();
+    else stopForegroundSync();
   });
-  window.addEventListener('pageshow', scheduleForegroundSync);
-  window.addEventListener('focus', scheduleForegroundSync);
-  document.addEventListener('postgres-session-cleared', cancelForegroundSync);
+  window.addEventListener('pageshow', handleForegroundEntry);
+  window.addEventListener('focus', handleForegroundEntry);
+  window.addEventListener('online', handleForegroundEntry);
+  window.addEventListener('offline', stopForegroundSync);
+  window.addEventListener('pagehide', stopForegroundSync);
+  window.addEventListener('beforeunload', stopForegroundSync);
+  document.addEventListener('postgres-session-cleared', stopForegroundSync);
 
   window.shiftPostgresCloud = Object.freeze({
     connect,

@@ -1,5 +1,17 @@
 # Codex Context
 
+## 2026-07-28 current state — Sprint 22 foreground polling
+
+- Current assessed completion: **89%**.
+- PostgreSQL Staging uses the single Sprint 21 synchronization controller plus a centralized 15-second foreground polling constant.
+- Polling requires a connected authenticated Session, `document.visibilityState === 'visible'`, and an online browser. Hidden/offline/logout/Session-clear/page unload stop all scheduled cycles; visible/pageshow/focus/online safely resume.
+- One polling timeout, the existing 250 ms debounce/1-second cooldown, and one shared in-flight promise prevent duplicate or overlapping bootstrap requests.
+- The deterministic server revision remains authoritative. Unchanged data does not replace state or rerender; changed data follows the existing bootstrap/UI path. Time-off refresh still preserves unsent forms.
+- Automated regression and quality gates cover lifecycle, retry, failure retention, warning suppression, Google Sheets isolation, and Production isolation.
+- Windows and iPhone Safari/PWA foreground polling acceptance is **PENDING USER VERIFICATION**. Do not infer real-device PASS from fake-timer tests.
+- Production, databases, migrations, Auth0, Google Sheets, Apps Script, Render, and Netlify architecture were not modified or deployed.
+- Next and only work: complete the exact real-device acceptance in `docs/NEXT_SPRINT.md`; do not start Sprint 23 first.
+
 ## 2026-07-28 current state — Sprint 21 foreground synchronization
 
 - Starting source baseline: `e0e0111a3c8d411d0075c176cb5a6a0fbaf798b5`; overall assessed completion: **88%**.

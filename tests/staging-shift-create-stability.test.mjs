@@ -315,6 +315,7 @@ let foregroundBootstrapCalls = 0;
 let foregroundWrites = 0;
 let foregroundFailure = null;
 let foregroundGate = null;
+const foregroundWarnings = [];
 let foregroundStoredData = {
   ...structuredClone(initialData),
   sync: { revision: 1, schemaVersion: 1 }
@@ -339,6 +340,7 @@ const foregroundDocument = {
 const foregroundWindow = {
   addEventListener: (type, listener) => addForegroundListener('window', type, listener),
   dispatchEvent: event => dispatchForegroundEvent('window', event),
+  navigator: { onLine: true },
   shiftEnvironment: {
     dataBackend: 'postgres',
     postgresApiUrl: 'https://api.staging.example/v1',
@@ -403,15 +405,18 @@ const foregroundContext = vm.createContext({
   CustomEvent: TestCustomEvent,
   structuredClone,
   Date: ForegroundDate,
-  setTimeout(callback) {
+  setTimeout(callback, delay) {
     const id = ++foregroundTimerId;
-    foregroundTimers.set(id, callback);
+    foregroundTimers.set(id, { callback, delay });
     return id;
   },
   clearTimeout(id) {
     foregroundTimers.delete(id);
   },
-  console
+  console: {
+    ...console,
+    warn: (...args) => foregroundWarnings.push(args)
+  }
 });
 vm.runInContext(postgresCloudSource, foregroundContext, { filename: 'postgres-cloud-foreground.js' });
 await foregroundWindow.shiftPostgresCloud.connect({ getAccessToken: async () => 'synthetic-token' });
@@ -422,34 +427,48 @@ const resetForegroundObservations = () => {
   foregroundBootstrapCalls = 0;
   foregroundWrites = 0;
 };
-const fireForegroundTimers = async () => {
-  const callbacks = [...foregroundTimers.values()];
-  foregroundTimers.clear();
-  callbacks.forEach(callback => callback());
+const foregroundTimerCount = delay =>
+  [...foregroundTimers.values()].filter(timer => timer.delay === delay).length;
+const fireForegroundTimers = async delay => {
+  const pending = [...foregroundTimers.entries()].filter(([, timer]) => timer.delay === delay);
+  pending.forEach(([id]) => foregroundTimers.delete(id));
+  pending.forEach(([, timer]) => timer.callback());
   for (let index = 0; index < 8; index += 1) await Promise.resolve();
 };
+
+assert.equal(foregroundTimerCount(15_000), 1,
+  'a visible authenticated PostgreSQL view must start one foreground polling timer');
 
 resetForegroundObservations();
 foregroundDocument.visibilityState = 'hidden';
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
+assert.equal(foregroundTimers.size, 0, 'hiding the page must stop debounce and polling timers');
 foregroundDocument.visibilityState = 'visible';
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
-await fireForegroundTimers();
+assert.equal(foregroundTimerCount(250), 1, 'foreground lifecycle bursts must keep one debounce timer');
+assert.equal(foregroundTimerCount(15_000), 1, 'foreground lifecycle bursts must keep one polling timer');
+await fireForegroundTimers(250);
 assert.equal(foregroundBootstrapCalls, 1, 'foreground event bursts must issue one bootstrap request');
 assert.equal(foregroundWrites, 0, 'unchanged revisions must not rewrite canonical state');
 assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap-refreshed').length, 0,
   'unchanged revisions must not trigger the full UI render event');
 
 resetForegroundObservations();
+foregroundNow += 15_000;
+await fireForegroundTimers(15_000);
+assert.equal(foregroundBootstrapCalls, 1, 'foreground polling must refresh an authenticated visible view');
+assert.equal(foregroundWrites, 0, 'foreground polling must not rewrite unchanged revisions');
+assert.equal(foregroundTimerCount(15_000), 1, 'foreground polling must schedule exactly one next cycle');
+
+resetForegroundObservations();
 foregroundNow += 2_000;
 foregroundServerData.employees[0].name = 'Updated Synthetic Employee';
 foregroundServerData.sync.revision = 2;
-foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
-await fireForegroundTimers();
+await fireForegroundTimers(15_000);
 assert.equal(foregroundBootstrapCalls, 1);
-assert.equal(foregroundWrites, 1, 'changed revisions must update canonical state once');
+assert.equal(foregroundWrites, 1, 'polling must update canonical state once when the revision changes');
 assert.equal(foregroundStoredData.employees[0].name, 'Updated Synthetic Employee');
 assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap-refreshed').length, 1,
   'changed revisions must trigger the existing UI render path');
@@ -461,11 +480,13 @@ foregroundGate = {};
 foregroundGate.promise = new Promise(resolve => { releaseForegroundBootstrap = resolve; });
 foregroundServerData.sync.revision = 3;
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
-await fireForegroundTimers();
+await fireForegroundTimers(250);
 assert.equal(foregroundBootstrapCalls, 1);
+await fireForegroundTimers(15_000);
+assert.equal(foregroundBootstrapCalls, 1, 'polling must share the existing in-flight request');
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
-await fireForegroundTimers();
+await fireForegroundTimers(250);
 assert.equal(foregroundBootstrapCalls, 1, 'in-flight foreground requests must suppress duplicates');
 foregroundGate = null;
 releaseForegroundBootstrap();
@@ -480,36 +501,67 @@ foregroundFailure = Object.assign(new Error('Synthetic network failure'), {
   requestId: 'request-synthetic'
 });
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
-await fireForegroundTimers();
+await fireForegroundTimers(250);
 assert.equal(foregroundStoredData.sync.revision, 3, 'failed foreground sync must preserve the current screen state');
 assert.equal(foregroundWrites, 0);
+assert.equal(foregroundWarnings.length, 1, 'the first network failure may emit one safe diagnostic warning');
+foregroundNow += 2_000;
+foregroundFailure = Object.assign(new Error('Repeated synthetic network failure'), {
+  code: 'UPSTREAM_UNAVAILABLE',
+  status: 503,
+  requestId: 'request-synthetic-repeat'
+});
+foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
+await fireForegroundTimers(250);
+assert.equal(foregroundWarnings.length, 1, 'a continuous failure streak must not flood the Console');
 foregroundNow += 2_000;
 foregroundServerData.sync.revision = 4;
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
-await fireForegroundTimers();
+await fireForegroundTimers(250);
 assert.equal(foregroundStoredData.sync.revision, 4, 'later foreground events must retry after a network failure');
 
 resetForegroundObservations();
+foregroundWindow.navigator.onLine = false;
+foregroundWindow.dispatchEvent(new TestCustomEvent('offline'));
+assert.equal(foregroundTimers.size, 0, 'offline mode must stop scheduled protected requests');
+foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
+assert.equal(foregroundTimers.size, 0, 'offline focus must not schedule a request');
+foregroundWindow.navigator.onLine = true;
+foregroundWindow.dispatchEvent(new TestCustomEvent('online'));
+assert.equal(foregroundTimerCount(15_000), 1, 'online recovery must resume foreground polling');
+foregroundWindow.dispatchEvent(new TestCustomEvent('pagehide'));
+assert.equal(foregroundTimers.size, 0, 'page unload must stop foreground polling');
+foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
+assert.equal(foregroundTimerCount(15_000), 1, 'a visible page restored from page cache must resume polling');
+
+resetForegroundObservations();
 await foregroundWindow.shiftPostgresCloud.logout();
+assert.equal(foregroundTimers.size, 0, 'logout must stop all foreground timers');
 foregroundNow += 2_000;
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
-await fireForegroundTimers();
+await fireForegroundTimers(250);
+await fireForegroundTimers(15_000);
 assert.equal(foregroundBootstrapCalls, 0, 'logged-out users must not call protected bootstrap APIs');
 
-const inactiveForegroundListeners = [];
-const inactiveForegroundWindow = {
-  shiftEnvironment: { dataBackend: 'google_sheets' },
-  addEventListener: (...args) => inactiveForegroundListeners.push(args)
-};
-inactiveForegroundWindow.window = inactiveForegroundWindow;
-vm.runInContext(postgresCloudSource, vm.createContext({
-  window: inactiveForegroundWindow,
-  document: { addEventListener: (...args) => inactiveForegroundListeners.push(args) },
-  console
-}), { filename: 'postgres-cloud-google-sheets.js' });
-assert.equal(inactiveForegroundWindow.shiftPostgresCloud, undefined);
-assert.equal(inactiveForegroundListeners.length, 0,
-  'Google Sheets mode must not install PostgreSQL foreground listeners');
+for (const environment of [
+  { name: 'staging', dataBackend: 'google_sheets' },
+  { name: 'production', dataBackend: 'google_sheets' }
+]) {
+  const inactiveForegroundListeners = [];
+  const inactiveForegroundWindow = {
+    shiftEnvironment: environment,
+    addEventListener: (...args) => inactiveForegroundListeners.push(args)
+  };
+  inactiveForegroundWindow.window = inactiveForegroundWindow;
+  vm.runInContext(postgresCloudSource, vm.createContext({
+    window: inactiveForegroundWindow,
+    document: { addEventListener: (...args) => inactiveForegroundListeners.push(args) },
+    console
+  }), { filename: `postgres-cloud-${environment.name}.js` });
+  assert.equal(inactiveForegroundWindow.shiftPostgresCloud, undefined);
+  assert.equal(inactiveForegroundListeners.length, 0,
+    `${environment.name} Google Sheets mode must not install PostgreSQL foreground listeners`);
+}
 
 console.log('Staging PostgreSQL shift creation and foreground synchronization tests passed.');
