@@ -11,7 +11,13 @@
     'leaves.replace-month',
     'attendance.clock-in',
     'attendance.clock-out',
-    'attendance.approve-hours'
+    'attendance.approve-hours',
+    'schedule-leave-requests.submit',
+    'schedule-leave-requests.cancel',
+    'leave-requests.submit',
+    'leave-requests.cancel',
+    'time-off-requests.approve',
+    'time-off-requests.reject'
   ]);
 
   class PostgresApiError extends Error {
@@ -168,6 +174,7 @@
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),
       bootstrap: () => request('/bootstrap'),
+      listTimeOffRequests: () => request('/time-off-requests'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {
           throw new PostgresApiError('Command 不在允許清單。', { code: 'COMMAND_NOT_FOUND', status: 404 });

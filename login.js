@@ -20,7 +20,8 @@
     'boss-hours.js',
     'management-actions.js',
     'enhancements.js',
-    'employee-layout.js'
+    'employee-layout.js',
+    'time-off-ui.js'
   ]);
   let appLoadPromise = null;
   let busy = false;

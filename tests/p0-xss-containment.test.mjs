@@ -4,7 +4,7 @@ import vm from 'node:vm';
 
 const authenticatedScripts = [
   'dom-safety.js', 'app.js', 'access.js', 'employee-work.js', 'boss-hours.js',
-  'management-actions.js', 'enhancements.js', 'employee-layout.js'
+  'management-actions.js', 'enhancements.js', 'employee-layout.js', 'time-off-ui.js'
 ];
 
 for (const file of authenticatedScripts) {

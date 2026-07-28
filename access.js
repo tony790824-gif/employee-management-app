@@ -18,6 +18,8 @@
   const employeeCloud = () => window.shiftEnvironment?.dataBackend === 'postgres'
     ? window.shiftPostgresCloud
     : window.sheetsCloud;
+  const usesReviewedTimeOff = () => mode === 'employee'
+    && window.shiftEnvironment?.dataBackend === 'postgres';
   const normal = list => (list || []).map(item => typeof item === 'string' ? { date: item, type: '休假', reason: '', portion: '全天' } : item);
   const allowedEmployeeMonth = value => {
     const now = new Date();
@@ -69,7 +71,7 @@
   }
 
   function hasUnsavedLeaveDraft() {
-    return mode === 'employee' && Boolean(mine) && leaveChangeCount() > 0;
+    return !usesReviewedTimeOff() && mode === 'employee' && Boolean(mine) && leaveChangeCount() > 0;
   }
 
   function setLeaveStatus(message = '', tone = '') {
@@ -105,13 +107,13 @@
       $('#cancelLeaveDraft').onclick = cancelLeaveDraft;
       $('#saveLeaveDraft').onclick = saveLeaveDraft;
     }
-    panel.hidden = mode !== 'employee' || !hasUnsavedLeaveDraft();
+    panel.hidden = usesReviewedTimeOff() || mode !== 'employee' || !hasUnsavedLeaveDraft();
     if (mode !== 'employee') setLeaveStatus('');
   }
 
   function updateLeaveDraftView() {
     const panel = $('#employeeLeaveSave');
-    if (mode !== 'employee' || !mine) {
+    if (mode !== 'employee' || !mine || usesReviewedTimeOff()) {
       if (panel) panel.hidden = true;
       setLeaveStatus('');
       return;
@@ -226,7 +228,7 @@
     const canOpenEmployeeLeave = mode === 'employee'
       && window.shiftEnvironment?.dataBackend === 'postgres';
     employeeLeaveButton.hidden = !canOpenEmployeeLeave;
-    if (canOpenEmployeeLeave) employeeLeaveButton.textContent = '我要請假';
+    if (canOpenEmployeeLeave) employeeLeaveButton.textContent = '排休／請假';
     const locked = !allowedEmployeeMonth(currentMonth());
     document.body.classList.toggle('employee-mode', mode === 'employee');
     document.body.classList.toggle('calendar-locked', locked);
@@ -288,6 +290,7 @@
     if (day && mode === 'employee') {
       event.preventDefault();
       event.stopImmediatePropagation();
+      if (usesReviewedTimeOff()) return;
       if (locked || !mine) return;
       const data = read();
       const key = requestKey();

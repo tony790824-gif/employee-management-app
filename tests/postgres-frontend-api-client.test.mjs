@@ -62,7 +62,17 @@ const client = createClient({
     calls.push({ url, options });
     if (url.endsWith('/employees')) return response(200, { employees: [] });
     if (url.endsWith('/bootstrap')) return response(200, { ok: true, role: 'boss', data: {} });
-    if (url.endsWith('/commands/attendance.clock-in')) return response(201, { ok: true, replayed: false });
+    if (url.endsWith('/time-off-requests')) return response(200, {
+      ok: true,
+      workspaceId,
+      role: 'employee',
+      ownRequests: [],
+      pendingReview: [],
+      processed: [],
+      approvedSchedule: [],
+      approvedLeaveCoverage: []
+    });
+    if (url.includes('/commands/')) return response(201, { ok: true, replayed: false });
     if (url.endsWith('/health')) return response(200, { ok: true });
     return response(404, { error: 'not found', code: 'ROUTE_NOT_FOUND', requestId: 'safe-request-id' });
   }
@@ -88,16 +98,42 @@ const bootstrapPayload = await client.bootstrap();
 assert.equal(bootstrapPayload.role, 'boss');
 assert.equal(calls[2].url, 'https://api.staging.example/v1/bootstrap');
 
+const timeOffPayload = await client.listTimeOffRequests();
+assert.equal(timeOffPayload.role, 'employee');
+assert.equal(Array.isArray(timeOffPayload.ownRequests), true);
+assert.equal(timeOffPayload.ownRequests.length, 0);
+assert.equal(calls[3].url, 'https://api.staging.example/v1/time-off-requests');
+assert.equal(calls[3].options.method, 'GET');
+assert.equal(calls[3].options.headers.Authorization, `Bearer ${accessToken}`);
+assert.equal(calls[3].options.headers['X-Workspace-Id'], workspaceId);
+assert.equal(calls[3].options.body, undefined, 'The read route does not accept client-defined query or body data.');
+
 const commandPayload = await client.executeCommand(
   'attendance.clock-in', {}, { idempotencyKey: 'clock-in-0001' }
 );
 assert.equal(commandPayload.ok, true);
 assert.equal(commandPayload.replayed, false);
-assert.equal(calls[3].options.method, 'POST');
-assert.equal(calls[3].options.headers['Idempotency-Key'], 'clock-in-0001');
-assert.equal(calls[3].options.headers['Content-Type'], 'application/json');
-assert.equal(calls[3].options.body, '{}');
-assert.equal(commandNames.length, 6);
+assert.equal(calls[4].options.method, 'POST');
+assert.equal(calls[4].options.headers['Idempotency-Key'], 'clock-in-0001');
+assert.equal(calls[4].options.headers['Content-Type'], 'application/json');
+assert.equal(calls[4].options.body, '{}');
+const timeOffCommandNames = [
+  'schedule-leave-requests.submit',
+  'schedule-leave-requests.cancel',
+  'leave-requests.submit',
+  'leave-requests.cancel',
+  'time-off-requests.approve',
+  'time-off-requests.reject'
+];
+assert.equal(commandNames.length, 12);
+for (const commandName of timeOffCommandNames) {
+  assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
+  const responsePayload = await client.executeCommand(commandName, {}, {
+    idempotencyKey: `time-off-${commandName.replaceAll('.', '-').replaceAll('_', '-')}`
+  });
+  assert.equal(responsePayload.ok, true);
+  assert.match(calls.at(-1).url, new RegExp(`/commands/${commandName.replace('.', '\\.')}$`));
+}
 assert.throws(() => client.executeCommand('admin.drop-all', {}), error =>
   error instanceof PostgresApiError && error.code === 'COMMAND_NOT_FOUND');
 
@@ -124,7 +160,7 @@ const rejectedClient = createClient({
   }),
   eventTarget: { dispatchEvent: event => rejectedEvents.push(event) }
 });
-await assert.rejects(rejectedClient.listEmployees(), error => {
+await assert.rejects(rejectedClient.listTimeOffRequests(), error => {
   assert.equal(error.code, 'SESSION_INVALID');
   assert.equal(error.status, 401);
   assert.equal(error.requestId, 'safe-request-id');

@@ -1,0 +1,46 @@
+.time-off-panel{display:none}
+.time-off-panel.active{display:block}
+.time-off-content,.time-off-forms{display:grid;gap:18px}
+.time-off-forms{grid-template-columns:repeat(2,minmax(0,1fr))}
+.time-off-form-card,.time-off-list-section{border:1px solid var(--line);border-radius:16px;padding:18px;background:rgba(255,255,255,.45);min-width:0}
+.time-off-form-card h3,.time-off-list-section h3{margin:0 0 8px}
+.time-off-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+.time-off-form-grid label,.time-off-reason{display:grid;gap:6px;min-width:0}
+.time-off-form-grid input,.time-off-form-grid select,.time-off-reason textarea,.time-off-card-actions textarea{width:100%;min-width:0}
+.time-off-reason{margin:12px 0}
+.time-off-form-card>button{min-height:44px;margin-top:12px}
+.time-off-form-grid>button{min-height:44px}
+.time-off-date-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:44px;align-items:center}
+.date-chip{min-height:44px;border-radius:999px;padding:8px 14px}
+.time-off-message{border-radius:12px;padding:11px 14px;margin:0 0 14px;background:#f6ead9}
+.time-off-message.is-success{background:#e8f4e8;color:#245d32}
+.time-off-message.is-error{background:#fde7e3;color:#8b2d24}
+.time-off-panel.is-busy button,.time-off-panel.is-busy input,.time-off-panel.is-busy select,.time-off-panel.is-busy textarea{pointer-events:none;opacity:.65}
+.time-off-list-section{display:grid;gap:12px}
+.time-off-request-card{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff;min-width:0}
+.time-off-card-heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.time-off-card-heading>div{display:flex;gap:8px;align-items:center;min-width:0}
+.time-off-kind,.time-off-status{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-size:.82rem;white-space:nowrap}
+.time-off-kind{background:#f2e5d4}
+.time-off-status{background:#eee}
+.status-pending{background:#fff0c7;color:#755500}
+.status-approved{background:#e3f3e5;color:#235a30}
+.status-rejected{background:#fde4df;color:#8a2d24}
+.status-cancelled,.status-superseded{background:#ece8e4;color:#605850}
+.time-off-details{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 12px;margin:12px 0 0}
+.time-off-details dt{font-weight:700;color:var(--muted)}
+.time-off-details dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.time-off-card-actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;margin-top:12px;align-items:end}
+.time-off-card-actions button{min-height:44px}
+.time-off-empty{margin:4px 0;color:var(--muted)}
+.form-hint{color:var(--muted);margin:0 0 12px}
+@media(max-width:760px){
+  .time-off-forms,.time-off-form-grid{grid-template-columns:minmax(0,1fr)}
+  .time-off-form-card,.time-off-list-section{padding:14px}
+  .time-off-card-heading{align-items:flex-start;flex-direction:column}
+  .time-off-card-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .time-off-card-actions textarea{grid-column:1/-1}
+  .time-off-card-actions button{width:100%}
+  .time-off-details{grid-template-columns:minmax(0,1fr)}
+  .time-off-details dt{margin-top:4px}
+}

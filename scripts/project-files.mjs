@@ -9,6 +9,7 @@ export const deployFiles = Object.freeze([
   'login-screen.css',
   'employee-calendar.css',
   'employee-layout.css',
+  'time-off-ui.css',
   'environment.css',
   'environment-config.js',
   'postgres-api-client.js',
@@ -28,7 +29,8 @@ export const deployFiles = Object.freeze([
   'google-sheets-cloud.js',
   'enhancements.js',
   'pwa.js',
-  'employee-layout.js'
+  'employee-layout.js',
+  'time-off-ui.js'
 ]);
 
 export const sourceScripts = Object.freeze(

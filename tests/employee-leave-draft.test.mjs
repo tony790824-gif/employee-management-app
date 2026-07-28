@@ -258,7 +258,7 @@ context.addEventListener = (type, listener) => {
 context.confirm = () => true;
 context.window = context;
 context.window.shiftEnvironment = {
-  dataBackend: 'postgres',
+  dataBackend: 'google_sheets',
   storageKey: key => `test:${key}`
 };
 context.window.shiftStateStore = {
@@ -268,7 +268,7 @@ context.window.shiftStateStore = {
 context.window.shiftDomSafety = domSafety;
 let saveCalls = 0;
 let saveShouldFail = false;
-context.window.shiftPostgresCloud = {
+context.window.sheetsCloud = {
   hasEmployeeSession: () => true,
   async saveEmployeeLeave(requestMonth, dates) {
     saveCalls += 1;
@@ -288,8 +288,8 @@ vm.runInNewContext(accessSource, context, { filename: 'access.js' });
 role.value = 'employee';
 role.onchange();
 
-assert.equal(document.getElementById('employeeLeaveBtn').hidden, false, '員工 PostgreSQL 介面必須顯示明確請假入口');
-assert.equal(document.getElementById('employeeLeaveBtn').textContent, '我要請假', '請假入口文案必須清楚');
+assert.equal(document.getElementById('employeeLeaveBtn').hidden, true,
+  'Google Sheets 舊流程不得誤顯示 PostgreSQL 審核式請假入口');
 assert.equal(document.getElementById('leaveRemaining').textContent, 1, '已休 7 天時應剩餘 1 天');
 assert.equal(document.days[7].onclick, null, '員工月曆只能保留草稿點擊處理');
 

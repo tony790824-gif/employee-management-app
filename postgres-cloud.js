@@ -110,6 +110,28 @@
     'attendance.approve-hours',
     { attendanceId, hours, baseRevision }
   );
+  const listTimeOffRequests = () => {
+    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    return client.listTimeOffRequests();
+  };
+  const submitScheduleLeaveRequest = input => executeAndRefresh('schedule-leave-requests.submit', input);
+  const cancelScheduleLeaveRequest = (requestId, baseRevision) => executeAndRefresh(
+    'schedule-leave-requests.cancel',
+    { requestId, baseRevision }
+  );
+  const submitLeaveRequest = input => executeAndRefresh('leave-requests.submit', input);
+  const cancelLeaveRequest = (requestId, baseRevision) => executeAndRefresh(
+    'leave-requests.cancel',
+    { requestId, baseRevision }
+  );
+  const approveTimeOffRequest = (requestId, baseRevision, reviewNote = '') => executeAndRefresh(
+    'time-off-requests.approve',
+    { requestId, baseRevision, reviewNote }
+  );
+  const rejectTimeOffRequest = (requestId, baseRevision, reviewNote = '') => executeAndRefresh(
+    'time-off-requests.reject',
+    { requestId, baseRevision, reviewNote }
+  );
 
   async function logout() {
     const activeClient = client;
@@ -133,6 +155,13 @@
     createEmployee,
     createShift,
     approveAttendanceHours,
+    listTimeOffRequests,
+    submitScheduleLeaveRequest,
+    cancelScheduleLeaveRequest,
+    submitLeaveRequest,
+    cancelLeaveRequest,
+    approveTimeOffRequest,
+    rejectTimeOffRequest,
     hasEmployeeSession: isEmployeeSession,
     isConnected: () => Boolean(currentSession),
     getSession: () => currentSession,
