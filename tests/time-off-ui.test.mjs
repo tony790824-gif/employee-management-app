@@ -202,6 +202,7 @@ async function createTimeOffScenario(initialPayload, refreshedPayload = initialP
     findButton: label => descendants(main).find(element =>
       element.tagName === 'button' && element.textContent.includes(label)
     ),
+    textValues: () => descendants(main).map(element => element.textContent).filter(Boolean),
     contentChildren: () => [...(descendants(main)
       .find(element => element.className === 'time-off-content')?.children || [])],
     async emitDocument(type, detail = {}) {
@@ -306,5 +307,31 @@ assert.equal(changedForegroundScenario.findById('timeOffLeaveEnd').value, '2026-
 assert.equal(changedForegroundScenario.findById('timeOffLeaveType').value, '病假');
 assert.equal(changedForegroundScenario.findById('timeOffLeaveReason').value, '尚未送出的測試草稿',
   'foreground refresh must preserve unsent leave form content');
+
+const historyDateScenario = await createTimeOffScenario({
+  ownRequests: [
+    {
+      id: 'schedule-history',
+      requestKind: 'schedule_leave',
+      status: 'approved',
+      scheduleMonth: '2026-07',
+      revision: 1,
+      dates: ['2026-07-02', '2026-07-28']
+    },
+    {
+      id: 'leave-history',
+      requestKind: 'ad_hoc_leave',
+      status: 'approved',
+      revision: 1,
+      dates: ['2026-07-03', '2026-07-04', '2026-07-05']
+    }
+  ],
+  approvedSchedule: [],
+  approvedLeaveCoverage: []
+});
+assert.ok(historyDateScenario.textValues().includes('2026/07/02、2026/07/28'),
+  '排休紀錄必須逐筆顯示實際排休日期，不得把首末日顯示成連續區間');
+assert.ok(historyDateScenario.textValues().includes('2026/07/03－2026/07/05（3 天）'),
+  '臨時請假仍應沿用開始日到結束日的日期區間顯示');
 
 console.log('Time-Off frontend UI tests passed.');

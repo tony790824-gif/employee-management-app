@@ -98,6 +98,11 @@
     if (values.length === 1) return dateLabel(values[0]);
     return `${dateLabel(values[0])}－${dateLabel(values.at(-1))}（${values.length} 天）`;
   };
+  const requestDateLabel = request => request?.requestKind === 'schedule_leave'
+    ? (Array.isArray(request.dates) && request.dates.length
+        ? request.dates.map(dateLabel).join('、')
+        : '未提供日期')
+    : dateRangeLabel(request?.dates);
   const statusLabel = status => STATUS_LABELS[status] || '狀態未知';
   const kindLabel = kind => KIND_LABELS[kind] || '申請';
 
@@ -173,7 +178,7 @@
     ]);
     const details = dom.element('dl', { className: 'time-off-details' });
     const pairs = [
-      ['日期', dateRangeLabel(request.dates)],
+      ['日期', requestDateLabel(request)],
       ...(request.scheduleMonth ? [['月份', request.scheduleMonth]] : []),
       ...(request.leaveType ? [['類型', request.leaveType]] : []),
       ...(request.reason && canViewReason(request) ? [['原因', request.reason]] : []),
