@@ -1,5 +1,21 @@
 # 班客邦 Release Checklist
 
+## Sprint 21 — PostgreSQL foreground synchronization
+
+- [x] Foreground refresh is limited to authenticated PostgreSQL mode.
+- [x] `visibilitychange`, `pageshow`, and focus signals are debounced and deduplicated.
+- [x] Only one bootstrap request can be in flight; stale results after Session/client changes are ignored.
+- [x] The server-issued revision is deterministic over role-visible bootstrap data.
+- [x] Unchanged revision does not replace state or rerender the UI.
+- [x] Changed revision refreshes the role-scoped view without navigation reset or full-page loading.
+- [x] Time-off foreground refresh preserves unsent employee forms and retains current UI after failure.
+- [x] Logout/Session clearing stops automatic protected API calls.
+- [x] Google Sheets and Production environment behavior remains unchanged.
+- [x] Focused regression, full tests, build, check, release gate, environment isolation, sensitive-information scan, and production dependency audit pass.
+- [ ] New Draft origin is added to Auth0 Staging callback/logout/web-origin/CORS allowlists and Render `BANK_ALLOWED_ORIGINS`.
+- [ ] Windows signed-in employee/boss foreground acceptance passes without reload, flicker, duplicate request, or Console error.
+- [ ] iPhone Safari/PWA foreground acceptance passes; until then this item is **PENDING USER VERIFICATION**.
+
 ## Time-off workflow Phase 1 — Staging backend
 
 - [x] Baseline commit is `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; documented overall completion is 87%.

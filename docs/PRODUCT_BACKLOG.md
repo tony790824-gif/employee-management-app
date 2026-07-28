@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-28 — Sprint 21 foreground synchronization implemented
+
+- **Completion:** **88%**. PostgreSQL foreground refresh, request deduplication, server revision comparison, time-off list refresh, and unsent-form preservation are implemented and covered by automated regression.
+- **Accepted automatically:** hidden-to-visible, `pageshow`, focus burst deduplication, one in-flight request, unchanged revision without render, changed revision with render, failure retention/retry, logout protection, and Google Sheets isolation.
+- **Pending acceptance:** signed-in Windows and iPhone Safari/PWA foreground scenarios on the new isolated `STAGING POSTGRES` Draft. Do not report these as passed until the owner completes the allowlists and real-device steps.
+- **Production safety:** no Production deploy, migration, database operation, Auth0 change, Google Sheets change, or Apps Script change.
+- **Next unique priority:** **Staging foreground-sync real-device acceptance and release decision**. Verify employee submission, boss approval in another Session, foreground return without manual reload, no flicker/duplicate requests/Console error, and iPhone Safari/PWA behavior.
+
 ## 2026-07-27 — Time-off workflow Phase 1 completed
 
 - **Baseline:** commit `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion **87%**.

@@ -42,10 +42,12 @@ const context = vm.createContext({
     },
     shiftStateStore: {
       normalize: value => value,
+      read: () => written.at(-1) || bootstrap.data,
       write: value => written.push(value),
       clearSensitive: () => calls.push('clear')
     },
-    BankePostgresApi: { createClient: config => { assert.equal(typeof config.getAccessToken, 'function'); return fakeClient; } }
+    BankePostgresApi: { createClient: config => { assert.equal(typeof config.getAccessToken, 'function'); return fakeClient; } },
+    addEventListener() {}
   },
   sessionStorage: {
     setItem: (key, value) => calls.push(['stored', key, JSON.parse(value)]),
@@ -53,6 +55,7 @@ const context = vm.createContext({
   },
   document: {
     dispatchEvent: event => calls.push(['event', event.type]),
+    addEventListener() {},
     querySelector: selector => selector === '#cloudStatus' ? cloudStatus : null
   },
   CustomEvent: class CustomEvent { constructor(type) { this.type = type; } }

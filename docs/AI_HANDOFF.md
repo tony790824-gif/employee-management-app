@@ -1,5 +1,17 @@
 # AI Handoff
 
+## 2026-07-28 handoff — Sprint 21 foreground synchronization
+
+- Starting source baseline: `e0e0111a3c8d411d0075c176cb5a6a0fbaf798b5`; current assessed completion: **88%**.
+- Implemented PostgreSQL foreground bootstrap synchronization for page visibility, `pageshow`, and focus without polling.
+- Event bursts are debounced and deduplicated; one in-flight request is allowed. Unchanged revisions do not emit a bootstrap replacement or rebuild the UI.
+- Time-off lists refresh separately and preserve unsent employee schedule/ad-hoc-leave forms.
+- Deterministic server revisions cover the role-visible bootstrap payload, making employee/boss command results observable on foreground return.
+- Focused and full regression, build, check, release gate, environment isolation, sensitive-information scan, and production dependency audit pass.
+- Production, migrations, databases, Auth0, Google Sheets, and Apps Script were not modified or deployed.
+- Real signed-in Windows and iPhone Safari/PWA foreground acceptance is **PENDING USER VERIFICATION**; do not infer PASS from automated browser lifecycle tests.
+- Next unique Sprint: **Staging foreground-sync real-device acceptance and release decision**.
+
 ## 2026-07-27 handoff — time-off workflow Phase 1
 
 - Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.

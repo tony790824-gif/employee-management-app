@@ -1,6 +1,48 @@
-# 下一個唯一 Sprint — 前端排休／請假 UI 與老闆審核接線
+# 下一個唯一 Sprint — Staging foreground-sync real-device acceptance and release decision
 
-## Current baseline
+## Sprint 21 acceptance baseline
+
+- Overall assessed completion: **88%**.
+- PostgreSQL foreground refresh is implemented for visible `visibilitychange`, `pageshow`, and focus.
+- Event bursts are debounced and deduplicated; only one bootstrap request may be in flight.
+- The browser rerenders only when the deterministic server-issued revision changes.
+- Time-off reads refresh without clearing unsent employee forms.
+- Automated build, check, full regression, release gate, environment isolation, sensitive-information scan, and production dependency audit pass.
+- Production, migrations, databases, Auth0, Google Sheets, and Apps Script were not modified or deployed.
+
+## Single goal
+
+Complete evidence-based signed-in Staging acceptance for foreground synchronization. Do not add features or change the synchronization architecture.
+
+## Windows acceptance
+
+1. Sign in as an employee on the new `STAGING POSTGRES` Draft and submit scheduled leave.
+2. Leave that employee page open or put it in the background.
+3. In a separate browser/Session, sign in as a manager and approve the request.
+4. Return to the employee page without manual reload.
+5. Verify the approved state appears automatically.
+6. Verify the current tab and unsent forms remain, no full-page flash occurs, Network shows one effective foreground refresh, and Console has no error.
+
+## iPhone Safari/PWA acceptance
+
+1. Sign in as an employee and submit scheduled leave.
+2. Put Safari/PWA in the background.
+3. Approve the request from a separate manager Session.
+4. Reopen Safari/PWA without manual refresh.
+5. Verify the approval appears automatically without navigation reset, form loss, flicker, or repeated requests.
+
+## PASS / FAIL / BLOCKED
+
+- **PASS:** both signed-in scenarios update automatically and all UI/network expectations hold.
+- **FAIL:** stale data remains, requests duplicate, UI resets/flickers, a form is lost, or a Console/security error occurs.
+- **BLOCKED:** Draft origin is not allowlisted, test identities are unavailable, or the required real device/browser cannot be operated.
+
+## Stop conditions
+
+- Stop on Production access, migration/database change, Auth0 Production change, tenant leakage, Session regression, persistent UI loss, or a need to redesign the API.
+- iPhone results remain **PENDING USER VERIFICATION** until performed on the actual device.
+
+## Historical time-off UI Sprint record (completed)
 
 - Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.
 - Overall completion: **87%**.

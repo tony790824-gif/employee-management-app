@@ -35,6 +35,36 @@ function requestHash(commandName, input) {
   return createHash('sha256').update(`${commandName}\n${stableJson(input)}`, 'utf8').digest('hex');
 }
 
+function withBootstrapRevision(result) {
+  if (!result || result.ok !== true || !result.data || typeof result.data !== 'object' || Array.isArray(result.data)) {
+    return result;
+  }
+  const sync = result.data.sync && typeof result.data.sync === 'object' && !Array.isArray(result.data.sync)
+    ? result.data.sync
+    : {};
+  const canonical = {
+    workspaceId: result.workspaceId ?? null,
+    role: result.role ?? null,
+    employeeId: result.employeeId ?? null,
+    currentUser: result.currentUser ?? null,
+    data: {
+      ...result.data,
+      sync: { ...sync, revision: 0 }
+    }
+  };
+  const revision = Number.parseInt(
+    createHash('sha256').update(stableJson(canonical), 'utf8').digest('hex').slice(0, 12),
+    16
+  );
+  return {
+    ...result,
+    data: {
+      ...result.data,
+      sync: { ...sync, revision }
+    }
+  };
+}
+
 function translateDatabaseError(error) {
   if (error instanceof ApiError) return error;
   if (error?.code === 'P0001' && DATABASE_ERROR_STATUS[error.message]) {
@@ -124,9 +154,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
 
     async bootstrap({ identity, workspaceId }) {
       const signed = context(identity, workspaceId, 'read');
-      return databaseCall(pool,
+      return withBootstrapRevision(await databaseCall(pool,
         'SELECT app_private.api_bootstrap($1, $2, $3) AS result',
-        [signed.payload, signed.signature, signed.keyId]);
+        [signed.payload, signed.signature, signed.keyId]));
     },
 
     async listTimeOffRequests({ identity, workspaceId }) {

@@ -1,5 +1,15 @@
 # Change Log
 
+## 2026-07-28 — PostgreSQL foreground synchronization
+
+- Added debounced `visibilitychange`, `pageshow`, and `focus` synchronization for authenticated PostgreSQL views without polling.
+- Added in-flight request protection, cooldown deduplication, stale-session result rejection, and safe retry after network failure.
+- Bootstrap state is replaced and rendered only when the server-issued revision changes.
+- Added deterministic role-visible bootstrap revisions so successful commands that alter visible data are observable without timestamp noise or client-generated revisions.
+- Time-off foreground refresh preserves unsent employee forms and avoids rerendering unchanged request data.
+- Added regression coverage for event bursts, unchanged/changed revisions, in-flight requests, logout, network failure/retry, form preservation, and Google Sheets isolation.
+- Production, Auth0, migrations, databases, Google Sheets, and Apps Script were not modified or deployed.
+
 ## 2026-07-27 — Scheduled-leave and ad-hoc-leave backend separation
 
 - Added additive Staging migration `0013_time_off_requests` with Workspace-scoped request/date tables, forced RLS, controlled functions, constraints, indexes, review metadata, private reasons, and a complete down migration.

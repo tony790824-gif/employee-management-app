@@ -1,5 +1,15 @@
 # 班客邦
 
+## PostgreSQL foreground synchronization (Sprint 21, 2026-07-28)
+
+- PostgreSQL boss and employee views now perform a safe bootstrap refresh when the page becomes visible, the browser/PWA returns through `pageshow`, or the window regains focus.
+- Foreground signals are debounced and share one in-flight request. The server-issued bootstrap revision is compared before state replacement, so unchanged data does not rebuild the UI.
+- Time-off request lists refresh through their existing read API and preserve unsent employee forms. A failed refresh keeps the current screen and can retry on the next foreground event.
+- The server revision is derived from the role-visible bootstrap payload; commands that change visible data therefore produce a new revision without a client-generated revision.
+- Google Sheets mode has no PostgreSQL foreground listeners. Production, Auth0, migrations, databases, Google Sheets, and Apps Script were not modified or deployed.
+- Automated checks pass; signed-in Windows and iPhone foreground acceptance requires the new isolated Draft allowlists and remains **PENDING USER VERIFICATION**.
+- Current assessed completion: **88%**. The next unique priority is **Staging foreground-sync real-device acceptance and release decision**.
+
 ## Time-off request workflow (Staging backend phase, 2026-07-27)
 
 - Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion: **87%**.

@@ -23,9 +23,19 @@
   });
 
   let payload = null;
+  let payloadFingerprint = '';
   let loadingPromise = null;
   let actionBusy = false;
   let scheduleDates = new Set();
+
+  const stableJson = value => {
+    if (value === undefined) return 'null';
+    if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+    if (value && typeof value === 'object') {
+      return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+    }
+    return JSON.stringify(value);
+  };
 
   const normalizeApprovedLeaveCoverage = value => (Array.isArray(value) ? value : [])
     .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(String(item?.date || ''))
@@ -197,12 +207,13 @@
     return dom.element('p', { className: 'time-off-empty', text: message });
   }
 
-  function renderScheduleForm(container) {
+  function renderScheduleForm(container, draft = null) {
     const month = dom.element('input', {
-      value: currentMonth(),
+      value: draft?.scheduleMonth || currentMonth(),
       attributes: { type: 'month', id: 'timeOffScheduleMonth', 'aria-label': '排休月份' }
     });
     const date = dom.element('input', {
+      value: draft?.scheduleDate || '',
       attributes: { type: 'date', id: 'timeOffScheduleDate', 'aria-label': '排休日期' }
     });
     const selected = dom.element('div', { className: 'time-off-date-chips' });
@@ -260,22 +271,36 @@
       submit
     ]);
     container.append(form);
-    scheduleDates = scheduleDraftForMonth(month.value);
+    scheduleDates = draft?.scheduleDates instanceof Set
+      ? new Set(draft.scheduleDates)
+      : scheduleDraftForMonth(month.value);
     renderDates();
   }
 
-  function renderLeaveForm(container) {
-    const start = dom.element('input', { attributes: { type: 'date', 'aria-label': '請假開始日期' } });
-    const end = dom.element('input', { attributes: { type: 'date', 'aria-label': '請假結束日期' } });
-    const type = dom.element('select', { attributes: { 'aria-label': '請假類型' } }, [
+  function renderLeaveForm(container, draft = null) {
+    const start = dom.element('input', {
+      value: draft?.leaveStart || '',
+      attributes: { type: 'date', id: 'timeOffLeaveStart', 'aria-label': '請假開始日期' }
+    });
+    const end = dom.element('input', {
+      value: draft?.leaveEnd || '',
+      attributes: { type: 'date', id: 'timeOffLeaveEnd', 'aria-label': '請假結束日期' }
+    });
+    const type = dom.element('select', {
+      attributes: { id: 'timeOffLeaveType', 'aria-label': '請假類型' }
+    }, [
       dom.option('事假', '事假'),
       dom.option('病假', '病假'),
       dom.option('家庭照顧假', '家庭照顧假'),
       dom.option('其他', '其他')
     ]);
+    type.value = draft?.leaveType || '事假';
     const reason = dom.element('textarea', {
+      text: draft?.leaveReason || '',
       attributes: { rows: '3', maxlength: '2000', placeholder: '請填寫原因', 'aria-label': '請假原因' }
     });
+    reason.id = 'timeOffLeaveReason';
+    reason.value = draft?.leaveReason || '';
     const submit = actionButton('送出請假申請', 'secondary', async () => {
       if (!start.value || !end.value || end.value < start.value || !reason.value.trim()) {
         setMessage('請填寫有效的日期區間與請假原因。', 'error');
@@ -304,10 +329,23 @@
     ]));
   }
 
-  function renderEmployee() {
+  function captureEmployeeDraft() {
+    if (currentRole() !== 'employee') return null;
+    return {
+      scheduleMonth: document.querySelector('#timeOffScheduleMonth')?.value || currentMonth(),
+      scheduleDate: document.querySelector('#timeOffScheduleDate')?.value || '',
+      scheduleDates: new Set(scheduleDates),
+      leaveStart: document.querySelector('#timeOffLeaveStart')?.value || '',
+      leaveEnd: document.querySelector('#timeOffLeaveEnd')?.value || '',
+      leaveType: document.querySelector('#timeOffLeaveType')?.value || '事假',
+      leaveReason: document.querySelector('#timeOffLeaveReason')?.value || ''
+    };
+  }
+
+  function renderEmployee(draft = null) {
     const forms = dom.element('div', { className: 'time-off-forms' });
-    renderScheduleForm(forms);
-    renderLeaveForm(forms);
+    renderScheduleForm(forms, draft);
+    renderLeaveForm(forms, draft);
     const history = dom.element('section', { className: 'time-off-list-section' }, [
       dom.element('h3', { text: '我的申請紀錄' })
     ]);
@@ -335,23 +373,31 @@
     content.replaceChildren(pending, processed);
   }
 
-  function render() {
+  function render(draft = null) {
     const role = currentRole();
     tab.hidden = !['boss', 'employee'].includes(role);
-    if (role === 'employee') renderEmployee();
+    if (role === 'employee') renderEmployee(draft);
     else if (role === 'boss') renderBoss();
     else content.replaceChildren(empty('目前角色無法使用排休／請假功能'));
   }
 
-  async function loadRequests() {
+  async function loadRequests({ silent = false, onlyIfChanged = false, preserveDraft = false } = {}) {
     if (loadingPromise) return loadingPromise;
     loadingPromise = (async () => {
-      setMessage('正在載入申請資料…');
+      const draft = preserveDraft ? captureEmployeeDraft() : null;
+      if (!silent) setMessage('正在載入申請資料…');
       try {
-        payload = await cloud.listTimeOffRequests();
+        const nextPayload = await cloud.listTimeOffRequests();
+        const nextFingerprint = stableJson(nextPayload);
+        if (onlyIfChanged && payload && nextFingerprint === payloadFingerprint) {
+          return { changed: false };
+        }
+        payload = nextPayload;
+        payloadFingerprint = nextFingerprint;
         publishApprovedLeaveCoverage(payload?.approvedLeaveCoverage);
         setMessage('');
-        render();
+        render(draft);
+        return { changed: true };
       } catch (error) {
         console.warn('Time-off list failed', {
           code: error?.code || 'TIME_OFF_LIST_FAILED',
@@ -374,6 +420,7 @@
     try {
       await action();
       payload = await cloud.listTimeOffRequests();
+      payloadFingerprint = stableJson(payload);
       publishApprovedLeaveCoverage(payload?.approvedLeaveCoverage);
       scheduleDates = new Set();
       render();
@@ -408,14 +455,21 @@
     await performAction(action, `申請已${verb}。`);
   }
 
-  document.addEventListener('postgres-bootstrap-refreshed', () => {
+  document.addEventListener('postgres-bootstrap-refreshed', event => {
     if (actionBusy) return;
+    if (event.detail?.source === 'foreground') return;
     payload = null;
+    payloadFingerprint = '';
     tab.hidden = !['boss', 'employee'].includes(currentRole());
     if (!tab.hidden) void loadRequests();
   });
+  document.addEventListener('postgres-foreground-synced', () => {
+    if (actionBusy || tab.hidden) return;
+    void loadRequests({ silent: true, onlyIfChanged: true, preserveDraft: true });
+  });
   document.addEventListener('postgres-session-cleared', () => {
     payload = null;
+    payloadFingerprint = '';
     publishApprovedLeaveCoverage([]);
     scheduleDates = new Set();
     tab.hidden = true;

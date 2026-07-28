@@ -1,5 +1,17 @@
 # Codex Context
 
+## 2026-07-28 current state — Sprint 21 foreground synchronization
+
+- Starting source baseline: `e0e0111a3c8d411d0075c176cb5a6a0fbaf798b5`; overall assessed completion: **88%**.
+- PostgreSQL views refresh bootstrap safely on visible `visibilitychange`, `pageshow`, and focus, with debounce, cooldown deduplication, one in-flight request, and stale result rejection.
+- The server returns a deterministic revision of the role-visible bootstrap payload. The browser replaces state and rerenders only when that revision changes.
+- Time-off foreground reads preserve unsent employee forms and do not rerender unchanged data.
+- Automated build, check, full regression, release gate, environment isolation, sensitive-information scan, and production dependency audit pass.
+- Production, migrations, databases, Auth0, Google Sheets, and Apps Script were not modified or deployed.
+- Signed-in Windows acceptance and iPhone Safari/PWA acceptance remain **PENDING USER VERIFICATION** on the new isolated Draft.
+- Next and only Sprint: **Staging foreground-sync real-device acceptance and release decision**.
+- Do not include `.codex/`, `.netlify/`, generated `dist-staging-postgres/`, or the unrelated untracked `0010_commission_rules` migration files.
+
 ## 2026-07-27 current state — time-off workflow Phase 1
 
 - Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.

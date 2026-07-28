@@ -9,6 +9,11 @@
   let client = null;
   let currentSession = null;
   let currentUser = null;
+  let foregroundTimer = null;
+  let foregroundPromise = null;
+  let lastForegroundCompletedAt = 0;
+  const FOREGROUND_DEBOUNCE_MS = 250;
+  const FOREGROUND_COOLDOWN_MS = 1000;
 
   const isEmployeeSession = () => currentSession?.role === 'employee' && Boolean(currentSession.employeeId);
 
@@ -55,15 +60,70 @@
     return { ...payload, currentUser: validateCurrentUser(payload.currentUser, payload), data: normalized };
   }
 
-  async function refreshBootstrap() {
+  const bootstrapRevision = value => Number(value?.data?.sync?.revision);
+
+  async function refreshBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
     if (!client) throw new Error('PostgreSQL Staging 尚未連線。');
-    const bootstrap = validateBootstrap(await client.bootstrap());
+    const activeClient = client;
+    const activeSession = currentSession;
+    const bootstrap = validateBootstrap(await activeClient.bootstrap());
+    if (activeClient !== client || activeSession !== currentSession) {
+      return { ...bootstrap, changed: false, stale: true };
+    }
+    const previousRevision = Number(stateStore.read()?.sync?.revision);
+    const nextRevision = bootstrapRevision(bootstrap);
+    const changed = !Number.isSafeInteger(previousRevision) || previousRevision !== nextRevision;
+    if (onlyIfChanged && !changed) return { ...bootstrap, changed: false };
     stateStore.write(bootstrap.data);
     currentSession = Object.freeze({ role: bootstrap.role, employeeId: bootstrap.employeeId || '' });
     currentUser = bootstrap.currentUser;
     sessionStorage.setItem(environment.storageKey('shift-postgres-auth'), JSON.stringify(currentSession));
-    document.dispatchEvent(new CustomEvent('postgres-bootstrap-refreshed'));
-    return bootstrap;
+    document.dispatchEvent(new CustomEvent('postgres-bootstrap-refreshed', {
+      detail: { source, revision: nextRevision }
+    }));
+    return { ...bootstrap, changed: true };
+  }
+
+  function cancelForegroundSync() {
+    if (foregroundTimer !== null) clearTimeout(foregroundTimer);
+    foregroundTimer = null;
+  }
+
+  async function runForegroundSync() {
+    if (!client || !currentSession) return null;
+    if (foregroundPromise) return foregroundPromise;
+    foregroundPromise = (async () => {
+      try {
+        const bootstrap = await refreshBootstrap({ onlyIfChanged: true, source: 'foreground' });
+        if (!bootstrap?.stale) {
+          document.dispatchEvent(new CustomEvent('postgres-foreground-synced', {
+            detail: { changed: Boolean(bootstrap?.changed), revision: bootstrapRevision(bootstrap) }
+          }));
+        }
+        return bootstrap;
+      } catch (error) {
+        console.warn('PostgreSQL foreground sync failed', {
+          code: error?.code || 'FOREGROUND_SYNC_FAILED',
+          status: Number(error?.status || 0),
+          requestId: error?.requestId || ''
+        });
+        return null;
+      } finally {
+        foregroundPromise = null;
+        lastForegroundCompletedAt = Date.now();
+      }
+    })();
+    return foregroundPromise;
+  }
+
+  function scheduleForegroundSync() {
+    if (!client || !currentSession || document.visibilityState === 'hidden') return;
+    if (foregroundPromise || Date.now() - lastForegroundCompletedAt < FOREGROUND_COOLDOWN_MS) return;
+    cancelForegroundSync();
+    foregroundTimer = setTimeout(() => {
+      foregroundTimer = null;
+      void runForegroundSync();
+    }, FOREGROUND_DEBOUNCE_MS);
   }
 
   async function connect({ getAccessToken }) {
@@ -75,7 +135,9 @@
     });
     await client.readiness();
     await client.establishSession();
-    return refreshBootstrap();
+    const bootstrap = await refreshBootstrap();
+    lastForegroundCompletedAt = Date.now();
+    return bootstrap;
   }
 
   async function executeAndRefresh(commandName, input) {
@@ -135,6 +197,7 @@
 
   async function logout() {
     const activeClient = client;
+    cancelForegroundSync();
     client = null;
     currentSession = null;
     currentUser = null;
@@ -143,6 +206,13 @@
     document.dispatchEvent(new CustomEvent('postgres-session-cleared'));
     if (activeClient) await activeClient.logout();
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') scheduleForegroundSync();
+  });
+  window.addEventListener('pageshow', scheduleForegroundSync);
+  window.addEventListener('focus', scheduleForegroundSync);
+  document.addEventListener('postgres-session-cleared', cancelForegroundSync);
 
   window.shiftPostgresCloud = Object.freeze({
     connect,

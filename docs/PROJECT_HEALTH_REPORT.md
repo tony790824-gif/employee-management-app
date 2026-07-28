@@ -1,5 +1,15 @@
 # 班客邦 Project Health Report
 
+## 2026-07-28 — Sprint 21 foreground synchronization health update
+
+- **Overall completion: 88%.** The PostgreSQL foreground synchronization implementation and automated quality gates are complete; real Windows and iPhone acceptance is still pending.
+- **Reliability:** no polling is used. Foreground event bursts are debounced, share one in-flight bootstrap request, and ignore stale results after Session/client changes.
+- **Render stability:** unchanged server revisions leave the current state and UI intact. Changed revisions refresh the role-scoped state while time-off forms are preserved.
+- **Security:** Session, Workspace, Membership, role, Auth0, and API boundaries are unchanged. Logout stops protected foreground requests; Google Sheets mode does not install PostgreSQL sync listeners.
+- **Known acceptance risk:** mobile browser/PWA lifecycle delivery and external Draft allowlists require real-device validation. These are not treated as passed by desktop simulation.
+- **Release status: No.** Await Staging Draft allowlists and signed-in Windows/iPhone foreground acceptance. Production remains unchanged.
+- **Next P0/P1:** complete **Staging foreground-sync real-device acceptance and release decision**; then update the release decision from evidence only.
+
 ## 2026-07-27 — Time-off request backend health update
 
 - **Baseline commit:** `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`.

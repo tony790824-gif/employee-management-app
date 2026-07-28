@@ -138,11 +138,17 @@ async function createTimeOffScenario(initialPayload, refreshedPayload = initialP
   const document = {
     createElement: tagName => new FakeElement(tagName),
     createTextNode: text => ({ nodeType: 3, textContent: String(text) }),
-    querySelector: selector => ({
-      '.tabs': tabs,
-      main,
-      '#monthPicker': monthPicker
-    })[selector] || null,
+    querySelector: selector => {
+      const fixed = ({
+        '.tabs': tabs,
+        main,
+        '#monthPicker': monthPicker
+      })[selector];
+      if (fixed) return fixed;
+      return selector.startsWith('#')
+        ? descendants(main).find(element => element.id === selector.slice(1)) || null
+        : null;
+    },
     querySelectorAll: () => [],
     addEventListener(type, listener) {
       (documentListeners[type] ||= []).push(listener);
@@ -189,10 +195,19 @@ async function createTimeOffScenario(initialPayload, refreshedPayload = initialP
   await window.shiftTimeOffUi.refresh();
   return {
     submitted,
+    get listCalls() {
+      return listCalls;
+    },
     findById: id => descendants(main).find(element => element.id === id),
     findButton: label => descendants(main).find(element =>
       element.tagName === 'button' && element.textContent.includes(label)
-    )
+    ),
+    contentChildren: () => [...(descendants(main)
+      .find(element => element.className === 'time-off-content')?.children || [])],
+    async emitDocument(type, detail = {}) {
+      for (const listener of documentListeners[type] || []) listener({ detail });
+      for (let index = 0; index < 8; index += 1) await Promise.resolve();
+    }
   };
 }
 
@@ -267,5 +282,29 @@ assert.ok(monthScenario.findButton('2026/08/03'),
   '切換月份時應預載該月份既有已核准排休');
 assert.equal(monthScenario.findButton('2026/07/12'), undefined,
   '跨月份資料不得殘留在新的月份草稿');
+
+const unchangedForegroundScenario = await createTimeOffScenario(julyApproved, structuredClone(julyApproved));
+const unchangedChildren = unchangedForegroundScenario.contentChildren();
+await unchangedForegroundScenario.emitDocument('postgres-foreground-synced');
+assert.strictEqual(unchangedForegroundScenario.contentChildren()[0], unchangedChildren[0],
+  'unchanged foreground data must not rebuild the Time-Off UI');
+
+const changedForegroundScenario = await createTimeOffScenario(julyApproved, pendingFullMonth);
+await changedForegroundScenario.findButton('2026/07/12').emit('click');
+changedForegroundScenario.findById('timeOffLeaveStart').value = '2026-07-20';
+changedForegroundScenario.findById('timeOffLeaveEnd').value = '2026-07-21';
+changedForegroundScenario.findById('timeOffLeaveType').value = '病假';
+changedForegroundScenario.findById('timeOffLeaveReason').value = '尚未送出的測試草稿';
+const changedChildren = changedForegroundScenario.contentChildren();
+await changedForegroundScenario.emitDocument('postgres-foreground-synced');
+assert.notStrictEqual(changedForegroundScenario.contentChildren()[0], changedChildren[0],
+  'changed foreground data must refresh the Time-Off UI');
+assert.equal(changedForegroundScenario.findButton('2026/07/12'), undefined,
+  'foreground refresh must preserve the employee schedule draft');
+assert.equal(changedForegroundScenario.findById('timeOffLeaveStart').value, '2026-07-20');
+assert.equal(changedForegroundScenario.findById('timeOffLeaveEnd').value, '2026-07-21');
+assert.equal(changedForegroundScenario.findById('timeOffLeaveType').value, '病假');
+assert.equal(changedForegroundScenario.findById('timeOffLeaveReason').value, '尚未送出的測試草稿',
+  'foreground refresh must preserve unsent leave form content');
 
 console.log('Time-Off frontend UI tests passed.');
