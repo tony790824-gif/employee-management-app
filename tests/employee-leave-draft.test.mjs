@@ -141,8 +141,23 @@ assert.match(
 );
 assert.match(
   accessSource,
-  /document\.addEventListener\('postgres-bootstrap-refreshed',[\s\S]*resetLeaveDraftFromServer\(\);[\s\S]*updateLeaveDraftView\(\);/,
+  /document\.addEventListener\('postgres-bootstrap-refreshed',[\s\S]*resetLeaveDraftFromServer\(\);[\s\S]*apply\(\);/,
   'PostgreSQL bootstrap 更新後必須以伺服器資料重建員工草稿'
+);
+assert.match(
+  accessSource,
+  /const syncPostgresIdentity = \(\) => \{[\s\S]*shiftPostgresCloud\?\.getCurrentUser[\s\S]*currentUser\?\.role === 'boss' \? 'boss' : 'employee'/,
+  'PostgreSQL 模式必須只使用 server-side currentUser role 決定介面'
+);
+assert.match(
+  accessSource,
+  /role\.parentElement\.hidden = usesPostgresBackend\(\) \|\| mode === 'employee'/,
+  'PostgreSQL 模式必須隱藏舊角色切換器'
+);
+assert.match(
+  accessSource,
+  /role\.onchange = \(\) => \{\s*if \(usesPostgresBackend\(\)\) \{\s*syncPostgresIdentity\(\);\s*apply\(\);\s*return;/,
+  'PostgreSQL 模式不得接受舊角色切換器覆寫正式角色'
 );
 assert.doesNotMatch(
   employeeLayoutSource,
@@ -385,5 +400,31 @@ role.value = 'boss';
 role.onchange();
 assert.equal(document.getElementById('employeeLeaveBtn').hidden, true, '老闆模式不得顯示員工請假捷徑');
 assert.equal(savePanel.hidden, true, '老闆模式不得顯示員工草稿儲存區');
+
+context.window.shiftEnvironment.dataBackend = 'postgres';
+let postgresCurrentUser = { role: 'employee', employeeId: 'employee-1' };
+context.window.shiftPostgresCloud = {
+  getCurrentUser: () => postgresCurrentUser
+};
+document.dispatchEvent(new FakeEvent('postgres-bootstrap-refreshed'));
+assert.equal(document.body.classList.contains('employee-mode'), true,
+  'PostgreSQL 員工只能進入員工介面');
+assert.equal(role.parentElement.hidden, true,
+  'PostgreSQL 員工看不到舊角色切換器');
+role.value = 'boss';
+role.onchange();
+assert.equal(document.body.classList.contains('employee-mode'), true,
+  'PostgreSQL 員工不能透過舊切換器切換成老闆介面');
+
+postgresCurrentUser = { role: 'boss', employeeId: null };
+document.dispatchEvent(new FakeEvent('postgres-bootstrap-refreshed'));
+assert.equal(document.body.classList.contains('employee-mode'), false,
+  'PostgreSQL 老闆只能進入管理者介面');
+assert.equal(role.parentElement.hidden, true,
+  'PostgreSQL 老闆看不到員工模擬切換器');
+role.value = 'employee';
+role.onchange();
+assert.equal(document.body.classList.contains('employee-mode'), false,
+  'PostgreSQL 老闆不能透過舊切換器切換成員工模擬介面');
 
 console.log('員工休假草稿、儲存、取消、離頁保護與手機操作區回歸測試通過。');

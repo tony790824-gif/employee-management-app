@@ -33,6 +33,14 @@ assert.match(ui, /const role = currentRole\(\);[\s\S]*role === 'employee'/,
   '員工 UI 必須依 server-side currentUser role 顯示');
 assert.match(ui, /const role = currentRole\(\);[\s\S]*role === 'boss'/,
   '管理者 UI 必須依 server-side currentUser role 顯示');
+assert.match(ui, /const currentUser = \(\) => cloud\.getCurrentUser\?\.\(\) \|\| null;/,
+  'Time-Off UI 必須使用 server-side currentUser 作為隱私判斷來源');
+assert.match(ui, /const canViewReason = request => \{[\s\S]*user\?\.role === 'boss'[\s\S]*user\?\.role === 'employee'[\s\S]*request\?\.employeeId === user\.employeeId;/,
+  '請假原因只允許管理者或申請員工本人查看');
+assert.match(ui, /request\.reason && canViewReason\(request\)/,
+  '請假原因渲染必須通過前端防禦性權限檢查');
+assert.doesNotMatch(ui, /\.\.\.\(request\.reason \? \[\['原因'/,
+  '請假原因不得只因 API 回傳非空值就直接渲染');
 assert.match(ui, /window\.confirm\(`確定取消/, '取消申請必須先確認');
 assert.match(ui, /window\.confirm\(`確定\$\{verb\}/, '核准或拒絕必須先確認');
 assert.match(ui, /if \(actionBusy\) return;/, '重複快速點擊不得送出第二次 Command');

@@ -15,6 +15,15 @@
   const write = data => stateStore.write(data);
   const currentMonth = () => $('#monthPicker').value;
   const requestKey = () => `${mine}-${currentMonth()}`;
+  const usesPostgresBackend = () => window.shiftEnvironment?.dataBackend === 'postgres';
+  const syncPostgresIdentity = () => {
+    if (!usesPostgresBackend()) return;
+    const currentUser = window.shiftPostgresCloud?.getCurrentUser?.();
+    mode = currentUser?.role === 'boss' ? 'boss' : 'employee';
+    if (mode === 'employee' && typeof currentUser?.employeeId === 'string' && currentUser.employeeId) {
+      mine = currentUser.employeeId;
+    }
+  };
   const employeeCloud = () => window.shiftEnvironment?.dataBackend === 'postgres'
     ? window.shiftPostgresCloud
     : window.sheetsCloud;
@@ -217,12 +226,14 @@
   }
 
   function apply() {
+    syncPostgresIdentity();
     const people = [...$('#calendarEmployee').options];
     if (!people.some(option => option.value === mine)) mine = people[0]?.value || '';
     dom.replace(person, ...people.map(option => dom.option(option.value, option.text)));
     person.value = mine;
     role.value = mode;
-    role.parentElement.hidden = mode === 'employee';
+    role.disabled = usesPostgresBackend();
+    role.parentElement.hidden = usesPostgresBackend() || mode === 'employee';
     wrap.hidden = true;
     const employeeLeaveButton = $('#employeeLeaveBtn');
     const canOpenEmployeeLeave = mode === 'employee'
@@ -248,14 +259,22 @@
     document.dispatchEvent(new CustomEvent('employee-view-update'));
   }
 
-  role.onchange = () => { mode = role.value; apply(); };
+  role.onchange = () => {
+    if (usesPostgresBackend()) {
+      syncPostgresIdentity();
+      apply();
+      return;
+    }
+    mode = role.value;
+    apply();
+  };
   person.onchange = () => { mine = person.value; localStorage.setItem(storageKey('shift-person'), mine); draftKey = ''; apply(); };
   $('#monthPicker').addEventListener('change', () => { draftKey = ''; apply(); });
   $('#calendarEmployee').addEventListener('change', showBossCalendarNames);
   document.addEventListener('postgres-bootstrap-refreshed', () => {
     resetLeaveDraftFromServer();
     setLeaveStatus('');
-    updateLeaveDraftView();
+    apply();
   });
 
   function confirmLeaveDraftNavigation() {

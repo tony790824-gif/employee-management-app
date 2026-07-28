@@ -21,6 +21,26 @@ assert.match(upSql, /FORCE ROW LEVEL SECURITY/g);
 assert.match(upSql, /api_execute_time_off_command/);
 assert.match(upSql, /api_list_time_off_requests/);
 assert.match(upSql, /request\.requester_user_id = auth_context\.authorized_user_id/);
+assert.match(
+  upSql,
+  /WHERE request\.workspace_id = auth_context\.authorized_workspace_id\s+AND request\.requester_user_id = auth_context\.authorized_user_id/,
+  '員工自己的申請（含原因）必須同時受 Workspace 與 requester_user_id 限制'
+);
+assert.match(
+  upSql,
+  /IF normalized_role = 'boss' THEN[\s\S]*'reason', request\.reason[\s\S]*INTO processed_rows[\s\S]*END IF;/,
+  '包含其他員工原因的待審核與歷史集合只允許老闆角色建立'
+);
+assert.match(
+  upSql,
+  /jsonb_build_object\(\s*'employeeId', request\.employee_id,\s*'employeeName', employee\.name,\s*'date', to_char\(day\.leave_date, 'YYYY-MM-DD'\)\s*\)[\s\S]*INTO approved_schedule_rows/,
+  '同店已核准排休公開資料只包含員工、姓名與日期'
+);
+assert.match(
+  upSql,
+  /jsonb_build_object\(\s*'date', to_char\(coverage\.leave_date, 'YYYY-MM-DD'\),\s*'approvedCount', coverage\.approved_count\s*\)[\s\S]*INTO approved_leave_coverage/,
+  '同店請假人力摘要只包含日期與核准人數'
+);
 assert.match(upSql, /auth_context\.authorized_role NOT IN \('boss', 'manager'\)/);
 assert.match(upSql, /body - 'leaveType'/);
 assert.doesNotMatch(upSql, /outbox_events[\s\S]{0,500}reason/);

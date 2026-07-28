@@ -27,7 +27,16 @@
   let actionBusy = false;
   let scheduleDates = new Set();
 
-  const currentRole = () => cloud.getCurrentUser?.()?.role || '';
+  const currentUser = () => cloud.getCurrentUser?.() || null;
+  const currentRole = () => currentUser()?.role || '';
+  const canViewReason = request => {
+    const user = currentUser();
+    if (user?.role === 'boss') return true;
+    return user?.role === 'employee'
+      && typeof user.employeeId === 'string'
+      && Boolean(user.employeeId)
+      && request?.employeeId === user.employeeId;
+  };
   const currentMonth = () => {
     const value = document.querySelector('#monthPicker')?.value;
     if (/^\d{4}-\d{2}$/.test(value || '')) return value;
@@ -120,7 +129,7 @@
       ['日期', dateRangeLabel(request.dates)],
       ...(request.scheduleMonth ? [['月份', request.scheduleMonth]] : []),
       ...(request.leaveType ? [['類型', request.leaveType]] : []),
-      ...(request.reason ? [['原因', request.reason]] : []),
+      ...(request.reason && canViewReason(request) ? [['原因', request.reason]] : []),
       ...(request.reviewNote ? [['審核備註', request.reviewNote]] : [])
     ];
     for (const [term, description] of pairs) {
