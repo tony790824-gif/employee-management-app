@@ -27,6 +27,20 @@
   let actionBusy = false;
   let scheduleDates = new Set();
 
+  const normalizeApprovedLeaveCoverage = value => (Array.isArray(value) ? value : [])
+    .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(String(item?.date || ''))
+      && Number.isInteger(Number(item?.approvedCount))
+      && Number(item.approvedCount) > 0)
+    .map(item => ({
+      date: String(item.date),
+      approvedCount: Number(item.approvedCount)
+    }));
+  const publishApprovedLeaveCoverage = value => {
+    document.dispatchEvent(new CustomEvent('time-off-coverage-refreshed', {
+      detail: { approvedLeaveCoverage: normalizeApprovedLeaveCoverage(value) }
+    }));
+  };
+
   const currentUser = () => cloud.getCurrentUser?.() || null;
   const currentRole = () => currentUser()?.role || '';
   const canViewReason = request => {
@@ -311,6 +325,7 @@
       setMessage('正在載入申請資料…');
       try {
         payload = await cloud.listTimeOffRequests();
+        publishApprovedLeaveCoverage(payload?.approvedLeaveCoverage);
         setMessage('');
         render();
       } catch (error) {
@@ -335,6 +350,7 @@
     try {
       await action();
       payload = await cloud.listTimeOffRequests();
+      publishApprovedLeaveCoverage(payload?.approvedLeaveCoverage);
       scheduleDates = new Set();
       render();
       setMessage(successMessage, 'success');
@@ -370,14 +386,13 @@
 
   document.addEventListener('postgres-bootstrap-refreshed', () => {
     if (actionBusy) return;
-    if (panel.classList.contains('active')) void loadRequests();
-    else {
-      payload = null;
-      tab.hidden = !['boss', 'employee'].includes(currentRole());
-    }
+    payload = null;
+    tab.hidden = !['boss', 'employee'].includes(currentRole());
+    if (!tab.hidden) void loadRequests();
   });
   document.addEventListener('postgres-session-cleared', () => {
     payload = null;
+    publishApprovedLeaveCoverage([]);
     scheduleDates = new Set();
     tab.hidden = true;
     content.replaceChildren();
@@ -385,5 +400,6 @@
   });
 
   tab.hidden = !['boss', 'employee'].includes(currentRole());
+  if (!tab.hidden) void loadRequests();
   window.shiftTimeOffUi = Object.freeze({ activate, refresh: loadRequests });
 })();

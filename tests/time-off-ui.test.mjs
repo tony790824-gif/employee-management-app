@@ -65,4 +65,13 @@ for (const source of [projectFiles, serviceWorker]) {
   assert.match(source, /time-off-ui\.css/, '建置與 PWA cache 必須包含 Time-Off CSS');
 }
 
+assert.match(ui, /publishApprovedLeaveCoverage\(payload\?\.approvedLeaveCoverage\)/,
+  'Time-Off API 的已核准臨時請假覆蓋資料必須發布給排班日曆');
+assert.match(ui, /postgres-bootstrap-refreshed[\s\S]*if \(!tab\.hidden\) void loadRequests\(\);/,
+  'bootstrap 更新後必須重新取得臨時請假覆蓋資料，不能只在 Time-Off 分頁開啟時更新');
+assert.match(ui, /postgres-session-cleared[\s\S]*publishApprovedLeaveCoverage\(\[\]\)/,
+  'Session 清除後不得保留上一位登入者的請假覆蓋資料');
+assert.match(css, /\.calendar-day\.has-approved-leave::before\{content:'請假 ' attr\(data-approved-leave-count\) ' 人'/,
+  '日曆必須以不含姓名與原因的核准臨時請假人數呈現');
+
 console.log('Time-Off frontend UI tests passed.');

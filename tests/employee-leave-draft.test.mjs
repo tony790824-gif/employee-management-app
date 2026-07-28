@@ -121,6 +121,17 @@ const accessCss = await readFile('access.css', 'utf8');
 
 assert.match(
   appSource,
+  /time-off-coverage-refreshed[\s\S]*approvedLeaveCoverage=new Map[\s\S]*renderCalendar\(\);/,
+  '已核准臨時請假覆蓋資料更新後，排班日曆必須立即重新渲染'
+);
+assert.match(
+  appSource,
+  /has-approved-leave[\s\S]*approvedLeaveCount:approvedCount\|\|''/,
+  '排班日曆必須以不含原因與姓名的核准請假人數標示臨時請假'
+);
+
+assert.match(
+  appSource,
   /button\.onclick=document\.body\.classList\.contains\('employee-mode'\)\s*\?\s*null/,
   '員工模式不可保留舊的月曆 onclick 處理'
 );

@@ -34,6 +34,10 @@
 .time-off-card-actions button{min-height:44px}
 .time-off-empty{margin:4px 0;color:var(--muted)}
 .form-hint{color:var(--muted);margin:0 0 12px}
+.calendar-day.has-approved-leave{padding-bottom:22px}
+.calendar-day.has-approved-leave::before{content:'請假 ' attr(data-approved-leave-count) ' 人';position:absolute;left:4px;right:4px;bottom:3px;color:var(--sage);font-size:10px;font-weight:bold;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendar-day.is-leave.has-approved-leave::before{right:20px}
+.calendar-day.is-leave.has-approved-leave::after{bottom:3px}
 @media(max-width:760px){
   .time-off-forms,.time-off-form-grid{grid-template-columns:minmax(0,1fr)}
   .time-off-form-card,.time-off-list-section{padding:14px}

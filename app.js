@@ -16,6 +16,7 @@ const initialDate = new Date();
 let month = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(initialDate).slice(0, 7);
 let calendarEmployeeId = data.employees[0]?.id || '';
 let bossLeaveSaving = false;
+let approvedLeaveCoverage = new Map();
 const $ = s => document.querySelector(s); const employee = id => data.employees.find(e => e.id === id);
 const dom = window.shiftDomSafety;
 const money = n => new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(n);
@@ -31,7 +32,18 @@ function renderCalendar(){
   const first=new Date(`${month}-01T00:00`), start=first.getDay(), count=new Date(first.getFullYear(),first.getMonth()+1,0).getDate(), leaves=selectedLeaves();
   const quota=employee(calendarEmployeeId)?.leaveQuota??8; $('#leaveRemaining').textContent=Math.max(0,quota-leaves.length);
   const blanks=Array.from({length:start},()=>dom.element('span',{className:'calendar-blank'}));
-  const days=Array.from({length:count},(_,i)=>{const d=i+1,date=`${month}-${String(d).padStart(2,'0')}`,off=leaves.includes(date);return dom.element('button',{className:`calendar-day ${off?'is-leave':''}`.trim(),text:d,title:off?'取消休假':'設定休假',dataset:{date},attributes:{type:'button'}});});
+  const days=Array.from({length:count},(_,i)=>{
+    const d=i+1,date=`${month}-${String(d).padStart(2,'0')}`,off=leaves.includes(date);
+    const approvedCount=approvedLeaveCoverage.get(date)||0;
+    const title=[off?'取消休假':'設定休假',approvedCount?`已核准臨時請假 ${approvedCount} 人`:''].filter(Boolean).join('；');
+    return dom.element('button',{
+      className:`calendar-day ${off?'is-leave':''} ${approvedCount?'has-approved-leave':''}`.trim(),
+      text:d,
+      title,
+      dataset:{date,approvedLeaveCount:approvedCount||''},
+      attributes:{type:'button'}
+    });
+  });
   dom.replace($('#calendarGrid'),...blanks,...days);
   document.querySelectorAll('.calendar-day').forEach(button=>{
     button.onclick=document.body.classList.contains('employee-mode')
@@ -103,6 +115,16 @@ document.addEventListener('postgres-bootstrap-refreshed',()=>{
   if(!data.employees.some(item=>item.id===calendarEmployeeId)) calendarEmployeeId=data.employees[0]?.id||'';
   render();
   document.dispatchEvent(new CustomEvent('employee-view-update'));
+});
+document.addEventListener('time-off-coverage-refreshed',event=>{
+  const values=Array.isArray(event?.detail?.approvedLeaveCoverage)?event.detail.approvedLeaveCoverage:[];
+  approvedLeaveCoverage=new Map(values
+    .filter(item=>/^\d{4}-\d{2}-\d{2}$/.test(String(item?.date||''))&&Number.isInteger(Number(item?.approvedCount))&&Number(item.approvedCount)>0)
+    .map(item=>[String(item.date),Number(item.approvedCount)]));
+  renderCalendar();
+});
+document.addEventListener('postgres-session-cleared',()=>{
+  approvedLeaveCoverage=new Map();
 });
 if($('#logoutBtn')) $('#logoutBtn').onclick=()=>window.shiftLogout();
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab],.tab-panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tab).classList.add('active');});
