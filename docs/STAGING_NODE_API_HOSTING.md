@@ -24,12 +24,17 @@ Enter these values during the initial Blueprint creation. Obtain them from the e
 | Key | Classification | Requirement |
 |---|---|---|
 | `DATABASE_API_URL` | Secret | Existing least-privilege Staging API role; never use migrator or Production credentials. |
+| `DATABASE_PUSH_URL` | Secret | Distinct Staging Web Push worker role; it must not reuse API or migrator credentials. |
 | `BANK_STAGING_DATABASE_HOST` | Configuration | Exact approved Staging PostgreSQL hostname. |
 | `BANK_OIDC_ISSUER` | Configuration | Exact Auth0 Staging issuer URL. |
 | `BANK_OIDC_JWKS_URL` | Configuration | Exact Auth0 Staging JWKS URL. |
 | `BANK_TENANT_CONTEXT_KEY` | Secret | Existing Staging HMAC key; do not generate a second unsynchronised trust key. |
 | `BANK_TENANT_CONTEXT_KEY_ID` | Configuration | Key ID matching the active Staging database key. |
 | `BANK_ALLOWED_ORIGINS` | Configuration | Exact approved Staging frontend origin only; no wildcard. |
+| `BANK_WEB_PUSH_ENABLED` | Configuration | Keep `false`/unset until Migration 0016, worker grants, and all VAPID settings are ready; use `true` only in the controlled Staging activation. |
+| `BANK_WEB_PUSH_PUBLIC_KEY` | Configuration | Staging VAPID public key. This same public value is used by the Staging PostgreSQL frontend build. |
+| `BANK_WEB_PUSH_PRIVATE_KEY` | Secret | Staging VAPID private key; server-side only and never included in a browser build or log. |
+| `BANK_WEB_PUSH_SUBJECT` | Configuration | Approved HTTPS contact URL or `mailto:` contact for VAPID. |
 
 The committed non-secret values are `BANK_ENV=staging`, `BANK_API_BIND_HOST=0.0.0.0`, `DATABASE_SSL=require`, the Staging Auth0 API audience, and the namespaced Session claim.
 
@@ -43,6 +48,8 @@ The committed non-secret values are `BANK_ENV=staging`, `BANK_API_BIND_HOST=0.0.
 6. Record the generated `onrender.com` hostname in the protected Staging environment only. Do not add it to Production or rebuild the frontend in this step.
 7. Verify `GET /v1/health` and `GET /v1/readiness` return HTTP 200 over HTTPS. Do not log response headers or credentials.
 8. Confirm the service Events page shows the intended `main` commit and no migration command.
+
+When Web Push is enabled, startup also verifies that `DATABASE_PUSH_URL` targets the same approved Staging host/database while using a database user distinct from API and migrator roles. Missing or invalid VAPID values fail startup closed.
 
 Render Free web services can spin down when idle, so a cold start is acceptable for this isolated acceptance environment but not for Production. A paid always-on instance decision belongs to a later deployment-readiness review.
 

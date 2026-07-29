@@ -94,6 +94,31 @@ export function createPool(env = process.env) {
   });
 }
 
+export function createPushPool(env = process.env) {
+  const connectionString = String(env.DATABASE_PUSH_URL || '').trim();
+  if (!connectionString) throw new Error('Web Push requires DATABASE_PUSH_URL.');
+  const apiConnectionString = String(env.DATABASE_API_URL || '').trim();
+  if (apiConnectionString && new URL(connectionString).username === new URL(apiConnectionString).username) {
+    throw new Error('Web Push worker and API must use separate database roles.');
+  }
+  return createPool({
+    ...env,
+    DATABASE_API_URL: connectionString,
+    DATABASE_URL: '',
+    DATABASE_POOL_MAX: env.DATABASE_PUSH_POOL_MAX || 2
+  });
+}
+
+export async function assertPushDatabaseTarget(pool, env = process.env) {
+  const connectionString = String(env.DATABASE_PUSH_URL || '').trim();
+  if (!connectionString) throw new Error('Web Push requires DATABASE_PUSH_URL.');
+  return assertApiDatabaseTarget(pool, {
+    ...env,
+    DATABASE_API_URL: connectionString,
+    DATABASE_URL: ''
+  });
+}
+
 export async function withTenantTransaction(pool, principal, callback) {
   assert(WORKSPACE_PATTERN.test(String(principal?.workspaceId || '')), 401, 'AUTH_CONTEXT_INVALID', '登入資訊缺少有效工作區。');
   assert(UUID_PATTERN.test(String(principal?.userId || '')), 401, 'AUTH_CONTEXT_INVALID', '登入資訊缺少有效使用者。');

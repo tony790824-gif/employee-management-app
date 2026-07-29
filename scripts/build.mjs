@@ -9,6 +9,7 @@ const profile = getEnvironmentProfile(requestedEnvironment);
 const postgresRehearsal = requestedEnvironment === 'staging' && process.argv.includes('--postgres-rehearsal');
 const rehearsalApiUrl = String(process.env.BANKE_STAGING_POSTGRES_API_URL || '').trim();
 const rehearsalWorkspaceId = String(process.env.BANKE_STAGING_WORKSPACE_ID || '').trim();
+const webPushPublicKey = String(process.env.BANK_WEB_PUSH_PUBLIC_KEY || '').trim();
 if (postgresRehearsal) {
   const url = new URL(rehearsalApiUrl);
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
@@ -16,6 +17,9 @@ if (postgresRehearsal) {
   }
   if (!/^ws_[a-f0-9]{32}$/.test(rehearsalWorkspaceId)) {
     throw new Error('BANKE_STAGING_WORKSPACE_ID format is invalid.');
+  }
+  if (webPushPublicKey && !/^[A-Za-z0-9_-]{80,120}$/.test(webPushPublicKey)) {
+    throw new Error('BANK_WEB_PUSH_PUBLIC_KEY format is invalid.');
   }
 }
 const effectiveProfile = postgresRehearsal ? Object.freeze({
@@ -27,7 +31,7 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
   postgresWorkspaceId: rehearsalWorkspaceId,
   storagePrefix: 'banke:staging-postgres:',
   cachePrefix: 'banke-staging-postgres-',
-  cacheName: 'banke-staging-postgres-v5',
+  cacheName: 'banke-staging-postgres-v6',
   manifest: Object.freeze({
     id: './?app=banke-staging-postgres', name: '班表管理 STAGING POSTGRES',
     shortName: '班表 STG PG', startUrl: './?app=banke-staging-postgres'
@@ -55,6 +59,7 @@ const runtimeConfig = `(() => {
     backendUrl: effectiveProfile.backendUrl,
     postgresApiUrl: effectiveProfile.postgresApiUrl,
     ...(effectiveProfile.postgresWorkspaceId ? { postgresWorkspaceId: effectiveProfile.postgresWorkspaceId } : {}),
+    ...(postgresRehearsal && webPushPublicKey ? { webPushPublicKey } : {}),
     storagePrefix: effectiveProfile.storagePrefix,
     serviceWorkerUrl: './service-worker.js',
     ...(profile.auth ? { auth: profile.auth } : {})
@@ -85,7 +90,7 @@ await writeFile(`${outputDirectory}/manifest.webmanifest`, `${JSON.stringify(man
 
 const serviceWorker = (await readFile('service-worker.js', 'utf8'))
   .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${cacheCleanupPrefix}';`)
-  .replace("const CACHE='banke-production-v2';", `const CACHE='${effectiveProfile.cacheName}';`)
+  .replace("const CACHE='banke-production-v3';", `const CACHE='${effectiveProfile.cacheName}';`)
   .replace("'./environment-config.js'", `'./environment-config.js?v=${cacheRevision}'`)
   .replace("'./manifest.webmanifest'", `'./manifest.webmanifest?v=${cacheRevision}'`);
 await writeFile(`${outputDirectory}/service-worker.js`, serviceWorker, 'utf8');

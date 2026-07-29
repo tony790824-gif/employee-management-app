@@ -7,6 +7,11 @@
 .notification-summary{margin:4px 0 0;color:var(--muted);font-size:13px}
 .notification-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px}
 .notification-toolbar button{min-height:44px}
+.push-notification-settings{display:grid;gap:10px;margin:10px 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#faf7ff}
+.push-notification-settings[hidden]{display:none!important}
+.push-notification-settings h3,.push-notification-settings p{margin:0}
+.push-notification-actions{display:flex;flex-wrap:wrap;gap:8px}
+.push-notification-actions button{min-height:44px}
 .notification-message{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff0ed;color:#8d3124}
 .notification-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding:2px}
 .notification-item{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:left;background:#fff;color:var(--ink);font:inherit;cursor:pointer}

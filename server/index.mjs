@@ -1,9 +1,15 @@
 import process from 'node:process';
 import { createApiServer } from './app.mjs';
 import { createCommandService } from './commands.mjs';
-import { assertApiDatabaseTarget, createPool } from './db.mjs';
+import {
+  assertApiDatabaseTarget,
+  assertPushDatabaseTarget,
+  createPool,
+  createPushPool
+} from './db.mjs';
 import { createOidcVerifier } from './jwt-verifier.mjs';
 import { createTenantContextSigner } from './tenant-context.mjs';
+import { createWebPushDispatcher, webPushConfig } from './web-push.mjs';
 
 function required(name) {
   const value = String(process.env[name] || '').trim();
@@ -27,6 +33,11 @@ const tenantContextSigner = createTenantContextSigner({
 const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => value.trim()).filter(Boolean);
 const commandService = createCommandService({ pool, tenantContextSigner });
 const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins, environment });
+const pushConfig = webPushConfig();
+const pushPool = pushConfig.enabled ? createPushPool() : null;
+const pushDispatcher = pushPool
+  ? createWebPushDispatcher({ pool: pushPool, config: pushConfig })
+  : null;
 const port = Number(process.env.PORT || 8080);
 const bindHost = String(process.env.BANK_API_BIND_HOST || '127.0.0.1').trim();
 if (!['127.0.0.1', '0.0.0.0'].includes(bindHost)) {
@@ -35,8 +46,19 @@ if (!['127.0.0.1', '0.0.0.0'].includes(bindHost)) {
 
 async function start() {
   await assertApiDatabaseTarget(pool);
+  if (pushPool) {
+    await assertPushDatabaseTarget(pushPool);
+    await pushDispatcher.start();
+  }
   server.listen(port, bindHost, () => {
-    console.log(JSON.stringify({ level: 'info', message: 'Banke API listening', environment, port, bindHost }));
+    console.log(JSON.stringify({
+      level: 'info',
+      message: 'Banke API listening',
+      environment,
+      port,
+      bindHost,
+      webPush: pushDispatcher ? 'enabled' : 'disabled'
+    }));
   });
 }
 
@@ -46,6 +68,8 @@ start().catch(async error => {
     message: 'Banke API startup failed closed',
     code: 'DATABASE_TARGET_INVALID'
   }));
+  await pushDispatcher?.stop().catch(() => {});
+  await pushPool?.end().catch(() => {});
   await pool.end().catch(() => {});
   process.exitCode = 1;
 });
@@ -53,6 +77,8 @@ start().catch(async error => {
 async function shutdown(signal) {
   console.log(JSON.stringify({ level: 'info', message: 'Banke API shutting down', signal }));
   server.close(async () => {
+    await pushDispatcher?.stop().catch(() => {});
+    await pushPool?.end().catch(() => {});
     await pool.end();
     process.exit(0);
   });

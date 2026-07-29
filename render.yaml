@@ -25,6 +25,8 @@ services:
         value: https://banke.tw/session_id
       - key: DATABASE_API_URL
         sync: false
+      - key: DATABASE_PUSH_URL
+        sync: false
       - key: BANK_STAGING_DATABASE_HOST
         sync: false
       - key: BANK_OIDC_ISSUER
@@ -36,4 +38,12 @@ services:
       - key: BANK_TENANT_CONTEXT_KEY_ID
         sync: false
       - key: BANK_ALLOWED_ORIGINS
+        sync: false
+      - key: BANK_WEB_PUSH_ENABLED
+        sync: false
+      - key: BANK_WEB_PUSH_PUBLIC_KEY
+        sync: false
+      - key: BANK_WEB_PUSH_PRIVATE_KEY
+        sync: false
+      - key: BANK_WEB_PUSH_SUBJECT
         sync: false

@@ -1,5 +1,16 @@
 # AI Handoff
 
+## 2026-07-29 handoff — Sprint 27 Standard Web Push
+
+- Source baseline: `99c75eac113e950eb6c1948762c9bf5f1e9a8036`; assessed completion: **94%**.
+- Architecture: PostgreSQL Notification Center remains authoritative; standard Web Push uses VAPID and `web-push` as a best-effort delivery worker.
+- Migration `0016` passed Neon Staging apply/down/reapply; checksum is `31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476`.
+- Live synthetic Staging E2E passes registration/unregistration, queue projection, idempotency, rate limiting, revoked-Membership rejection, direct-table denial, payload privacy, and Workspace A/B isolation; fixtures are cleaned.
+- API Role grants were updated to 12 controlled functions and zero direct table access. A pre-existing CONNECT path to the old Staging restore database was removed; the accepted Neon `postgres` maintenance-database behavior remains.
+- External blocker: Render lacks a distinct push-worker database credential and Staging VAPID settings. No actual provider delivery or real-device Push result is claimed.
+- Next action remains inside Sprint 27: securely configure those Staging-only settings, activate the existing Render service, build a non-Production Draft with only the public key, and run Windows/iPhone PWA verification.
+- Production was not modified or deployed.
+
 ## 2026-07-29 handoff — Sprint 25 Notification Center Foundation
 
 - Source baseline: `b5167958afece72e9132ded7797e4da5ee68c1cc`; assessed completion after local automated acceptance: **92%**.

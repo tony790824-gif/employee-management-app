@@ -12,12 +12,64 @@
   const summary = document.querySelector('#notificationSummary');
   const message = document.querySelector('#notificationMessage');
   const list = document.querySelector('#notificationList');
+  const pushSettings = document.querySelector('#pushNotificationSettings');
+  const pushStatusText = document.querySelector('#pushNotificationStatus');
+  const pushHelp = document.querySelector('#pushNotificationHelp');
+  const pushEnable = document.querySelector('#pushNotificationEnable');
+  const pushDisable = document.querySelector('#pushNotificationDisable');
+  const pushRepair = document.querySelector('#pushNotificationRepair');
+  const pushTest = document.querySelector('#pushNotificationTest');
   if (!cloud || !dom || !trigger || !badge || !dialog || !close || !markAll || !summary || !message || !list) return;
 
   let items = [];
   let unreadCount = 0;
   let loadPromise = null;
   let mutationPromise = null;
+  let pushMutationPromise = null;
+  let currentPushSubscription = null;
+  let pushAvailable = false;
+  let activePushSubscriptionCount = 0;
+
+  const pushCapable = () => Boolean(
+    window.isSecureContext
+    && 'serviceWorker' in navigator
+    && 'PushManager' in window
+    && 'Notification' in window
+    && window.shiftEnvironment?.webPushPublicKey
+  );
+  const isStandalone = () => window.matchMedia?.('(display-mode: standalone)').matches
+    || navigator.standalone === true;
+  const isAppleMobile = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+  const base64UrlBytes = value => {
+    const padding = '='.repeat((4 - (value.length % 4)) % 4);
+    const binary = atob((value + padding).replaceAll('-', '+').replaceAll('_', '/'));
+    return Uint8Array.from(binary, character => character.charCodeAt(0));
+  };
+  const platform = () => {
+    const agent = String(navigator.userAgent || '').toLowerCase();
+    if (agent.includes('ipad')) return 'ipados';
+    if (agent.includes('iphone') || agent.includes('ipod')) return 'ios';
+    if (agent.includes('android')) return 'android';
+    if (agent.includes('windows')) return 'windows';
+    if (agent.includes('mac os')) return 'macos';
+    if (agent.includes('linux')) return 'linux';
+    return 'unknown';
+  };
+
+  function subscriptionInput(subscription) {
+    const value = subscription?.toJSON?.();
+    if (!value?.endpoint || !value.keys?.p256dh || !value.keys?.auth) {
+      throw new Error('瀏覽器推播訂閱格式不正確，請重新註冊。');
+    }
+    return {
+      endpoint: value.endpoint,
+      expirationTime: value.expirationTime ?? null,
+      p256dh: value.keys.p256dh,
+      auth: value.keys.auth,
+      userAgent: String(navigator.userAgent || '').slice(0, 256),
+      platform: platform()
+    };
+  }
 
   const validNotification = item => item
     && typeof item === 'object'
@@ -56,6 +108,7 @@
     badge.setAttribute('aria-label', `${normalizedUnread} 則未讀通知`);
     summary.textContent = normalizedUnread ? `${normalizedUnread} 則未讀通知` : '沒有未讀通知';
     markAll.disabled = normalizedUnread === 0 || Boolean(mutationPromise);
+    renderPushSettings();
 
     if (!items.length) {
       dom.replace(list, dom.element('p', { className: 'notification-empty', text: '目前沒有通知。' }));
@@ -84,6 +137,149 @@
       if (unread) button.addEventListener('click', () => void markRead(item));
       return button;
     }));
+  }
+
+  function renderPushSettings() {
+    if (!pushSettings || !pushStatusText || !pushHelp || !pushEnable || !pushDisable || !pushRepair || !pushTest) return;
+    pushSettings.hidden = !pushAvailable;
+    if (!pushAvailable) return;
+    const busy = Boolean(pushMutationPromise);
+    const denied = pushCapable() && Notification.permission === 'denied';
+    const registered = Boolean(currentPushSubscription) && activePushSubscriptionCount > 0;
+    const needsRepair = Boolean(currentPushSubscription) && activePushSubscriptionCount === 0;
+    pushEnable.hidden = registered || needsRepair || denied;
+    pushDisable.hidden = !registered;
+    pushRepair.hidden = !registered && !needsRepair;
+    pushTest.hidden = !registered;
+    [pushEnable, pushDisable, pushRepair, pushTest].forEach(button => { button.disabled = busy; });
+    if (!pushCapable()) {
+      pushStatusText.textContent = '此瀏覽器或目前環境不支援背景推播';
+      pushHelp.textContent = isAppleMobile() && !isStandalone()
+        ? 'iPhone／iPad 請先將網站加入主畫面，再從主畫面開啟並啟用推播。'
+        : '仍可在通知中心查看所有通知。';
+      pushEnable.hidden = true;
+      return;
+    }
+    if (denied) {
+      pushStatusText.textContent = '通知權限已被瀏覽器封鎖';
+      pushHelp.textContent = '請到瀏覽器或系統設定允許通知後，再回來重新註冊。';
+      return;
+    }
+    pushStatusText.textContent = registered
+      ? `此裝置已啟用背景推播（目前帳號共 ${activePushSubscriptionCount} 個有效裝置）`
+      : needsRepair ? '此裝置的推播訂閱需要重新註冊' : '此裝置尚未啟用背景推播';
+    pushHelp.textContent = registered
+      ? '推播是通知中心的傳送方式；完整通知仍以通知中心為準。'
+      : needsRepair
+        ? '目前瀏覽器訂閱與登入 Session 不一致，請按「重新註冊」。'
+      : '只有按下「啟用推播」後，瀏覽器才會詢問通知權限。';
+  }
+
+  async function refreshPushStatus() {
+    if (!pushSettings || !cloud.isConnected()) return null;
+    try {
+      const status = await cloud.pushStatus();
+      pushAvailable = status?.ok === true && status?.available !== false;
+      activePushSubscriptionCount = Number.isSafeInteger(Number(status?.activeSubscriptionCount))
+        ? Math.max(0, Number(status.activeSubscriptionCount))
+        : 0;
+      if (pushCapable()) {
+        const registration = await navigator.serviceWorker.ready;
+        currentPushSubscription = await registration.pushManager.getSubscription();
+      } else {
+        currentPushSubscription = null;
+      }
+      renderPushSettings();
+      return status;
+    } catch {
+      pushAvailable = false;
+      activePushSubscriptionCount = 0;
+      currentPushSubscription = null;
+      renderPushSettings();
+      return null;
+    }
+  }
+
+  async function enablePush({ replace = false } = {}) {
+    if (pushMutationPromise || !pushCapable()) return;
+    pushMutationPromise = (async () => {
+      try {
+        if (isAppleMobile() && !isStandalone()) {
+          throw new Error('iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
+        }
+        const permission = Notification.permission === 'default'
+          ? await Notification.requestPermission()
+          : Notification.permission;
+        if (permission !== 'granted') throw new Error('尚未取得通知權限。');
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+        if (replace && subscription) {
+          await cloud.unregisterPushSubscription(subscription.endpoint);
+          await subscription.unsubscribe();
+          subscription = null;
+        }
+        subscription ||= await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: base64UrlBytes(window.shiftEnvironment.webPushPublicKey)
+        });
+        await cloud.registerPushSubscription(subscriptionInput(subscription));
+        currentPushSubscription = subscription;
+        activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
+        setMessage('此裝置已啟用背景推播。');
+      } catch (error) {
+        setMessage(error?.message || '無法啟用背景推播，請稍後再試。');
+      } finally {
+        pushMutationPromise = null;
+        renderPushSettings();
+      }
+    })();
+    await pushMutationPromise;
+  }
+
+  async function disablePush() {
+    if (pushMutationPromise || !currentPushSubscription) return;
+    pushMutationPromise = (async () => {
+      try {
+        const subscription = currentPushSubscription;
+        await cloud.unregisterPushSubscription(subscription.endpoint);
+        await subscription.unsubscribe();
+        currentPushSubscription = null;
+        activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
+        setMessage('此裝置的背景推播已停用。');
+      } catch (error) {
+        setMessage(error?.message || '無法停用背景推播，請稍後再試。');
+      } finally {
+        pushMutationPromise = null;
+        renderPushSettings();
+      }
+    })();
+    await pushMutationPromise;
+  }
+
+  async function unregisterCurrentPushForLogout() {
+    if (!currentPushSubscription || pushMutationPromise) return false;
+    const subscription = currentPushSubscription;
+    await cloud.unregisterPushSubscription(subscription.endpoint);
+    await subscription.unsubscribe();
+    currentPushSubscription = null;
+    activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
+    return true;
+  }
+
+  async function testPush() {
+    if (pushMutationPromise || !currentPushSubscription) return;
+    pushMutationPromise = (async () => {
+      try {
+        await cloud.sendTestPush(currentPushSubscription.endpoint);
+        setMessage('測試通知已排入傳送；請稍候查看系統通知。');
+      } catch (error) {
+        setMessage(error?.message || '測試通知無法傳送，請稍後再試。');
+      } finally {
+        pushMutationPromise = null;
+        renderPushSettings();
+      }
+    })();
+    await pushMutationPromise;
   }
 
   function normalizePayload(payload) {
@@ -169,9 +365,14 @@
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
     void loadNotifications();
+    void refreshPushStatus();
   });
   close.addEventListener('click', () => dialog.close());
   markAll.addEventListener('click', () => void markAllRead());
+  pushEnable?.addEventListener('click', () => void enablePush());
+  pushDisable?.addEventListener('click', () => void disablePush());
+  pushRepair?.addEventListener('click', () => void enablePush({ replace: true }));
+  pushTest?.addEventListener('click', () => void testPush());
   dialog.addEventListener('click', event => {
     if (event.target === dialog) dialog.close();
   });
@@ -179,12 +380,36 @@
   document.addEventListener('postgres-session-cleared', () => {
     items = [];
     unreadCount = 0;
+    pushAvailable = false;
+    activePushSubscriptionCount = 0;
+    currentPushSubscription = null;
     trigger.hidden = true;
     setMessage();
     render();
     if (dialog.open) dialog.close();
   });
+  window.navigator?.serviceWorker?.addEventListener?.('message', event => {
+    if (event.data?.type === 'BANKE_PUSH_SUBSCRIPTION_CHANGED') {
+      currentPushSubscription = null;
+      renderPushSettings();
+      setMessage('推播訂閱已變更，請重新註冊此裝置。');
+    }
+  });
+  const openFromPush = typeof URLSearchParams === 'function'
+    && new URLSearchParams(window.location?.search || '').get('open') === 'notifications';
+  if (openFromPush) {
+    window.addEventListener('load', () => {
+      if (!cloud.isConnected()) return;
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      void loadNotifications();
+      void refreshPushStatus();
+    }, { once: true });
+  }
 
+  window.shiftNotificationCenter = Object.freeze({
+    unregisterCurrentPushForLogout
+  });
   render();
   void loadNotifications({ silent: true });
 })();

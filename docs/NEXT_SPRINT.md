@@ -1,4 +1,38 @@
-# Next unique work — Apply Notification Center to isolated Neon Staging
+# Next unique work — Finish Sprint 27 Staging Web Push acceptance
+
+## Current gate
+
+Programming and Neon Staging Migration acceptance are complete. This is not Sprint 28.
+
+## Remaining external Staging activation
+
+1. Create/use a distinct least-privilege Staging Web Push database credential and store it only as Render `DATABASE_PUSH_URL`.
+2. Generate one Staging VAPID key pair; store public/private values and subject only in Render Secrets. Set `BANK_WEB_PUSH_ENABLED=true`.
+3. Deploy the existing Render Staging service and confirm `/v1/readiness`.
+4. Build a non-Production `STAGING POSTGRES` Draft with only `BANK_WEB_PUSH_PUBLIC_KEY`; add its Origin to existing Auth0/Render Staging allowlists.
+
+## Windows Chrome — PENDING USER VERIFICATION
+
+1. Sign in to the Draft and open Notification Center.
+2. Click enable, grant notification permission, and send one test notification.
+3. Verify foreground, background, closed-window delivery, click-to-open Notification Center, unread badge, disable, and re-register.
+4. Verify another device subscription is not removed and logout/expired Session cannot receive new protected events.
+
+## iPhone Home Screen PWA — PENDING USER VERIFICATION
+
+1. Open the Draft in Safari, add it to the Home Screen, and launch the installed PWA.
+2. Enable Push only from the in-App button, grant permission, and send one test notification.
+3. Background and close the PWA, trigger a synthetic Notification Center event, verify system delivery, tap-to-open, badge/list consistency, disable, and re-register.
+4. Ordinary Safari-tab use must show the Home Screen requirement and must not be reported as Push PASS.
+
+## Stop conditions
+
+- Stop on Production endpoint/configuration, cross-Workspace delivery, direct Role table access, sensitive payload/log, failed Migration checksum, failed readiness, or any request to expose a private key.
+- Do not start Sprint 28 until the owner records available device results.
+
+---
+
+# Historical next work — Apply Notification Center to isolated Neon Staging
 
 ## Goal
 

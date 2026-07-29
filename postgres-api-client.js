@@ -19,7 +19,10 @@
     'time-off-requests.approve',
     'time-off-requests.reject',
     'notifications.mark-read',
-    'notifications.mark-all-read'
+    'notifications.mark-all-read',
+    'push.register',
+    'push.unregister',
+    'push.test'
   ]);
 
   class PostgresApiError extends Error {
@@ -212,6 +215,7 @@
       bootstrapRevision: () => request('/bootstrap/revision', { bootstrapRevision: true }),
       listTimeOffRequests: () => request('/time-off-requests'),
       listNotifications: () => request('/notifications'),
+      pushStatus: () => request('/push/status'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {
           throw new PostgresApiError('Command 不在允許清單。', { code: 'COMMAND_NOT_FOUND', status: 404 });

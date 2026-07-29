@@ -1,5 +1,16 @@
 # 班客邦 Project Health Report
 
+## 2026-07-29 — Sprint 27 health update
+
+- **Overall completion: 94%.** Web Push code and Staging Migration are accepted; external Staging secrets and real-device delivery evidence remain.
+- **Architecture:** Notification Center is authoritative. Standard Web Push consumes a durable delivery queue and adds no second business-notification store.
+- **Security:** live Session/User/Workspace/Membership checks, composite tenant foreign keys, forced RLS, endpoint allowlist, payload bound, rate limit, API/worker Role separation, and secret-free logs are implemented.
+- **Staging evidence:** synthetic Workspace A/B registration, notification queueing, Membership revocation, payload privacy, idempotency/rate-limit, and API direct-table denial pass against the real Neon Staging engine with fixture cleanup.
+- **Reliability:** bounded batches, `SKIP LOCKED`, stuck-claim recovery, three attempts, delayed retry, idempotent enqueue, and 404/410 endpoint revocation are implemented.
+- **Known P0 activation blocker:** `DATABASE_PUSH_URL`, `BANK_WEB_PUSH_PUBLIC_KEY`, `BANK_WEB_PUSH_PRIVATE_KEY`, `BANK_WEB_PUSH_SUBJECT`, and enable flag are not yet configured in Render Staging.
+- **Known acceptance blocker:** Windows and iPhone Home Screen PWA background delivery are **PENDING USER VERIFICATION**.
+- **Release status: No.** Production remains unchanged and is not approved.
+
 ## 2026-07-29 — Sprint 25 Notification Center Foundation health update
 
 - **Overall completion: 92%.** Schema/API/UI/revision integration and local automated coverage are implemented; Staging database and real-device acceptance remain pending.

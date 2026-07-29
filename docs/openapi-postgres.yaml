@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-29.2
-  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, time-off requests, deterministic bootstrap revision transport, and the pending Notification Center foundation. Production cutover is not approved.
-  x-baseline-commit: b5167958afece72e9132ded7797e4da5ee68c1cc
-  x-project-completion: 92
-  x-staging-migration: 0013_time_off_requests, 0014_notification_center, and 0015_notification_command_validation applied
+  version: 2026-07-29.3
+  description: Staging transition API with accepted Auth0, Session/tenant boundaries, Time-Off, Notification Center, and standard Web Push registration/delivery foundations. Production cutover is not approved.
+  x-baseline-commit: 99c75eac113e950eb6c1948762c9bf5f1e9a8036
+  x-project-completion: 94
+  x-staging-migration: 0013_time_off_requests, 0014_notification_center, 0015_notification_command_validation, and 0016_web_push_subscriptions applied
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only
@@ -68,6 +68,16 @@ paths:
           description: Recipient-scoped notification list and unread count
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
+  /push/status:
+    get:
+      summary: Read the current Session's active Web Push subscription count
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200': { description: Session-scoped push capability status }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
   /bootstrap:
     get:
       summary: Read the caller's role-visible bootstrap state
@@ -118,6 +128,9 @@ paths:
               - time-off-requests.reject
               - notifications.mark-read
               - notifications.mark-all-read
+              - push.register
+              - push.unregister
+              - push.test
         - in: header
           name: Idempotency-Key
           required: true
@@ -134,6 +147,7 @@ paths:
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
         '409': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
 components:
   headers:

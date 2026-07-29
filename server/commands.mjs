@@ -3,6 +3,7 @@ import { ApiError, assert } from './errors.mjs';
 import {
   commandNames,
   notificationCommandNames,
+  pushCommandNames,
   timeOffCommandNames,
   validateCommand,
   validateIdempotencyKey
@@ -26,7 +27,11 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   IDEMPOTENCY_KEY_REUSED: 409,
   TIME_OFF_REQUEST_NOT_FOUND: 404,
   TIME_OFF_REQUEST_ALREADY_PROCESSED: 409,
-  NOTIFICATION_NOT_FOUND: 404
+  NOTIFICATION_NOT_FOUND: 404,
+  PUSH_SUBSCRIPTION_CONFLICT: 409,
+  PUSH_SUBSCRIPTION_NOT_FOUND: 404,
+  PUSH_RATE_LIMITED: 429,
+  PUSH_DELIVERY_NOT_FOUND: 404
 });
 
 function stableJson(value) {
@@ -176,7 +181,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
         ? 'app_private.api_execute_time_off_command'
         : notificationCommandNames.includes(commandName)
           ? 'app_private.api_execute_notification_command'
-          : 'app_private.api_execute_command';
+          : pushCommandNames.includes(commandName)
+            ? 'app_private.api_execute_push_command'
+            : 'app_private.api_execute_command';
       try {
         return await databaseCall(pool,
           `SELECT ${databaseFunction}(
@@ -185,8 +192,12 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
           [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
             idempotencyKey, requestHash(commandName, validated), requestId]);
       } catch (error) {
-        if (notificationCommandNames.includes(commandName) && notificationSchemaUnavailable(error)) {
-          throw new ApiError(503, 'NOTIFICATION_CENTER_UNAVAILABLE', 'Notification Center is not enabled.');
+        if ((notificationCommandNames.includes(commandName) || pushCommandNames.includes(commandName))
+          && notificationSchemaUnavailable(error)) {
+          const pushCommand = pushCommandNames.includes(commandName);
+          throw new ApiError(503,
+            pushCommand ? 'WEB_PUSH_UNAVAILABLE' : 'NOTIFICATION_CENTER_UNAVAILABLE',
+            pushCommand ? 'Web Push is not enabled.' : 'Notification Center is not enabled.');
         }
         throw error;
       }
@@ -228,6 +239,20 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       } catch (error) {
         if (notificationSchemaUnavailable(error)) {
           return { ok: true, workspaceId, items: [], unreadCount: 0, available: false };
+        }
+        throw error;
+      }
+    },
+
+    async pushStatus({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      try {
+        return await databaseCall(pool,
+          'SELECT app_private.api_push_status($1, $2, $3) AS result',
+          [signed.payload, signed.signature, signed.keyId]);
+      } catch (error) {
+        if (notificationSchemaUnavailable(error)) {
+          return { ok: true, workspaceId, activeSubscriptionCount: 0, available: false };
         }
         throw error;
       }

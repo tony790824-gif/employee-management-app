@@ -1,5 +1,15 @@
 # Change Log
 
+## 2026-07-29 — Sprint 27 Standard Web Push
+
+- Added Staging-only Migration `0016_web_push_subscriptions` with Session-scoped subscriptions, durable deliveries, forced RLS, controlled registration/status/worker functions, bounded retries, expiry cleanup, and down migration.
+- Added authenticated `GET /v1/push/status` plus `push.register`, `push.unregister`, and rate-limited `push.test` Commands.
+- Added a separate least-privilege Web Push worker Role boundary and Node `web-push` dispatcher with minimal logs and no direct table access.
+- Added Notification Center device controls and Service Worker `push`, `notificationclick`, and `pushsubscriptionchange` handling.
+- Completed Neon Staging apply/down/reapply for `0016`; no Production migration or deployment occurred.
+- Added a live Neon Staging synthetic E2E for subscription registration, queue delivery boundaries, rate limiting, Membership revocation, least-privilege API access, and Workspace A/B isolation.
+- Real Render/VAPID activation and Windows/iPhone PWA delivery remain pending external Staging configuration and user verification.
+
 ## 2026-07-29 — Sprint 25 Notification Center Foundation
 
 - Added additive Migration `0014_notification_center` with recipient-scoped notification storage, unread state, indexes, forced RLS, controlled read/revision/command functions, transactional outbox projection, and a complete down migration.

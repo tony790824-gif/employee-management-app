@@ -1,5 +1,22 @@
 # 班客邦 Release Checklist
 
+## Sprint 27 — Standard Web Push
+
+- [x] Notification Center remains authoritative; Push is a best-effort delivery channel.
+- [x] `0016_web_push_subscriptions` uses composite tenant constraints, forced RLS, PUBLIC revocation, idempotent enqueue, and complete down migration.
+- [x] Neon Staging apply/down/reapply and checksum verification pass; `0009`/`0010` remain unapplied.
+- [x] API Role has zero direct table/sequence privileges and only the two added controlled API function grants.
+- [x] Separate worker Role design has no ownership, table/sequence access, elevated attributes, or RLS bypass.
+- [x] Live Neon Staging synthetic E2E passes Workspace A/B isolation, registration/unregistration, queue projection, idempotency, rate limiting, payload privacy, Membership revocation, and API direct-table denial.
+- [x] Payload excludes tokens, Session IDs, leave reasons, contact data, PINs, and subscription keys.
+- [x] Service Worker validates payloads, restricts clicks to same-origin paths, and never stores credentials.
+- [x] Browser permission is requested only after a user gesture; iPhone/iPad requires Home Screen PWA.
+- [x] Explicit PostgreSQL logout attempts controlled subscription revocation before clearing the Session; failure still fails closed through live Session authorization.
+- [ ] Configure distinct Staging worker credential and VAPID secrets in Render.
+- [ ] Complete real Windows Chrome delivery acceptance.
+- [ ] Complete real iPhone Home Screen PWA delivery acceptance.
+- [x] Production was not deployed, migrated, or modified.
+
 ## Sprint 25 — Notification Center Foundation
 
 - [x] Notification schema is Workspace- and recipient-scoped with composite constraints, indexes, forced RLS, and PUBLIC revocation.

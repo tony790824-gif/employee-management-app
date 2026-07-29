@@ -14,7 +14,8 @@ const rehearsalBuild = spawnSync(process.execPath, ['scripts/build.mjs', '--envi
   env: {
     ...process.env,
     BANKE_STAGING_POSTGRES_API_URL: 'https://api.staging.example/v1',
-    BANKE_STAGING_WORKSPACE_ID: `ws_${'a'.repeat(32)}`
+    BANKE_STAGING_WORKSPACE_ID: `ws_${'a'.repeat(32)}`,
+    BANK_WEB_PUSH_PUBLIC_KEY: 'B'.repeat(87)
   }
 });
 assert.equal(rehearsalBuild.status, 0, rehearsalBuild.stderr || 'Failed to build isolated PostgreSQL rehearsal');
@@ -83,11 +84,11 @@ assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.product
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
 assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL rehearsal 與正常 Staging 必須共用清除範圍');
-assert.match(rehearsalWorker, /banke-staging-postgres-v5/);
-assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v5/);
-assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v5/);
-assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v5"/);
-assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v5"/);
+assert.match(rehearsalWorker, /banke-staging-postgres-v6/);
+assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v6/);
+assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v6/);
+assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v6"/);
+assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v6"/);
 assert.notEqual(
   stagingIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
   rehearsalIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
@@ -97,6 +98,10 @@ assert.doesNotMatch(rehearsalWorker, /banke-production-/);
 assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION/);
 assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION_AVAILABLE/);
 assert.match(rehearsalWorker, /__banke_bootstrap_revision__/);
+assert.match(rehearsalEnvironment, /"webPushPublicKey": "B{87}"/);
+assert.match(rehearsalWorker, /addEventListener\('push'/);
+assert.match(rehearsalWorker, /addEventListener\('notificationclick'/);
+assert.match(rehearsalWorker, /addEventListener\('pushsubscriptionchange'/);
 
 const workerListeners = new Map();
 const revisionWrites = [];

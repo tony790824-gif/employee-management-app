@@ -1,5 +1,17 @@
 # API 文件（現況與目標）
 
+## 2026-07-29 — Standard Web Push API
+
+Migration `0016_web_push_subscriptions` is active only in Neon Staging.
+
+- `GET /v1/push/status` returns the current authorized Session's active subscription count.
+- `push.register` accepts only an approved HTTPS Web Push endpoint, browser `p256dh`/`auth` keys, expiration, bounded user agent, and platform. Workspace/User/Session are always resolved server-side.
+- `push.unregister` can revoke only the caller's own Workspace/User endpoint and makes pending deliveries dead.
+- `push.test` can target only the caller's active current-Session endpoint and is limited to three requests per ten minutes.
+- Missing Migration support returns an optional-capability response or `503 WEB_PUSH_UNAVAILABLE`; other authorization/database errors fail closed.
+- The API Role never receives direct `push_subscriptions` or `push_deliveries` access. A separate worker credential may execute only claim and completion functions.
+- Push payloads are limited to 3 KiB and contain only notification metadata plus a same-origin Notification Center path.
+
 ## 2026-07-29 — Notification Center API
 
 Migration `0014_notification_center` defines the database functions and is applied only to Neon Staging. Additive `0015_notification_command_validation` fixes exact-key validation; neither migration is applied to Production.

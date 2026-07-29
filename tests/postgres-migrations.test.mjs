@@ -14,7 +14,8 @@ const sprintUpFiles = new Set([
   '0012_current_user_bootstrap.up.sql',
   '0013_time_off_requests.up.sql',
   '0014_notification_center.up.sql',
-  '0015_notification_command_validation.up.sql'
+  '0015_notification_command_validation.up.sql',
+  '0016_web_push_subscriptions.up.sql'
 ]);
 const migrations = (await loadMigrations()).filter(item =>
   trackedUpFiles.has(`${item.version}_${item.name}.up.sql`)
@@ -22,7 +23,7 @@ const migrations = (await loadMigrations()).filter(item =>
 );
 assert.deepEqual(migrations.map(item => item.version), [
   '0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008',
-  '0009', '0011', '0012', '0013', '0014', '0015'
+  '0009', '0011', '0012', '0013', '0014', '0015', '0016'
 ]);
 assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
 for (const migration of migrations) {

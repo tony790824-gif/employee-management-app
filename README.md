@@ -1,5 +1,17 @@
 # 班客邦
 
+## Standard Web Push delivery (Sprint 27, 2026-07-29)
+
+- Notification Center remains the source of truth; standard Web Push is a best-effort background delivery channel.
+- Migration `0016_web_push_subscriptions` is applied only to Neon Staging after a successful apply/down/reapply rehearsal. Production is unchanged.
+- The PostgreSQL API supports `GET /v1/push/status` and the idempotent Commands `push.register`, `push.unregister`, and `push.test`.
+- Push subscriptions are Workspace/User/Session scoped. The API Role has no direct table access, and the separate worker Role design is limited to two delivery functions.
+- A live Neon Staging synthetic E2E validates registration, queue projection, idempotency, rate limiting, revoked-Membership rejection, direct-table denial, and Workspace A/B isolation; all fixtures are removed after the test.
+- The Service Worker handles `push`, `notificationclick`, and `pushsubscriptionchange`. The UI requests permission only after a user action and explains the iPhone/iPad Home Screen PWA requirement.
+- Explicit PostgreSQL logout first attempts the existing controlled `push.unregister` flow for the current device; live Session authorization still blocks delivery if browser cleanup cannot complete.
+- VAPID private material and `DATABASE_PUSH_URL` are server-side secrets. Only `BANK_WEB_PUSH_PUBLIC_KEY` may enter a Staging PostgreSQL frontend build.
+- Programming and Staging Migration acceptance are complete. Render secret activation and Windows/iPhone PWA background delivery remain **PENDING USER VERIFICATION**.
+
 ## Notification Center Foundation (Sprint 25, 2026-07-29)
 
 - Historical Sprint 25 state: additive Migration `0014_notification_center` was committed but had not yet been applied. Sprint 26 Staging acceptance is recorded below.

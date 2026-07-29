@@ -270,6 +270,19 @@
 
   window.shiftLogout = async () => {
     const postgresSession = window.shiftEnvironment?.dataBackend === 'postgres';
+    if (postgresSession
+      && typeof window.shiftNotificationCenter?.unregisterCurrentPushForLogout === 'function') {
+      try {
+        await Promise.race([
+          window.shiftNotificationCenter.unregisterCurrentPushForLogout(),
+          new Promise(resolve => setTimeout(resolve, 1500))
+        ]);
+      } catch (error) {
+        console.warn('Push subscription cleanup failed during logout', {
+          code: error?.code || 'PUSH_UNREGISTER_FAILED'
+        });
+      }
+    }
     document.body.classList.remove('app-authenticated', 'employee-mode');
     overlay.hidden = false;
     purgeRenderedData();

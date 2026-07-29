@@ -166,7 +166,7 @@ const timeOffCommandNames = [
   'time-off-requests.approve',
   'time-off-requests.reject'
 ];
-assert.equal(commandNames.length, 14);
+assert.equal(commandNames.length, 17);
 for (const commandName of timeOffCommandNames) {
   assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
   const responsePayload = await client.executeCommand(commandName, {}, {
@@ -179,6 +179,13 @@ for (const commandName of ['notifications.mark-read', 'notifications.mark-all-re
   assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
   const responsePayload = await client.executeCommand(commandName, {}, {
     idempotencyKey: `notification-${commandName.replaceAll('.', '-')}`
+  });
+  assert.equal(responsePayload.ok, true);
+}
+for (const commandName of ['push.register', 'push.unregister', 'push.test']) {
+  assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
+  const responsePayload = await client.executeCommand(commandName, {}, {
+    idempotencyKey: `push-${commandName.replaceAll('.', '-')}`
   });
   assert.equal(responsePayload.ok, true);
 }

@@ -1,5 +1,18 @@
 # Database 文件（現況與目標）
 
+## Migration 0016 — Standard Web Push (Staging accepted, 2026-07-29)
+
+Migration `0016_web_push_subscriptions` adds:
+
+- `push_subscriptions`, scoped by Workspace, user, and revocable local Session;
+- `push_deliveries`, a durable notification/test queue with bounded payload, attempts, retry state, and composite tenant foreign keys;
+- forced RLS, active-recipient/session indexes, idempotent notification enqueue, status and Command functions, and two controlled worker functions;
+- automatic dead-letter handling for invalid authorization and automatic subscription revocation for expired provider endpoints.
+
+Neon Staging apply/down/reapply passed with reviewed SHA-256 checksum `31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476`. Both tables have forced RLS and zero PUBLIC table grants. `0009` and `0010` remain intentionally unapplied. Production is unchanged.
+
+The API Role receives no direct table or sequence privilege. The Web Push worker must use a different credential and may execute only `worker_claim_push_deliveries` and `worker_complete_push_delivery`.
+
 ## Migration 0014 — Notification Center (Staging accepted, 2026-07-29)
 
 Migration `0014_notification_center` adds:

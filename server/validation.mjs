@@ -7,6 +7,12 @@ const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const IDEMPOTENCY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
+const PUSH_KEY_PATTERN = /^[A-Za-z0-9_-]+$/;
+const PUSH_PLATFORMS = Object.freeze(['windows', 'macos', 'android', 'ios', 'ipados', 'linux', 'unknown']);
+const PUSH_ENDPOINT_HOSTS = Object.freeze([
+  'fcm.googleapis.com',
+  'updates.push.services.mozilla.com'
+]);
 
 function plainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -52,6 +58,24 @@ function requestReference(input) {
   return hasId
     ? { requestId: validRequestId(input.requestId), baseRevision: validRevision(input.baseRevision) }
     : {};
+}
+
+function pushEndpoint(value) {
+  assert(typeof value === 'string' && value.length >= 32 && value.length <= 2048,
+    400, 'COMMAND_INVALID', 'endpoint is invalid.');
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    assert(false, 400, 'COMMAND_INVALID', 'endpoint is invalid.');
+  }
+  const hostname = url.hostname.toLowerCase();
+  const allowedHost = PUSH_ENDPOINT_HOSTS.includes(hostname)
+    || hostname === 'push.apple.com'
+    || hostname.endsWith('.push.apple.com');
+  assert(url.protocol === 'https:' && !url.username && !url.password
+    && !url.hash && allowedHost, 400, 'COMMAND_INVALID', 'endpoint is not an approved Web Push service.');
+  return url.href;
 }
 
 export function validateIdempotencyKey(value) {
@@ -151,6 +175,36 @@ export function validateCommand(name, input) {
     exactKeys(input, []);
     return {};
   }
+  if (name === 'push.register') {
+    exactKeys(input, ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform'],
+      ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform']);
+    assert(input.expirationTime === null
+      || (Number.isSafeInteger(input.expirationTime)
+        && input.expirationTime >= 0
+        && input.expirationTime <= 8_640_000_000_000_000),
+    400, 'COMMAND_INVALID', 'expirationTime is invalid.');
+    assert(typeof input.p256dh === 'string'
+      && input.p256dh.length >= 80 && input.p256dh.length <= 120
+      && PUSH_KEY_PATTERN.test(input.p256dh),
+    400, 'COMMAND_INVALID', 'p256dh is invalid.');
+    assert(typeof input.auth === 'string'
+      && input.auth.length >= 16 && input.auth.length <= 64
+      && PUSH_KEY_PATTERN.test(input.auth),
+    400, 'COMMAND_INVALID', 'auth is invalid.');
+    assert(PUSH_PLATFORMS.includes(input.platform), 400, 'COMMAND_INVALID', 'platform is invalid.');
+    return {
+      endpoint: pushEndpoint(input.endpoint),
+      expirationTime: input.expirationTime,
+      p256dh: input.p256dh,
+      auth: input.auth,
+      userAgent: text(input.userAgent, 'userAgent', { max: 256 }),
+      platform: input.platform
+    };
+  }
+  if (name === 'push.unregister' || name === 'push.test') {
+    exactKeys(input, ['endpoint'], ['endpoint']);
+    return { endpoint: pushEndpoint(input.endpoint) };
+  }
   if (name === 'attendance.clock-in' || name === 'attendance.clock-out') {
     exactKeys(input, []);
     return {};
@@ -179,7 +233,10 @@ export const commandNames = Object.freeze([
   'time-off-requests.approve',
   'time-off-requests.reject',
   'notifications.mark-read',
-  'notifications.mark-all-read'
+  'notifications.mark-all-read',
+  'push.register',
+  'push.unregister',
+  'push.test'
 ]);
 
 export const timeOffCommandNames = Object.freeze([
@@ -194,4 +251,10 @@ export const timeOffCommandNames = Object.freeze([
 export const notificationCommandNames = Object.freeze([
   'notifications.mark-read',
   'notifications.mark-all-read'
+]);
+
+export const pushCommandNames = Object.freeze([
+  'push.register',
+  'push.unregister',
+  'push.test'
 ]);
