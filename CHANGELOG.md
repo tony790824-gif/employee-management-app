@@ -8,7 +8,8 @@
 - Added Notification Center device controls and Service Worker `push`, `notificationclick`, and `pushsubscriptionchange` handling.
 - Completed Neon Staging apply/down/reapply for `0016`; no Production migration or deployment occurred.
 - Added a live Neon Staging synthetic E2E for subscription registration, queue delivery boundaries, rate limiting, Membership revocation, least-privilege API access, and Workspace A/B isolation.
-- Real Render/VAPID activation and Windows/iPhone PWA delivery remain pending external Staging configuration and user verification.
+- Activated the isolated Render Staging worker with a distinct least-privilege database credential and protected VAPID settings; `/v1/readiness` remained HTTP 200 and the worker reported enabled.
+- Built and published a non-Production `STAGING POSTGRES` Draft containing only the public VAPID key. Windows/iPhone PWA delivery remains pending exact-origin allowlisting and user verification.
 
 ## 2026-07-29 — Sprint 25 Notification Center Foundation
 

@@ -3,15 +3,15 @@
 ## 2026-07-29 current state — Sprint 27 Standard Web Push
 
 - Current assessed completion: **94%**.
-- Source baseline: `99c75eac113e950eb6c1948762c9bf5f1e9a8036`.
+- Source baseline: `91013831b3e4ed2ffcc436e6afbf0d30f42eae5b`.
 - Standard Web Push extends the existing Notification Center; it is not a second source of truth.
 - `0016_web_push_subscriptions` passed Neon Staging apply/down/reapply with checksum `31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476`.
 - API/worker Role separation, forced RLS, bounded delivery/retry, endpoint cleanup, Service Worker events, and device UI are implemented.
 - Live synthetic Neon Staging E2E passes registration, queue projection, idempotency, rate limiting, revoked-Membership rejection, payload privacy, direct-table denial, and Workspace A/B isolation.
-- The actual Render worker is disabled until a distinct `DATABASE_PUSH_URL` and Staging VAPID secrets are configured. Do not claim provider delivery before that step.
+- The isolated Render Staging worker is enabled with a distinct least-privilege credential and protected VAPID settings; readiness is HTTP 200. The non-Production Draft is `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app/`.
 - Windows and iPhone Home Screen PWA delivery remain **PENDING USER VERIFICATION**.
 - Production, Production database, Production Auth0, Google Sheets, and Apps Script remain unchanged.
-- Do not start Sprint 28. Finish only the remaining Sprint 27 Staging activation and real-device acceptance.
+- Do not start Sprint 28. Add only the exact Draft origin to the existing Staging Auth0/Render allowlists, then finish Sprint 27 real-device delivery acceptance.
 
 ## 2026-07-29 current state — Sprint 25 Notification Center Foundation
 

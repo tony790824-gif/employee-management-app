@@ -12,7 +12,9 @@
 - [x] Service Worker validates payloads, restricts clicks to same-origin paths, and never stores credentials.
 - [x] Browser permission is requested only after a user gesture; iPhone/iPad requires Home Screen PWA.
 - [x] Explicit PostgreSQL logout attempts controlled subscription revocation before clearing the Session; failure still fails closed through live Session authorization.
-- [ ] Configure distinct Staging worker credential and VAPID secrets in Render.
+- [x] Configure distinct Staging worker credential and VAPID secrets in Render; confirm the worker is enabled and readiness remains HTTP 200.
+- [x] Build a non-Production `STAGING POSTGRES` Draft containing only the public VAPID key.
+- [ ] Add the exact new Draft origin to existing Staging Auth0 and Render allowlists.
 - [ ] Complete real Windows Chrome delivery acceptance.
 - [ ] Complete real iPhone Home Screen PWA delivery acceptance.
 - [x] Production was not deployed, migrated, or modified.

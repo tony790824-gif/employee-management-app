@@ -5,8 +5,8 @@
 - **Completion:** **94%** after code, local automation, and Neon Staging Migration acceptance.
 - **Completed:** standard Web Push architecture, `0016_web_push_subscriptions`, status/register/unregister/test API, durable delivery queue, bounded retry/cleanup, least-privilege API/worker design, Service Worker events, and minimal device UI.
 - **Staging database:** `0016` apply/down/reapply and checksum validation pass; `0009`/`0010` remain intentionally unapplied.
-- **Blocked external activation:** a distinct `DATABASE_PUSH_URL` and Staging VAPID secrets are not configured on Render. No actual provider delivery is claimed.
-- **Remaining Sprint 27 acceptance:** configure only the Staging secrets, deploy the existing Staging service, build a non-Production Draft with the public key, then perform Windows Chrome and iPhone Home Screen PWA delivery tests.
+- **Staging activation complete:** Render uses a distinct worker credential and protected VAPID settings; readiness is HTTP 200. A public-key-only non-Production `STAGING POSTGRES` Draft has been created.
+- **Remaining Sprint 27 acceptance:** add the exact Draft origin to existing Staging Auth0/Render allowlists, then perform Windows Chrome and iPhone Home Screen PWA delivery tests.
 - **Production:** not modified, migrated, or deployed.
 
 ## 2026-07-29 — Sprint 25 Notification Center Foundation implemented

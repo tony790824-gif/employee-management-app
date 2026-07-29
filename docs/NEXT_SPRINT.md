@@ -4,12 +4,13 @@
 
 Programming and Neon Staging Migration acceptance are complete. This is not Sprint 28.
 
-## Remaining external Staging activation
+## Remaining external Staging acceptance
 
-1. Create/use a distinct least-privilege Staging Web Push database credential and store it only as Render `DATABASE_PUSH_URL`.
-2. Generate one Staging VAPID key pair; store public/private values and subject only in Render Secrets. Set `BANK_WEB_PUSH_ENABLED=true`.
-3. Deploy the existing Render Staging service and confirm `/v1/readiness`.
-4. Build a non-Production `STAGING POSTGRES` Draft with only `BANK_WEB_PUSH_PUBLIC_KEY`; add its Origin to existing Auth0/Render Staging allowlists.
+The distinct worker credential, protected VAPID settings, enabled Render worker, HTTP 200 readiness, and public-key-only Draft are complete.
+
+1. Add `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app/` to the existing Auth0 Staging callback and logout allowlists.
+2. Add `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app` to the existing Auth0 Staging web-origin/CORS allowlists and Render `BANK_ALLOWED_ORIGINS`.
+3. Complete the Windows and iPhone Home Screen PWA checks below.
 
 ## Windows Chrome — PENDING USER VERIFICATION
 

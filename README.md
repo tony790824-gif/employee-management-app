@@ -10,7 +10,7 @@
 - The Service Worker handles `push`, `notificationclick`, and `pushsubscriptionchange`. The UI requests permission only after a user action and explains the iPhone/iPad Home Screen PWA requirement.
 - Explicit PostgreSQL logout first attempts the existing controlled `push.unregister` flow for the current device; live Session authorization still blocks delivery if browser cleanup cannot complete.
 - VAPID private material and `DATABASE_PUSH_URL` are server-side secrets. Only `BANK_WEB_PUSH_PUBLIC_KEY` may enter a Staging PostgreSQL frontend build.
-- Programming and Staging Migration acceptance are complete. Render secret activation and Windows/iPhone PWA background delivery remain **PENDING USER VERIFICATION**.
+- Programming, Neon Staging Migration, the isolated Render worker activation, and a non-Production `STAGING POSTGRES` Draft are complete. Windows/iPhone PWA background delivery remains **PENDING USER VERIFICATION**; the new Draft origin must first be added to the existing Staging Auth0 and Render allowlists.
 
 ## Notification Center Foundation (Sprint 25, 2026-07-29)
 
