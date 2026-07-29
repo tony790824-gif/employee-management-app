@@ -5,8 +5,8 @@
 - **Completion:** **92%** after local automated acceptance.
 - **Implemented in code:** additive `0014_notification_center`, recipient-only read API, two idempotent read-state Commands, unread badge/dialog, unread-first/newest-first ordering, Session cleanup, and reuse of the existing bootstrap revision/Smart Polling/Service Worker signal.
 - **Explicitly excluded:** Firebase Push, APNs, email, SMS, Production deployment, database application, and a second synchronization architecture.
-- **Runtime acceptance pending:** Migration `0014` is not applied to Neon Staging, so real notification generation, least-privilege grants, Workspace A/B isolation, rollback, and browser/device acceptance are not yet complete.
-- **Next unique priority:** **Apply `0014` to isolated Neon Staging and complete notification security/E2E/rollback acceptance**. Do not deploy Production or add external push delivery.
+- **Runtime acceptance:** `0014`/`0015`, real notification generation, least-privilege grants, Workspace A/B isolation, and rollback/reapply are complete on Neon Staging. Browser/device UI acceptance remains.
+- **Next unique priority:** **Complete Notification Center Windows/iPhone real-device acceptance on the non-Production Draft**. Do not deploy Production or add external push delivery.
 
 ## 2026-07-29 — Sprint 24 Real-time Sync v2 implemented
 
@@ -553,3 +553,8 @@ Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provide
 - **Next unique priority:** **Sprint 23 real-device synchronization acceptance**. Do not start another feature Sprint until actual device results are recorded.
 
 ---
+## Sprint 26 accepted state — 2026-07-29
+
+- **Implemented and Staging-accepted:** `0014_notification_center`, additive `0015_notification_command_validation`, recipient-only read API, two idempotent read-state Commands, unread badge/dialog, ordering, Session cleanup, and reuse of the existing bootstrap revision/Smart Polling/Service Worker signal.
+- **Runtime evidence:** apply/down/reapply, checksum/ledger, least-privilege grants, synthetic Workspace A/B isolation, boss/employee API E2E, fixture cleanup, and Render readiness passed on isolated Neon Staging.
+- **Next unique priority:** complete Notification Center Windows/iPhone real-device acceptance on the new non-Production Draft. Do not deploy Production or add external push delivery.

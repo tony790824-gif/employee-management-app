@@ -7,7 +7,7 @@
 - Added an unread badge and notification dialog with unread-first/newest-first ordering, safe DOM rendering, mark-one/read-all behavior, Session cleanup, and mobile touch sizing.
 - Integrated the current recipient's notification state into the existing deterministic bootstrap revision, Smart Polling, cross-tab, and Service Worker revision path; no second sync controller or push provider was added.
 - Added notification schema, API, role-grant, frontend client, UI, revision, privacy, environment-isolation, and regression tests.
-- Migration `0014` was not applied to any database. Production, Auth0, Google Sheets, Apps Script, Render, Netlify, dependencies, and lockfiles were not modified or deployed.
+- Historical Sprint 25 state: Migration `0014` had not yet been applied. Sprint 26 later applied it only to Neon Staging; Production remains unchanged.
 
 ## 2026-07-29 — Sprint 24 Real-time Sync v2
 
@@ -671,3 +671,10 @@
 
 - 員工介面 MutationObserver 無限更新尚待 Sprint 1 修復。
 - 現況 Google Sheets API 仍有 Critical 越權與全量覆寫風險，不可上線。
+## 2026-07-29 — Sprint 26 Notification Center Staging activation
+
+- Applied, rolled back, and reapplied immutable `0014_notification_center` only on Neon Staging; verified its reviewed checksum, ledger order, objects, forced RLS, indexes, constraints, trigger, functions, and PUBLIC revocations.
+- Added `0015_notification_command_validation` after real PostgreSQL testing proved `jsonb_object_length()` unavailable. The patch changes only exact-key validation in the controlled read-state Command and preserves the `0014` checksum/history.
+- Added a Staging-only migration manager with environment/host safeguards, advisory lock, explicit rollback confirmation, duplicate-up protection, and deliberate exclusion of `0009`/`0010`.
+- Added fully synthetic dual-Workspace notification E2E covering manager/employee delivery, approve/reject, badge count, read state, sorting, idempotency, revision refresh, privacy, cross-tenant denial, SQL injection, least privilege, and fixture cleanup.
+- Production, Production database, Auth0, Google Sheets, Apps Script, and Production deployment were not modified.

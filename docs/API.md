@@ -2,7 +2,7 @@
 
 ## 2026-07-29 — Notification Center API
 
-Migration `0014_notification_center` defines the database functions used by this API, but is not yet applied to Neon Staging or Production.
+Migration `0014_notification_center` defines the database functions and is applied only to Neon Staging. Additive `0015_notification_command_validation` fixes exact-key validation; neither migration is applied to Production.
 
 - `GET /v1/notifications` requires the existing bearer token, `X-Workspace-Id`, live Bankeban Session, active user, active Workspace, and active Membership. It returns at most 100 notifications for the authenticated recipient only, sorted unread first and then newest first.
 - `notifications.mark-read` requires `notificationId` and `baseRevision`. It uses the existing idempotency and optimistic-revision boundary.
@@ -221,3 +221,9 @@ See [Auth0 Staging security event pipeline](AUTH0_SECURITY_EVENT_PIPELINE.md). E
 | `runReleaseReadinessCheck()` | 線上發布門檻 | 最新備份未超過 24 小時，且與目前 Sheet 的來源、workspace、revision、內容一致 |
 
 維運函式只輸出不含 PIN、session token 或 pepper 的摘要到 Apps Script execution log。詳細程序、錯誤代碼與災難復原步驟見 `docs/RUNBOOK.md`。
+## 2026-07-29 — Notification Center Staging activation
+
+- `0014_notification_center` and additive validation fix `0015_notification_command_validation` are applied only to Neon Staging.
+- The accepted surface remains unchanged: `GET /v1/notifications`, `notifications.mark-read`, and `notifications.mark-all-read`.
+- Real Staging E2E passed recipient-only reads, idempotent updates, revision changes, cross-Workspace denial, private-reason exclusion, and zero direct API table access.
+- Production API and Production database are unchanged.

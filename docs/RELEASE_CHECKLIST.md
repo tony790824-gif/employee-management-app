@@ -10,7 +10,7 @@
 - [x] Notification state participates in the deterministic bootstrap revision and reuses Smart Polling/cross-tab/Service Worker signals.
 - [x] PostgreSQL-only badge/dialog/read UI uses safe DOM rendering and mobile touch sizing; Google Sheets remains inactive.
 - [x] Build, check, full regression, release gate, sensitive-information scan, and dependency audit pass.
-- [ ] `0014_notification_center` Staging apply/down/reapply, grants, dual-Workspace privacy, and real boss/employee E2E remain pending.
+- [x] `0014_notification_center` Staging apply/down/reapply, grants, dual-Workspace privacy, and boss/employee API E2E completed in Sprint 26.
 - [x] Production was not deployed or modified; no database migration was executed.
 
 ## Sprint 24 — Real-time Sync v2 automated gate
@@ -326,3 +326,15 @@ Known low-risk limitation: PostgreSQL's inherited `PUBLIC TEMPORARY` capability 
 - [ ] iPad Safari/PWA Sprint 23 convergence passes; status is **PENDING USER VERIFICATION**.
 
 ---
+## Sprint 26 — Notification Center Staging activation
+
+- [x] `0014_notification_center` checksum matches `c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc`.
+- [x] Controlled apply/down/reapply and duplicate-up behavior pass on Neon Staging; `0009`/`0010` remain unapplied.
+- [x] Additive `0015_notification_command_validation` fixes the real PostgreSQL validation incompatibility without rewriting `0014`.
+- [x] Notification table, four indexes, constraints, forced RLS, tenant policy, outbox trigger, and four SECURITY DEFINER functions are present.
+- [x] API Role has zero direct table access and exactly the reviewed controlled-function whitelist; PUBLIC table/function grants are zero.
+- [x] Synthetic Workspace A/B, recipient privacy, cross-tenant read/write rejection, idempotency, SQL injection, ordering, read state, and revision tests pass and fixtures are removed.
+- [x] Render Staging `/v1/readiness` returns HTTP 200 after final reapply.
+- [ ] Add the new Draft origin to Auth0 Staging and Render CORS.
+- [ ] Complete Windows and iPhone notification badge/navigation/cross-client acceptance; status is **PENDING USER VERIFICATION**.
+- [x] No Production deployment, Production database operation, Production Auth0 change, Google Sheets change, or Apps Script change occurred.

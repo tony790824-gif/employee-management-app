@@ -1,6 +1,6 @@
 # Database 文件（現況與目標）
 
-## Migration 0014 — Notification Center (pending Staging acceptance, 2026-07-29)
+## Migration 0014 — Notification Center (Staging accepted, 2026-07-29)
 
 Migration `0014_notification_center` adds:
 
@@ -13,7 +13,7 @@ Migration `0014_notification_center` adds:
 
 The API Role receives zero direct table privileges. The approved grant script permits only the three new controlled functions in addition to the existing whitelist. Notifications copy no leave reason, review note, email address, phone number, token, or credential from source events.
 
-This migration is committed for review but has **not** been applied to Neon Staging or Production. No business or test data was inserted. The next controlled step is an isolated Neon Staging migration/rollback rehearsal, grant verification, dual-Workspace isolation test, and real boss/employee E2E.
+This migration is applied only to Neon Staging after controlled apply/down/reapply, grant verification, dual-Workspace isolation, and boss/employee API E2E. Synthetic test data was removed; Production remains unchanged.
 
 Reviewed up-migration SHA-256 checksum: `c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc`.
 
@@ -245,3 +245,10 @@ Google Sheets 在目標架構中只作匯出、報表或客戶整合，不作 pr
 2. **對應 (Map)**: 將 `employees`、`shifts` 等陣列對應至新 Table。
 3. **注入 (Inject)**: 為所有資料列注入 `workspace_id` 與 UUID。
 4. **驗證 (Verify)**: 檢查外鍵約束與資料完整性。
+## Migrations 0014/0015 — Notification Center Staging acceptance (2026-07-29)
+
+- `0014_notification_center` is applied only to Neon Staging after successful apply/down/reapply and duplicate-up verification.
+- Reviewed `0014` checksum: `c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc`.
+- Real PostgreSQL validation found that `jsonb_object_length()` is unavailable. Immutable `0014` was not rewritten.
+- Additive `0015_notification_command_validation` replaces only `api_execute_notification_command` with equivalent exact-key validation using JSONB subtraction. Staging checksum: `332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f`.
+- The `0015` down migration restores the exact `0014` function. Fully synthetic E2E fixtures were removed after testing; Production remains untouched.

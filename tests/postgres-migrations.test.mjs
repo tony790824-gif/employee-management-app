@@ -13,13 +13,17 @@ const trackedUpFiles = new Set(execFileSync(
 const sprintUpFiles = new Set([
   '0012_current_user_bootstrap.up.sql',
   '0013_time_off_requests.up.sql',
-  '0014_notification_center.up.sql'
+  '0014_notification_center.up.sql',
+  '0015_notification_command_validation.up.sql'
 ]);
 const migrations = (await loadMigrations()).filter(item =>
   trackedUpFiles.has(`${item.version}_${item.name}.up.sql`)
   || sprintUpFiles.has(`${item.version}_${item.name}.up.sql`)
 );
-assert.deepEqual(migrations.map(item => item.version), ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009', '0011', '0012', '0013', '0014']);
+assert.deepEqual(migrations.map(item => item.version), [
+  '0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008',
+  '0009', '0011', '0012', '0013', '0014', '0015'
+]);
 assert.equal(new Set(migrations.map(item => item.checksum)).size, migrations.length);
 for (const migration of migrations) {
   assert.match(migration.checksum, /^[a-f0-9]{64}$/);
@@ -79,6 +83,7 @@ assert.doesNotMatch(
   /reason|review_note|email|phone|token/i,
   'Notification storage and delivery must not copy sensitive request details'
 );
+assert.match(sql, /command_input - 'notificationId' - 'baseRevision' <> '\{\}'::jsonb/);
 
 assert.throws(() => databaseConfig({ BANK_ENV: 'production', DATABASE_URL: 'postgres://db' }), /Production/);
 assert.throws(() => databaseConfig({

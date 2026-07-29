@@ -2,13 +2,13 @@
 
 ## Notification Center Foundation (Sprint 25, 2026-07-29)
 
-- Added additive Migration `0014_notification_center` for Workspace- and recipient-scoped notifications, unread state, deterministic ordering, forced RLS, indexes, and controlled functions. The Migration is committed but **not applied** to Neon Staging or Production.
+- Historical Sprint 25 state: additive Migration `0014_notification_center` was committed but had not yet been applied. Sprint 26 Staging acceptance is recorded below.
 - Existing transactional outbox events create only the minimum notification content needed for schedule and time-off updates. Leave reasons, email addresses, phone numbers, tokens, and credentials are never copied into notifications.
 - The existing PostgreSQL Command API now supports `notifications.mark-read` and `notifications.mark-all-read`; `GET /v1/notifications` returns only the live Session user's notifications.
 - The frontend adds a notification dialog, unread badge, read/unread controls, and unread-first/newest-first ordering. It uses safe DOM construction and keeps Google Sheets mode unchanged.
 - The existing deterministic bootstrap revision includes the current recipient's notification revision. Smart Polling, cross-tab events, and the existing Service Worker revision signal therefore refresh notifications without a second synchronization controller or push service.
 - Firebase Push, APNs, email, and SMS are explicitly out of scope.
-- Current assessed completion: **92%** after local automated acceptance. The next unique priority is to apply `0014` to isolated Neon Staging, validate least-privilege grants and Workspace isolation, run boss/employee notification E2E, and exercise rollback before creating a non-Production Draft.
+- Historical Sprint 25 completion was **92%**. The current Sprint 26 completion is **93%**, pending real-device UI acceptance.
 
 ## PostgreSQL foreground polling synchronization (Sprint 22, 2026-07-28)
 
@@ -193,3 +193,9 @@ Google Sheets 過渡後端已停止接受員工全量 `save`。員工登入／�
 - `docs/`：健康報告、Backlog、API、Database 與 ADR
 - `scripts/`：零第三方依賴的品質檢查與建置
 - `dist/`：建置產物，不納入版本控管
+## Notification Center Staging activation (Sprint 26, 2026-07-29)
+
+- Neon Staging now has immutable Migration `0014_notification_center` with its reviewed checksum, plus additive `0015_notification_command_validation`, which fixes a PostgreSQL-engine incompatibility discovered during real read-state E2E without rewriting `0014`.
+- Controlled apply, rollback, and reapply completed in Staging. Forced RLS, recipient scope, API Role zero-table access, controlled-function grants, Workspace A/B isolation, notification creation, read state, ordering, idempotency, and bootstrap revision passed.
+- Synthetic test Workspaces, identities, Sessions, and business rows were cleaned after each run. Production, Auth0, Google Sheets, Apps Script, and Production data were not modified or deployed.
+- Current assessed completion: **93%**. Real Windows/iPhone notification UI acceptance remains pending on the new non-Production Draft.

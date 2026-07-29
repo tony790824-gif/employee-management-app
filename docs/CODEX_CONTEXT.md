@@ -3,7 +3,7 @@
 ## 2026-07-29 current state — Sprint 25 Notification Center Foundation
 
 - Current assessed completion: **92%** after local automated acceptance.
-- Additive Migration `0014_notification_center` exists in Git but is not applied to Neon Staging or Production.
+- Historical Sprint 25 state: `0014_notification_center` existed in Git but was not yet applied. Sprint 26 later applied it only to Neon Staging.
 - Notifications are Workspace- and recipient-scoped, projected transactionally from existing outbox events, and contain no leave reason, contact data, token, Session ID, or credential.
 - The API exposes only `GET /v1/notifications`, `notifications.mark-read`, and `notifications.mark-all-read` through existing live Session/Membership/Workspace authorization and least-privilege controlled functions.
 - The frontend provides a safe notification dialog, unread badge, read/unread controls, and deterministic ordering only in PostgreSQL mode. Google Sheets mode is unchanged.
@@ -11,7 +11,7 @@
 - Firebase Push, APNs, email, and SMS are not implemented.
 - Because GitHub main may feed the isolated Staging service before `0014` is applied, undefined notification functions are treated as a disabled optional capability: existing bootstrap continues, list returns `available: false`, and mutations fail closed with 503.
 - Production, databases, migrations, Auth0, Google Sheets, Apps Script, Render, and Netlify were not modified or deployed.
-- Next and only work: apply `0014` to isolated Neon Staging, verify grants/RLS/Workspace isolation, run rollback and real boss/employee notification E2E, then create a non-Production Draft.
+- That database/API acceptance completed in Sprint 26. The remaining work is real-device notification UI acceptance on the non-Production Draft.
 
 ## 2026-07-29 current state — Sprint 24 Real-time Sync v2
 
@@ -146,3 +146,12 @@
 - 既有發布閘門、敏感資訊保護與「Production 未經明確核准不得修改／部署」規則。
 
 真實裝置驗收若發現缺陷，只記錄證據並依停止條件中止；不得在同一驗收 Sprint 擴大重構穩定範圍。
+## 2026-07-29 current state — Sprint 26 Notification Center Staging activation
+
+- Current assessed completion: **93%** after real Neon Staging database/API acceptance; Windows and iPhone notification UI acceptance remains pending.
+- Migration `0014_notification_center` is applied only to Neon Staging with checksum `c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc`.
+- Real PostgreSQL testing found that `jsonb_object_length()` is unavailable. Immutable `0014` was preserved; additive `0015_notification_command_validation` replaces only the controlled notification Command function with equivalent exact-key validation.
+- Controlled apply/down/reapply, duplicate-up protection, ledger order, forced RLS, indexes, constraints, trigger, controlled functions, PUBLIC revocation, and API Role grants passed.
+- Fully synthetic Workspace A/B boss/employee E2E passed notification generation, approve/reject delivery, unread/read state, sorting, idempotency, revision refresh, private-reason exclusion, SQL-injection rejection, cross-Workspace denial, and zero direct table access. Fixtures were removed afterward.
+- Render Staging readiness remained HTTP 200. Production, Production database, Auth0, Google Sheets, Apps Script, and Production deployment were not modified.
+- Next and only work: complete real Windows/iPhone notification badge, navigation, Smart Polling, cross-client, logout, and mobile acceptance on the new non-Production Draft; do not add external push channels.

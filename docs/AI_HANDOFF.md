@@ -3,13 +3,13 @@
 ## 2026-07-29 handoff — Sprint 25 Notification Center Foundation
 
 - Source baseline: `b5167958afece72e9132ded7797e4da5ee68c1cc`; assessed completion after local automated acceptance: **92%**.
-- Added `0014_notification_center`, but did not connect to or mutate Neon Staging/Production and did not run any migration.
+- Historical Sprint 25 state: `0014_notification_center` existed but was not yet applied. Sprint 26 later applied it only to Neon Staging.
 - Runtime design uses the existing outbox transaction, Session/Membership/Workspace checks, forced RLS, controlled functions, idempotency receipts, audit log, deterministic bootstrap revision, Smart Polling, and Service Worker revision message.
 - API Role design remains zero direct table access. New execution grants are limited to notification list/revision/command functions.
 - Frontend notification UI is PostgreSQL-only and uses safe DOM construction; Google Sheets does not activate it.
 - No external push provider, email, or SMS channel exists.
 - No Draft was created because the schema is not yet present in Staging.
-- Next unique work: controlled Neon Staging apply/down/reapply of `0014`, checksum and grant verification, Workspace A/B privacy tests, boss/employee notification E2E, then a non-Production Draft/device acceptance.
+- That controlled Staging apply/down/reapply, grant, Workspace A/B, and boss/employee API E2E work completed in Sprint 26. Real-device Draft acceptance remains.
 
 ## 2026-07-29 handoff — Sprint 24 Real-time Sync v2
 
@@ -170,3 +170,12 @@
 7. 準備逐裝置截圖、Network／Console 摘要與 PASS／FAIL／BLOCKED 記錄，但不得包含 Secret、Token、Session ID 或真實個資。
 
 未滿足開始條件時，只能回報 `BLOCKED`，不得修改 Production、套用 Migration 或自行開始其他 Sprint。
+## 2026-07-29 handoff — Sprint 26 Notification Center Staging activation
+
+- Source baseline: `340e7d043ff2f991e01104085f43d63dc58adeba`; assessed completion after Staging acceptance: **93%**.
+- `0014_notification_center` is active only in Neon Staging with its reviewed checksum. Additive `0015_notification_command_validation` preserves migration immutability while correcting the real-engine `jsonb_object_length()` incompatibility.
+- Apply/down/reapply and duplicate-up protection passed. Final ledger contains `0014`, then `0015`; intentionally pending `0009`/`0010` were not applied.
+- API Role has zero direct notification-table privileges, no elevated role attributes, and exactly the reviewed controlled-function whitelist. PUBLIC table/function grants remain zero.
+- Synthetic dual-Workspace boss/employee E2E passed recipient privacy, cross-Workspace denial, submission/review notifications, unread state, ordering, idempotency, revision refresh, SQL-injection rejection, and cleanup.
+- Render Staging readiness is HTTP 200. A non-Production Draft is required for the final Windows/iPhone UI acceptance; Auth0 and Render allowlists must be changed only by the user.
+- Production, Production database, Auth0, Google Sheets, Apps Script, and Production deployment were not modified.

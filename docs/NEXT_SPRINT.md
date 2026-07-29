@@ -2,18 +2,18 @@
 
 ## Goal
 
-Prove Migration `0014_notification_center` and the Notification Center runtime against the isolated Neon Staging database without modifying Production.
+Completed in Sprint 26: Migration `0014_notification_center` and the Notification Center runtime were proven against isolated Neon Staging without modifying Production. The next unique work is the real-device checklist appended below.
 
 ## Required controlled steps
 
 1. Confirm the target is Neon Staging and record the existing restore/PITR condition.
-2. Run migration status and verify `0014` is the only newly pending migration intended for this exercise.
-3. Apply `0014`, record its checksum, verify table/index/foreign-key/RLS/trigger/functions, and reapply least-privilege API Role grants.
+2. Completed: verified `0014` as the intended feature migration while `0009`/`0010` remained excluded.
+3. Completed: applied `0014` plus additive `0015`, recorded checksums, verified table/index/foreign-key/RLS/trigger/functions, and reapplied least-privilege API Role grants.
 4. Verify the API Role has zero direct table access and can execute only the reviewed notification functions.
 5. With synthetic Workspace A/B identities, prove recipient-only reads, cross-user/cross-Workspace denial, manager/employee targeting, idempotent read Commands, and no exposure of leave reasons.
 6. Prove outbox write and notification creation are one transaction; a rejected command must create neither.
 7. Exercise down migration and reapply on Staging, then verify checksum and application state.
-8. Run real boss/employee browser E2E, Smart Polling/Service Worker notification refresh, logout cleanup, mobile layout, and accessibility on a new non-Production Draft.
+8. Pending user verification: run real boss/employee browser E2E, Smart Polling/Service Worker notification refresh, logout cleanup, mobile layout, and accessibility on the new non-Production Draft.
 
 ## Stop conditions
 
@@ -456,3 +456,14 @@ Also verify one shift creation from a manager Session appears on another already
 - Record actual Windows/iPhone/Android/iPad results before starting another feature Sprint.
 
 ---
+## Next unique Sprint — Notification Center real-device acceptance
+
+Goal: accept the Staging-only Notification Center on Windows Chrome/Edge and iPhone Safari/PWA after the new Draft origin is allowlisted. Do not modify Production, databases, migrations, Auth0 architecture, Google Sheets, or Apps Script.
+
+1. Add the exact new Draft callback/logout/origin to Auth0 Staging and its origin to Render CORS.
+2. Sign in as an employee, submit scheduled leave and ad-hoc leave, and keep the employee App open.
+3. Sign in as boss in a separate browser/device; confirm one unread notification per submission and open the related Time-Off review screen.
+4. Approve one request and reject the other; confirm the employee receives the corresponding notifications through existing Smart Polling/cross-client revision sync without reload.
+5. Verify unread badge count, unread-first/newest-first order, mark-one, mark-all, navigation, logout cleanup, refresh persistence, mobile touch targets, and no Console error.
+6. Confirm Workspace B and unrelated users receive no Workspace A notification or private reason.
+7. Record each Windows/iPhone result as PASS/FAIL/BLOCKED; do not infer device PASS from automated tests.

@@ -5,7 +5,7 @@ info:
   description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, time-off requests, deterministic bootstrap revision transport, and the pending Notification Center foundation. Production cutover is not approved.
   x-baseline-commit: b5167958afece72e9132ded7797e4da5ee68c1cc
   x-project-completion: 92
-  x-staging-migration: 0013_time_off_requests applied; 0014_notification_center pending
+  x-staging-migration: 0013_time_off_requests, 0014_notification_center, and 0015_notification_command_validation applied
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only

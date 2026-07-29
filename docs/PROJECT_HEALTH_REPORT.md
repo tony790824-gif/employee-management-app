@@ -558,3 +558,10 @@
 - **Next unique priority:** execute the Sprint 23 real-device matrix only.
 
 ---
+## 2026-07-29 — Sprint 26 Staging evidence
+
+- **Completion:** **93%**. Notification schema/API security is accepted on real Neon Staging; real browser/device UI evidence is still required.
+- **Database:** `0014_notification_center` and additive `0015_notification_command_validation` are applied only to Staging after a successful down/reapply rehearsal. The `0014` reviewed checksum is unchanged.
+- **Security:** forced RLS, recipient scoping, zero direct API table privileges, exact controlled-function grants, PUBLIC revocation, SQL-injection rejection, private-reason exclusion, and Workspace A/B isolation passed.
+- **Reliability:** outbox projection, idempotency, read/unread state, deterministic ordering, bootstrap revision, duplicate-up protection, cleanup, and Render readiness passed.
+- **Remaining release risk:** Auth0/Render allowlists and Windows/iPhone notification UI/cross-client acceptance on the new Draft are pending. No external push delivery exists by design.
