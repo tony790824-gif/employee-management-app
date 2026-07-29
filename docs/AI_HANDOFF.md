@@ -9,6 +9,7 @@
 - API Role grants were updated to 12 controlled functions and zero direct table access. A pre-existing CONNECT path to the old Staging restore database was removed; the accepted Neon `postgres` maintenance-database behavior remains.
 - Staging activation: the distinct worker credential and VAPID secrets are protected in Render, the worker is enabled, readiness is HTTP 200, and the public-key-only Draft is `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app/`.
 - Next action remains inside Sprint 27: add that exact Draft origin to existing Staging Auth0/Render allowlists and run Windows/iPhone PWA verification. No real-device Push result is claimed yet.
+- Follow-up diagnosis: Render request IDs proved the reported test-button failure was `429 PUSH_RATE_LIMITED` after three successful test deliveries for the same user window. Session, Membership, Workspace, endpoint registration, CORS and Auth0 were not the rejecting layer. The UI and API now preserve that code and show actionable Chinese guidance; the safety limit remains unchanged.
 - Production was not modified or deployed.
 
 ## 2026-07-29 handoff — Sprint 25 Notification Center Foundation

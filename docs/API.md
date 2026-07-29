@@ -7,7 +7,7 @@ Migration `0016_web_push_subscriptions` is active only in Neon Staging.
 - `GET /v1/push/status` returns the current authorized Session's active subscription count.
 - `push.register` accepts only an approved HTTPS Web Push endpoint, browser `p256dh`/`auth` keys, expiration, bounded user agent, and platform. Workspace/User/Session are always resolved server-side.
 - `push.unregister` can revoke only the caller's own Workspace/User endpoint and makes pending deliveries dead.
-- `push.test` can target only the caller's active current-Session endpoint and is limited to three requests per ten minutes.
+- `push.test` can target only the caller's active current-Session endpoint and is limited to three requests per ten minutes for the Workspace/User safety window. The fourth request returns `429 PUSH_RATE_LIMITED`; clients must not treat it as Session invalidation.
 - Missing Migration support returns an optional-capability response or `503 WEB_PUSH_UNAVAILABLE`; other authorization/database errors fail closed.
 - The API Role never receives direct `push_subscriptions` or `push_deliveries` access. A separate worker credential may execute only claim and completion functions.
 - Push payloads are limited to 3 KiB and contain only notification metadata plus a same-origin Notification Center path.

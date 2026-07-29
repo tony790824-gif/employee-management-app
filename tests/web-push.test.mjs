@@ -149,6 +149,7 @@ assert.doesNotMatch(worker, /Authorization|accessToken|refreshToken|privateKey/)
 
 const serviceQueries = [];
 let pushSchemaAvailable = true;
+let pushDatabaseError = null;
 const commandService = createCommandService({
   pool: {
     async query(sql) {
@@ -159,6 +160,7 @@ const commandService = createCommandService({
       }
       if (sql.includes('api_execute_push_command')) {
         if (!pushSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
+        if (pushDatabaseError) throw pushDatabaseError;
         return { rows: [{ result: { ok: true, data: { registered: true } } }] };
       }
       throw new Error(`Unexpected SQL: ${sql}`);
@@ -181,6 +183,18 @@ await commandService.execute({
   requestId: 'request-push-register-0001'
 });
 assert.ok(serviceQueries.some(sql => sql.includes('api_execute_push_command')));
+pushDatabaseError = Object.assign(new Error('PUSH_RATE_LIMITED'), { code: 'P0001' });
+await assert.rejects(commandService.execute({
+  identity,
+  workspaceId,
+  commandName: 'push.test',
+  input: { endpoint },
+  idempotencyKey: 'push-test-rate-limited-0001',
+  requestId: 'request-push-test-rate-limited-0001'
+}), error => error?.code === 'PUSH_RATE_LIMITED'
+  && error?.status === 429
+  && error?.message === 'The test-notification rate limit has been reached.');
+pushDatabaseError = null;
 pushSchemaAvailable = false;
 assert.deepEqual(await commandService.pushStatus({ identity, workspaceId }), {
   ok: true,

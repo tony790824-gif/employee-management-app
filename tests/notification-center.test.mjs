@@ -47,7 +47,14 @@ const selectors = [
   '#notificationMarkAllRead',
   '#notificationSummary',
   '#notificationMessage',
-  '#notificationList'
+  '#notificationList',
+  '#pushNotificationSettings',
+  '#pushNotificationStatus',
+  '#pushNotificationHelp',
+  '#pushNotificationEnable',
+  '#pushNotificationDisable',
+  '#pushNotificationRepair',
+  '#pushNotificationTest'
 ];
 const elements = new Map(selectors.map(selector => [selector, node()]));
 elements.get('#notificationButton').hidden = true;
@@ -68,6 +75,25 @@ const notification = {
 let payload = { ok: true, items: [notification], unreadCount: 1 };
 let listCalls = 0;
 const marked = [];
+const pushEndpoint = 'https://fcm.googleapis.com/fcm/send/fresh-profile-subscription-endpoint';
+const pushSubscription = {
+  endpoint: pushEndpoint,
+  toJSON: () => ({
+    endpoint: pushEndpoint,
+    expirationTime: null,
+    keys: {
+      p256dh: 'a'.repeat(88),
+      auth: 'b'.repeat(24)
+    }
+  }),
+  unsubscribe: async () => true
+};
+let browserSubscription = null;
+let pushServerCount = 0;
+let pushTestError = null;
+const registeredPushInputs = [];
+const testedPushEndpoints = [];
+let pushSubscribeCalls = 0;
 const dom = {
   element(tag, options = {}, children = []) {
     const item = node();
@@ -96,16 +122,66 @@ const cloud = {
       unreadCount: 0
     };
   },
-  markAllNotificationsRead: async () => {}
+  markAllNotificationsRead: async () => {},
+  pushStatus: async () => ({
+    ok: true,
+    available: true,
+    activeSubscriptionCount: pushServerCount
+  }),
+  registerPushSubscription: async input => {
+    registeredPushInputs.push(structuredClone(input));
+    pushServerCount = 1;
+  },
+  unregisterPushSubscription: async () => {
+    pushServerCount = 0;
+  },
+  sendTestPush: async endpoint => {
+    testedPushEndpoints.push(endpoint);
+    if (pushTestError) throw pushTestError;
+    return { ok: true };
+  }
+};
+const serviceWorker = {
+  ready: Promise.resolve({
+    pushManager: {
+      getSubscription: async () => browserSubscription,
+      subscribe: async () => {
+        pushSubscribeCalls += 1;
+        browserSubscription = pushSubscription;
+        return browserSubscription;
+      }
+    }
+  }),
+  addEventListener() {}
+};
+const Notification = {
+  permission: 'granted',
+  requestPermission: async () => 'granted'
 };
 const sandbox = {
   Intl,
   Date,
+  URLSearchParams,
+  atob: value => Buffer.from(value, 'base64').toString('binary'),
   setTimeout,
   clearTimeout,
   structuredClone,
+  navigator: {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+    serviceWorker
+  },
+  Notification,
   window: {
-    shiftEnvironment: { dataBackend: 'postgres' },
+    isSecureContext: true,
+    PushManager: class PushManager {},
+    Notification,
+    navigator: {
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+      serviceWorker
+    },
+    location: { search: '' },
+    matchMedia: () => ({ matches: false }),
+    shiftEnvironment: { dataBackend: 'postgres', webPushPublicKey: 'AQ' },
     shiftPostgresCloud: cloud,
     shiftDomSafety: dom
   },
@@ -126,6 +202,46 @@ assert.equal(elements.get('#notificationList').children.length, 1);
 
 elements.get('#notificationButton').dispatch('click');
 assert.equal(elements.get('#notificationDialog').open, true);
+await new Promise(resolve => setImmediate(resolve));
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(pushSubscribeCalls, 1, 'A clean Windows profile creates one browser subscription.');
+assert.equal(registeredPushInputs.length, 1, 'The browser subscription is registered before testing.');
+assert.equal(registeredPushInputs[0].endpoint, pushEndpoint);
+assert.equal(elements.get('#pushNotificationTest').hidden, false);
+elements.get('#pushNotificationTest').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.deepEqual(testedPushEndpoints, [pushEndpoint],
+  'The first test request uses the endpoint registered by the clean profile.');
+assert.equal(elements.get('#notificationMessage').textContent, '測試通知已排入傳送；請稍候查看系統通知。');
+
+pushTestError = Object.assign(new Error('Authorization or command validation failed.'), {
+  code: 'PUSH_RATE_LIMITED',
+  status: 429
+});
+elements.get('#pushNotificationTest').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationMessage').textContent,
+  '測試通知次數已達安全上限，請在 10 分鐘後再試。');
+assert.doesNotMatch(elements.get('#notificationMessage').textContent,
+  /Authorization or command validation failed/i);
+
+for (const [code, expected] of [
+  ['PUSH_SUBSCRIPTION_NOT_FOUND', '此裝置的推播註冊已失效，請按「重新註冊」後再試。'],
+  ['COMMAND_INVALID', '測試通知資料格式無效，請重新註冊後再試。'],
+  ['COMMAND_FORBIDDEN', '目前帳號沒有使用測試通知的權限。'],
+  ['WORKSPACE_ACCESS_DENIED', '目前帳號無法在這個工作區使用測試通知。']
+]) {
+  pushTestError = Object.assign(new Error('Authorization or command validation failed.'), { code });
+  elements.get('#pushNotificationTest').dispatch('click');
+  await new Promise(resolve => setImmediate(resolve));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(elements.get('#notificationMessage').textContent, expected);
+}
+
 elements.get('#notificationList').children[0].dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
 await new Promise(resolve => setImmediate(resolve));

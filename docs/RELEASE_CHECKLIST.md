@@ -16,6 +16,9 @@
 - [x] Build a non-Production `STAGING POSTGRES` Draft containing only the public VAPID key.
 - [ ] Add the exact new Draft origin to existing Staging Auth0 and Render allowlists.
 - [ ] Complete real Windows Chrome delivery acceptance.
+- [x] Diagnose the Windows test-button failure as `429 PUSH_RATE_LIMITED`; preserve the three-per-ten-minute limit and replace the generic authorization message with code-specific Chinese guidance.
+- [x] Cover clean-profile enable → register → immediate test, exact endpoint/payload/headers, and non-invalidating 429 handling.
+- [ ] Re-verify the fixed Windows flow on the replacement non-Production Draft.
 - [ ] Complete real iPhone Home Screen PWA delivery acceptance.
 - [x] Production was not deployed, migrated, or modified.
 

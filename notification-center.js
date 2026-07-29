@@ -29,6 +29,20 @@
   let currentPushSubscription = null;
   let pushAvailable = false;
   let activePushSubscriptionCount = 0;
+  const pushErrorMessages = Object.freeze({
+    PUSH_RATE_LIMITED: '測試通知次數已達安全上限，請在 10 分鐘後再試。',
+    PUSH_SUBSCRIPTION_NOT_FOUND: '此裝置的推播註冊已失效，請按「重新註冊」後再試。',
+    PUSH_SUBSCRIPTION_CONFLICT: '此瀏覽器的推播訂閱已綁定其他測試帳號，請重新註冊。',
+    COMMAND_INVALID: '測試通知資料格式無效，請重新註冊後再試。',
+    COMMAND_FORBIDDEN: '目前帳號沒有使用測試通知的權限。',
+    WORKSPACE_ACCESS_DENIED: '目前帳號無法在這個工作區使用測試通知。',
+    WEB_PUSH_UNAVAILABLE: '測試環境的背景推播服務暫時無法使用。',
+    ORIGIN_NOT_ALLOWED: '此測試網址尚未加入允許清單。',
+    POSTGRES_API_TIMEOUT: '推播服務回應逾時，請稍後再試。',
+    POSTGRES_API_UNAVAILABLE: '目前無法連線推播服務，請確認網路後再試。',
+    SESSION_INVALID: '登入狀態已失效，請重新登入。',
+    TOKEN_SESSION_INVALID: '登入狀態已失效，請重新登入。'
+  });
 
   const pushCapable = () => Boolean(
     window.isSecureContext
@@ -87,6 +101,13 @@
   function setMessage(value = '') {
     message.hidden = !value;
     message.textContent = value;
+  }
+
+  function pushErrorMessage(error, fallback) {
+    const code = String(error?.code || '');
+    if (code) return pushErrorMessages[code] || fallback;
+    const localMessage = String(error?.message || '').trim();
+    return localMessage || fallback;
   }
 
   function formatTime(value) {
@@ -227,7 +248,7 @@
         activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
         setMessage('此裝置已啟用背景推播。');
       } catch (error) {
-        setMessage(error?.message || '無法啟用背景推播，請稍後再試。');
+        setMessage(pushErrorMessage(error, '無法啟用背景推播，請稍後再試。'));
       } finally {
         pushMutationPromise = null;
         renderPushSettings();
@@ -247,7 +268,7 @@
         activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
         setMessage('此裝置的背景推播已停用。');
       } catch (error) {
-        setMessage(error?.message || '無法停用背景推播，請稍後再試。');
+        setMessage(pushErrorMessage(error, '無法停用背景推播，請稍後再試。'));
       } finally {
         pushMutationPromise = null;
         renderPushSettings();
@@ -273,7 +294,7 @@
         await cloud.sendTestPush(currentPushSubscription.endpoint);
         setMessage('測試通知已排入傳送；請稍候查看系統通知。');
       } catch (error) {
-        setMessage(error?.message || '測試通知無法傳送，請稍後再試。');
+        setMessage(pushErrorMessage(error, '測試通知無法傳送，請稍後再試。'));
       } finally {
         pushMutationPromise = null;
         renderPushSettings();

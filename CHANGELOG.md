@@ -2,6 +2,8 @@
 
 ## 2026-07-29 — Sprint 27 Standard Web Push
 
+- Fixed the Windows test-notification error presentation after Render evidence confirmed `POST /v1/commands/push.test` returned `429 PUSH_RATE_LIMITED`, not an authorization, Session, Membership, Workspace, Subscription, CORS, or Token failure.
+- Preserved the server-side three-per-ten-minute safety limit, added code-specific API messages and Chinese Notification Center guidance, and added a clean-profile register-then-test regression.
 - Added Staging-only Migration `0016_web_push_subscriptions` with Session-scoped subscriptions, durable deliveries, forced RLS, controlled registration/status/worker functions, bounded retries, expiry cleanup, and down migration.
 - Added authenticated `GET /v1/push/status` plus `push.register`, `push.unregister`, and rate-limited `push.test` Commands.
 - Added a separate least-privilege Web Push worker Role boundary and Node `web-push` dispatcher with minimal logs and no direct table access.

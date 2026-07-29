@@ -34,6 +34,12 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   PUSH_DELIVERY_NOT_FOUND: 404
 });
 
+const DATABASE_ERROR_MESSAGES = Object.freeze({
+  PUSH_SUBSCRIPTION_CONFLICT: 'The browser push subscription is already bound to another user.',
+  PUSH_SUBSCRIPTION_NOT_FOUND: 'The current device push subscription is unavailable.',
+  PUSH_RATE_LIMITED: 'The test-notification rate limit has been reached.'
+});
+
 function stableJson(value) {
   if (value === undefined) return 'null';
   if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
@@ -82,7 +88,11 @@ function withBootstrapRevision(result, roleVisibleTimeOff = null, notificationRe
 function translateDatabaseError(error) {
   if (error instanceof ApiError) return error;
   if (error?.code === 'P0001' && DATABASE_ERROR_STATUS[error.message]) {
-    return new ApiError(DATABASE_ERROR_STATUS[error.message], error.message, 'Authorization or command validation failed.');
+    return new ApiError(
+      DATABASE_ERROR_STATUS[error.message],
+      error.message,
+      DATABASE_ERROR_MESSAGES[error.message] || 'Authorization or command validation failed.'
+    );
   }
   if (error?.code === '23505') return new ApiError(409, 'RESOURCE_CONFLICT', 'The requested resource already exists.');
   if (error?.code === '23503') return new ApiError(404, 'RELATED_RESOURCE_NOT_FOUND', 'A related resource was not found.');

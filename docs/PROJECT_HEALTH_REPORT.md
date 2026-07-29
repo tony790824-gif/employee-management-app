@@ -9,6 +9,7 @@
 - **Reliability:** bounded batches, `SKIP LOCKED`, stuck-claim recovery, three attempts, delayed retry, idempotent enqueue, and 404/410 endpoint revocation are implemented.
 - **Staging activation:** the distinct worker credential and protected VAPID settings are configured in Render Staging; the worker is enabled and `/v1/readiness` remains HTTP 200.
 - **Known acceptance blocker:** Windows and iPhone Home Screen PWA background delivery are **PENDING USER VERIFICATION**.
+- **Windows defect follow-up:** Render logs and Staging aggregates proved the reported test-button failure was the intended `429 PUSH_RATE_LIMITED` after three successful tests, while the UI incorrectly displayed a generic authorization message. Code-specific API/UI handling and a clean-profile regression are added; re-verification is pending.
 - **Release status: No.** Production remains unchanged and is not approved.
 
 ## 2026-07-29 — Sprint 25 Notification Center Foundation health update

@@ -189,6 +189,41 @@ for (const commandName of ['push.register', 'push.unregister', 'push.test']) {
   });
   assert.equal(responsePayload.ok, true);
 }
+const testPushEndpoint = 'https://fcm.googleapis.com/fcm/send/fresh-profile-endpoint';
+const testPushPayload = await client.executeCommand('push.test', { endpoint: testPushEndpoint }, {
+  idempotencyKey: 'push-test-fresh-profile-0001'
+});
+assert.equal(testPushPayload.ok, true);
+const testPushCall = calls.at(-1);
+assert.equal(testPushCall.url, 'https://api.staging.example/v1/commands/push.test');
+assert.equal(testPushCall.options.method, 'POST');
+assert.equal(testPushCall.options.headers.Authorization, `Bearer ${accessToken}`);
+assert.equal(testPushCall.options.headers['X-Workspace-Id'], workspaceId);
+assert.equal(testPushCall.options.headers['Idempotency-Key'], 'push-test-fresh-profile-0001');
+assert.match(testPushCall.options.headers['X-Request-Id'], /^request-\d{4}$/);
+assert.deepEqual(JSON.parse(testPushCall.options.body), { endpoint: testPushEndpoint });
+
+const pushRateEvents = [];
+const pushRateClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  fetchImpl: async () => response(429, {
+    error: 'The test-notification rate limit has been reached.',
+    code: 'PUSH_RATE_LIMITED',
+    requestId: 'safe-push-rate-request'
+  }),
+  eventTarget: { dispatchEvent: event => pushRateEvents.push(event) }
+});
+await assert.rejects(
+  pushRateClient.executeCommand('push.test', { endpoint: testPushEndpoint }, {
+    idempotencyKey: 'push-test-rate-limit-0001'
+  }),
+  error => error.code === 'PUSH_RATE_LIMITED'
+    && error.status === 429
+    && error.requestId === 'safe-push-rate-request'
+);
+assert.equal(pushRateEvents.length, 0, 'Push rate limiting must not invalidate the signed-in Session.');
+
 assert.throws(() => client.executeCommand('admin.drop-all', {}), error =>
   error instanceof PostgresApiError && error.code === 'COMMAND_NOT_FOUND');
 

@@ -16,8 +16,9 @@ The distinct worker credential, protected VAPID settings, enabled Render worker,
 
 1. Sign in to the Draft and open Notification Center.
 2. Click enable, grant notification permission, and send one test notification.
-3. Verify foreground, background, closed-window delivery, click-to-open Notification Center, unread badge, disable, and re-register.
-4. Verify another device subscription is not removed and logout/expired Session cannot receive new protected events.
+3. Confirm the first test succeeds; after three tests in ten minutes, confirm the fourth shows the Chinese safety-limit message without logout or a generic authorization error.
+4. Verify foreground, background, closed-window delivery, click-to-open Notification Center, unread badge, disable, and re-register.
+5. Verify another device subscription is not removed and logout/expired Session cannot receive new protected events.
 
 ## iPhone Home Screen PWA — PENDING USER VERIFICATION
 

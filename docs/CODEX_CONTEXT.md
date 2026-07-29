@@ -10,6 +10,7 @@
 - Live synthetic Neon Staging E2E passes registration, queue projection, idempotency, rate limiting, revoked-Membership rejection, payload privacy, direct-table denial, and Workspace A/B isolation.
 - The isolated Render Staging worker is enabled with a distinct least-privilege credential and protected VAPID settings; readiness is HTTP 200. The non-Production Draft is `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app/`.
 - Windows and iPhone Home Screen PWA delivery remain **PENDING USER VERIFICATION**.
+- Windows clean-profile evidence confirmed registration and system delivery work. A later test-button failure was `429 PUSH_RATE_LIMITED` after three successful tests in ten minutes; the generic authorization message is fixed without weakening the limit. Windows re-verification remains pending on the replacement Draft.
 - Production, Production database, Production Auth0, Google Sheets, and Apps Script remain unchanged.
 - Do not start Sprint 28. Add only the exact Draft origin to the existing Staging Auth0/Render allowlists, then finish Sprint 27 real-device delivery acceptance.
 
