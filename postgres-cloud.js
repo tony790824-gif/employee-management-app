@@ -65,6 +65,15 @@
 
   const bootstrapRevision = value => Number(value?.data?.sync?.revision);
 
+  function validateRevision(payload) {
+    const revision = Number(payload?.revision);
+    if (!payload || payload.ok !== true || payload.workspaceId !== environment.postgresWorkspaceId
+      || !workspacePattern.test(payload.workspaceId) || !Number.isSafeInteger(revision) || revision < 0) {
+      throw new Error('PostgreSQL bootstrap revision response is invalid.');
+    }
+    return revision;
+  }
+
   async function refreshBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
     if (!client) throw new Error('PostgreSQL Staging 尚未連線。');
     const activeClient = client;
@@ -109,11 +118,24 @@
     if (foregroundPromise) return foregroundPromise;
     foregroundPromise = (async () => {
       try {
-        const bootstrap = await refreshBootstrap({ onlyIfChanged: true, source: 'foreground' });
+        const activeClient = client;
+        const activeSession = currentSession;
+        const previousRevision = Number(stateStore.read()?.sync?.revision);
+        const nextRevision = validateRevision(await activeClient.bootstrapRevision());
+        if (activeClient !== client || activeSession !== currentSession) {
+          return { changed: false, revision: nextRevision, stale: true };
+        }
+        const changed = !Number.isSafeInteger(previousRevision) || previousRevision !== nextRevision;
+        const bootstrap = changed
+          ? await refreshBootstrap({ source: 'foreground' })
+          : { changed: false, revision: nextRevision };
         if (!bootstrap?.stale) {
           foregroundFailureReported = false;
           document.dispatchEvent(new CustomEvent('postgres-foreground-synced', {
-            detail: { changed: Boolean(bootstrap?.changed), revision: bootstrapRevision(bootstrap) }
+            detail: {
+              changed: Boolean(bootstrap?.changed),
+              revision: bootstrap?.changed ? bootstrapRevision(bootstrap) : nextRevision
+            }
           }));
         }
         return bootstrap;

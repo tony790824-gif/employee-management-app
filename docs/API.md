@@ -22,6 +22,8 @@ All mutations use `POST /v1/commands/{commandName}`, `X-Workspace-Id`, `Idempote
 - approved scheduled-leave coworker name/date data for the same Workspace;
 - approved ad-hoc leave coverage as date/count only, without another employee's reason.
 
+`GET /v1/bootstrap/revision` is the authenticated lightweight synchronization surface. It returns only the caller's authorized Workspace ID and a deterministic safe-integer revision. The revision covers both the role-visible bootstrap and role-visible Time-Off result. The browser uses it to decide whether a full `GET /v1/bootstrap` is necessary; it is not an authorization source and does not replace live Session/Membership checks.
+
 The browser-provided Workspace ID remains untrusted request scope. The server and database functions resolve identity, Session, Membership, role, and Workspace again. No runtime role received direct table access.
 
 This phase completed only the data model and controlled API. The frontend, feature-specific Draft Preview, and iPhone UI acceptance remain incomplete. The next and only Sprint is **「前端排休／請假 UI 與老闆審核接線」**.

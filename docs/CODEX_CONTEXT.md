@@ -1,5 +1,16 @@
 # Codex Context
 
+## 2026-07-28 current state — Sprint 23 synchronization hardening
+
+- Current assessed completion: **90%**, with Sprint 23 real-device evidence still pending.
+- The existing PostgreSQL foreground controller now checks authenticated `GET /v1/bootstrap/revision` before fetching the full bootstrap.
+- The deterministic revision covers both the role-visible bootstrap and role-visible time-off request result. Leave approval/rejection, scheduled leave, shifts, attendance, approved hours, and other accepted command results therefore converge through one revision boundary.
+- An unchanged revision causes no full bootstrap request, state write, render, or Time-Off refresh. A changed revision follows the existing validated bootstrap event path and preserves unsent Time-Off forms.
+- The accepted 15-second polling interval, 250 ms debounce, 1-second cooldown, one timer, one in-flight promise, offline/hidden suspension, Session handling, and Google Sheets isolation remain unchanged.
+- No database schema, migration, Production, Auth0, Google Sheets, Apps Script, Render, or Netlify configuration was changed.
+- Windows, iPhone, Android, and iPad Sprint 23 cross-device synchronization are **PENDING USER VERIFICATION**. Do not infer real-device PASS from automated tests.
+- Next and only work: execute the real-device checklist in `docs/NEXT_SPRINT.md`; do not start another feature Sprint first.
+
 ## 2026-07-28 current state — Sprint 22 foreground polling
 
 - Current assessed completion: **89%**.

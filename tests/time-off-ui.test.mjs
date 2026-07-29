@@ -297,7 +297,7 @@ changedForegroundScenario.findById('timeOffLeaveEnd').value = '2026-07-21';
 changedForegroundScenario.findById('timeOffLeaveType').value = '病假';
 changedForegroundScenario.findById('timeOffLeaveReason').value = '尚未送出的測試草稿';
 const changedChildren = changedForegroundScenario.contentChildren();
-await changedForegroundScenario.emitDocument('postgres-foreground-synced');
+await changedForegroundScenario.emitDocument('postgres-bootstrap-refreshed', { source: 'foreground', revision: 2 });
 assert.notStrictEqual(changedForegroundScenario.contentChildren()[0], changedChildren[0],
   'changed foreground data must refresh the Time-Off UI');
 assert.equal(changedForegroundScenario.findButton('2026/07/12'), undefined,

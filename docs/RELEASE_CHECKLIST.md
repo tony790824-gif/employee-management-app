@@ -284,3 +284,20 @@ Known low-risk limitation: PostgreSQL's inherited `PUBLIC TEMPORARY` capability 
 - [ ] 排假儲存、打卡、老闆讀取與 revision 正常。
 - [ ] 登出後 session 失效。
 - [ ] 發布後沒有新的錯誤率、同步衝突或權限異常。
+# Sprint 23 — unified revision synchronization
+
+- [x] Authenticated `GET /v1/bootstrap/revision` is the only foreground decision read.
+- [x] The deterministic revision includes role-visible bootstrap and Time-Off state.
+- [x] Unchanged revision avoids the full bootstrap request, state replacement, render, and Time-Off refresh.
+- [x] Changed revision uses the existing validated bootstrap event/render path.
+- [x] The accepted 15-second interval, debounce, cooldown, single timer, one in-flight promise, hidden/offline stop, and Session handling are preserved.
+- [x] Time-Off foreground refresh occurs once on a changed bootstrap and preserves unsent forms.
+- [x] Google Sheets and Production modes do not install PostgreSQL synchronization behavior.
+- [x] No database schema, migration, Auth0, Production, Google Sheets, Apps Script, Render, or Netlify configuration was changed.
+- [x] API/client/controller/Time-Off focused regression is added without weakening existing checks.
+- [ ] Windows signed-in cross-device approval/shift/clock/hour convergence passes within 20 seconds.
+- [ ] iPhone Safari/PWA Sprint 23 convergence passes; status is **PENDING USER VERIFICATION**.
+- [ ] Android Chrome/PWA Sprint 23 convergence passes; status is **PENDING USER VERIFICATION**.
+- [ ] iPad Safari/PWA Sprint 23 convergence passes; status is **PENDING USER VERIFICATION**.
+
+---

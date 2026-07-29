@@ -524,3 +524,15 @@
 ## 13. 剩餘工作量估算
 
 以 1 個資深全端工程師＋兼任 QA/DevOps、需求範圍不再擴張計算：達到可控 beta 約還需 **8–10 個 Sprint、80–120 個人天／640–960 小時，日曆時間 16–24 週**；達到可收費正式營運約還需 **14–18 個 Sprint、140–200 個人天／1,120–1,600 小時，日曆時間 28–40 週**。若由 3–4 人小隊平行開發可縮短日曆時間，但安全、資料遷移、實際裝置驗收與 beta 觀察期不能省略。
+# 2026-07-28 — Sprint 23 synchronization health update
+
+- **Overall completion: 90%.** Unified revision synchronization and automated regression are complete; real-device Sprint 23 evidence remains pending.
+- **Correctness:** the revision now covers role-visible bootstrap and Time-Off data, closing the delayed employee update when a manager reviews a request.
+- **Performance:** unchanged cycles receive only a small revision response and do not download or render the full bootstrap. Polling remains 15 seconds with one timer and one in-flight request.
+- **Reliability:** changed data follows the accepted bootstrap validation/render path; Time-Off forms are preserved; failures keep the current UI and retry on a later cycle.
+- **Security:** revision calculation uses independently authorized controlled reads. Session, Membership, Workspace, role, API-role, RLS, Auth0, and environment boundaries remain unchanged.
+- **Technical debt:** the server computes the revision from current controlled views rather than a database change ledger. This avoids a migration now but should be measured under realistic load before Production scale.
+- **Release status: No.** Windows, iPhone, Android, and iPad Sprint 23 synchronization must be recorded from real devices; automated fake timers are not a substitute.
+- **Next unique priority:** execute the Sprint 23 real-device matrix only.
+
+---

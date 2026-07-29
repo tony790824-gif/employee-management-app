@@ -353,3 +353,36 @@ PWA Cache 修正輪次的品質檢查 PASS、自動回歸 29／29 PASS；同 ori
 - 共通、裝置專屬、PWA／Cache、弱網、權限、資料對帳與 rollback 結果全部彙整。
 - 任何 FAIL／BLOCKED 已分級並列出下一個最小安全修復工作；不得在本 Sprint 自動開始修復或下一 Sprint。
 - 再確認 Production 未修改／部署，Migration `0009`／`0010` 未套用，固定 Draft 最終為核准的 Google Sheets `STAGING` 狀態。
+# Next unique Sprint — Sprint 23 real-device synchronization acceptance
+
+## Automated baseline
+
+- The browser checks `GET /v1/bootstrap/revision` every 15 seconds only while PostgreSQL Staging is authenticated, visible, and online.
+- The unified server revision includes the caller's bootstrap and role-visible Time-Off state.
+- Unchanged revisions do not fetch the full bootstrap or rerender. Changed revisions use the existing validated bootstrap path.
+- Debounce, cooldown, one timer, one in-flight request, offline/hidden suspension, Session invalidation, form preservation, and Google Sheets/Production isolation remain covered automatically.
+- No Production, database, migration, Auth0, Google Sheets, Apps Script, Render, or Netlify operation is authorized by this acceptance.
+
+## Required manual matrix — PENDING USER VERIFICATION
+
+For each available device, use separate employee and manager Staging Sessions:
+
+1. **Windows Chrome/Edge:** employee submits scheduled leave; manager approves; keep employee App visible and verify the status/calendar updates within 20 seconds without reload. Repeat for clock-in and manager approved-hours updates in the opposite direction.
+2. **iPhone Safari/PWA:** repeat approval and clock-in flows while the employee App remains foreground. Verify no flash, navigation reset, form loss, logout, duplicate request, or Console-visible failure.
+3. **Android Chrome/PWA:** repeat the same flows on a real Android device; viewport simulation is not acceptance evidence.
+4. **iPad Safari/PWA:** repeat the same flows and verify tablet layout, current tab, scroll position, modal/form state, and automatic convergence.
+
+Also verify one shift creation from a manager Session appears on another already-open authorized device. Shift update/delete are not currently accepted commands and must not be represented as completed.
+
+## PASS / FAIL / BLOCKED
+
+- **PASS:** every available required real device converges within 20 seconds, retains the active UI state, and shows no duplicate/overlapping request or environment/role leak.
+- **FAIL:** stale state exceeds 20 seconds while online and visible; full bootstrap is fetched on unchanged revision; UI flashes/resets; forms are lost; requests overlap; or Session/environment isolation regresses.
+- **BLOCKED:** a required real device, approved Draft, valid synthetic identity/Membership, or Staging service is unavailable.
+
+## Stop conditions
+
+- Stop immediately on Production traffic, cross-Workspace/role leakage, mutation duplication, data loss, migration need, Auth0 architecture change, or a requirement to alter accepted business logic.
+- Record actual Windows/iPhone/Android/iPad results before starting another feature Sprint.
+
+---

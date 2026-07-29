@@ -312,6 +312,7 @@ const foregroundTimers = new Map();
 let foregroundTimerId = 0;
 let foregroundNow = 2_000;
 let foregroundBootstrapCalls = 0;
+let foregroundRevisionCalls = 0;
 let foregroundWrites = 0;
 let foregroundFailure = null;
 let foregroundGate = null;
@@ -363,12 +364,6 @@ const foregroundWindow = {
         establishSession: async () => ({ ok: true }),
         async bootstrap() {
           foregroundBootstrapCalls += 1;
-          if (foregroundFailure) {
-            const error = foregroundFailure;
-            foregroundFailure = null;
-            throw error;
-          }
-          if (foregroundGate) await foregroundGate.promise;
           return {
             ok: true,
             workspaceId,
@@ -382,6 +377,16 @@ const foregroundWindow = {
             },
             data: structuredClone(foregroundServerData)
           };
+        },
+        async bootstrapRevision() {
+          foregroundRevisionCalls += 1;
+          if (foregroundFailure) {
+            const error = foregroundFailure;
+            foregroundFailure = null;
+            throw error;
+          }
+          if (foregroundGate) await foregroundGate.promise;
+          return { ok: true, workspaceId, revision: foregroundServerData.sync.revision };
         },
         logout: async () => ({ ok: true })
       };
@@ -425,6 +430,7 @@ foregroundNow += 2_000;
 const resetForegroundObservations = () => {
   foregroundEvents.length = 0;
   foregroundBootstrapCalls = 0;
+  foregroundRevisionCalls = 0;
   foregroundWrites = 0;
 };
 const foregroundTimerCount = delay =>
@@ -450,7 +456,8 @@ foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 assert.equal(foregroundTimerCount(250), 1, 'foreground lifecycle bursts must keep one debounce timer');
 assert.equal(foregroundTimerCount(15_000), 1, 'foreground lifecycle bursts must keep one polling timer');
 await fireForegroundTimers(250);
-assert.equal(foregroundBootstrapCalls, 1, 'foreground event bursts must issue one bootstrap request');
+assert.equal(foregroundRevisionCalls, 1, 'foreground event bursts must issue one revision request');
+assert.equal(foregroundBootstrapCalls, 0, 'unchanged revisions must not fetch the full bootstrap');
 assert.equal(foregroundWrites, 0, 'unchanged revisions must not rewrite canonical state');
 assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap-refreshed').length, 0,
   'unchanged revisions must not trigger the full UI render event');
@@ -458,7 +465,8 @@ assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap
 resetForegroundObservations();
 foregroundNow += 15_000;
 await fireForegroundTimers(15_000);
-assert.equal(foregroundBootstrapCalls, 1, 'foreground polling must refresh an authenticated visible view');
+assert.equal(foregroundRevisionCalls, 1, 'foreground polling must check an authenticated visible view');
+assert.equal(foregroundBootstrapCalls, 0, 'unchanged polling must avoid a full bootstrap request');
 assert.equal(foregroundWrites, 0, 'foreground polling must not rewrite unchanged revisions');
 assert.equal(foregroundTimerCount(15_000), 1, 'foreground polling must schedule exactly one next cycle');
 
@@ -467,6 +475,7 @@ foregroundNow += 2_000;
 foregroundServerData.employees[0].name = 'Updated Synthetic Employee';
 foregroundServerData.sync.revision = 2;
 await fireForegroundTimers(15_000);
+assert.equal(foregroundRevisionCalls, 1);
 assert.equal(foregroundBootstrapCalls, 1);
 assert.equal(foregroundWrites, 1, 'polling must update canonical state once when the revision changes');
 assert.equal(foregroundStoredData.employees[0].name, 'Updated Synthetic Employee');
@@ -481,16 +490,20 @@ foregroundGate.promise = new Promise(resolve => { releaseForegroundBootstrap = r
 foregroundServerData.sync.revision = 3;
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 await fireForegroundTimers(250);
-assert.equal(foregroundBootstrapCalls, 1);
+assert.equal(foregroundRevisionCalls, 1);
+assert.equal(foregroundBootstrapCalls, 0);
 await fireForegroundTimers(15_000);
-assert.equal(foregroundBootstrapCalls, 1, 'polling must share the existing in-flight request');
+assert.equal(foregroundRevisionCalls, 1, 'polling must share the existing in-flight revision request');
+assert.equal(foregroundBootstrapCalls, 0);
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
 await fireForegroundTimers(250);
-assert.equal(foregroundBootstrapCalls, 1, 'in-flight foreground requests must suppress duplicates');
+assert.equal(foregroundRevisionCalls, 1, 'in-flight foreground requests must suppress duplicate revision checks');
+assert.equal(foregroundBootstrapCalls, 0);
 foregroundGate = null;
 releaseForegroundBootstrap();
 for (let index = 0; index < 8; index += 1) await Promise.resolve();
+assert.equal(foregroundBootstrapCalls, 1, 'a changed revision must fetch one full bootstrap');
 assert.equal(foregroundStoredData.sync.revision, 3);
 
 resetForegroundObservations();
@@ -543,6 +556,7 @@ foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
 await fireForegroundTimers(250);
 await fireForegroundTimers(15_000);
 assert.equal(foregroundBootstrapCalls, 0, 'logged-out users must not call protected bootstrap APIs');
+assert.equal(foregroundRevisionCalls, 0, 'logged-out users must not call protected revision APIs');
 
 for (const environment of [
   { name: 'staging', dataBackend: 'google_sheets' },

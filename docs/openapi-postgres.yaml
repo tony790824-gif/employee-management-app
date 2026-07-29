@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-27.2
+  version: 2026-07-28.3
   description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, and the Phase 1 time-off request data/command surface. The time-off frontend UI and Production cutover are not approved.
-  x-baseline-commit: a3da8c39e0f7b012a24c47fd21073b8b4da1bec3
-  x-project-completion: 87
+  x-baseline-commit: dced15e48aaef02d60c062675015e80ba30e2330
+  x-project-completion: 90
   x-staging-migration: 0013_time_off_requests
 servers:
   - url: http://127.0.0.1:8080/v1
@@ -55,6 +55,16 @@ paths:
       responses:
         '200':
           description: Own requests, manager review data, and privacy-filtered same-store approved coverage
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /bootstrap/revision:
+    get:
+      summary: Read the deterministic revision for the caller's role-visible bootstrap and time-off state
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Lightweight revision used to decide whether a full bootstrap refresh is necessary
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
   /commands/{commandName}:

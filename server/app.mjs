@@ -142,6 +142,10 @@ export function createRequestHandler({
         json(response, 200, await commandService.bootstrap({ identity, workspaceId }), requestId);
         return;
       }
+      if (request.method === 'GET' && url.pathname === '/v1/bootstrap/revision') {
+        json(response, 200, await commandService.bootstrapRevision({ identity, workspaceId }), requestId);
+        return;
+      }
       if (request.method === 'GET' && url.pathname === '/v1/time-off-requests') {
         json(response, 200, await commandService.listTimeOffRequests({ identity, workspaceId }), requestId);
         return;

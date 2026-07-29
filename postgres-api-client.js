@@ -174,6 +174,7 @@
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),
       bootstrap: () => request('/bootstrap'),
+      bootstrapRevision: () => request('/bootstrap/revision'),
       listTimeOffRequests: () => request('/time-off-requests'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {

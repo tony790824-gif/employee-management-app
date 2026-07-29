@@ -462,15 +462,15 @@
 
   document.addEventListener('postgres-bootstrap-refreshed', event => {
     if (actionBusy) return;
-    if (event.detail?.source === 'foreground') return;
     payload = null;
     payloadFingerprint = '';
     tab.hidden = !['boss', 'employee'].includes(currentRole());
-    if (!tab.hidden) void loadRequests();
-  });
-  document.addEventListener('postgres-foreground-synced', () => {
-    if (actionBusy || tab.hidden) return;
-    void loadRequests({ silent: true, onlyIfChanged: true, preserveDraft: true });
+    if (!tab.hidden) {
+      const foreground = event.detail?.source === 'foreground';
+      void loadRequests(foreground
+        ? { silent: true, preserveDraft: true }
+        : undefined);
+    }
   });
   document.addEventListener('postgres-session-cleared', () => {
     payload = null;

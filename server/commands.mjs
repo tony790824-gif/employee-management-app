@@ -35,7 +35,7 @@ function requestHash(commandName, input) {
   return createHash('sha256').update(`${commandName}\n${stableJson(input)}`, 'utf8').digest('hex');
 }
 
-function withBootstrapRevision(result) {
+function withBootstrapRevision(result, roleVisibleTimeOff = null) {
   if (!result || result.ok !== true || !result.data || typeof result.data !== 'object' || Array.isArray(result.data)) {
     return result;
   }
@@ -50,7 +50,8 @@ function withBootstrapRevision(result) {
     data: {
       ...result.data,
       sync: { ...sync, revision: 0 }
-    }
+    },
+    roleVisibleTimeOff
   };
   const revision = Number.parseInt(
     createHash('sha256').update(stableJson(canonical), 'utf8').digest('hex').slice(0, 12),
@@ -113,6 +114,18 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
     return tenantContextSigner.sign({ identity, workspaceId, purpose });
   }
 
+  async function readRoleVisibleState(identity, workspaceId) {
+    const bootstrapContext = context(identity, workspaceId, 'read');
+    const bootstrap = await databaseCall(pool,
+      'SELECT app_private.api_bootstrap($1, $2, $3) AS result',
+      [bootstrapContext.payload, bootstrapContext.signature, bootstrapContext.keyId]);
+    const timeOffContext = context(identity, workspaceId, 'read');
+    const timeOff = await databaseCall(pool,
+      'SELECT app_private.api_list_time_off_requests($1, $2, $3) AS result',
+      [timeOffContext.payload, timeOffContext.signature, timeOffContext.keyId]);
+    return { bootstrap: withBootstrapRevision(bootstrap, timeOff), timeOff };
+  }
+
   return Object.freeze({
     async establishSession({ identity, workspaceId }) {
       const signed = context(identity, workspaceId, 'establish');
@@ -153,10 +166,16 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
     },
 
     async bootstrap({ identity, workspaceId }) {
-      const signed = context(identity, workspaceId, 'read');
-      return withBootstrapRevision(await databaseCall(pool,
-        'SELECT app_private.api_bootstrap($1, $2, $3) AS result',
-        [signed.payload, signed.signature, signed.keyId]));
+      return (await readRoleVisibleState(identity, workspaceId)).bootstrap;
+    },
+
+    async bootstrapRevision({ identity, workspaceId }) {
+      const { bootstrap } = await readRoleVisibleState(identity, workspaceId);
+      return {
+        ok: true,
+        workspaceId: bootstrap.workspaceId,
+        revision: bootstrap.data.sync.revision
+      };
     },
 
     async listTimeOffRequests({ identity, workspaceId }) {

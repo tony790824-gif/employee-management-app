@@ -1,5 +1,15 @@
 # Change Log
 
+## 2026-07-28 — Sprint 23 real-time synchronization hardening
+
+- Added authenticated `GET /v1/bootstrap/revision` so the browser can compare a small revision response before downloading the full bootstrap.
+- Unified the deterministic revision across role-visible bootstrap and time-off request state, so leave approval/rejection changes are observable by another signed-in device.
+- Kept the accepted 15-second polling, 250 ms debounce, 1-second cooldown, single timer, and shared in-flight protection.
+- Unchanged revisions now avoid the full bootstrap request, state replacement, render, and Time-Off list refresh. Changed revisions use the existing validated bootstrap path and refresh Time-Off once while preserving unsent forms.
+- Shift creation, attendance clock-in/out, attendance-hour approval, employee creation, scheduled leave, and ad-hoc leave remain on their existing command/business paths; no business rule was changed.
+- Added contract and fake-timer regression for revision-only reads, time-off-only revision changes, unchanged-request suppression, changed bootstrap refresh, lifecycle deduplication, and Session/environment isolation.
+- No Production deploy, database/migration operation, Auth0 change, Google Sheets change, or Apps Script change was made. Sprint 23 real-device synchronization evidence remains pending.
+
 ## 2026-07-28 — Sprint 22 foreground polling sync
 
 - Extended the existing PostgreSQL foreground synchronization controller with one 15-second visible/authenticated polling cycle.

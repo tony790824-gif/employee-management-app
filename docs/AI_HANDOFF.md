@@ -1,5 +1,17 @@
 # AI Handoff
 
+## 2026-07-28 handoff — Sprint 23 synchronization hardening
+
+- Source baseline: `dced15e48aaef02d60c062675015e80ba30e2330`; assessed completion after automated acceptance: **90%**.
+- Added a revision-only browser/API read path while retaining the single Sprint 21/22 synchronization controller.
+- The revision is deterministic over the caller's authorized bootstrap plus role-visible time-off data. A time-off approval can no longer remain invisible merely because the legacy bootstrap payload itself is unchanged.
+- Foreground events and the 15-second visible polling cycle share the same debounce, cooldown, in-flight request, stale-Session rejection, and error-retention behavior.
+- Unchanged revisions do not fetch or render the full bootstrap. Changed revisions fetch one validated bootstrap and refresh the Time-Off UI once, preserving unsent employee forms.
+- Existing command business logic, Session/Membership/Workspace enforcement, Auth0, RLS, Google Sheets, and Production are unchanged.
+- Automated API/client/controller/Time-Off tests and full project gates must remain green in the Sprint commit.
+- Windows, iPhone, Android, and iPad Sprint 23 real-device synchronization remain **PENDING USER VERIFICATION**.
+- Next unique work is the real-device synchronization acceptance in `docs/NEXT_SPRINT.md`.
+
 ## 2026-07-28 handoff — Sprint 22 foreground polling
 
 - Source baseline: Sprint 21 commit `228849eec38128f6093e638991699bc61e509a63`; current assessed completion: **89%**.

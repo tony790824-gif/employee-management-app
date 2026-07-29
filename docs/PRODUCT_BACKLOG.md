@@ -527,3 +527,13 @@ Sprint 2 尚未完成：正式多租戶資料列隔離、正式 Identity Provide
 **可能風險**
 
 - 太早建立多雲讓產品複雜度與客服成本暴增；正式版應由平台統一 primary cloud，客戶只選方案，不選底層資料庫。
+# 2026-07-28 — Sprint 23 synchronization hardening implemented
+
+- **Completion:** **90%** after automated acceptance; real-device Sprint 23 evidence remains pending.
+- **Completed:** revision-only browser/API read, deterministic revision across bootstrap and role-visible Time-Off state, unchanged full-bootstrap suppression, changed-state refresh through the existing render path, and single Time-Off refresh with draft preservation.
+- **Preserved:** 15-second polling, debounce/cooldown, one timer, one in-flight request, Session/Workspace/Membership authorization, existing commands/business rules, Google Sheets isolation, and Production isolation.
+- **Known limitation:** the revision response is small, but the server currently derives it from controlled role-visible reads. A database-maintained revision ledger is a future optimization only if query-plan/traffic evidence justifies a schema change.
+- **Pending acceptance:** real Windows, iPhone, Android, and iPad cross-device evidence for leave approval, shift creation, clock-in, and approved-hours convergence within 20 seconds.
+- **Next unique priority:** **Sprint 23 real-device synchronization acceptance**. Do not start another feature Sprint until actual device results are recorded.
+
+---

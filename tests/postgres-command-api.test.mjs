@@ -136,6 +136,16 @@ let databaseBootstrap = {
     sync: { revision: 0, schemaVersion: 1 }
   }
 };
+const databaseTimeOff = {
+  ok: true,
+  workspaceId,
+  role: 'boss',
+  ownRequests: [],
+  pendingReview: [],
+  processed: [],
+  approvedSchedule: [],
+  approvedLeaveCoverage: []
+};
 const pool = {
   async query(sql, params = []) {
     queries.push({ sql, params });
@@ -143,7 +153,7 @@ const pool = {
     if (sql.includes('api_logout_session')) return { rows: [{ result: { ok: true } }] };
     if (sql.includes('api_list_employees')) return { rows: [{ result: { ok: true, data: [] } }] };
     if (sql.includes('api_bootstrap')) return { rows: [{ result: structuredClone(databaseBootstrap) }] };
-    if (sql.includes('api_list_time_off_requests')) return { rows: [{ result: { ok: true, ownRequests: [] } }] };
+    if (sql.includes('api_list_time_off_requests')) return { rows: [{ result: structuredClone(databaseTimeOff) }] };
     if (sql.includes('api_execute_time_off_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic-time-off' } } }] };
     if (sql.includes('api_execute_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic' } } }] };
     throw new Error(`Unexpected SQL: ${sql}`);
@@ -169,6 +179,16 @@ databaseBootstrap.data.employees.push({ id: 'employee-a', name: 'Synthetic emplo
 const changedBootstrap = await service.bootstrap({ identity, workspaceId });
 assert.notEqual(changedBootstrap.data.sync.revision, firstBootstrap.data.sync.revision,
   'visible bootstrap data changes must change the server-derived revision');
+databaseTimeOff.pendingReview.push({
+  id: 'request-a',
+  employeeId: 'employee-a',
+  requestKind: 'ad_hoc_leave',
+  status: 'pending',
+  dates: ['2026-08-03']
+});
+const changedTimeOffRevision = await service.bootstrapRevision({ identity, workspaceId });
+assert.notEqual(changedTimeOffRevision.revision, changedBootstrap.data.sync.revision,
+  'role-visible time-off changes must change the unified revision');
 await service.listTimeOffRequests({ identity, workspaceId });
 await service.execute({
   identity,
@@ -179,7 +199,7 @@ await service.execute({
   input: { month: '2026-08', dates: ['2026-08-02'] }
 });
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 9);
+assert.equal(queries.length, 14);
 assert.ok(queries.some(item => item.sql.includes('api_execute_time_off_command')),
   'Time-off commands use their controlled database function');
 assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
@@ -289,6 +309,7 @@ const api = createApiServer({
     establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
     execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }),
     bootstrap: async () => ({ ok: true, role: 'boss', data: { employees: [] } }),
+    bootstrapRevision: async () => ({ ok: true, workspaceId, revision: 123 }),
     listTimeOffRequests: async () => ({ ok: true, ownRequests: [], approvedSchedule: [] })
   }
 });
@@ -304,6 +325,9 @@ try {
   const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
   assert.equal(bootstrapResponse.status, 200);
   assert.equal((await bootstrapResponse.json()).role, 'boss');
+  const revisionResponse = await fetch(`${base}/v1/bootstrap/revision`, { headers: commonHeaders });
+  assert.equal(revisionResponse.status, 200);
+  assert.equal((await revisionResponse.json()).revision, 123);
   const timeOffResponse = await fetch(`${base}/v1/time-off-requests`, { headers: commonHeaders });
   assert.equal(timeOffResponse.status, 200);
   assert.deepEqual((await timeOffResponse.json()).approvedSchedule, []);
