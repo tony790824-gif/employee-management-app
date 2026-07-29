@@ -193,26 +193,26 @@ try {
   const month = '2097-07';
   const scheduleKey = `time-off-e2e-schedule-submit-${randomUUID()}`;
   const submittedSchedule = await command(
-    base, employee, 'schedule-leave-requests.submit',
+    base, coworker, 'schedule-leave-requests.submit',
     { month, dates: [`${month}-03`, `${month}-10`] }, 201, scheduleKey
   );
   created.requestIds.push(submittedSchedule.data.id);
   assert.equal(submittedSchedule.data.status, 'pending');
   const replayedSchedule = await command(
-    base, employee, 'schedule-leave-requests.submit',
+    base, coworker, 'schedule-leave-requests.submit',
     { month, dates: [`${month}-03`, `${month}-10`] }, 200, scheduleKey
   );
   assert.equal(replayedSchedule.replayed, true);
 
   const employeeView = await request(
-    base, '/v1/time-off-requests', employee.token, employee.workspaceId, 200
+    base, '/v1/time-off-requests', coworker.token, coworker.workspaceId, 200
   );
   assert.equal(employeeView.ownRequests[0].status, 'pending');
   const coworkerBefore = await request(
-    base, '/v1/time-off-requests', coworker.token, coworker.workspaceId, 200
+    base, '/v1/time-off-requests', employee.token, employee.workspaceId, 200
   );
   assert.equal(coworkerBefore.approvedSchedule.some(
-    row => row.employeeId === employee.member.employee_id
+    row => row.employeeId === coworker.member.employee_id
   ), false, 'pending schedule leave must not be visible to coworkers');
 
   const adHoc = await command(base, coworker, 'leave-requests.submit', {
@@ -250,7 +250,7 @@ try {
     base, '/v1/time-off-requests', coworker.token, coworker.workspaceId, 200
   );
   assert.ok(coworkerAfter.approvedSchedule.some(
-    row => row.employeeId === employee.member.employee_id && row.date === `${month}-03`
+    row => row.employeeId === coworker.member.employee_id && row.date === `${month}-03`
   ));
   const employeeAfterScheduleApproval = await request(
     base, '/v1/time-off-requests', employee.token, employee.workspaceId, 200
@@ -378,7 +378,7 @@ try {
               AND employee_id = $2
               AND leave_date >= DATE '2097-07-01'
               AND leave_date < DATE '2097-08-01'`,
-          [created.workspaceId, created.principals[1]?.member.employee_id]
+          [created.workspaceId, created.principals[2]?.member.employee_id]
         );
         await owner.query(
           'DELETE FROM workspace_members WHERE workspace_id = $1 AND user_id = $2',
