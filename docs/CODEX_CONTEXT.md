@@ -1,5 +1,18 @@
 # Codex Context
 
+## 2026-07-29 current state — Sprint 25 Notification Center Foundation
+
+- Current assessed completion: **92%** after local automated acceptance.
+- Additive Migration `0014_notification_center` exists in Git but is not applied to Neon Staging or Production.
+- Notifications are Workspace- and recipient-scoped, projected transactionally from existing outbox events, and contain no leave reason, contact data, token, Session ID, or credential.
+- The API exposes only `GET /v1/notifications`, `notifications.mark-read`, and `notifications.mark-all-read` through existing live Session/Membership/Workspace authorization and least-privilege controlled functions.
+- The frontend provides a safe notification dialog, unread badge, read/unread controls, and deterministic ordering only in PostgreSQL mode. Google Sheets mode is unchanged.
+- Recipient notification state is part of the deterministic bootstrap revision. Existing Smart Polling, BroadcastChannel/storage, and Service Worker revision signals refresh it; do not add a second sync controller.
+- Firebase Push, APNs, email, and SMS are not implemented.
+- Because GitHub main may feed the isolated Staging service before `0014` is applied, undefined notification functions are treated as a disabled optional capability: existing bootstrap continues, list returns `available: false`, and mutations fail closed with 503.
+- Production, databases, migrations, Auth0, Google Sheets, Apps Script, Render, and Netlify were not modified or deployed.
+- Next and only work: apply `0014` to isolated Neon Staging, verify grants/RLS/Workspace isolation, run rollback and real boss/employee notification E2E, then create a non-Production Draft.
+
 ## 2026-07-29 current state — Sprint 24 Real-time Sync v2
 
 - Current assessed completion: **91%** after automated acceptance; real-device evidence remains **PENDING USER VERIFICATION**.

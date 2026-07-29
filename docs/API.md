@@ -1,5 +1,17 @@
 # API 文件（現況與目標）
 
+## 2026-07-29 — Notification Center API
+
+Migration `0014_notification_center` defines the database functions used by this API, but is not yet applied to Neon Staging or Production.
+
+- `GET /v1/notifications` requires the existing bearer token, `X-Workspace-Id`, live Bankeban Session, active user, active Workspace, and active Membership. It returns at most 100 notifications for the authenticated recipient only, sorted unread first and then newest first.
+- `notifications.mark-read` requires `notificationId` and `baseRevision`. It uses the existing idempotency and optimistic-revision boundary.
+- `notifications.mark-all-read` accepts an empty command object and marks only the current recipient's unread notifications.
+- Notification rows are never directly accessible to the API Role. It can execute only the reviewed controlled functions.
+- The existing bootstrap revision includes the caller's notification count, unread count, revision total, and latest creation time. The existing Smart Polling, BroadcastChannel/storage, and Service Worker revision signal can therefore trigger `GET /v1/notifications` without a new transport.
+- Notification payloads intentionally exclude leave reasons, email addresses, phone numbers, Session IDs, tokens, and credentials.
+- Until additive Migration `0014` exists, bootstrap remains backward compatible and the notification read route returns an empty `available: false` result. Notification mutations fail with `503 NOTIFICATION_CENTER_UNAVAILABLE`; no existing Staging workflow is interrupted.
+
 ## 2026-07-29 — Bootstrap revision transport
 
 - Authenticated `GET /v1/bootstrap` and `GET /v1/bootstrap/revision` responses include `X-Bootstrap-Revision`.

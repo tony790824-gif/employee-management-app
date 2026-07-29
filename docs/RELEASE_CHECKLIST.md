@@ -1,5 +1,18 @@
 # 班客邦 Release Checklist
 
+## Sprint 25 — Notification Center Foundation
+
+- [x] Notification schema is Workspace- and recipient-scoped with composite constraints, indexes, forced RLS, and PUBLIC revocation.
+- [x] Outbox projection runs in the existing command transaction and copies no leave reason, contact data, token, Session ID, or credential.
+- [x] API Role design has zero direct notification-table access and only three explicit notification function grants.
+- [x] `GET /v1/notifications` is recipient-only and sorted unread first/newest first.
+- [x] Mark-one and mark-all Commands use existing live authorization, idempotency, audit, and revision rules.
+- [x] Notification state participates in the deterministic bootstrap revision and reuses Smart Polling/cross-tab/Service Worker signals.
+- [x] PostgreSQL-only badge/dialog/read UI uses safe DOM rendering and mobile touch sizing; Google Sheets remains inactive.
+- [x] Build, check, full regression, release gate, sensitive-information scan, and dependency audit pass.
+- [ ] `0014_notification_center` Staging apply/down/reapply, grants, dual-Workspace privacy, and real boss/employee E2E remain pending.
+- [x] Production was not deployed or modified; no database migration was executed.
+
 ## Sprint 24 — Real-time Sync v2 automated gate
 
 - [x] One adaptive PostgreSQL synchronization controller uses 2-second active, 20-second idle, and 60-second background intervals.

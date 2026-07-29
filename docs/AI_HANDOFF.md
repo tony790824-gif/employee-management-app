@@ -1,5 +1,16 @@
 # AI Handoff
 
+## 2026-07-29 handoff — Sprint 25 Notification Center Foundation
+
+- Source baseline: `b5167958afece72e9132ded7797e4da5ee68c1cc`; assessed completion after local automated acceptance: **92%**.
+- Added `0014_notification_center`, but did not connect to or mutate Neon Staging/Production and did not run any migration.
+- Runtime design uses the existing outbox transaction, Session/Membership/Workspace checks, forced RLS, controlled functions, idempotency receipts, audit log, deterministic bootstrap revision, Smart Polling, and Service Worker revision message.
+- API Role design remains zero direct table access. New execution grants are limited to notification list/revision/command functions.
+- Frontend notification UI is PostgreSQL-only and uses safe DOM construction; Google Sheets does not activate it.
+- No external push provider, email, or SMS channel exists.
+- No Draft was created because the schema is not yet present in Staging.
+- Next unique work: controlled Neon Staging apply/down/reapply of `0014`, checksum and grant verification, Workspace A/B privacy tests, boss/employee notification E2E, then a non-Production Draft/device acceptance.
+
 ## 2026-07-29 handoff — Sprint 24 Real-time Sync v2
 
 - Source baseline: `0516803b2d7fbcf9bffc0e8bc8296a728dccab29`; assessed completion after automated acceptance: **91%**.

@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-29.1
-  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, time-off requests, and deterministic bootstrap revision transport. Production cutover is not approved.
-  x-baseline-commit: 0516803b2d7fbcf9bffc0e8bc8296a728dccab29
-  x-project-completion: 91
-  x-staging-migration: 0013_time_off_requests
+  version: 2026-07-29.2
+  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, time-off requests, deterministic bootstrap revision transport, and the pending Notification Center foundation. Production cutover is not approved.
+  x-baseline-commit: b5167958afece72e9132ded7797e4da5ee68c1cc
+  x-project-completion: 92
+  x-staging-migration: 0013_time_off_requests applied; 0014_notification_center pending
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only
@@ -57,6 +57,17 @@ paths:
           description: Own requests, manager review data, and privacy-filtered same-store approved coverage
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
+  /notifications:
+    get:
+      summary: Read notifications for the authenticated recipient
+      description: Returns at most 100 notifications sorted unread first and then newest first.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Recipient-scoped notification list and unread count
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
   /bootstrap:
     get:
       summary: Read the caller's role-visible bootstrap state
@@ -105,6 +116,8 @@ paths:
               - leave-requests.cancel
               - time-off-requests.approve
               - time-off-requests.reject
+              - notifications.mark-read
+              - notifications.mark-all-read
         - in: header
           name: Idempotency-Key
           required: true

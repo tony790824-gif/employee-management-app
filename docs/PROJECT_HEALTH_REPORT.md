@@ -1,5 +1,16 @@
 # 班客邦 Project Health Report
 
+## 2026-07-29 — Sprint 25 Notification Center Foundation health update
+
+- **Overall completion: 92%.** Schema/API/UI/revision integration and local automated coverage are implemented; Staging database and real-device acceptance remain pending.
+- **Architecture:** one recipient-scoped notification store projects from the existing transactional outbox and reuses the existing Command, Session, tenant, bootstrap revision, Smart Polling, cross-tab, and Service Worker boundaries.
+- **Security:** forced RLS, live Membership authorization, controlled-function-only API Role access, recipient filters, idempotent read Commands, safe DOM rendering, and data minimization are designed and covered statically/unit-wise.
+- **Privacy:** notification content does not copy leave reasons, review notes, contact data, tokens, Session IDs, or credentials.
+- **Performance:** per-recipient unread/sort indexes and a 100-item response cap bound the first iteration. Revision equality avoids unnecessary UI refresh.
+- **Known P1 risk:** the trigger/functions have not run on a real PostgreSQL Staging engine, and scale behavior beyond the bounded inbox has not been profiled.
+- **Release status: No.** Apply/down/reapply `0014` only on isolated Neon Staging, prove least privilege and Workspace A/B isolation, and complete browser/device E2E before any Production decision.
+- **Next unique priority:** controlled Staging notification migration, rollback, security, and E2E acceptance.
+
 ## 2026-07-29 — Sprint 24 Real-time Sync v2 health update
 
 - **Overall completion: 91%.** Smart polling, revision transport, cross-tab/PWA signals, incremental state application, and automated regression are complete; real-device evidence remains pending.

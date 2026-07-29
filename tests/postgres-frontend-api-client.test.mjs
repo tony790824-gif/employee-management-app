@@ -79,6 +79,12 @@ const client = createClient({
       approvedSchedule: [],
       approvedLeaveCoverage: []
     });
+    if (url.endsWith('/notifications')) return response(200, {
+      ok: true,
+      workspaceId,
+      items: [],
+      unreadCount: 0
+    });
     if (url.includes('/commands/')) {
       return response(201, { ok: true, replayed: false }, { 'x-bootstrap-revision': '124' });
     }
@@ -134,16 +140,24 @@ assert.equal(calls[4].options.headers.Authorization, `Bearer ${accessToken}`);
 assert.equal(calls[4].options.headers['X-Workspace-Id'], workspaceId);
 assert.equal(calls[4].options.body, undefined, 'The read route does not accept client-defined query or body data.');
 
+const notificationPayload = await client.listNotifications();
+assert.equal(notificationPayload.unreadCount, 0);
+assert.equal(Array.isArray(notificationPayload.items), true);
+assert.equal(calls[5].url, 'https://api.staging.example/v1/notifications');
+assert.equal(calls[5].options.method, 'GET');
+assert.equal(calls[5].options.headers.Authorization, `Bearer ${accessToken}`);
+assert.equal(calls[5].options.headers['X-Workspace-Id'], workspaceId);
+
 const commandPayload = await client.executeCommand(
   'attendance.clock-in', {}, { idempotencyKey: 'clock-in-0001' }
 );
 assert.equal(commandPayload.ok, true);
 assert.equal(commandPayload.replayed, false);
 assert.deepEqual(commandRevisions, [124]);
-assert.equal(calls[5].options.method, 'POST');
-assert.equal(calls[5].options.headers['Idempotency-Key'], 'clock-in-0001');
-assert.equal(calls[5].options.headers['Content-Type'], 'application/json');
-assert.equal(calls[5].options.body, '{}');
+assert.equal(calls[6].options.method, 'POST');
+assert.equal(calls[6].options.headers['Idempotency-Key'], 'clock-in-0001');
+assert.equal(calls[6].options.headers['Content-Type'], 'application/json');
+assert.equal(calls[6].options.body, '{}');
 const timeOffCommandNames = [
   'schedule-leave-requests.submit',
   'schedule-leave-requests.cancel',
@@ -152,7 +166,7 @@ const timeOffCommandNames = [
   'time-off-requests.approve',
   'time-off-requests.reject'
 ];
-assert.equal(commandNames.length, 12);
+assert.equal(commandNames.length, 14);
 for (const commandName of timeOffCommandNames) {
   assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
   const responsePayload = await client.executeCommand(commandName, {}, {
@@ -160,6 +174,13 @@ for (const commandName of timeOffCommandNames) {
   });
   assert.equal(responsePayload.ok, true);
   assert.match(calls.at(-1).url, new RegExp(`/commands/${commandName.replace('.', '\\.')}$`));
+}
+for (const commandName of ['notifications.mark-read', 'notifications.mark-all-read']) {
+  assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
+  const responsePayload = await client.executeCommand(commandName, {}, {
+    idempotencyKey: `notification-${commandName.replaceAll('.', '-')}`
+  });
+  assert.equal(responsePayload.ok, true);
 }
 assert.throws(() => client.executeCommand('admin.drop-all', {}), error =>
   error instanceof PostgresApiError && error.code === 'COMMAND_NOT_FOUND');

@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-29 — Sprint 25 Notification Center Foundation implemented
+
+- **Completion:** **92%** after local automated acceptance.
+- **Implemented in code:** additive `0014_notification_center`, recipient-only read API, two idempotent read-state Commands, unread badge/dialog, unread-first/newest-first ordering, Session cleanup, and reuse of the existing bootstrap revision/Smart Polling/Service Worker signal.
+- **Explicitly excluded:** Firebase Push, APNs, email, SMS, Production deployment, database application, and a second synchronization architecture.
+- **Runtime acceptance pending:** Migration `0014` is not applied to Neon Staging, so real notification generation, least-privilege grants, Workspace A/B isolation, rollback, and browser/device acceptance are not yet complete.
+- **Next unique priority:** **Apply `0014` to isolated Neon Staging and complete notification security/E2E/rollback acceptance**. Do not deploy Production or add external push delivery.
+
 ## 2026-07-29 — Sprint 24 Real-time Sync v2 implemented
 
 - **Completion:** **91%** after automated acceptance; real-device evidence remains pending.

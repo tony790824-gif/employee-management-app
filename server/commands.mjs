@@ -1,6 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { ApiError, assert } from './errors.mjs';
-import { commandNames, timeOffCommandNames, validateCommand, validateIdempotencyKey } from './validation.mjs';
+import {
+  commandNames,
+  notificationCommandNames,
+  timeOffCommandNames,
+  validateCommand,
+  validateIdempotencyKey
+} from './validation.mjs';
 
 const DATABASE_ERROR_STATUS = Object.freeze({
   TENANT_CONTEXT_INVALID: 401,
@@ -19,7 +25,8 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   REVISION_CONFLICT: 409,
   IDEMPOTENCY_KEY_REUSED: 409,
   TIME_OFF_REQUEST_NOT_FOUND: 404,
-  TIME_OFF_REQUEST_ALREADY_PROCESSED: 409
+  TIME_OFF_REQUEST_ALREADY_PROCESSED: 409,
+  NOTIFICATION_NOT_FOUND: 404
 });
 
 function stableJson(value) {
@@ -35,7 +42,7 @@ function requestHash(commandName, input) {
   return createHash('sha256').update(`${commandName}\n${stableJson(input)}`, 'utf8').digest('hex');
 }
 
-function withBootstrapRevision(result, roleVisibleTimeOff = null) {
+function withBootstrapRevision(result, roleVisibleTimeOff = null, notificationRevision = null) {
   if (!result || result.ok !== true || !result.data || typeof result.data !== 'object' || Array.isArray(result.data)) {
     return result;
   }
@@ -51,7 +58,8 @@ function withBootstrapRevision(result, roleVisibleTimeOff = null) {
       ...result.data,
       sync: { ...sync, revision: 0 }
     },
-    roleVisibleTimeOff
+    roleVisibleTimeOff,
+    notificationRevision
   };
   const revision = Number.parseInt(
     createHash('sha256').update(stableJson(canonical), 'utf8').digest('hex').slice(0, 12),
@@ -105,6 +113,10 @@ async function databaseCall(pool, sql, parameters) {
   }
 }
 
+function notificationSchemaUnavailable(error) {
+  return error?.code === '42883';
+}
+
 export function createCommandService({ pool, tenantContextSigner, clock = () => new Date(), idFactory = randomUUID }) {
   assert(pool && typeof pool.query === 'function', 500, 'DATABASE_CONFIG_INVALID', 'Database pool is required.');
   assert(tenantContextSigner && typeof tenantContextSigner.sign === 'function',
@@ -123,7 +135,20 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
     const timeOff = await databaseCall(pool,
       'SELECT app_private.api_list_time_off_requests($1, $2, $3) AS result',
       [timeOffContext.payload, timeOffContext.signature, timeOffContext.keyId]);
-    return { bootstrap: withBootstrapRevision(bootstrap, timeOff), timeOff };
+    const notificationContext = context(identity, workspaceId, 'read');
+    let notificationRevision = null;
+    try {
+      notificationRevision = await databaseCall(pool,
+        'SELECT app_private.api_notification_revision($1, $2, $3) AS result',
+        [notificationContext.payload, notificationContext.signature, notificationContext.keyId]);
+    } catch (error) {
+      if (!notificationSchemaUnavailable(error)) throw error;
+    }
+    return {
+      bootstrap: withBootstrapRevision(bootstrap, timeOff, notificationRevision),
+      timeOff,
+      notificationRevision
+    };
   }
 
   return Object.freeze({
@@ -149,13 +174,22 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const prepared = internalInput(commandName, validated, idFactory, clock);
       const databaseFunction = timeOffCommandNames.includes(commandName)
         ? 'app_private.api_execute_time_off_command'
-        : 'app_private.api_execute_command';
-      return databaseCall(pool,
-        `SELECT ${databaseFunction}(
-          $1, $2, $3, $4, $5::jsonb, $6, $7, $8
-        ) AS result`,
-        [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
-          idempotencyKey, requestHash(commandName, validated), requestId]);
+        : notificationCommandNames.includes(commandName)
+          ? 'app_private.api_execute_notification_command'
+          : 'app_private.api_execute_command';
+      try {
+        return await databaseCall(pool,
+          `SELECT ${databaseFunction}(
+            $1, $2, $3, $4, $5::jsonb, $6, $7, $8
+          ) AS result`,
+          [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
+            idempotencyKey, requestHash(commandName, validated), requestId]);
+      } catch (error) {
+        if (notificationCommandNames.includes(commandName) && notificationSchemaUnavailable(error)) {
+          throw new ApiError(503, 'NOTIFICATION_CENTER_UNAVAILABLE', 'Notification Center is not enabled.');
+        }
+        throw error;
+      }
     },
 
     async listEmployees({ identity, workspaceId }) {
@@ -183,6 +217,20 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       return databaseCall(pool,
         'SELECT app_private.api_list_time_off_requests($1, $2, $3) AS result',
         [signed.payload, signed.signature, signed.keyId]);
+    },
+
+    async listNotifications({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      try {
+        return await databaseCall(pool,
+          'SELECT app_private.api_list_notifications($1, $2, $3) AS result',
+          [signed.payload, signed.signature, signed.keyId]);
+      } catch (error) {
+        if (notificationSchemaUnavailable(error)) {
+          return { ok: true, workspaceId, items: [], unreadCount: 0, available: false };
+        }
+        throw error;
+      }
     }
   });
 }

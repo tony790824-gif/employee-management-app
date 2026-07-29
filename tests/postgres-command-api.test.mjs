@@ -57,6 +57,18 @@ assert.deepEqual(validateCommand('time-off-requests.approve', {
   baseRevision: 0,
   reviewNote: ''
 });
+assert.deepEqual(validateCommand('notifications.mark-read', {
+  notificationId: '00000000-0000-4000-8000-000000000011',
+  baseRevision: 2
+}), {
+  notificationId: '00000000-0000-4000-8000-000000000011',
+  baseRevision: 2
+});
+assert.deepEqual(validateCommand('notifications.mark-all-read', {}), {});
+assert.throws(() => validateCommand('notifications.mark-read', {
+  notificationId: 'not-a-notification',
+  baseRevision: 0
+}), error => error.code === 'COMMAND_INVALID');
 
 const workspaceId = 'ws_0123456789abcdef0123456789abcdef';
 const identity = Object.freeze({
@@ -146,6 +158,19 @@ const databaseTimeOff = {
   approvedSchedule: [],
   approvedLeaveCoverage: []
 };
+let databaseNotificationRevision = {
+  count: 0,
+  unreadCount: 0,
+  revisionTotal: 0,
+  latestCreatedAt: null
+};
+const databaseNotifications = {
+  ok: true,
+  workspaceId,
+  items: [],
+  unreadCount: 0
+};
+let notificationSchemaAvailable = true;
 const pool = {
   async query(sql, params = []) {
     queries.push({ sql, params });
@@ -154,6 +179,18 @@ const pool = {
     if (sql.includes('api_list_employees')) return { rows: [{ result: { ok: true, data: [] } }] };
     if (sql.includes('api_bootstrap')) return { rows: [{ result: structuredClone(databaseBootstrap) }] };
     if (sql.includes('api_list_time_off_requests')) return { rows: [{ result: structuredClone(databaseTimeOff) }] };
+    if (sql.includes('api_notification_revision')) {
+      if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
+      return { rows: [{ result: structuredClone(databaseNotificationRevision) }] };
+    }
+    if (sql.includes('api_list_notifications')) {
+      if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
+      return { rows: [{ result: structuredClone(databaseNotifications) }] };
+    }
+    if (sql.includes('api_execute_notification_command')) {
+      if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
+      return { rows: [{ result: { ok: true, data: { updatedCount: 1 } } }] };
+    }
     if (sql.includes('api_execute_time_off_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic-time-off' } } }] };
     if (sql.includes('api_execute_command')) return { rows: [{ result: { ok: true, data: { id: 'synthetic' } } }] };
     throw new Error(`Unexpected SQL: ${sql}`);
@@ -193,7 +230,37 @@ databaseBootstrap.data.leaves['employee-a-2026-08'] = ['2026-08-08'];
 const changedDirectLeaveRevision = await service.bootstrapRevision({ identity, workspaceId });
 assert.notEqual(changedDirectLeaveRevision.revision, changedTimeOffRevision.revision,
   'a boss direct leave change must increase the role-visible bootstrap revision');
+databaseNotificationRevision = {
+  count: 1,
+  unreadCount: 1,
+  revisionTotal: 0,
+  latestCreatedAt: '2026-08-01T00:00:00.000Z'
+};
+const changedNotificationRevision = await service.bootstrapRevision({ identity, workspaceId });
+assert.notEqual(changedNotificationRevision.revision, changedDirectLeaveRevision.revision,
+  'a recipient-visible notification must change the unified bootstrap revision');
 await service.listTimeOffRequests({ identity, workspaceId });
+await service.listNotifications({ identity, workspaceId });
+notificationSchemaAvailable = false;
+const bootstrapWithoutNotificationSchema = await service.bootstrap({ identity, workspaceId });
+assert.equal(bootstrapWithoutNotificationSchema.ok, true,
+  'the accepted bootstrap remains available before the additive notification migration is applied');
+assert.deepEqual(await service.listNotifications({ identity, workspaceId }), {
+  ok: true,
+  workspaceId,
+  items: [],
+  unreadCount: 0,
+  available: false
+});
+await assert.rejects(service.execute({
+  identity,
+  workspaceId,
+  commandName: 'notifications.mark-all-read',
+  idempotencyKey: 'notification-unavailable-0001',
+  requestId: 'request-unavailable-0001',
+  input: {}
+}), error => error.code === 'NOTIFICATION_CENTER_UNAVAILABLE' && error.status === 503);
+notificationSchemaAvailable = true;
 await service.execute({
   identity,
   workspaceId,
@@ -202,10 +269,20 @@ await service.execute({
   requestId: 'request-0002',
   input: { month: '2026-08', dates: ['2026-08-02'] }
 });
+await service.execute({
+  identity,
+  workspaceId,
+  commandName: 'notifications.mark-all-read',
+  idempotencyKey: 'notification-read-all-0001',
+  requestId: 'request-0003',
+  input: {}
+});
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 16);
+assert.equal(queries.length, 31);
 assert.ok(queries.some(item => item.sql.includes('api_execute_time_off_command')),
   'Time-off commands use their controlled database function');
+assert.ok(queries.some(item => item.sql.includes('api_execute_notification_command')),
+  'Notification commands use their controlled database function');
 assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
 assert.ok(queries.every(item => !/\b(?:FROM|INTO|UPDATE|DELETE FROM)\s+(?:employees|workspaces|workspace_members)\b/i.test(item.sql)),
   'API never directly queries tenant tables');
@@ -318,7 +395,8 @@ const api = createApiServer({
       data: { employees: [], sync: { revision: 122 } }
     }),
     bootstrapRevision: async () => ({ ok: true, workspaceId, revision: 123 }),
-    listTimeOffRequests: async () => ({ ok: true, ownRequests: [], approvedSchedule: [] })
+    listTimeOffRequests: async () => ({ ok: true, ownRequests: [], approvedSchedule: [] }),
+    listNotifications: async () => ({ ok: true, items: [], unreadCount: 0 })
   }
 });
 api.listen(0, '127.0.0.1');
@@ -342,6 +420,9 @@ try {
   const timeOffResponse = await fetch(`${base}/v1/time-off-requests`, { headers: commonHeaders });
   assert.equal(timeOffResponse.status, 200);
   assert.deepEqual((await timeOffResponse.json()).approvedSchedule, []);
+  const notificationResponse = await fetch(`${base}/v1/notifications`, { headers: commonHeaders });
+  assert.equal(notificationResponse.status, 200);
+  assert.deepEqual((await notificationResponse.json()).items, []);
   const cancelLeaveResponse = await fetch(`${base}/v1/commands/leaves.replace-month`, {
     method: 'POST',
     headers: {

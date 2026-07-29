@@ -365,6 +365,15 @@
     'time-off-requests.reject',
     { requestId, baseRevision, reviewNote }
   );
+  const listNotifications = () => {
+    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    return client.listNotifications();
+  };
+  const markNotificationRead = (notificationId, baseRevision) => executeAndRefresh(
+    'notifications.mark-read',
+    { notificationId, baseRevision }
+  );
+  const markAllNotificationsRead = () => executeAndRefresh('notifications.mark-all-read', {});
 
   async function logout() {
     const activeClient = client;
@@ -413,6 +422,9 @@
     cancelLeaveRequest,
     approveTimeOffRequest,
     rejectTimeOffRequest,
+    listNotifications,
+    markNotificationRead,
+    markAllNotificationsRead,
     hasEmployeeSession: isEmployeeSession,
     isConnected: () => Boolean(currentSession),
     getSession: () => currentSession,

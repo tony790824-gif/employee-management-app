@@ -1,5 +1,15 @@
 # 班客邦
 
+## Notification Center Foundation (Sprint 25, 2026-07-29)
+
+- Added additive Migration `0014_notification_center` for Workspace- and recipient-scoped notifications, unread state, deterministic ordering, forced RLS, indexes, and controlled functions. The Migration is committed but **not applied** to Neon Staging or Production.
+- Existing transactional outbox events create only the minimum notification content needed for schedule and time-off updates. Leave reasons, email addresses, phone numbers, tokens, and credentials are never copied into notifications.
+- The existing PostgreSQL Command API now supports `notifications.mark-read` and `notifications.mark-all-read`; `GET /v1/notifications` returns only the live Session user's notifications.
+- The frontend adds a notification dialog, unread badge, read/unread controls, and unread-first/newest-first ordering. It uses safe DOM construction and keeps Google Sheets mode unchanged.
+- The existing deterministic bootstrap revision includes the current recipient's notification revision. Smart Polling, cross-tab events, and the existing Service Worker revision signal therefore refresh notifications without a second synchronization controller or push service.
+- Firebase Push, APNs, email, and SMS are explicitly out of scope.
+- Current assessed completion: **92%** after local automated acceptance. The next unique priority is to apply `0014` to isolated Neon Staging, validate least-privilege grants and Workspace isolation, run boss/employee notification E2E, and exercise rollback before creating a non-Production Draft.
+
 ## PostgreSQL foreground polling synchronization (Sprint 22, 2026-07-28)
 
 - The existing Sprint 21 synchronization controller now runs one authenticated, visible-page PostgreSQL refresh every 15 seconds. It does not introduce WebSocket, SSE, a second controller, or a new API.

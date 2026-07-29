@@ -1,5 +1,14 @@
 # Change Log
 
+## 2026-07-29 — Sprint 25 Notification Center Foundation
+
+- Added additive Migration `0014_notification_center` with recipient-scoped notification storage, unread state, indexes, forced RLS, controlled read/revision/command functions, transactional outbox projection, and a complete down migration.
+- Added `GET /v1/notifications`, `notifications.mark-read`, and `notifications.mark-all-read` through the existing authenticated PostgreSQL API and idempotent Command boundary.
+- Added an unread badge and notification dialog with unread-first/newest-first ordering, safe DOM rendering, mark-one/read-all behavior, Session cleanup, and mobile touch sizing.
+- Integrated the current recipient's notification state into the existing deterministic bootstrap revision, Smart Polling, cross-tab, and Service Worker revision path; no second sync controller or push provider was added.
+- Added notification schema, API, role-grant, frontend client, UI, revision, privacy, environment-isolation, and regression tests.
+- Migration `0014` was not applied to any database. Production, Auth0, Google Sheets, Apps Script, Render, Netlify, dependencies, and lockfiles were not modified or deployed.
+
 ## 2026-07-29 — Sprint 24 Real-time Sync v2
 
 - Replaced the fixed PostgreSQL Staging polling interval with one adaptive controller: 2 seconds while recently active, 20 seconds while idle, and 60 seconds while backgrounded.

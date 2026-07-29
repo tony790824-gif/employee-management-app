@@ -1,5 +1,22 @@
 # Database 文件（現況與目標）
 
+## Migration 0014 — Notification Center (pending Staging acceptance, 2026-07-29)
+
+Migration `0014_notification_center` adds:
+
+- `notifications`, scoped by `workspace_id` and `recipient_user_id`, with immutable outbox source identity, read timestamp, row revision, deterministic creation time, composite tenant foreign keys, and a per-recipient unique event constraint;
+- unread and recipient-sort indexes;
+- forced RLS with the existing transaction-local Workspace context;
+- a transactional outbox projection trigger for time-off submission/cancellation/review and schedule updates;
+- controlled `api_list_notifications`, `api_notification_revision`, and `api_execute_notification_command` functions;
+- explicit PUBLIC revocation and a complete down migration.
+
+The API Role receives zero direct table privileges. The approved grant script permits only the three new controlled functions in addition to the existing whitelist. Notifications copy no leave reason, review note, email address, phone number, token, or credential from source events.
+
+This migration is committed for review but has **not** been applied to Neon Staging or Production. No business or test data was inserted. The next controlled step is an isolated Neon Staging migration/rollback rehearsal, grant verification, dual-Workspace isolation test, and real boss/employee E2E.
+
+Reviewed up-migration SHA-256 checksum: `c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc`.
+
 ## Migration 0013 — time-off requests (Staging only, 2026-07-27)
 
 Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`; overall completion: **87%**. Production, Auth0, Google Sheets, and Apps Script were not modified. Migration `0013_time_off_requests` is not applied to Production, and pending migrations `0009`／`0010` were not changed or applied.

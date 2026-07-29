@@ -160,6 +160,10 @@ export function createRequestHandler({
         json(response, 200, await commandService.listTimeOffRequests({ identity, workspaceId }), requestId);
         return;
       }
+      if (request.method === 'GET' && url.pathname === '/v1/notifications') {
+        json(response, 200, await commandService.listNotifications({ identity, workspaceId }), requestId);
+        return;
+      }
       if (commandName) {
         const input = await readJson(request);
         const result = await commandService.execute({

@@ -1,4 +1,29 @@
-# Next unique work — Sprint 24 real-device Smart Polling acceptance
+# Next unique work — Apply Notification Center to isolated Neon Staging
+
+## Goal
+
+Prove Migration `0014_notification_center` and the Notification Center runtime against the isolated Neon Staging database without modifying Production.
+
+## Required controlled steps
+
+1. Confirm the target is Neon Staging and record the existing restore/PITR condition.
+2. Run migration status and verify `0014` is the only newly pending migration intended for this exercise.
+3. Apply `0014`, record its checksum, verify table/index/foreign-key/RLS/trigger/functions, and reapply least-privilege API Role grants.
+4. Verify the API Role has zero direct table access and can execute only the reviewed notification functions.
+5. With synthetic Workspace A/B identities, prove recipient-only reads, cross-user/cross-Workspace denial, manager/employee targeting, idempotent read Commands, and no exposure of leave reasons.
+6. Prove outbox write and notification creation are one transaction; a rejected command must create neither.
+7. Exercise down migration and reapply on Staging, then verify checksum and application state.
+8. Run real boss/employee browser E2E, Smart Polling/Service Worker notification refresh, logout cleanup, mobile layout, and accessibility on a new non-Production Draft.
+
+## Stop conditions
+
+- Stop on any unexpected pending migration, checksum mismatch, cross-Workspace or reason disclosure, direct API Role table privilege, rollback failure, Production endpoint, or need to weaken RLS.
+- Do not add Firebase Push, APNs, email, SMS, a second polling controller, or a second notification data path.
+- Do not deploy Production or apply `0014` to Production.
+
+---
+
+# Historical next work — Sprint 24 real-device Smart Polling acceptance
 
 ## Automated baseline
 

@@ -140,6 +140,17 @@ export function validateCommand(name, input) {
       reviewNote: text(input.reviewNote ?? '', 'reviewNote', { max: 1000 })
     };
   }
+  if (name === 'notifications.mark-read') {
+    exactKeys(input, ['notificationId', 'baseRevision'], ['notificationId', 'baseRevision']);
+    return {
+      notificationId: validRequestId(input.notificationId, 'notificationId'),
+      baseRevision: validRevision(input.baseRevision)
+    };
+  }
+  if (name === 'notifications.mark-all-read') {
+    exactKeys(input, []);
+    return {};
+  }
   if (name === 'attendance.clock-in' || name === 'attendance.clock-out') {
     exactKeys(input, []);
     return {};
@@ -166,7 +177,9 @@ export const commandNames = Object.freeze([
   'leave-requests.submit',
   'leave-requests.cancel',
   'time-off-requests.approve',
-  'time-off-requests.reject'
+  'time-off-requests.reject',
+  'notifications.mark-read',
+  'notifications.mark-all-read'
 ]);
 
 export const timeOffCommandNames = Object.freeze([
@@ -176,4 +189,9 @@ export const timeOffCommandNames = Object.freeze([
   'leave-requests.cancel',
   'time-off-requests.approve',
   'time-off-requests.reject'
+]);
+
+export const notificationCommandNames = Object.freeze([
+  'notifications.mark-read',
+  'notifications.mark-all-read'
 ]);
