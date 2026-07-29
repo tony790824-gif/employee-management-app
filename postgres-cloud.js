@@ -299,7 +299,8 @@
     client = window.BankePostgresApi.createClient({
       baseUrl: environment.postgresApiUrl,
       getAccessToken,
-      getWorkspaceId: async () => environment.postgresWorkspaceId
+      getWorkspaceId: async () => environment.postgresWorkspaceId,
+      onCommandRevision: announceRevision
     });
     await client.readiness();
     await client.establishSession();

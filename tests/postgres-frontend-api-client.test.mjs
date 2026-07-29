@@ -55,9 +55,11 @@ assert.throws(() => createClient({
 }), error => error instanceof PostgresApiError && error.code === 'POSTGRES_API_CONFIG_INVALID');
 
 const calls = [];
+const commandRevisions = [];
 const client = createClient({
   ...baseConfig,
   baseUrl: 'https://api.staging.example/v1/',
+  onCommandRevision: revision => commandRevisions.push(revision),
   fetchImpl: async (url, options) => {
     calls.push({ url, options });
     if (url.endsWith('/employees')) return response(200, { employees: [] });
@@ -77,7 +79,9 @@ const client = createClient({
       approvedSchedule: [],
       approvedLeaveCoverage: []
     });
-    if (url.includes('/commands/')) return response(201, { ok: true, replayed: false });
+    if (url.includes('/commands/')) {
+      return response(201, { ok: true, replayed: false }, { 'x-bootstrap-revision': '124' });
+    }
     if (url.endsWith('/health')) return response(200, { ok: true });
     return response(404, { error: 'not found', code: 'ROUTE_NOT_FOUND', requestId: 'safe-request-id' });
   }
@@ -135,6 +139,7 @@ const commandPayload = await client.executeCommand(
 );
 assert.equal(commandPayload.ok, true);
 assert.equal(commandPayload.replayed, false);
+assert.deepEqual(commandRevisions, [124]);
 assert.equal(calls[5].options.method, 'POST');
 assert.equal(calls[5].options.headers['Idempotency-Key'], 'clock-in-0001');
 assert.equal(calls[5].options.headers['Content-Type'], 'application/json');

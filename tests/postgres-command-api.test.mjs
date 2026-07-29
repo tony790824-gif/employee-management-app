@@ -189,6 +189,10 @@ databaseTimeOff.pendingReview.push({
 const changedTimeOffRevision = await service.bootstrapRevision({ identity, workspaceId });
 assert.notEqual(changedTimeOffRevision.revision, changedBootstrap.data.sync.revision,
   'role-visible time-off changes must change the unified revision');
+databaseBootstrap.data.leaves['employee-a-2026-08'] = ['2026-08-08'];
+const changedDirectLeaveRevision = await service.bootstrapRevision({ identity, workspaceId });
+assert.notEqual(changedDirectLeaveRevision.revision, changedTimeOffRevision.revision,
+  'a boss direct leave change must increase the role-visible bootstrap revision');
 await service.listTimeOffRequests({ identity, workspaceId });
 await service.execute({
   identity,
@@ -199,7 +203,7 @@ await service.execute({
   input: { month: '2026-08', dates: ['2026-08-02'] }
 });
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 14);
+assert.equal(queries.length, 16);
 assert.ok(queries.some(item => item.sql.includes('api_execute_time_off_command')),
   'Time-off commands use their controlled database function');
 assert.ok(queries.every(item => item.sql.includes('app_private.api_')), 'API uses only controlled database functions');
@@ -348,6 +352,7 @@ try {
     body: JSON.stringify({ employeeId: 'employee-1', month: '2026-07', dates: [] })
   });
   assert.equal(cancelLeaveResponse.status, 201);
+  assert.equal(cancelLeaveResponse.headers.get('x-bootstrap-revision'), '123');
   assert.deepEqual((await cancelLeaveResponse.json()).data, {
     employeeId: 'employee-1',
     month: '2026-07',

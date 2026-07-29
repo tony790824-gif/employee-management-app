@@ -170,7 +170,8 @@ export function createRequestHandler({
           idempotencyKey: String(request.headers['idempotency-key'] || ''),
           requestId
         });
-        json(response, result.replayed ? 200 : 201, result, requestId);
+        const revision = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, result.replayed ? 200 : 201, result, requestId, bootstrapRevisionHeaders(revision));
         return;
       }
       throw new ApiError(404, 'ROUTE_NOT_FOUND', '找不到 API route。');

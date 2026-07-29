@@ -57,6 +57,7 @@
     fetchImpl = globalThis.fetch,
     cryptoImpl = globalThis.crypto,
     eventTarget = globalThis,
+    onCommandRevision,
     timeoutMs = DEFAULT_TIMEOUT_MS
   }) {
     const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
@@ -75,7 +76,8 @@
       body,
       idempotencyKey = '',
       authenticated = true,
-      bootstrapRevision = false
+      bootstrapRevision = false,
+      commandRevision = false
     } = {}) {
       const headers = { Accept: 'application/json', 'X-Request-Id': cryptoImpl.randomUUID() };
       if (authenticated) {
@@ -184,6 +186,17 @@
           }
         }
       }
+      if (commandRevision) {
+        const rawRevision = String(response.headers?.get?.('x-bootstrap-revision') || '').trim();
+        const revision = Number(rawRevision);
+        if (!/^(0|[1-9]\d*)$/.test(rawRevision) || !Number.isSafeInteger(revision) || revision < 0) {
+          throw new PostgresApiError('PostgreSQL command revision header is invalid.', {
+            code: 'POSTGRES_API_RESPONSE_INVALID',
+            status: response.status
+          });
+        }
+        if (typeof onCommandRevision === 'function') onCommandRevision(revision);
+      }
       return payload;
     }
 
@@ -200,7 +213,12 @@
         if (!COMMAND_NAMES.includes(commandName)) {
           throw new PostgresApiError('Command 不在允許清單。', { code: 'COMMAND_NOT_FOUND', status: 404 });
         }
-        return request(`/commands/${commandName}`, { method: 'POST', body: input, idempotencyKey });
+        return request(`/commands/${commandName}`, {
+          method: 'POST',
+          body: input,
+          idempotencyKey,
+          commandRevision: true
+        });
       }
     });
   }

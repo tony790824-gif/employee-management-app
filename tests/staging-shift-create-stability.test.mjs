@@ -628,6 +628,12 @@ foregroundServiceWorkerListeners.get('message')({
 await fireForegroundTimers(250);
 assert.equal(foregroundStoredData.sync.revision, 7,
   'a Service Worker revision notification must use the same synchronization controller');
+assert.deepEqual(foregroundStoredData.leaves['employee-1-2026-07'], [{ date: '2026-07-28' }],
+  'the receiving client must merge a boss direct leave into the calendar leave section');
+const directLeaveRefreshEvent = foregroundEvents.find(event =>
+  event.type === 'postgres-bootstrap-refreshed');
+assert.deepEqual([...directLeaveRefreshEvent.detail.changedSections], ['leaves'],
+  'a boss direct leave must refresh only the changed leave section');
 
 resetForegroundObservations();
 foregroundWindow.navigator.onLine = false;
