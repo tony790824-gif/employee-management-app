@@ -1,5 +1,16 @@
 # Codex Context
 
+## 2026-07-29 current state — Sprint 24 Real-time Sync v2
+
+- Current assessed completion: **91%** after automated acceptance; real-device evidence remains **PENDING USER VERIFICATION**.
+- PostgreSQL Staging retains one synchronization controller and the deterministic server revision. Smart polling uses 2 seconds while recently active, 20 seconds while idle, and 60 seconds while backgrounded.
+- `visibilitychange`, `pageshow`, focus, user activity, and offline/online recovery all reuse the same debounce, cooldown, timer, and in-flight request protection.
+- `BroadcastChannel`, an environment-scoped `storage` event, and the Service Worker distribute revision-only signals between tabs and controlled PWA clients. No token, Session ID, personal data, or bootstrap payload is broadcast or cached.
+- `GET /v1/bootstrap` and `GET /v1/bootstrap/revision` expose `X-Bootstrap-Revision`. The browser validates the header against the JSON body and fails closed on a mismatch.
+- An unchanged revision performs no full bootstrap request, state write, or render. A changed revision fetches one full bootstrap, calculates changed top-level sections, merges only those sections, and only notifies affected UI listeners.
+- Production, databases, migrations, Auth0, Google Sheets, Apps Script, Render, and Netlify were not modified or deployed.
+- Next and only work: execute the Sprint 24 real-device smart-polling checklist in `docs/NEXT_SPRINT.md`. Windows, iPhone, Android, and iPad must not be marked PASS without owner evidence.
+
 ## 2026-07-28 current state — Sprint 23 synchronization hardening
 
 - Current assessed completion: **90%**, with Sprint 23 real-device evidence still pending.

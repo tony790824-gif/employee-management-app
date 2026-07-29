@@ -308,7 +308,11 @@ const api = createApiServer({
   commandService: {
     establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
     execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }),
-    bootstrap: async () => ({ ok: true, role: 'boss', data: { employees: [] } }),
+    bootstrap: async () => ({
+      ok: true,
+      role: 'boss',
+      data: { employees: [], sync: { revision: 122 } }
+    }),
     bootstrapRevision: async () => ({ ok: true, workspaceId, revision: 123 }),
     listTimeOffRequests: async () => ({ ok: true, ownRequests: [], approvedSchedule: [] })
   }
@@ -324,9 +328,12 @@ try {
   assert.equal(sessionResponse.status, 201);
   const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
   assert.equal(bootstrapResponse.status, 200);
+  assert.equal(bootstrapResponse.headers.get('x-bootstrap-revision'), '122');
+  assert.match(bootstrapResponse.headers.get('access-control-expose-headers'), /X-Bootstrap-Revision/);
   assert.equal((await bootstrapResponse.json()).role, 'boss');
   const revisionResponse = await fetch(`${base}/v1/bootstrap/revision`, { headers: commonHeaders });
   assert.equal(revisionResponse.status, 200);
+  assert.equal(revisionResponse.headers.get('x-bootstrap-revision'), '123');
   assert.equal((await revisionResponse.json()).revision, 123);
   const timeOffResponse = await fetch(`${base}/v1/time-off-requests`, { headers: commonHeaders });
   assert.equal(timeOffResponse.status, 200);

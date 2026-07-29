@@ -6,6 +6,8 @@ const workspaceId = `ws_${'a'.repeat(32)}`;
 const written = [];
 const removed = [];
 const calls = [];
+let nextTimerId = 1;
+const timers = new Map();
 const cloudStatus = { textContent: 'Google Sheets' };
 const bootstrap = {
   ok: true,
@@ -35,6 +37,12 @@ const fakeClient = {
 };
 const context = vm.createContext({
   console,
+  setTimeout: callback => {
+    const id = nextTimerId++;
+    timers.set(id, callback);
+    return id;
+  },
+  clearTimeout: id => timers.delete(id),
   window: {
     shiftEnvironment: {
       dataBackend: 'postgres', postgresApiUrl: 'https://api.staging.example/v1', postgresWorkspaceId: workspaceId,

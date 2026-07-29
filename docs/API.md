@@ -1,5 +1,14 @@
 # API 文件（現況與目標）
 
+## 2026-07-29 — Bootstrap revision transport
+
+- Authenticated `GET /v1/bootstrap` and `GET /v1/bootstrap/revision` responses include `X-Bootstrap-Revision`.
+- The header is an unsigned decimal representation of the same non-negative safe-integer revision present in the JSON body. The browser rejects malformed or mismatched values.
+- `Access-Control-Expose-Headers` exposes `X-Request-Id` and `X-Bootstrap-Revision` only to an already allowed origin.
+- The header does not replace Session, Membership, Workspace, role, or response-body authorization. It is only a cache/synchronization validator.
+- The browser checks `/bootstrap/revision` before downloading a full bootstrap. It fetches the full payload only when the deterministic server revision changes, then merges changed top-level sections.
+- No Production endpoint, API command, database schema, or Migration was added or changed.
+
 ## Time-off request API — Staging backend phase (2026-07-27)
 
 Baseline commit: `a3da8c39e0f7b012a24c47fd21073b8b4da1bec3`. Overall completion: **87%**. Migration `0013_time_off_requests` is applied only to Neon Staging; Production and pending migrations `0009`／`0010` were not changed or applied. Production, Auth0, Google Sheets, and Apps Script were not modified.

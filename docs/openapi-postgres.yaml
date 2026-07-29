@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-28.3
-  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, and the Phase 1 time-off request data/command surface. The time-off frontend UI and Production cutover are not approved.
-  x-baseline-commit: dced15e48aaef02d60c062675015e80ba30e2330
-  x-project-completion: 90
+  version: 2026-07-29.1
+  description: Implemented Staging transition API with accepted Auth0 Staging PKCE/refresh, OIDC/JWKS validation, local Session boundaries, time-off requests, and deterministic bootstrap revision transport. Production cutover is not approved.
+  x-baseline-commit: 0516803b2d7fbcf9bffc0e8bc8296a728dccab29
+  x-project-completion: 91
   x-staging-migration: 0013_time_off_requests
 servers:
   - url: http://127.0.0.1:8080/v1
@@ -57,6 +57,19 @@ paths:
           description: Own requests, manager review data, and privacy-filtered same-store approved coverage
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
+  /bootstrap:
+    get:
+      summary: Read the caller's role-visible bootstrap state
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Authorized bootstrap payload
+          headers:
+            X-Bootstrap-Revision:
+              $ref: '#/components/headers/BootstrapRevision'
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
   /bootstrap/revision:
     get:
       summary: Read the deterministic revision for the caller's role-visible bootstrap and time-off state
@@ -65,6 +78,9 @@ paths:
       responses:
         '200':
           description: Lightweight revision used to decide whether a full bootstrap refresh is necessary
+          headers:
+            X-Bootstrap-Revision:
+              $ref: '#/components/headers/BootstrapRevision'
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
   /commands/{commandName}:
@@ -107,6 +123,12 @@ paths:
         '409': { $ref: '#/components/responses/Error' }
         '413': { $ref: '#/components/responses/Error' }
 components:
+  headers:
+    BootstrapRevision:
+      description: Non-negative safe-integer revision that must match the JSON response body.
+      schema:
+        type: integer
+        minimum: 0
   parameters:
     WorkspaceId:
       in: header

@@ -61,10 +61,12 @@ const client = createClient({
   fetchImpl: async (url, options) => {
     calls.push({ url, options });
     if (url.endsWith('/employees')) return response(200, { employees: [] });
-    if (url.endsWith('/bootstrap')) return response(200, { ok: true, role: 'boss', data: {} });
+    if (url.endsWith('/bootstrap')) return response(200, {
+      ok: true, role: 'boss', data: { sync: { revision: 122 } }
+    }, { 'x-bootstrap-revision': '122' });
     if (url.endsWith('/bootstrap/revision')) return response(200, {
       ok: true, workspaceId, revision: 123
-    });
+    }, { 'x-bootstrap-revision': '123' });
     if (url.endsWith('/time-off-requests')) return response(200, {
       ok: true,
       workspaceId,
@@ -107,6 +109,16 @@ assert.equal(calls[3].url, 'https://api.staging.example/v1/bootstrap/revision');
 assert.equal(calls[3].options.method, 'GET');
 assert.equal(calls[3].options.headers.Authorization, `Bearer ${accessToken}`);
 assert.equal(calls[3].options.headers['X-Workspace-Id'], workspaceId);
+
+const mismatchedRevisionClient = createClient({
+  ...baseConfig,
+  baseUrl: 'https://api.staging.example/v1',
+  fetchImpl: async () => response(200, {
+    ok: true, workspaceId, revision: 124
+  }, { 'x-bootstrap-revision': '125' })
+});
+await assert.rejects(mismatchedRevisionClient.bootstrapRevision(), error =>
+  error instanceof PostgresApiError && error.code === 'POSTGRES_API_RESPONSE_INVALID');
 
 const timeOffPayload = await client.listTimeOffRequests();
 assert.equal(timeOffPayload.role, 'employee');

@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-29 — Sprint 24 Real-time Sync v2 implemented
+
+- **Completion:** **91%** after automated acceptance; real-device evidence remains pending.
+- **Implemented:** one adaptive PostgreSQL synchronization controller with 2-second active, 20-second idle, and 60-second background intervals; environment-scoped BroadcastChannel/storage/Service Worker revision signals; offline recovery; validated `X-Bootstrap-Revision`; and changed-section state application.
+- **No architecture duplication:** the existing `/bootstrap/revision`, deterministic revision, debounce, cooldown, one timer, one in-flight promise, Session handling, and Google Sheets/Production isolation remain authoritative.
+- **Pending acceptance:** Windows, iPhone, Android, and iPad real-device active/idle/background synchronization and PWA lifecycle behavior are **PENDING USER VERIFICATION**.
+- **Next unique priority:** execute the Sprint 24 real-device checklist in `docs/NEXT_SPRINT.md`. Do not begin another feature Sprint first.
+
 ## 2026-07-28 — Sprint 22 foreground polling implemented
 
 - **Completion:** **89%**. The existing PostgreSQL foreground controller now adds one 15-second visible/authenticated polling cycle without WebSocket, SSE, a new API, or a second synchronization controller.

@@ -70,7 +70,13 @@
       throw new PostgresApiError('PostgreSQL API timeout 設定不正確。', { code: 'POSTGRES_API_CONFIG_INVALID' });
     }
 
-    async function request(path, { method = 'GET', body, idempotencyKey = '', authenticated = true } = {}) {
+    async function request(path, {
+      method = 'GET',
+      body,
+      idempotencyKey = '',
+      authenticated = true,
+      bootstrapRevision = false
+    } = {}) {
       const headers = { Accept: 'application/json', 'X-Request-Id': cryptoImpl.randomUUID() };
       if (authenticated) {
         const token = String(await getAccessToken() || '').trim();
@@ -164,6 +170,20 @@
           code: 'POSTGRES_API_RESPONSE_INVALID', status: response.status
         });
       }
+      if (bootstrapRevision) {
+        const rawRevision = String(response.headers?.get?.('x-bootstrap-revision') || '').trim();
+        if (rawRevision) {
+          const headerRevision = Number(rawRevision);
+          const payloadRevision = Number(payload?.revision ?? payload?.data?.sync?.revision);
+          if (!/^(0|[1-9]\d*)$/.test(rawRevision) || !Number.isSafeInteger(headerRevision)
+            || headerRevision < 0 || headerRevision !== payloadRevision) {
+            throw new PostgresApiError('PostgreSQL bootstrap revision header is invalid.', {
+              code: 'POSTGRES_API_RESPONSE_INVALID',
+              status: response.status
+            });
+          }
+        }
+      }
       return payload;
     }
 
@@ -173,8 +193,8 @@
       establishSession: () => request('/auth/session', { method: 'POST' }),
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),
-      bootstrap: () => request('/bootstrap'),
-      bootstrapRevision: () => request('/bootstrap/revision'),
+      bootstrap: () => request('/bootstrap', { bootstrapRevision: true }),
+      bootstrapRevision: () => request('/bootstrap/revision', { bootstrapRevision: true }),
       listTimeOffRequests: () => request('/time-off-requests'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {

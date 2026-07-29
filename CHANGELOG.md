@@ -1,5 +1,15 @@
 # Change Log
 
+## 2026-07-29 — Sprint 24 Real-time Sync v2
+
+- Replaced the fixed PostgreSQL Staging polling interval with one adaptive controller: 2 seconds while recently active, 20 seconds while idle, and 60 seconds while backgrounded.
+- Added revision-only BroadcastChannel, environment-scoped storage-event, and Service Worker notification paths for multi-tab/PWA convergence without broadcasting bootstrap data, credentials, or personal information.
+- Added offline/online recovery while retaining the accepted debounce, cooldown, one-timer, and one-in-flight protections.
+- Added `X-Bootstrap-Revision` to bootstrap/revision responses and strict browser validation against the JSON response body.
+- Changed revisions now merge only changed top-level bootstrap sections and affected listeners skip unrelated renders; unchanged revisions still avoid the full bootstrap request and all UI updates.
+- Added automated coverage for adaptive timers, lifecycle recovery, cross-tab/PWA signals, revision headers, incremental application, offline failure retention, and environment isolation.
+- No Production deployment, database/migration operation, Auth0 change, Google Sheets change, Apps Script change, dependency change, or cloud resource change was made. Windows, iPhone, Android, and iPad evidence remains pending.
+
 ## 2026-07-28 — Sprint 23 real-time synchronization hardening
 
 - Added authenticated `GET /v1/bootstrap/revision` so the browser can compare a small revision response before downloading the full bootstrap.

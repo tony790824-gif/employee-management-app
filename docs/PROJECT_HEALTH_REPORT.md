@@ -1,5 +1,16 @@
 # 班客邦 Project Health Report
 
+## 2026-07-29 — Sprint 24 Real-time Sync v2 health update
+
+- **Overall completion: 91%.** Smart polling, revision transport, cross-tab/PWA signals, incremental state application, and automated regression are complete; real-device evidence remains pending.
+- **Reliability:** one timer and one in-flight promise govern 2-second active, 20-second idle, and 60-second background checks. Lifecycle bursts share the existing 250 ms debounce and 1-second request cooldown.
+- **Performance:** unchanged revisions do not download the full bootstrap or render. Changed revisions fetch once and merge only changed top-level sections; affected listeners alone rerender.
+- **Offline/failure behavior:** offline state cancels scheduling, online state resumes through the same controller, and transient failures retain current UI without an unbounded retry loop.
+- **Security:** revision signals carry no user data or credentials, API revision headers are body-validated, and environment-scoped channels/cache keys preserve Staging/Local/Production isolation.
+- **Known acceptance risk:** Safari/PWA/Android background timer throttling and real multi-tab/device behavior remain **PENDING USER VERIFICATION**.
+- **Release status: No.** Production remains unchanged and must not be promoted until the real-device checklist is recorded.
+- **Next unique priority:** Sprint 24 real-device Smart Polling acceptance only.
+
 ## 2026-07-28 — Sprint 22 foreground polling health update
 
 - **Overall completion: 89%.** The foreground polling implementation and automated acceptance are complete; signed-in Windows and iPhone evidence remains pending.

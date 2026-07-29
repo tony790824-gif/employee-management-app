@@ -1,5 +1,17 @@
 # 班客邦 Release Checklist
 
+## Sprint 24 — Real-time Sync v2 automated gate
+
+- [x] One adaptive PostgreSQL synchronization controller uses 2-second active, 20-second idle, and 60-second background intervals.
+- [x] Debounce, cooldown, one timer, and one in-flight request prevent duplicate or overlapping synchronization.
+- [x] `X-Bootstrap-Revision` matches the authorized JSON body; malformed or mismatched headers fail closed.
+- [x] Unchanged revisions do not fetch the full bootstrap or render; changed revisions merge changed top-level sections and notify affected listeners.
+- [x] BroadcastChannel, storage, and Service Worker signals contain revision metadata only and remain environment-scoped.
+- [x] Offline/online recovery retains current UI and does not create an unbounded retry loop.
+- [x] Build, check, full regression, release gate, environment isolation, sensitive-information scan, and Production dependency audit pass.
+- [ ] Windows, iPhone, Android, and iPad real-device Smart Polling acceptance is **PENDING USER VERIFICATION**.
+- [x] No Production deployment, database/Migration operation, Auth0 change, Google Sheets change, Apps Script change, dependency change, or cloud-resource change was performed.
+
 ## Sprint 22 — PostgreSQL foreground polling synchronization
 
 - [x] Poll interval is centralized at 15 seconds and runs only for authenticated, visible, online PostgreSQL views.

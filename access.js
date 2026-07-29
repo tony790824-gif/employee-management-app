@@ -271,7 +271,12 @@
   person.onchange = () => { mine = person.value; localStorage.setItem(storageKey('shift-person'), mine); draftKey = ''; apply(); };
   $('#monthPicker').addEventListener('change', () => { draftKey = ''; apply(); });
   $('#calendarEmployee').addEventListener('change', showBossCalendarNames);
-  document.addEventListener('postgres-bootstrap-refreshed', () => {
+  document.addEventListener('postgres-bootstrap-refreshed', event => {
+    const changedSections = event?.detail?.changedSections;
+    if (Array.isArray(changedSections)
+      && !changedSections.some(section =>
+        ['employees', 'shifts', 'attendance', 'leaves', 'leaveRequests', 'leaveHistory', 'workspace']
+          .includes(section))) return;
     resetLeaveDraftFromServer();
     setLeaveStatus('');
     apply();

@@ -26,7 +26,10 @@
     container.hidden = false;
   }
 
-  document.addEventListener('postgres-bootstrap-refreshed', render);
+  document.addEventListener('postgres-bootstrap-refreshed', event => {
+    if (event?.detail && event.detail.currentUserChanged === false) return;
+    render();
+  });
   document.addEventListener('postgres-session-cleared', render);
   render();
 

@@ -14,9 +14,17 @@
   let foregroundPromise = null;
   let foregroundFailureReported = false;
   let lastForegroundCompletedAt = 0;
+  let lastUserActivityAt = Date.now();
+  let revisionChannel = null;
   const FOREGROUND_DEBOUNCE_MS = 250;
   const FOREGROUND_COOLDOWN_MS = 1000;
-  const FOREGROUND_POLL_INTERVAL_MS = 15_000;
+  const ACTIVE_POLL_INTERVAL_MS = 2_000;
+  const IDLE_POLL_INTERVAL_MS = 20_000;
+  const BACKGROUND_POLL_INTERVAL_MS = 60_000;
+  const ACTIVE_WINDOW_MS = 30_000;
+  const REVISION_SIGNAL_TYPE = 'banke-bootstrap-revision';
+  const REVISION_STORAGE_KEY = environment.storageKey('postgres-revision-signal');
+  const REVISION_CHANNEL_NAME = `${environment.storagePrefix || 'banke:'}postgres-revision-v1`;
 
   const isEmployeeSession = () => currentSession?.role === 'employee' && Boolean(currentSession.employeeId);
 
@@ -65,6 +73,32 @@
 
   const bootstrapRevision = value => Number(value?.data?.sync?.revision);
 
+  function stableJson(value) {
+    if (value === undefined) return 'null';
+    if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+    if (value && typeof value === 'object') {
+      return `{${Object.keys(value).sort().map(key =>
+        `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+    }
+    return JSON.stringify(value);
+  }
+
+  function changedBootstrapSections(previous, next) {
+    const keys = new Set([...Object.keys(previous || {}), ...Object.keys(next || {})]);
+    keys.delete('sync');
+    return [...keys].filter(key => stableJson(previous?.[key]) !== stableJson(next?.[key])).sort();
+  }
+
+  function mergeBootstrapSections(previous, next, changedSections) {
+    const merged = { ...(previous || {}) };
+    changedSections.forEach(key => {
+      if (Object.hasOwn(next, key)) merged[key] = next[key];
+      else delete merged[key];
+    });
+    merged.sync = next.sync;
+    return merged;
+  }
+
   function validateRevision(payload) {
     const revision = Number(payload?.revision);
     if (!payload || payload.ok !== true || payload.workspaceId !== environment.postgresWorkspaceId
@@ -72,6 +106,33 @@
       throw new Error('PostgreSQL bootstrap revision response is invalid.');
     }
     return revision;
+  }
+
+  function announceRevision(revision) {
+    if (!Number.isSafeInteger(revision) || revision < 0) return;
+    const message = Object.freeze({ type: REVISION_SIGNAL_TYPE, revision, emittedAt: Date.now() });
+    try {
+      revisionChannel?.postMessage(message);
+    } catch {}
+    try {
+      localStorage.setItem(REVISION_STORAGE_KEY, JSON.stringify(message));
+    } catch {}
+    try {
+      window.navigator?.serviceWorker?.controller?.postMessage({
+        type: 'BANKE_BOOTSTRAP_REVISION',
+        revision
+      });
+    } catch {}
+  }
+
+  function handleRevisionSignal(message) {
+    if (!client || !currentSession || !message || message.type !== REVISION_SIGNAL_TYPE) return;
+    const revision = Number(message.revision);
+    const currentRevision = Number(stateStore.read()?.sync?.revision);
+    if (!Number.isSafeInteger(revision) || revision < 0
+      || (Number.isSafeInteger(currentRevision) && revision <= currentRevision)) return;
+    if (document.visibilityState === 'visible') scheduleForegroundSync();
+    startForegroundPolling();
   }
 
   async function refreshBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
@@ -82,24 +143,27 @@
     if (activeClient !== client || activeSession !== currentSession) {
       return { ...bootstrap, changed: false, stale: true };
     }
-    const previousRevision = Number(stateStore.read()?.sync?.revision);
+    const previousData = stateStore.read();
+    const previousRevision = Number(previousData?.sync?.revision);
     const nextRevision = bootstrapRevision(bootstrap);
     const changed = !Number.isSafeInteger(previousRevision) || previousRevision !== nextRevision;
     if (onlyIfChanged && !changed) return { ...bootstrap, changed: false };
-    stateStore.write(bootstrap.data);
+    const changedSections = changedBootstrapSections(previousData, bootstrap.data);
+    const currentUserChanged = stableJson(currentUser) !== stableJson(bootstrap.currentUser);
+    stateStore.write(mergeBootstrapSections(previousData, bootstrap.data, changedSections));
     currentSession = Object.freeze({ role: bootstrap.role, employeeId: bootstrap.employeeId || '' });
     currentUser = bootstrap.currentUser;
     sessionStorage.setItem(environment.storageKey('shift-postgres-auth'), JSON.stringify(currentSession));
     document.dispatchEvent(new CustomEvent('postgres-bootstrap-refreshed', {
-      detail: { source, revision: nextRevision }
+      detail: { source, revision: nextRevision, changedSections, currentUserChanged }
     }));
+    if (changed) announceRevision(nextRevision);
     return { ...bootstrap, changed: true };
   }
 
   const canRunForegroundSync = () => Boolean(
     client
     && currentSession
-    && document.visibilityState === 'visible'
     && window.navigator?.onLine !== false
   );
 
@@ -159,12 +223,21 @@
 
   function scheduleForegroundSync() {
     if (!canRunForegroundSync()) return;
-    if (foregroundPromise || Date.now() - lastForegroundCompletedAt < FOREGROUND_COOLDOWN_MS) return;
+    if (foregroundPromise) return;
+    const cooldownRemaining = Math.max(0,
+      FOREGROUND_COOLDOWN_MS - (Date.now() - lastForegroundCompletedAt));
     cancelForegroundDebounce();
     foregroundDebounceTimer = setTimeout(() => {
       foregroundDebounceTimer = null;
       void runForegroundSync();
-    }, FOREGROUND_DEBOUNCE_MS);
+    }, Math.max(FOREGROUND_DEBOUNCE_MS, cooldownRemaining));
+  }
+
+  function pollingInterval() {
+    if (document.visibilityState !== 'visible') return BACKGROUND_POLL_INTERVAL_MS;
+    return Date.now() - lastUserActivityAt <= ACTIVE_WINDOW_MS
+      ? ACTIVE_POLL_INTERVAL_MS
+      : IDLE_POLL_INTERVAL_MS;
   }
 
   function startForegroundPolling() {
@@ -173,7 +246,7 @@
     foregroundPollTimer = setTimeout(() => {
       foregroundPollTimer = null;
       void runForegroundSync().finally(startForegroundPolling);
-    }, FOREGROUND_POLL_INTERVAL_MS);
+    }, pollingInterval());
   }
 
   function stopForegroundSync() {
@@ -183,8 +256,42 @@
 
   function handleForegroundEntry() {
     if (!canRunForegroundSync()) return;
+    lastUserActivityAt = Date.now();
     scheduleForegroundSync();
     startForegroundPolling();
+  }
+
+  function handleActivity() {
+    if (!canRunForegroundSync() || document.visibilityState !== 'visible') return;
+    const wasIdle = Date.now() - lastUserActivityAt > ACTIVE_WINDOW_MS;
+    lastUserActivityAt = Date.now();
+    if (wasIdle) startForegroundPolling();
+  }
+
+  function handleVisibilityChange() {
+    cancelForegroundDebounce();
+    if (document.visibilityState === 'visible') handleForegroundEntry();
+    else startForegroundPolling();
+  }
+
+  function initializeRevisionSignals() {
+    if (typeof window.BroadcastChannel === 'function') {
+      revisionChannel = new window.BroadcastChannel(REVISION_CHANNEL_NAME);
+      revisionChannel.addEventListener('message', event => handleRevisionSignal(event.data));
+    }
+    window.addEventListener('storage', event => {
+      if (event.key !== REVISION_STORAGE_KEY || !event.newValue) return;
+      try {
+        handleRevisionSignal(JSON.parse(event.newValue));
+      } catch {}
+    });
+    window.navigator?.serviceWorker?.addEventListener?.('message', event => {
+      if (event.data?.type !== 'BANKE_BOOTSTRAP_REVISION_AVAILABLE') return;
+      handleRevisionSignal({
+        type: REVISION_SIGNAL_TYPE,
+        revision: event.data.revision
+      });
+    });
   }
 
   async function connect({ getAccessToken }) {
@@ -198,6 +305,7 @@
     await client.establishSession();
     const bootstrap = await refreshBootstrap();
     lastForegroundCompletedAt = Date.now();
+    lastUserActivityAt = Date.now();
     startForegroundPolling();
     return bootstrap;
   }
@@ -270,16 +378,20 @@
     if (activeClient) await activeClient.logout();
   }
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') handleForegroundEntry();
-    else stopForegroundSync();
-  });
+  initializeRevisionSignals();
+  document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('pageshow', handleForegroundEntry);
   window.addEventListener('focus', handleForegroundEntry);
   window.addEventListener('online', handleForegroundEntry);
   window.addEventListener('offline', stopForegroundSync);
+  ['pointerdown', 'keydown', 'touchstart'].forEach(type =>
+    window.addEventListener(type, handleActivity, { passive: true }));
   window.addEventListener('pagehide', stopForegroundSync);
-  window.addEventListener('beforeunload', stopForegroundSync);
+  window.addEventListener('beforeunload', () => {
+    stopForegroundSync();
+    revisionChannel?.close();
+    revisionChannel = null;
+  });
   document.addEventListener('postgres-session-cleared', stopForegroundSync);
 
   window.shiftPostgresCloud = Object.freeze({

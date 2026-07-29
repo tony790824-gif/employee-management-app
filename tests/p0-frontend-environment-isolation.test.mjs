@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import vm from 'node:vm';
 import { readFile, readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { environmentProfiles } from '../config/environments.mjs';
@@ -93,6 +94,54 @@ assert.notEqual(
   'Google Sheets 與 PostgreSQL Staging 的環境設定 URL 不得相同'
 );
 assert.doesNotMatch(rehearsalWorker, /banke-production-/);
+assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION/);
+assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION_AVAILABLE/);
+assert.match(rehearsalWorker, /__banke_bootstrap_revision__/);
+
+const workerListeners = new Map();
+const revisionWrites = [];
+const revisionNotifications = [];
+const workerSelf = {
+  addEventListener: (type, listener) => workerListeners.set(type, listener),
+  skipWaiting: async () => {},
+  clients: {
+    claim: async () => {},
+    matchAll: async () => [
+      { postMessage: message => revisionNotifications.push(structuredClone(message)) }
+    ]
+  }
+};
+vm.runInContext(rehearsalWorker, vm.createContext({
+  self: workerSelf,
+  caches: {
+    open: async () => ({
+      addAll: async () => {},
+      match: async () => null,
+      put: async (key, response) => revisionWrites.push({ key, body: await response.json() })
+    }),
+    keys: async () => [],
+    delete: async () => true
+  },
+  fetch: async () => new Response('{}'),
+  Response,
+  JSON,
+  Number,
+  Promise
+}), { filename: 'staging-postgres-service-worker.js' });
+let revisionWork;
+workerListeners.get('message')({
+  data: { type: 'BANKE_BOOTSTRAP_REVISION', revision: 42 },
+  waitUntil: promise => { revisionWork = promise; }
+});
+await revisionWork;
+assert.deepEqual(revisionWrites, [{
+  key: './__banke_bootstrap_revision__',
+  body: { revision: 42 }
+}], 'Service Worker must cache only the non-sensitive revision marker');
+assert.deepEqual(revisionNotifications, [{
+  type: 'BANKE_BOOTSTRAP_REVISION_AVAILABLE',
+  revision: 42
+}], 'Service Worker must notify controlled UI clients about the new revision');
 
 const stagingManifest = JSON.parse(await readFile('dist-staging/manifest.webmanifest', 'utf8'));
 assert.equal(stagingManifest.id, './?app=banke-staging');

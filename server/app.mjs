@@ -14,11 +14,18 @@ function securityHeaders(response) {
   response.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
 }
 
-function json(response, status, body, requestId) {
+function json(response, status, body, requestId, headers = {}) {
   securityHeaders(response);
   response.statusCode = status;
   response.setHeader('X-Request-Id', requestId);
+  Object.entries(headers).forEach(([name, value]) => response.setHeader(name, value));
   response.end(JSON.stringify(body));
+}
+
+function bootstrapRevisionHeaders(body) {
+  const revision = Number(body?.revision ?? body?.data?.sync?.revision);
+  if (!Number.isSafeInteger(revision) || revision < 0) return {};
+  return { 'X-Bootstrap-Revision': String(revision) };
 }
 
 async function readJson(request) {
@@ -106,6 +113,7 @@ export function createRequestHandler({
       if (!originAllowed(origin, origins)) throw new ApiError(403, 'ORIGIN_NOT_ALLOWED', 'Origin 不允許。');
       if (origin) {
         response.setHeader('Access-Control-Allow-Origin', origin);
+        response.setHeader('Access-Control-Expose-Headers', 'X-Request-Id,X-Bootstrap-Revision');
         response.setHeader('Vary', 'Origin');
       }
       if (request.method === 'OPTIONS') {
@@ -139,11 +147,13 @@ export function createRequestHandler({
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/bootstrap') {
-        json(response, 200, await commandService.bootstrap({ identity, workspaceId }), requestId);
+        const body = await commandService.bootstrap({ identity, workspaceId });
+        json(response, 200, body, requestId, bootstrapRevisionHeaders(body));
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/bootstrap/revision') {
-        json(response, 200, await commandService.bootstrapRevision({ identity, workspaceId }), requestId);
+        const body = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, 200, body, requestId, bootstrapRevisionHeaders(body));
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/time-off-requests') {

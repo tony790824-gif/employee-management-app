@@ -6,6 +6,7 @@ class TestCustomEvent {
   constructor(type, init = {}) {
     this.type = type;
     this.detail = init.detail;
+    Object.assign(this, init);
   }
 }
 
@@ -317,6 +318,10 @@ let foregroundWrites = 0;
 let foregroundFailure = null;
 let foregroundGate = null;
 const foregroundWarnings = [];
+const foregroundBroadcasts = [];
+const foregroundServiceWorkerMessages = [];
+const foregroundServiceWorkerListeners = new Map();
+const foregroundLocalStorage = new Map();
 let foregroundStoredData = {
   ...structuredClone(initialData),
   sync: { revision: 1, schemaVersion: 1 }
@@ -338,10 +343,39 @@ const foregroundDocument = {
   dispatchEvent: event => dispatchForegroundEvent('document', event),
   querySelector: () => null
 };
+class FakeBroadcastChannel {
+  constructor(name) {
+    this.name = name;
+    this.listeners = [];
+    this.closed = false;
+    foregroundBroadcasts.push(this);
+  }
+  addEventListener(type, listener) {
+    if (type === 'message') this.listeners.push(listener);
+  }
+  postMessage(message) {
+    this.lastMessage = structuredClone(message);
+  }
+  emit(message) {
+    this.listeners.forEach(listener => listener({ data: structuredClone(message) }));
+  }
+  close() {
+    this.closed = true;
+  }
+}
 const foregroundWindow = {
   addEventListener: (type, listener) => addForegroundListener('window', type, listener),
   dispatchEvent: event => dispatchForegroundEvent('window', event),
-  navigator: { onLine: true },
+  BroadcastChannel: FakeBroadcastChannel,
+  navigator: {
+    onLine: true,
+    serviceWorker: {
+      controller: {
+        postMessage: message => foregroundServiceWorkerMessages.push(structuredClone(message))
+      },
+      addEventListener: (type, listener) => foregroundServiceWorkerListeners.set(type, listener)
+    }
+  },
   shiftEnvironment: {
     dataBackend: 'postgres',
     postgresApiUrl: 'https://api.staging.example/v1',
@@ -407,6 +441,11 @@ const foregroundContext = vm.createContext({
     setItem: (key, value) => foregroundSessionValues.set(key, value),
     removeItem: key => foregroundSessionValues.delete(key)
   },
+  localStorage: {
+    setItem: (key, value) => foregroundLocalStorage.set(key, value),
+    getItem: key => foregroundLocalStorage.get(key) ?? null,
+    removeItem: key => foregroundLocalStorage.delete(key)
+  },
   CustomEvent: TestCustomEvent,
   structuredClone,
   Date: ForegroundDate,
@@ -442,19 +481,25 @@ const fireForegroundTimers = async delay => {
   for (let index = 0; index < 8; index += 1) await Promise.resolve();
 };
 
-assert.equal(foregroundTimerCount(15_000), 1,
-  'a visible authenticated PostgreSQL view must start one foreground polling timer');
+assert.equal(foregroundTimerCount(2_000), 1,
+  'an active visible authenticated PostgreSQL view must start one smart polling timer');
 
 resetForegroundObservations();
 foregroundDocument.visibilityState = 'hidden';
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
-assert.equal(foregroundTimers.size, 0, 'hiding the page must stop debounce and polling timers');
+assert.equal(foregroundTimerCount(60_000), 1, 'a background authenticated view must use the bounded background interval');
+foregroundNow += 60_000;
+await fireForegroundTimers(60_000);
+assert.equal(foregroundRevisionCalls, 1, 'background polling must perform only the lightweight revision check');
+assert.equal(foregroundBootstrapCalls, 0);
+resetForegroundObservations();
+foregroundNow += 2_000;
 foregroundDocument.visibilityState = 'visible';
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 assert.equal(foregroundTimerCount(250), 1, 'foreground lifecycle bursts must keep one debounce timer');
-assert.equal(foregroundTimerCount(15_000), 1, 'foreground lifecycle bursts must keep one polling timer');
+assert.equal(foregroundTimerCount(2_000), 1, 'foreground lifecycle bursts must keep one active polling timer');
 await fireForegroundTimers(250);
 assert.equal(foregroundRevisionCalls, 1, 'foreground event bursts must issue one revision request');
 assert.equal(foregroundBootstrapCalls, 0, 'unchanged revisions must not fetch the full bootstrap');
@@ -463,24 +508,42 @@ assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap
   'unchanged revisions must not trigger the full UI render event');
 
 resetForegroundObservations();
-foregroundNow += 15_000;
-await fireForegroundTimers(15_000);
+foregroundNow += 2_000;
+await fireForegroundTimers(2_000);
 assert.equal(foregroundRevisionCalls, 1, 'foreground polling must check an authenticated visible view');
 assert.equal(foregroundBootstrapCalls, 0, 'unchanged polling must avoid a full bootstrap request');
 assert.equal(foregroundWrites, 0, 'foreground polling must not rewrite unchanged revisions');
-assert.equal(foregroundTimerCount(15_000), 1, 'foreground polling must schedule exactly one next cycle');
+assert.equal(foregroundTimerCount(2_000), 1, 'active polling must schedule exactly one next cycle');
 
 resetForegroundObservations();
-foregroundNow += 2_000;
+foregroundNow += 31_000;
+await fireForegroundTimers(2_000);
+assert.equal(foregroundRevisionCalls, 1, 'the final active timer may complete one lightweight revision check');
+assert.equal(foregroundTimerCount(20_000), 1, 'an idle visible view must slow down to the idle interval');
+
+resetForegroundObservations();
+foregroundNow += 20_000;
 foregroundServerData.employees[0].name = 'Updated Synthetic Employee';
 foregroundServerData.sync.revision = 2;
-await fireForegroundTimers(15_000);
+await fireForegroundTimers(20_000);
 assert.equal(foregroundRevisionCalls, 1);
 assert.equal(foregroundBootstrapCalls, 1);
 assert.equal(foregroundWrites, 1, 'polling must update canonical state once when the revision changes');
 assert.equal(foregroundStoredData.employees[0].name, 'Updated Synthetic Employee');
-assert.equal(foregroundEvents.filter(event => event.type === 'postgres-bootstrap-refreshed').length, 1,
+const changedBootstrapEvent = foregroundEvents.find(event => event.type === 'postgres-bootstrap-refreshed');
+assert.ok(changedBootstrapEvent,
   'changed revisions must trigger the existing UI render path');
+assert.deepEqual([...changedBootstrapEvent.detail.changedSections], ['employees'],
+  'incremental refresh must identify only the changed top-level bootstrap section');
+assert.equal(foregroundBroadcasts.length, 1, 'PostgreSQL mode must create one environment-scoped revision channel');
+assert.equal(foregroundBroadcasts[0].lastMessage.revision, 2,
+  'a changed revision must notify other tabs without including protected data');
+assert.equal(JSON.parse(foregroundLocalStorage.get('staging:postgres-revision-signal')).revision, 2,
+  'a changed revision must publish the storage-event fallback');
+assert.equal(foregroundServiceWorkerMessages.at(-1).revision, 2,
+  'a changed revision must notify the active Service Worker');
+foregroundWindow.dispatchEvent(new TestCustomEvent('pointerdown'));
+assert.equal(foregroundTimerCount(2_000), 1, 'new user activity must restore the active polling interval');
 
 resetForegroundObservations();
 foregroundNow += 2_000;
@@ -492,7 +555,7 @@ foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 await fireForegroundTimers(250);
 assert.equal(foregroundRevisionCalls, 1);
 assert.equal(foregroundBootstrapCalls, 0);
-await fireForegroundTimers(15_000);
+await fireForegroundTimers(2_000);
 assert.equal(foregroundRevisionCalls, 1, 'polling must share the existing in-flight revision request');
 assert.equal(foregroundBootstrapCalls, 0);
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
@@ -534,6 +597,39 @@ await fireForegroundTimers(250);
 assert.equal(foregroundStoredData.sync.revision, 4, 'later foreground events must retry after a network failure');
 
 resetForegroundObservations();
+foregroundNow += 2_000;
+foregroundServerData.attendance.push({ id: 'attendance-sync-1', employeeId: 'employee-1' });
+foregroundServerData.sync.revision = 5;
+foregroundBroadcasts[0].emit({ type: 'banke-bootstrap-revision', revision: 5 });
+await fireForegroundTimers(250);
+assert.equal(foregroundStoredData.sync.revision, 5,
+  'a newer BroadcastChannel revision must synchronize the receiving tab');
+assert.equal(foregroundBootstrapCalls, 1);
+
+resetForegroundObservations();
+foregroundNow += 2_000;
+foregroundServerData.shifts.push({ id: 'shift-sync-2', employeeId: 'employee-1' });
+foregroundServerData.sync.revision = 6;
+foregroundWindow.dispatchEvent(new TestCustomEvent('storage', {
+  key: 'staging:postgres-revision-signal',
+  newValue: JSON.stringify({ type: 'banke-bootstrap-revision', revision: 6 })
+}));
+await fireForegroundTimers(250);
+assert.equal(foregroundStoredData.sync.revision, 6,
+  'the storage-event fallback must synchronize browsers without BroadcastChannel delivery');
+
+resetForegroundObservations();
+foregroundNow += 2_000;
+foregroundServerData.leaves['employee-1-2026-07'] = [{ date: '2026-07-28' }];
+foregroundServerData.sync.revision = 7;
+foregroundServiceWorkerListeners.get('message')({
+  data: { type: 'BANKE_BOOTSTRAP_REVISION_AVAILABLE', revision: 7 }
+});
+await fireForegroundTimers(250);
+assert.equal(foregroundStoredData.sync.revision, 7,
+  'a Service Worker revision notification must use the same synchronization controller');
+
+resetForegroundObservations();
 foregroundWindow.navigator.onLine = false;
 foregroundWindow.dispatchEvent(new TestCustomEvent('offline'));
 assert.equal(foregroundTimers.size, 0, 'offline mode must stop scheduled protected requests');
@@ -541,11 +637,11 @@ foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 assert.equal(foregroundTimers.size, 0, 'offline focus must not schedule a request');
 foregroundWindow.navigator.onLine = true;
 foregroundWindow.dispatchEvent(new TestCustomEvent('online'));
-assert.equal(foregroundTimerCount(15_000), 1, 'online recovery must resume foreground polling');
+assert.equal(foregroundTimerCount(2_000), 1, 'online recovery must resume active polling');
 foregroundWindow.dispatchEvent(new TestCustomEvent('pagehide'));
 assert.equal(foregroundTimers.size, 0, 'page unload must stop foreground polling');
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
-assert.equal(foregroundTimerCount(15_000), 1, 'a visible page restored from page cache must resume polling');
+assert.equal(foregroundTimerCount(2_000), 1, 'a visible page restored from page cache must resume active polling');
 
 resetForegroundObservations();
 await foregroundWindow.shiftPostgresCloud.logout();
@@ -554,7 +650,7 @@ foregroundNow += 2_000;
 foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
 await fireForegroundTimers(250);
-await fireForegroundTimers(15_000);
+await fireForegroundTimers(2_000);
 assert.equal(foregroundBootstrapCalls, 0, 'logged-out users must not call protected bootstrap APIs');
 assert.equal(foregroundRevisionCalls, 0, 'logged-out users must not call protected revision APIs');
 

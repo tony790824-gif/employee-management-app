@@ -1,5 +1,16 @@
 # AI Handoff
 
+## 2026-07-29 handoff — Sprint 24 Real-time Sync v2
+
+- Source baseline: `0516803b2d7fbcf9bffc0e8bc8296a728dccab29`; assessed completion after automated acceptance: **91%**.
+- The existing PostgreSQL synchronization controller now uses one adaptive timer: 2 seconds for recent activity, 20 seconds when idle, and 60 seconds while hidden/backgrounded.
+- Foreground lifecycle events, activity, offline recovery, BroadcastChannel, environment-scoped storage events, Service Worker messages, and command refreshes converge on the same debounce/cooldown/in-flight controller.
+- Revision signals contain only an integer revision. The Service Worker caches only that marker in the environment-specific app-shell cache and notifies controlled windows; it does not cache API responses.
+- The API emits `X-Bootstrap-Revision`; the frontend validates it against the response body. Unknown, malformed, or mismatched revision headers fail closed.
+- Unchanged revisions avoid the full bootstrap and all rendering. Changed revisions fetch one validated bootstrap and merge changed top-level sections; unrelated calendar, current-user, and full-app renders are skipped.
+- Production, database schema/data, migrations, Auth0, Google Sheets, Apps Script, Render, Netlify, dependencies, and lockfiles are unchanged.
+- Windows, iPhone, Android, and iPad real-device smart-polling behavior remains **PENDING USER VERIFICATION**. The next unique work is only the acceptance checklist in `docs/NEXT_SPRINT.md`.
+
 ## 2026-07-28 handoff — Sprint 23 synchronization hardening
 
 - Source baseline: `dced15e48aaef02d60c062675015e80ba30e2330`; assessed completion after automated acceptance: **90%**.
