@@ -288,9 +288,9 @@ assert.deepEqual(
   pushDiagnostics
     .filter(item => item.label === '[Bankeban push setup]')
     .map(item => item.detail.stage)
-    .filter(stage => ['subscribe-start', 'enable-failed', 'enable-finished'].includes(stage))
-    .slice(-3),
-  ['subscribe-start', 'enable-failed', 'enable-finished'],
+    .filter(stage => ['subscribe-start', 'subscribe-complete', 'subscribe-failed'].includes(stage))
+    .slice(-2),
+  ['subscribe-start', 'subscribe-failed'],
   'Staging diagnostics record only the safe browser subscription stages.'
 );
 
@@ -310,12 +310,39 @@ assert.equal(pushSubscribeCalls, subscribeCallsBeforePermissionTimeout,
   'A pending Edge permission request times out before PushManager.subscribe is called.');
 assert.equal(elements.get('#pushNotificationEnable').disabled, false,
   'The activation button is unlocked after an Edge permission timeout.');
+const permissionDiagnostics = pushDiagnostics
+  .map(item => item.detail)
+  .filter(detail => ['permission-before', 'permission-after'].includes(detail.stage))
+  .slice(-2);
+assert.deepEqual(permissionDiagnostics.map(detail => detail.stage),
+  ['permission-before', 'permission-after']);
+assert.equal(permissionDiagnostics[0].permission, 'default');
+assert.equal(permissionDiagnostics[1].permission, 'default');
+assert.equal(permissionDiagnostics[1].errorCode, 'PUSH_PERMISSION_TIMEOUT');
+
+Notification.permission = 'default';
+Notification.requestPermission = () => {
+  setTimeout(() => { Notification.permission = 'granted'; }, 1);
+  return new Promise(() => {});
+};
+const registrationsBeforeLateGrant = registeredPushInputs.length;
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setTimeout(resolve, 20));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(registeredPushInputs.length, registrationsBeforeLateGrant + 1,
+  'If Edge grants permission but leaves requestPermission pending, activation continues to subscribe.');
+assert.equal(elements.get('#notificationMessage').textContent, '此裝置已啟用背景推播。');
+
+Notification.permission = 'denied';
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationMessage').textContent,
+  'Edge 尚未允許此測試網址傳送通知，請確認網址列旁的通知權限後再試。');
+
 assert.deepEqual(
-  pushDiagnostics
-    .map(item => item.detail.stage)
-    .filter(stage => ['permission-request-start', 'enable-failed', 'enable-finished'].includes(stage))
-    .slice(-3),
-  ['permission-request-start', 'enable-failed', 'enable-finished']
+  [...new Set(pushDiagnostics.map(item => item.detail.stage))].sort(),
+  ['permission-after', 'permission-before', 'subscribe-complete', 'subscribe-failed', 'subscribe-start'],
+  'Staging Console diagnostics are restricted to the five approved stage names.'
 );
 
 elements.get('#notificationList').children[0].dispatch('click');
