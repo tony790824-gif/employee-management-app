@@ -13,6 +13,10 @@ const PUSH_ENDPOINT_HOSTS = Object.freeze([
   'fcm.googleapis.com',
   'updates.push.services.mozilla.com'
 ]);
+const PUSH_ENDPOINT_HOST_SUFFIXES = Object.freeze([
+  'push.apple.com',
+  'notify.windows.com'
+]);
 
 function plainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -71,8 +75,8 @@ function pushEndpoint(value) {
   }
   const hostname = url.hostname.toLowerCase();
   const allowedHost = PUSH_ENDPOINT_HOSTS.includes(hostname)
-    || hostname === 'push.apple.com'
-    || hostname.endsWith('.push.apple.com');
+    || PUSH_ENDPOINT_HOST_SUFFIXES.some(suffix =>
+      hostname === suffix || hostname.endsWith(`.${suffix}`));
   assert(url.protocol === 'https:' && !url.username && !url.password
     && !url.hash && allowedHost, 400, 'COMMAND_INVALID', 'endpoint is not an approved Web Push service.');
   return url.href;

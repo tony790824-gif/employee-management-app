@@ -8,6 +8,8 @@ import { validateCommand } from '../server/validation.mjs';
 const publicKey = 'B'.repeat(87);
 const privateKey = 'C'.repeat(43);
 const endpoint = 'https://fcm.googleapis.com/fcm/send/synthetic-endpoint-00000001';
+const edgeEndpoint = 'https://wns2-by3p.notify.windows.com/w/?token=synthetic-edge-endpoint';
+const firefoxEndpoint = 'https://updates.push.services.mozilla.com/wpush/v2/synthetic-firefox-endpoint';
 const subscriptionInput = {
   endpoint,
   expirationTime: null,
@@ -33,9 +35,27 @@ assert.deepEqual(webPushConfig({
 assert.deepEqual(validateCommand('push.register', subscriptionInput), subscriptionInput);
 assert.deepEqual(validateCommand('push.unregister', { endpoint }), { endpoint });
 assert.deepEqual(validateCommand('push.test', { endpoint }), { endpoint });
+for (const approvedEndpoint of [edgeEndpoint, firefoxEndpoint]) {
+  assert.equal(
+    validateCommand('push.register', { ...subscriptionInput, endpoint: approvedEndpoint }).endpoint,
+    approvedEndpoint
+  );
+  assert.deepEqual(
+    validateCommand('push.unregister', { endpoint: approvedEndpoint }),
+    { endpoint: approvedEndpoint }
+  );
+  assert.deepEqual(
+    validateCommand('push.test', { endpoint: approvedEndpoint }),
+    { endpoint: approvedEndpoint }
+  );
+}
 for (const invalid of [
   { ...subscriptionInput, endpoint: 'not-a-url' },
   { ...subscriptionInput, endpoint: 'https://attacker.invalid/push/endpoint-that-is-long-enough' },
+  {
+    ...subscriptionInput,
+    endpoint: 'https://notify.windows.com.attacker.invalid/push/endpoint-that-is-long-enough'
+  },
   { ...subscriptionInput, p256dh: 'short' },
   { ...subscriptionInput, auth: 'bad value with spaces' },
   { ...subscriptionInput, platform: 'attacker' }

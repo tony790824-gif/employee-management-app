@@ -16,6 +16,12 @@ Accepted for Staging implementation. Windows and iPhone PWA delivery remain `PEN
 8. Delivery uses bounded batches, `FOR UPDATE SKIP LOCKED`, three attempts, delayed retry, and automatic endpoint revocation on HTTP 404/410.
 9. VAPID private material and the worker database URL remain server-side secrets. Only the public VAPID key may be embedded in a Staging PostgreSQL frontend build.
 10. iPhone/iPad permission may be requested only after a user gesture and only from a Home Screen web app. An ordinary Safari tab remains supported through the in-App Notification Center but is not reported as background-push capable.
+11. Endpoint validation is a strict, shared provider allowlist: Google FCM
+    (`fcm.googleapis.com`), Mozilla Autopush
+    (`updates.push.services.mozilla.com`), Apple Push (`push.apple.com` and subdomains),
+    and Microsoft WNS (`notify.windows.com` and subdomains). Registration,
+    unregistration, and test delivery use the same policy; arbitrary HTTPS and lookalike
+    suffixes fail closed.
 
 ## Consequences
 

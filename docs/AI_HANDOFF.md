@@ -1,5 +1,20 @@
 # AI Handoff
 
+## 2026-07-30 — Edge Web Push re-registration correction
+
+- Render evidence and Edge Network response confirmed `push.unregister` returned
+  `400 COMMAND_INVALID` because the WNS endpoint host was not approved; it was not a
+  Session, Workspace, Membership, expiration, key-shape, Auth0, permission, or CORS
+  failure.
+- The Edge provider family is `*.notify.windows.com`. Source validation and additive
+  Staging Migration `0018_edge_web_push_provider_allowlist` use one strict provider set
+  for `push.register`, `push.unregister`, and `push.test`.
+- No arbitrary HTTPS host was allowed. Lookalike suffixes remain rejected, and all
+  existing authorization and database boundaries remain unchanged.
+- Windows Edge re-registration remains `PENDING USER VERIFICATION`; do not mark Sprint
+  27 complete until controlled unregister → new subscription → register → enabled UI
+  passes on the replacement Draft.
+
 ## 2026-07-29 handoff — Sprint 27 Standard Web Push
 
 - Source baseline: `91013831b3e4ed2ffcc436e6afbf0d30f42eae5b`; assessed completion: **94%**.

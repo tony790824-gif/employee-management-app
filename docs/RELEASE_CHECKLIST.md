@@ -2,6 +2,9 @@
 
 ## Sprint 27 — Standard Web Push
 
+- [x] Edge `*.notify.windows.com` endpoints are accepted by the same strict Node and database policy used for register/unregister/test; arbitrary HTTPS and lookalike domains remain rejected.
+- [x] `0018_edge_web_push_provider_allowlist` is additive, Staging-gated, checksum-recorded, transaction-protected, and has a fail-closed down migration.
+- [ ] Re-verify Edge re-registration end to end: controlled unregister → browser unsubscribe/new subscribe → controlled register → enabled UI.
 - [x] Notification Center remains authoritative; Push is a best-effort delivery channel.
 - [x] `0016_web_push_subscriptions` uses composite tenant constraints, forced RLS, PUBLIC revocation, idempotent enqueue, and complete down migration.
 - [x] Neon Staging apply/down/reapply and checksum verification pass; `0009`/`0010` remain unapplied.

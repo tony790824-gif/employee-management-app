@@ -1,5 +1,19 @@
 # Database 文件（現況與目標）
 
+## Migration 0018 — Edge Web Push provider allowlist (Staging only, 2026-07-30)
+
+Migration `0018_edge_web_push_provider_allowlist` extends the existing Web Push endpoint
+constraint and controlled Command Function with the official Microsoft WNS
+`notify.windows.com` host family. It does not replace `0016`, add a table, or relax
+Session, Membership, Workspace, RLS, Role, idempotency, or key validation.
+
+The database validates the same provider set for registration, unregistration, and test
+delivery. The allowlist remains anchored to HTTPS and exact provider hosts/suffixes;
+lookalike domains such as `notify.windows.com.attacker.invalid` remain invalid.
+The down migration restores the previous provider set and refuses rollback while an Edge
+subscription still exists, preventing silent deletion or orphaning. Production is not
+included in the Staging runner or approval gate.
+
 ## Migration 0016 — Standard Web Push (Staging accepted, 2026-07-29)
 
 Migration `0016_web_push_subscriptions` adds:

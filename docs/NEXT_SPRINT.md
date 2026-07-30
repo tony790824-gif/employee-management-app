@@ -3,6 +3,9 @@
 ## Current gate
 
 Programming and Neon Staging Migration acceptance are complete. This is not Sprint 28.
+The Edge WNS allowlist correction is complete in source and requires final Windows
+re-registration verification after `0018_edge_web_push_provider_allowlist` is active in
+Neon Staging and the replacement Draft is allowlisted.
 
 ## Remaining external Staging acceptance
 
@@ -15,10 +18,13 @@ The distinct worker credential, protected VAPID settings, enabled Render worker,
 ## Windows Chrome — PENDING USER VERIFICATION
 
 1. Sign in to the Draft and open Notification Center.
-2. Click enable, grant notification permission, and send one test notification.
-3. Confirm the first test succeeds; after three tests in ten minutes, confirm the fourth shows the Chinese safety-limit message without logout or a generic authorization error.
-4. Verify foreground, background, closed-window delivery, click-to-open Notification Center, unread badge, disable, and re-register.
-5. Verify another device subscription is not removed and logout/expired Session cannot receive new protected events.
+2. In Edge, use the existing granted permission, click re-register, and confirm the
+   sequence completes: controlled unregister, new browser subscription, controlled
+   register, then enabled UI.
+3. Click enable in Chrome, grant notification permission, and send one test notification.
+4. Confirm the first test succeeds; after three tests in ten minutes, confirm the fourth shows the Chinese safety-limit message without logout or a generic authorization error.
+5. Verify foreground, background, closed-window delivery, click-to-open Notification Center, unread badge, disable, and re-register.
+6. Verify another device subscription is not removed and logout/expired Session cannot receive new protected events.
 
 ## iPhone Home Screen PWA — PENDING USER VERIFICATION
 

@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-07-30 — Sprint 27 Edge Web Push provider allowlist
+
+- Confirmed that Edge registration and re-registration reached the existing authenticated Push Commands but failed with `400 COMMAND_INVALID` because the Microsoft WNS endpoint host was absent from both the Node and PostgreSQL allowlists.
+- Added only the official Microsoft WNS `notify.windows.com` host and its subdomains; arbitrary HTTPS endpoints and lookalike suffixes remain rejected.
+- Kept `push.register`, `push.unregister`, and `push.test` on one provider policy and added additive Staging-only Migration `0018_edge_web_push_provider_allowlist` for the table constraint and controlled database Function.
+- Preserved Session, Membership, Workspace, idempotency, RLS, API Role, worker Role, VAPID, and subscription-binding checks. Production was not migrated or deployed.
+
 ## 2026-07-29 — Sprint 27 Standard Web Push
 
 - Fixed the Windows test-notification error presentation after Render evidence confirmed `POST /v1/commands/push.test` returned `429 PUSH_RATE_LIMITED`, not an authorization, Session, Membership, Workspace, Subscription, CORS, or Token failure.

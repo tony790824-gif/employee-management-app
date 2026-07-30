@@ -14,6 +14,8 @@ if (process.env.BANK_ENV !== 'staging') {
 
 const EXPECTED_CHECKSUM =
   '31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476';
+const EXPECTED_EDGE_ALLOWLIST_CHECKSUM =
+  '48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277';
 const TEST_ORIGIN = 'https://web-push-e2e.staging.invalid';
 const TEST_ISSUER = 'https://web-push-e2e.staging.invalid/';
 const { Client } = pg;
@@ -50,6 +52,10 @@ function phone(sequence) {
 
 function endpoint(label) {
   return `https://fcm.googleapis.com/fcm/send/bankeban-${label}-${randomUUID()}`;
+}
+
+function edgeEndpoint(label) {
+  return `https://wns2-by3p.notify.windows.com/w/?token=bankeban-${label}-${randomUUID()}`;
 }
 
 function subscriptionBody(targetEndpoint, platform = 'windows') {
@@ -168,6 +174,13 @@ try {
     name: 'web_push_subscriptions',
     checksum: EXPECTED_CHECKSUM
   });
+  const edgeAllowlistMigration = (await owner.query(
+    `SELECT name, checksum FROM schema_migrations WHERE version = '0018'`
+  )).rows[0];
+  assert.deepEqual(edgeAllowlistMigration, {
+    name: 'edge_web_push_provider_allowlist',
+    checksum: EXPECTED_EDGE_ALLOWLIST_CHECKSUM
+  });
   assert.equal((await owner.query('SELECT current_database() AS name')).rows[0].name, 'neondb');
   assert.notEqual(
     new URL(process.env.DATABASE_API_URL).username,
@@ -239,6 +252,15 @@ try {
   for (const principal of definitions) {
     assert.equal((await request(base, '/v1/auth/session', principal, 201)).ok, true);
   }
+
+  const edgeBossAEndpoint = edgeEndpoint('boss-a');
+  assert.equal((await command(
+    base, bossA, 'push.register', subscriptionBody(edgeBossAEndpoint)
+  )).data.registered, true);
+  assert.equal((await command(
+    base, bossA, 'push.unregister', { endpoint: edgeBossAEndpoint }
+  )).data.unregistered, true);
+  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 0);
 
   const bossAEndpoint = endpoint('boss-a');
   const bossBEndpoint = endpoint('boss-b');

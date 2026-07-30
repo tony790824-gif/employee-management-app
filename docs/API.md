@@ -3,6 +3,12 @@
 ## 2026-07-29 — Standard Web Push API
 
 Migration `0016_web_push_subscriptions` is active only in Neon Staging.
+Additive Migration `0018_edge_web_push_provider_allowlist` adds the official Microsoft WNS
+`notify.windows.com` host family to the same strict provider policy used by
+`push.register`, `push.unregister`, and `push.test`. Google FCM remains
+`fcm.googleapis.com`; Mozilla Autopush remains `updates.push.services.mozilla.com`;
+Apple remains `push.apple.com` and its subdomains. Other HTTPS hosts and lookalike
+suffixes remain rejected. `0018` is Staging-only and is not applied to Production.
 
 - `GET /v1/push/status` returns the current authorized Session's active subscription count.
 - `push.register` accepts only an approved HTTPS Web Push endpoint, browser `p256dh`/`auth` keys, expiration, bounded user agent, and platform. Workspace/User/Session are always resolved server-side.

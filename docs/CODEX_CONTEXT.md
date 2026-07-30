@@ -6,6 +6,11 @@
 - Source baseline: `91013831b3e4ed2ffcc436e6afbf0d30f42eae5b`.
 - Standard Web Push extends the existing Notification Center; it is not a second source of truth.
 - `0016_web_push_subscriptions` passed Neon Staging apply/down/reapply with checksum `31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476`.
+- Edge re-registration exposed a strict-provider gap: Microsoft WNS uses the
+  `notify.windows.com` host family, which was absent from the `0016` endpoint policy.
+  Additive Staging-only Migration `0018_edge_web_push_provider_allowlist` and the Node
+  validator now keep register/unregister/test on the same anchored official-provider
+  allowlist. Final Edge verification remains pending; Production is unchanged.
 - API/worker Role separation, forced RLS, bounded delivery/retry, endpoint cleanup, Service Worker events, and device UI are implemented.
 - Live synthetic Neon Staging E2E passes registration, queue projection, idempotency, rate limiting, revoked-Membership rejection, payload privacy, direct-table denial, and Workspace A/B isolation.
 - The isolated Render Staging worker is enabled with a distinct least-privilege credential and protected VAPID settings; readiness is HTTP 200. The non-Production Draft is `https://6a69fc6bb498af27dd117060--steady-salmiakki-4aaa19.netlify.app/`.
