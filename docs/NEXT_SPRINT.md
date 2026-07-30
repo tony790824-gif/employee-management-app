@@ -1,4 +1,37 @@
-# Next unique work — Finish Sprint 27 Staging Web Push acceptance
+# Next unique work — Sprint 28 Android Chrome standard Web Push acceptance
+
+## Current gate
+
+Sprint 28 automated FCM transport hardening is complete. Chrome/Android remains on
+ADR 0017 standard Web Push through the browser-created `fcm.googleapis.com`
+subscription. No Firebase SDK, Firebase project, FCM registration token, or second
+Service Worker is permitted.
+
+## Android Chrome / installed PWA — PENDING USER VERIFICATION
+
+1. Open the current non-Production `STAGING POSTGRES` Draft in Android Chrome, sign in, and confirm Notification Center loads.
+2. Enable background Push from the in-App control and grant notification permission.
+3. Confirm the UI reports Push enabled; close and reopen Notification Center and confirm the state persists.
+4. Send one rate-limited test notification and confirm an Android system notification appears while the App is backgrounded.
+5. Tap the system notification. If an authenticated App client exists, confirm it is focused and Notification Center opens; otherwise confirm the same-origin App opens and retains a valid Session.
+6. Confirm the in-App unread badge and Notification Center entry match the system notification without exposing private request reasons.
+7. Disable Push, confirm the browser and server registration are removed, then enable it again and confirm re-subscription succeeds.
+8. Repeat after clearing only the browser site data to cover a new subscription. Do not reuse Production credentials or data.
+
+## PASS / FAIL
+
+- `PASS`: all eight steps succeed on a real Android Chrome device with no cross-Workspace data, logout, sensitive Console output, or Production request.
+- `FAIL`: a reproducible product defect occurs. Capture only the HTTP status, safe error code, request ID, and step; never capture a token or full subscription endpoint.
+- `BLOCKED`: no Android device is available or external Staging allowlists are incomplete.
+
+## Stop conditions
+
+- Stop on any Production URL/database, cross-Workspace delivery, missing Session/Membership enforcement, full endpoint/key exposure, or request to weaken the provider allowlist.
+- Do not start another feature Sprint until the owner records the Android result.
+
+---
+
+# Historical next work — Finish Sprint 27 Staging Web Push acceptance
 
 ## Current gate
 

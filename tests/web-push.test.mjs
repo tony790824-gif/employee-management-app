@@ -8,6 +8,7 @@ import { validateCommand } from '../server/validation.mjs';
 const publicKey = 'B'.repeat(87);
 const privateKey = 'C'.repeat(43);
 const endpoint = 'https://fcm.googleapis.com/fcm/send/synthetic-endpoint-00000001';
+const androidEndpoint = 'https://fcm.googleapis.com/fcm/send/synthetic-android-endpoint-00000002';
 const edgeEndpoint = 'https://wns2-by3p.notify.windows.com/w/?token=synthetic-edge-endpoint';
 const firefoxEndpoint = 'https://updates.push.services.mozilla.com/wpush/v2/synthetic-firefox-endpoint';
 const subscriptionInput = {
@@ -35,6 +36,15 @@ assert.deepEqual(webPushConfig({
 assert.deepEqual(validateCommand('push.register', subscriptionInput), subscriptionInput);
 assert.deepEqual(validateCommand('push.unregister', { endpoint }), { endpoint });
 assert.deepEqual(validateCommand('push.test', { endpoint }), { endpoint });
+assert.equal(
+  validateCommand('push.register', {
+    ...subscriptionInput,
+    endpoint: androidEndpoint,
+    platform: 'android'
+  }).endpoint,
+  androidEndpoint,
+  'Chrome and Android use the standard Web Push FCM transport without Firebase SDK tokens.'
+);
 for (const approvedEndpoint of [edgeEndpoint, firefoxEndpoint]) {
   assert.equal(
     validateCommand('push.register', { ...subscriptionInput, endpoint: approvedEndpoint }).endpoint,
@@ -139,6 +149,15 @@ assert.deepEqual(
   [delivery.id, 'expired', 410, 'SUBSCRIPTION_EXPIRED']
 );
 
+const missing = dispatcherScenario(async () => {
+  throw Object.assign(new Error('synthetic missing'), { statusCode: 404 });
+});
+await missing.dispatcher.drainOnce();
+assert.deepEqual(
+  missing.queries.find(item => item.sql.includes('worker_complete_push_delivery')).parameters,
+  [delivery.id, 'expired', 404, 'SUBSCRIPTION_EXPIRED']
+);
+
 const retry = dispatcherScenario(async () => {
   throw Object.assign(new Error('synthetic unavailable'), { statusCode: 503 });
 });
@@ -151,6 +170,10 @@ assert.deepEqual(
 const ui = await readFile('notification-center.js', 'utf8');
 const login = await readFile('login.js', 'utf8');
 const worker = await readFile('service-worker.js', 'utf8');
+const packageManifest = JSON.parse(await readFile('package.json', 'utf8'));
+assert.equal(packageManifest.dependencies?.['web-push'], '3.6.7');
+assert.equal(packageManifest.dependencies?.firebase, undefined);
+assert.equal(packageManifest.devDependencies?.firebase, undefined);
 assert.match(ui, /Notification\.requestPermission\(\)/);
 assert.match(ui, /pushManager\.subscribe\(/);
 assert.match(ui, /userVisibleOnly:\s*true/);
@@ -173,6 +196,7 @@ assert.doesNotMatch(worker, /Authorization|accessToken|refreshToken|privateKey/)
 const workerListeners = new Map();
 const focusedMessages = [];
 const openedWindows = [];
+const shownNotifications = [];
 let focusedClients = 0;
 let matchedClients = [{
   url: 'https://draft.staging.example/employee',
@@ -192,7 +216,11 @@ const workerSandbox = {
     location: { origin: 'https://draft.staging.example' },
     addEventListener: (type, listener) => workerListeners.set(type, listener),
     skipWaiting: async () => {},
-    registration: { showNotification: async () => {} },
+    registration: {
+      showNotification: async (title, options) => {
+        shownNotifications.push({ title, options: structuredClone(options) });
+      }
+    },
     clients: {
       claim: async () => {},
       matchAll: async () => matchedClients,
@@ -217,6 +245,34 @@ const workerSandbox = {
   structuredClone
 };
 vm.runInContext(worker, vm.createContext(workerSandbox), { filename: 'service-worker.js' });
+
+let pushWork;
+workerListeners.get('push')({
+  data: {
+    json: () => ({
+      notificationId: delivery.payload.notificationId,
+      title: delivery.payload.title,
+      body: delivery.payload.body,
+      url: '/?open=notifications'
+    })
+  },
+  waitUntil: promise => { pushWork = promise; }
+});
+await pushWork;
+assert.deepEqual(shownNotifications, [{
+  title: delivery.payload.title,
+  options: {
+    body: delivery.payload.body,
+    icon: './app-icon.svg',
+    badge: './app-icon.svg',
+    tag: `banke-${delivery.payload.notificationId}`,
+    renotify: false,
+    data: {
+      notificationId: delivery.payload.notificationId,
+      url: '/?open=notifications'
+    }
+  }
+}], 'A standard Web Push event renders one bounded background system notification.');
 
 let notificationClickWork;
 workerListeners.get('notificationclick')({
@@ -246,6 +302,20 @@ workerListeners.get('notificationclick')({
 await notificationClickWork;
 assert.deepEqual(openedWindows, ['https://draft.staging.example/?open=notifications'],
   'A new window is opened only when no same-origin client exists.');
+
+matchedClients = [{
+  url: 'https://draft.staging.example/employee',
+  postMessage(message) {
+    focusedMessages.push(structuredClone(message));
+  }
+}];
+let subscriptionChangeWork;
+workerListeners.get('pushsubscriptionchange')({
+  waitUntil: promise => { subscriptionChangeWork = promise; }
+});
+await subscriptionChangeWork;
+assert.deepEqual(focusedMessages.at(-1), { type: 'BANKE_PUSH_SUBSCRIPTION_CHANGED' },
+  'Browser-managed subscription rotation notifies the existing app to re-register safely.');
 
 const serviceQueries = [];
 let pushSchemaAvailable = true;

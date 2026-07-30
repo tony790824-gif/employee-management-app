@@ -29,7 +29,7 @@
 
 ## Residual risks
 
-- Render worker secrets and real provider delivery are not active until the owner completes the protected Staging settings.
+- The isolated Render Staging worker and protected VAPID settings are active; Production remains inactive.
 - Browser vendor delivery is best effort and may be throttled.
 - iPhone/iPad requires a Home Screen web app; ordinary Safari-tab behavior is not equivalent.
-- Windows/iPhone real-device evidence remains `PENDING USER VERIFICATION`.
+- Android Chrome background delivery and PWA lifecycle evidence remains `PENDING USER VERIFICATION`.

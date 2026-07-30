@@ -1,5 +1,16 @@
 # Codex Context
 
+## 2026-07-30 current state — Sprint 28 FCM transport hardening
+
+- Current assessed completion remains **94%**. Automated transport hardening is complete; Android Chrome real-device delivery is **PENDING USER VERIFICATION**.
+- Source baseline: `8cfdc7f7a15f6afe59c584c517dd2957453eebb0`.
+- ADR 0017 remains authoritative: Chrome and Android use standard Web Push through an `fcm.googleapis.com` Push Subscription endpoint, VAPID, `web-push`, and the existing Service Worker.
+- No Firebase SDK, Firebase project, FCM registration token, second notification store, or second Service Worker exists.
+- Synthetic Neon Staging verifies registration, same-endpoint update, controlled removal, re-subscription, 404/410 endpoint revocation, Workspace A/B isolation, Session/Membership checks, and API/worker least privilege.
+- Browser automation verifies background system-notification rendering, same-origin click-to-focus/open, subscription-change signaling, foreground Notification Center refresh, and unread badge behavior.
+- Windows Chrome has prior owner evidence for standard Web Push system delivery. Android Chrome remains **PENDING USER VERIFICATION** and must not be inferred from automated FCM endpoint tests.
+- Production, Production database, Production Auth0, Google Sheets, and Apps Script remain unchanged.
+
 ## 2026-07-29 current state — Sprint 27 Standard Web Push
 
 - Current assessed completion: **94%**.
@@ -17,7 +28,7 @@
 - Windows and iPhone Home Screen PWA delivery remain **PENDING USER VERIFICATION**.
 - Windows clean-profile evidence confirmed registration and system delivery work. A later test-button failure was `429 PUSH_RATE_LIMITED` after three successful tests in ten minutes; the generic authorization message is fixed without weakening the limit. Windows re-verification remains pending on the replacement Draft.
 - Production, Production database, Production Auth0, Google Sheets, and Apps Script remain unchanged.
-- Do not start Sprint 28. Add only the exact Draft origin to the existing Staging Auth0/Render allowlists, then finish Sprint 27 real-device delivery acceptance.
+- Historical Sprint 27 gate: before Sprint 28 approval, only the exact Draft origin could be added to the existing Staging Auth0/Render allowlists.
 
 ## 2026-07-29 current state — Sprint 25 Notification Center Foundation
 

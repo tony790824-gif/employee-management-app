@@ -1,5 +1,16 @@
 # 班客邦 Release Checklist
 
+## Sprint 28 — FCM standard Web Push transport hardening
+
+- [x] Chrome/Android endpoints are restricted to exact `fcm.googleapis.com`; arbitrary HTTPS and lookalike hosts fail closed.
+- [x] ADR 0017 remains standard Web Push with VAPID, `web-push`, and the existing Service Worker; no Firebase SDK/project/registration token was added.
+- [x] Synthetic Neon Staging proves registration, same-endpoint update, controlled removal, and re-subscription.
+- [x] HTTP 404 and 410 delivery responses make the delivery dead and revoke the affected subscription.
+- [x] Foreground Notification Center, unread badge, background notification display, same-origin click-to-focus/open, and subscription-change signaling have automated coverage.
+- [x] Workspace A/B, live Session/Membership, endpoint ownership, API table denial, and worker-function separation remain enforced.
+- [x] Production, Production database, Production Auth0, Google Sheets, and Apps Script were not modified or deployed.
+- [ ] Android Chrome/installed-PWA background delivery, click, badge/list consistency, disable, and re-subscribe are **PENDING USER VERIFICATION**.
+
 ## Sprint 27 — Standard Web Push
 
 - [x] Edge `*.notify.windows.com` endpoints are accepted by the same strict Node and database policy used for register/unregister/test; arbitrary HTTPS and lookalike domains remain rejected.

@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## 2026-07-30 — Sprint 28 FCM transport hardening
+
+- **Completion:** remains **94%**. Automated and synthetic Staging evidence is complete; Android Chrome real-device delivery is **PENDING USER VERIFICATION**.
+- **Completed:** strict Chrome/Android `fcm.googleapis.com` standard Web Push transport checks; subscription register/update/unregister/re-subscribe; 404/410 endpoint cleanup; background Service Worker notification; same-origin click handling; foreground Notification Center/badge refresh; Workspace/Session/Membership isolation.
+- **Architecture unchanged:** no Firebase SDK/project/token, second Service Worker, schema change, Migration, or parallel notification path.
+- **Next unique priority:** execute the real Android Chrome/PWA checklist in `docs/NEXT_SPRINT.md`; do not infer device PASS from synthetic endpoint tests.
+- **Production:** not modified, migrated, or deployed.
+
 ## 2026-07-29 — Sprint 27 Standard Web Push programming complete
 
 - **Completion:** **94%** after code, local automation, and Neon Staging Migration acceptance.

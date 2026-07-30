@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted for Staging implementation. Windows and iPhone PWA delivery remain `PENDING USER VERIFICATION`.
+Accepted for Staging implementation. Windows Chrome has prior owner delivery
+evidence; Android Chrome and iPhone Home Screen PWA remain
+`PENDING USER VERIFICATION`.
 
 ## Decision
 
@@ -22,6 +24,10 @@ Accepted for Staging implementation. Windows and iPhone PWA delivery remain `PEN
     and Microsoft WNS (`notify.windows.com` and subdomains). Registration,
     unregistration, and test delivery use the same policy; arbitrary HTTPS and lookalike
     suffixes fail closed.
+12. For Chrome and Android, `fcm.googleapis.com` is the browser-created standard
+    Web Push transport endpoint. This does not authorize a Firebase SDK, Firebase
+    project, FCM registration token, or a second Service Worker. Browser
+    subscription keys and VAPID remain the only accepted delivery contract.
 
 ## Consequences
 

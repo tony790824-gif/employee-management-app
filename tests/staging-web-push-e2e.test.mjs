@@ -268,9 +268,39 @@ try {
     base, bossA, 'push.register', subscriptionBody(bossAEndpoint)
   )).data.registered, true);
   assert.equal((await command(
+    base,
+    bossA,
+    'push.register',
+    {
+      ...subscriptionBody(bossAEndpoint),
+      p256dh: 'C'.repeat(88),
+      userAgent: 'Synthetic Bankeban Staging E2E Updated'
+    }
+  )).data.registered, true);
+  const updatedBossSubscription = (await owner.query(
+    `SELECT count(*)::integer AS count, min(user_agent) AS user_agent
+       FROM push_subscriptions
+      WHERE endpoint_hash = digest($1, 'sha256')
+        AND revoked_at IS NULL`,
+    [bossAEndpoint]
+  )).rows[0];
+  assert.deepEqual(updatedBossSubscription, {
+    count: 1,
+    user_agent: 'Synthetic Bankeban Staging E2E Updated'
+  });
+  assert.equal((await command(
+    base, bossA, 'push.unregister', { endpoint: bossAEndpoint }
+  )).data.unregistered, true);
+  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 0);
+  assert.equal((await command(
+    base, bossA, 'push.register', subscriptionBody(bossAEndpoint)
+  )).data.registered, true);
+  assert.equal((await command(
     base, bossB, 'push.register', subscriptionBody(bossBEndpoint, 'android')
   )).data.registered, true);
   assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 1);
+  assert.equal(new URL(bossAEndpoint).hostname, 'fcm.googleapis.com');
+  assert.equal(new URL(bossBEndpoint).hostname, 'fcm.googleapis.com');
 
   const crossWorkspace = await request(
     base,
@@ -291,6 +321,48 @@ try {
     400
   );
   assert.equal(invalidEndpoint.code, 'COMMAND_INVALID');
+
+  for (const statusCode of [404, 410]) {
+    const staleEndpoint = endpoint(`expired-${statusCode}`);
+    assert.equal((await command(
+      base, employeeA, 'push.register', subscriptionBody(staleEndpoint, 'android')
+    )).data.registered, true);
+    assert.equal((await command(
+      base, employeeA, 'push.test', { endpoint: staleEndpoint }
+    )).data.queued, true);
+    const claim = (await owner.query(
+      `SELECT app_private.worker_claim_push_deliveries($1, 50) AS result`,
+      [`push-e2e-expired-${statusCode}`]
+    )).rows[0].result;
+    const staleDelivery = claim.items.find(item => item.endpoint === staleEndpoint);
+    assert.ok(staleDelivery, `The ${statusCode} synthetic FCM delivery must be claimed.`);
+    const completion = (await owner.query(
+      `SELECT app_private.worker_complete_push_delivery(
+         $1, 'expired', $2, 'SUBSCRIPTION_EXPIRED'
+       ) AS result`,
+      [staleDelivery.id, statusCode]
+    )).rows[0].result;
+    assert.deepEqual(completion, { ok: true, status: 'dead' });
+    const staleState = (await owner.query(
+      `SELECT subscription.revoked_at IS NOT NULL AS revoked,
+              delivery.status,
+              delivery.last_status_code,
+              delivery.last_error_code
+         FROM push_subscriptions subscription
+         JOIN push_deliveries delivery
+           ON delivery.workspace_id = subscription.workspace_id
+          AND delivery.subscription_id = subscription.id
+        WHERE subscription.endpoint_hash = digest($1, 'sha256')
+          AND delivery.id = $2`,
+      [staleEndpoint, staleDelivery.id]
+    )).rows[0];
+    assert.deepEqual(staleState, {
+      revoked: true,
+      status: 'dead',
+      last_status_code: statusCode,
+      last_error_code: 'SUBSCRIPTION_EXPIRED'
+    });
+  }
 
   const submitted = (await command(
     base,
@@ -437,7 +509,10 @@ try {
 
   console.log(JSON.stringify({
     migrationChecksum: 'passed',
-    registration: 'passed',
+    registrationUpdateUnregisterReregister: 'passed',
+    chromeAndroidFcmTransport: 'passed',
+    expired404Cleanup: 'passed',
+    expired410Cleanup: 'passed',
     endpointConflict: 'denied',
     invalidEndpoint: 'denied',
     notificationQueue: 'passed',

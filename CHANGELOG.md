@@ -1,5 +1,13 @@
 # Change Log
 
+## 2026-07-30 — Sprint 28 FCM transport hardening
+
+- Kept ADR 0017 standard Web Push: `web-push`, VAPID, the browser Push API, and the existing Service Worker. No Firebase SDK, Firebase project, FCM registration token, or parallel worker was added.
+- Verified that Chrome/Android subscriptions use the strict `fcm.googleapis.com` provider boundary and that arbitrary or lookalike HTTPS endpoints remain rejected.
+- Extended synthetic Neon Staging coverage for subscription registration, same-endpoint update, controlled removal, re-subscription, and HTTP 404/410 endpoint revocation.
+- Strengthened browser-worker coverage for background notification display, same-origin notification click handling, browser-managed subscription-change notification, foreground Notification Center refresh, and unread badge behavior.
+- Production, Production database, Production Auth0, Google Sheets, and Apps Script were not modified or deployed. Android Chrome real-device delivery remains pending owner verification.
+
 ## 2026-07-30 — Sprint 27 Edge Web Push provider allowlist
 
 - Confirmed that Edge registration and re-registration reached the existing authenticated Push Commands but failed with `400 COMMAND_INVALID` because the Microsoft WNS endpoint host was absent from both the Node and PostgreSQL allowlists.

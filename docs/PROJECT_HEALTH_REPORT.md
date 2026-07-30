@@ -1,5 +1,14 @@
 # 班客邦 Project Health Report
 
+## 2026-07-30 — Sprint 28 health update
+
+- **Overall completion: 94%.** Transport/lifecycle automation is hardened; Android Chrome real-device evidence remains pending, so completion is not increased.
+- **Architecture:** ADR 0017 standard Web Push remains intact. FCM is only the browser Push Service hostname used by Chrome/Android; there is no Firebase SDK, project, registration token, or second Service Worker.
+- **Reliability:** create/update/remove/re-subscribe and real PostgreSQL 404/410 revocation paths are covered with synthetic Staging data and fixture cleanup.
+- **Security:** provider allowlisting, Session/Membership/Workspace authorization, cross-Workspace denial, endpoint ownership, payload minimization, API/worker Role separation, and secret-free logs remain enforced.
+- **Known acceptance risk:** Android Chrome transport hardening and the earlier iPhone Home Screen PWA background-delivery path are **PENDING USER VERIFICATION**.
+- **Release status: No.** Production remains unchanged and is not approved.
+
 ## 2026-07-29 — Sprint 27 health update
 
 - **Overall completion: 94%.** Web Push code, Neon Staging Migration, isolated Render worker activation, and the public-key-only Draft are accepted; real-device delivery evidence remains.
