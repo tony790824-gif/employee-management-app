@@ -29,6 +29,8 @@
   let currentPushSubscription = null;
   let pushAvailable = false;
   let activePushSubscriptionCount = 0;
+  let registrationPushManagerAvailable = null;
+  let lastPushSupportDiagnostic = '';
   const configuredPushTimeout = Number(window.shiftEnvironment?.pushOperationTimeoutMs);
   const PUSH_BROWSER_OPERATION_TIMEOUT_MS = Number.isSafeInteger(configuredPushTimeout)
     && configuredPushTimeout >= 1
@@ -63,13 +65,42 @@
     TOKEN_SESSION_INVALID: '登入狀態已失效，請重新登入。'
   });
 
-  const pushCapable = () => Boolean(
-    window.isSecureContext
-    && 'serviceWorker' in navigator
-    && 'PushManager' in window
-    && 'Notification' in window
-    && window.shiftEnvironment?.webPushPublicKey
+  const pushSupportSnapshot = () => Object.freeze({
+    Notification: 'Notification' in window,
+    ServiceWorker: 'serviceWorker' in navigator,
+    PushManager: 'PushManager' in window,
+    ServiceWorkerRegistration: 'ServiceWorkerRegistration' in window,
+    SecureContext: window.isSecureContext === true,
+    WebPushPublicKey: Boolean(window.shiftEnvironment?.webPushPublicKey),
+    registrationPushManager: registrationPushManagerAvailable
+  });
+  const pushBrowserCapable = support => Boolean(
+    support.Notification
+    && support.ServiceWorker
+    && support.PushManager
+    && support.ServiceWorkerRegistration
+    && support.SecureContext
   );
+  const pushCapable = () => {
+    const support = pushSupportSnapshot();
+    return pushBrowserCapable(support)
+      && support.WebPushPublicKey
+      && support.registrationPushManager === true;
+  };
+  const unavailablePushCapabilities = () => Object.entries(pushSupportSnapshot())
+    .filter(([, supported]) => supported === false)
+    .map(([name]) => `support.${name} = false`);
+  function logPushSupport() {
+    if (window.shiftEnvironment?.name !== 'staging') return;
+    const support = pushSupportSnapshot();
+    const diagnostic = Object.freeze(Object.fromEntries(
+      Object.entries(support).map(([name, value]) => [`support.${name}`, value])
+    ));
+    const serialized = JSON.stringify(diagnostic);
+    if (serialized === lastPushSupportDiagnostic) return;
+    lastPushSupportDiagnostic = serialized;
+    window.console?.info?.('[Bankeban push support]', diagnostic);
+  }
   const isStandalone = () => window.matchMedia?.('(display-mode: standalone)').matches
     || navigator.standalone === true;
   const isAppleMobile = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
@@ -232,10 +263,13 @@
     pushTest.hidden = !registered;
     [pushEnable, pushDisable, pushRepair, pushTest].forEach(button => { button.disabled = busy; });
     if (!pushCapable()) {
-      pushStatusText.textContent = '此瀏覽器或目前環境不支援背景推播';
+      const unavailable = unavailablePushCapabilities();
+      pushStatusText.textContent = unavailable.length
+        ? `背景推播尚不可用：${unavailable.join('、')}`
+        : '背景推播能力仍在初始化，請稍後再試。';
       pushHelp.textContent = isAppleMobile() && !isStandalone()
         ? 'iPhone／iPad 請先將網站加入主畫面，再從主畫面開啟並啟用推播。'
-        : '仍可在通知中心查看所有通知。';
+        : '請依上方未通過的能力項目檢查瀏覽器或 Staging 建置設定。';
       pushEnable.hidden = true;
       return;
     }
@@ -262,18 +296,31 @@
       activePushSubscriptionCount = Number.isSafeInteger(Number(status?.activeSubscriptionCount))
         ? Math.max(0, Number(status.activeSubscriptionCount))
         : 0;
-      if (pushCapable()) {
-        const registration = await navigator.serviceWorker.ready;
-        currentPushSubscription = await registration.pushManager.getSubscription();
+      registrationPushManagerAvailable = null;
+      const initialSupport = pushSupportSnapshot();
+      if (pushBrowserCapable(initialSupport)) {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          registrationPushManagerAvailable = Boolean(registration?.pushManager);
+          currentPushSubscription = registrationPushManagerAvailable
+            ? await registration.pushManager.getSubscription()
+            : null;
+        } catch {
+          registrationPushManagerAvailable = false;
+          currentPushSubscription = null;
+        }
       } else {
+        registrationPushManagerAvailable = false;
         currentPushSubscription = null;
       }
+      logPushSupport();
       renderPushSettings();
       return status;
     } catch {
       pushAvailable = false;
       activePushSubscriptionCount = 0;
       currentPushSubscription = null;
+      logPushSupport();
       renderPushSettings();
       return null;
     }
@@ -546,6 +593,8 @@
     pushAvailable = false;
     activePushSubscriptionCount = 0;
     currentPushSubscription = null;
+    registrationPushManagerAvailable = null;
+    lastPushSupportDiagnostic = '';
     trigger.hidden = true;
     setMessage();
     render();

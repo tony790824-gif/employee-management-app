@@ -182,6 +182,7 @@ const sandbox = {
   window: {
     isSecureContext: true,
     PushManager: class PushManager {},
+    ServiceWorkerRegistration: class ServiceWorkerRegistration {},
     Notification,
     navigator: {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
@@ -229,6 +230,18 @@ elements.get('#notificationDialog').close();
 elements.get('#notificationButton').dispatch('click');
 assert.equal(elements.get('#notificationDialog').open, true);
 await new Promise(resolve => setImmediate(resolve));
+const initialSupportDiagnostic = pushDiagnostics.find(
+  item => item.label === '[Bankeban push support]'
+);
+assert.deepEqual(initialSupportDiagnostic?.detail, {
+  'support.Notification': true,
+  'support.ServiceWorker': true,
+  'support.PushManager': true,
+  'support.ServiceWorkerRegistration': true,
+  'support.SecureContext': true,
+  'support.WebPushPublicKey': true,
+  'support.registrationPushManager': true
+}, 'Staging logs every push capability as safe booleans without subscription data.');
 elements.get('#pushNotificationEnable').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
 await new Promise(resolve => setImmediate(resolve));
@@ -351,9 +364,34 @@ assert.equal(elements.get('#notificationMessage').textContent,
   'Edge 已拒絕此測試網址的通知權限。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。');
 
 assert.deepEqual(
-  [...new Set(pushDiagnostics.map(item => item.detail.stage))].sort(),
+  [...new Set(pushDiagnostics.map(item => item.detail.stage).filter(Boolean))].sort(),
   ['permission-after', 'permission-before', 'subscribe-complete', 'subscribe-failed', 'subscribe-start'],
   'Staging Console diagnostics are restricted to the five approved stage names.'
+);
+
+sandbox.window.shiftEnvironment.webPushPublicKey = '';
+elements.get('#notificationButton').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.match(elements.get('#pushNotificationStatus').textContent,
+  /support\.WebPushPublicKey = false/,
+  'A missing Staging public VAPID key is identified instead of blaming browser support.');
+assert.equal(
+  pushDiagnostics.filter(item => item.label === '[Bankeban push support]').at(-1)
+    .detail['support.WebPushPublicKey'],
+  false
+);
+sandbox.window.shiftEnvironment.webPushPublicKey = 'AQ';
+
+serviceWorker.ready = Promise.resolve({ pushManager: null });
+elements.get('#notificationButton').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.match(elements.get('#pushNotificationStatus').textContent,
+  /support\.registrationPushManager = false/,
+  'A missing registration.pushManager is reported as the precise failed capability.');
+assert.equal(
+  pushDiagnostics.filter(item => item.label === '[Bankeban push support]').at(-1)
+    .detail['support.registrationPushManager'],
+  false
 );
 
 elements.get('#notificationList').children[0].dispatch('click');
