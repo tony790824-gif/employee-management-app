@@ -29,6 +29,12 @@
   let currentPushSubscription = null;
   let pushAvailable = false;
   let activePushSubscriptionCount = 0;
+  const configuredPushTimeout = Number(window.shiftEnvironment?.pushOperationTimeoutMs);
+  const PUSH_BROWSER_OPERATION_TIMEOUT_MS = Number.isSafeInteger(configuredPushTimeout)
+    && configuredPushTimeout >= 1
+    && configuredPushTimeout <= 60000
+    ? configuredPushTimeout
+    : 15000;
   const pushErrorMessages = Object.freeze({
     PUSH_RATE_LIMITED: '測試通知次數已達安全上限，請在 10 分鐘後再試。',
     PUSH_SUBSCRIPTION_NOT_FOUND: '此裝置的推播註冊已失效，請按「重新註冊」後再試。',
@@ -38,6 +44,9 @@
     WORKSPACE_ACCESS_DENIED: '目前帳號無法在這個工作區使用測試通知。',
     WEB_PUSH_UNAVAILABLE: '測試環境的背景推播服務暫時無法使用。',
     ORIGIN_NOT_ALLOWED: '此測試網址尚未加入允許清單。',
+    PUSH_SERVICE_WORKER_TIMEOUT: '瀏覽器背景服務尚未就緒，請重新整理頁面後再試。',
+    PUSH_SUBSCRIPTION_LOOKUP_TIMEOUT: '無法讀取此裝置的推播狀態，請關閉並重新開啟瀏覽器後再試。',
+    PUSH_SUBSCRIPTION_CREATE_TIMEOUT: '瀏覽器未能完成推播訂閱，請確認 Windows 通知服務與網路後再試。',
     POSTGRES_API_TIMEOUT: '推播服務回應逾時，請稍後再試。',
     POSTGRES_API_UNAVAILABLE: '目前無法連線推播服務，請確認網路後再試。',
     SESSION_INVALID: '登入狀態已失效，請重新登入。',
@@ -106,8 +115,29 @@
   function pushErrorMessage(error, fallback) {
     const code = String(error?.code || '');
     if (code) return pushErrorMessages[code] || fallback;
-    const localMessage = String(error?.message || '').trim();
-    return localMessage || fallback;
+    if (error?.name === 'NotAllowedError') return '瀏覽器未允許通知，請確認網站通知權限後再試。';
+    if (error?.name === 'AbortError') return '瀏覽器中止了推播訂閱，請確認網路後再試。';
+    return fallback;
+  }
+
+  function withPushBrowserTimeout(promise, code) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const error = new Error(code);
+        error.code = code;
+        reject(error);
+      }, PUSH_BROWSER_OPERATION_TIMEOUT_MS);
+      Promise.resolve(promise).then(
+        value => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        error => {
+          clearTimeout(timer);
+          reject(error);
+        }
+      );
+    });
   }
 
   function formatTime(value) {
@@ -222,9 +252,17 @@
   }
 
   async function enablePush({ replace = false } = {}) {
-    if (pushMutationPromise || !pushCapable()) return;
+    if (pushMutationPromise) {
+      setMessage('推播設定正在處理，請稍候。');
+      return;
+    }
+    if (!pushCapable()) {
+      setMessage('此瀏覽器或目前環境不支援背景推播。');
+      return;
+    }
     pushMutationPromise = (async () => {
       try {
+        setMessage('正在啟用背景推播…');
         if (isAppleMobile() && !isStandalone()) {
           throw new Error('iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
         }
@@ -232,17 +270,28 @@
           ? await Notification.requestPermission()
           : Notification.permission;
         if (permission !== 'granted') throw new Error('尚未取得通知權限。');
-        const registration = await navigator.serviceWorker.ready;
-        let subscription = await registration.pushManager.getSubscription();
+        setMessage('正在連接瀏覽器推播服務…');
+        const registration = await withPushBrowserTimeout(
+          navigator.serviceWorker.ready,
+          'PUSH_SERVICE_WORKER_TIMEOUT'
+        );
+        let subscription = await withPushBrowserTimeout(
+          registration.pushManager.getSubscription(),
+          'PUSH_SUBSCRIPTION_LOOKUP_TIMEOUT'
+        );
         if (replace && subscription) {
           await cloud.unregisterPushSubscription(subscription.endpoint);
           await subscription.unsubscribe();
           subscription = null;
         }
-        subscription ||= await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: base64UrlBytes(window.shiftEnvironment.webPushPublicKey)
-        });
+        subscription ||= await withPushBrowserTimeout(
+          registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: base64UrlBytes(window.shiftEnvironment.webPushPublicKey)
+          }),
+          'PUSH_SUBSCRIPTION_CREATE_TIMEOUT'
+        );
+        setMessage('正在儲存此裝置的推播設定…');
         await cloud.registerPushSubscription(subscriptionInput(subscription));
         currentPushSubscription = subscription;
         activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
@@ -254,6 +303,7 @@
         renderPushSettings();
       }
     })();
+    renderPushSettings();
     await pushMutationPromise;
   }
 

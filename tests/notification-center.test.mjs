@@ -86,9 +86,13 @@ const pushSubscription = {
       auth: 'b'.repeat(24)
     }
   }),
-  unsubscribe: async () => true
+  unsubscribe: async () => {
+    browserSubscription = null;
+    return true;
+  }
 };
 let browserSubscription = null;
+let pushSubscribePending = false;
 let pushServerCount = 0;
 let pushTestError = null;
 const registeredPushInputs = [];
@@ -148,6 +152,7 @@ const serviceWorker = {
       getSubscription: async () => browserSubscription,
       subscribe: async () => {
         pushSubscribeCalls += 1;
+        if (pushSubscribePending) return new Promise(() => {});
         browserSubscription = pushSubscription;
         return browserSubscription;
       }
@@ -182,7 +187,11 @@ const sandbox = {
     },
     location: { search: '' },
     matchMedia: () => ({ matches: false }),
-    shiftEnvironment: { dataBackend: 'postgres', webPushPublicKey: 'AQ' },
+    shiftEnvironment: {
+      dataBackend: 'postgres',
+      webPushPublicKey: 'AQ',
+      pushOperationTimeoutMs: 5
+    },
     shiftPostgresCloud: cloud,
     shiftDomSafety: dom
   },
@@ -249,6 +258,25 @@ for (const [code, expected] of [
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(elements.get('#notificationMessage').textContent, expected);
 }
+
+pushTestError = null;
+elements.get('#pushNotificationDisable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+pushSubscribePending = true;
+elements.get('#pushNotificationEnable').dispatch('click');
+assert.match(elements.get('#notificationMessage').textContent, /^正在(?:啟用背景推播|連接瀏覽器推播服務)…$/,
+  'Edge activation immediately shows progress instead of appearing unresponsive.');
+assert.equal(elements.get('#pushNotificationEnable').disabled, true,
+  'The activation button is locked while Edge is creating the subscription.');
+await new Promise(resolve => setTimeout(resolve, 15));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationMessage').textContent,
+  '瀏覽器未能完成推播訂閱，請確認 Windows 通知服務與網路後再試。');
+assert.equal(registeredPushInputs.length, 1,
+  'A browser subscription timeout occurs before any push.register API request.');
+assert.equal(elements.get('#pushNotificationEnable').disabled, false,
+  'The activation button becomes actionable again after a browser timeout.');
 
 elements.get('#notificationList').children[0].dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
