@@ -44,6 +44,9 @@
     WORKSPACE_ACCESS_DENIED: '目前帳號無法在這個工作區使用測試通知。',
     WEB_PUSH_UNAVAILABLE: '測試環境的背景推播服務暫時無法使用。',
     ORIGIN_NOT_ALLOWED: '此測試網址尚未加入允許清單。',
+    PUSH_PERMISSION_TIMEOUT: 'Edge 未完成此測試網址的通知授權，請重新整理後再按一次「啟用推播」。',
+    PUSH_PERMISSION_DENIED: 'Edge 尚未允許此測試網址傳送通知，請確認網址列旁的通知權限後再試。',
+    PUSH_PERMISSION_REQUIRED: '尚未完成此測試網址的通知授權，請允許通知後再試。',
     PUSH_SERVICE_WORKER_TIMEOUT: '瀏覽器背景服務尚未就緒，請重新整理頁面後再試。',
     PUSH_SUBSCRIPTION_LOOKUP_TIMEOUT: '無法讀取此裝置的推播狀態，請關閉並重新開啟瀏覽器後再試。',
     PUSH_SUBSCRIPTION_CREATE_TIMEOUT: '瀏覽器未能完成推播訂閱，請確認 Windows 通知服務與網路後再試。',
@@ -138,6 +141,24 @@
         }
       );
     });
+  }
+
+  function pushDiagnostic(stage, {
+    permission = '',
+    hasSubscription = null,
+    errorCode = ''
+  } = {}) {
+    if (window.shiftEnvironment?.name !== 'staging') return;
+    const safePermission = ['default', 'denied', 'granted'].includes(permission)
+      ? permission
+      : undefined;
+    const safeErrorCode = String(errorCode || '').replace(/[^A-Z0-9_-]/g, '').slice(0, 64);
+    window.console?.info?.('[Bankeban push setup]', Object.freeze({
+      stage,
+      ...(safePermission ? { permission: safePermission } : {}),
+      ...(typeof hasSubscription === 'boolean' ? { hasSubscription } : {}),
+      ...(safeErrorCode ? { errorCode: safeErrorCode } : {})
+    }));
   }
 
   function formatTime(value) {
@@ -263,44 +284,69 @@
     pushMutationPromise = (async () => {
       try {
         setMessage('正在啟用背景推播…');
+        pushDiagnostic('enable-click', { permission: Notification.permission });
         if (isAppleMobile() && !isStandalone()) {
           throw new Error('iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
         }
-        const permission = Notification.permission === 'default'
-          ? await Notification.requestPermission()
-          : Notification.permission;
-        if (permission !== 'granted') throw new Error('尚未取得通知權限。');
+        let permission = Notification.permission;
+        if (permission === 'default') {
+          setMessage('正在確認此測試網址的通知權限…');
+          pushDiagnostic('permission-request-start', { permission });
+          permission = await withPushBrowserTimeout(
+            Notification.requestPermission(),
+            'PUSH_PERMISSION_TIMEOUT'
+          );
+          pushDiagnostic('permission-request-complete', { permission });
+        }
+        if (permission !== 'granted') {
+          const error = new Error('Push permission unavailable');
+          error.code = permission === 'denied' ? 'PUSH_PERMISSION_DENIED' : 'PUSH_PERMISSION_REQUIRED';
+          throw error;
+        }
         setMessage('正在連接瀏覽器推播服務…');
         const registration = await withPushBrowserTimeout(
           navigator.serviceWorker.ready,
           'PUSH_SERVICE_WORKER_TIMEOUT'
         );
+        pushDiagnostic('service-worker-ready');
+        pushDiagnostic('subscription-lookup-start');
         let subscription = await withPushBrowserTimeout(
           registration.pushManager.getSubscription(),
           'PUSH_SUBSCRIPTION_LOOKUP_TIMEOUT'
         );
+        pushDiagnostic('subscription-lookup-complete', {
+          hasSubscription: Boolean(subscription)
+        });
         if (replace && subscription) {
           await cloud.unregisterPushSubscription(subscription.endpoint);
           await subscription.unsubscribe();
           subscription = null;
         }
-        subscription ||= await withPushBrowserTimeout(
-          registration.pushManager.subscribe({
+        if (!subscription) {
+          pushDiagnostic('subscribe-start');
+          subscription = await withPushBrowserTimeout(registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: base64UrlBytes(window.shiftEnvironment.webPushPublicKey)
-          }),
-          'PUSH_SUBSCRIPTION_CREATE_TIMEOUT'
-        );
+          }), 'PUSH_SUBSCRIPTION_CREATE_TIMEOUT');
+          pushDiagnostic('subscribe-complete', { hasSubscription: true });
+        }
         setMessage('正在儲存此裝置的推播設定…');
+        pushDiagnostic('register-start', { hasSubscription: true });
         await cloud.registerPushSubscription(subscriptionInput(subscription));
         currentPushSubscription = subscription;
         activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
+        pushDiagnostic('register-complete', { hasSubscription: true });
         setMessage('此裝置已啟用背景推播。');
       } catch (error) {
+        pushDiagnostic('enable-failed', {
+          permission: Notification.permission,
+          errorCode: error?.code || error?.name || 'UNKNOWN'
+        });
         setMessage(pushErrorMessage(error, '無法啟用背景推播，請稍後再試。'));
       } finally {
         pushMutationPromise = null;
         renderPushSettings();
+        pushDiagnostic('enable-finished', { permission: Notification.permission });
       }
     })();
     renderPushSettings();

@@ -164,6 +164,7 @@ const Notification = {
   permission: 'granted',
   requestPermission: async () => 'granted'
 };
+const pushDiagnostics = [];
 const sandbox = {
   Intl,
   Date,
@@ -188,9 +189,15 @@ const sandbox = {
     location: { search: '' },
     matchMedia: () => ({ matches: false }),
     shiftEnvironment: {
+      name: 'staging',
       dataBackend: 'postgres',
       webPushPublicKey: 'AQ',
       pushOperationTimeoutMs: 5
+    },
+    console: {
+      info(label, detail) {
+        pushDiagnostics.push({ label, detail: structuredClone(detail) });
+      }
     },
     shiftPostgresCloud: cloud,
     shiftDomSafety: dom
@@ -277,6 +284,39 @@ assert.equal(registeredPushInputs.length, 1,
   'A browser subscription timeout occurs before any push.register API request.');
 assert.equal(elements.get('#pushNotificationEnable').disabled, false,
   'The activation button becomes actionable again after a browser timeout.');
+assert.deepEqual(
+  pushDiagnostics
+    .filter(item => item.label === '[Bankeban push setup]')
+    .map(item => item.detail.stage)
+    .filter(stage => ['subscribe-start', 'enable-failed', 'enable-finished'].includes(stage))
+    .slice(-3),
+  ['subscribe-start', 'enable-failed', 'enable-finished'],
+  'Staging diagnostics record only the safe browser subscription stages.'
+);
+
+pushSubscribePending = false;
+Notification.permission = 'default';
+Notification.requestPermission = async () => new Promise(() => {});
+const subscribeCallsBeforePermissionTimeout = pushSubscribeCalls;
+elements.get('#pushNotificationEnable').dispatch('click');
+assert.equal(elements.get('#notificationMessage').textContent,
+  '正在確認此測試網址的通知權限…');
+assert.equal(elements.get('#pushNotificationEnable').disabled, true);
+await new Promise(resolve => setTimeout(resolve, 15));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationMessage').textContent,
+  'Edge 未完成此測試網址的通知授權，請重新整理後再按一次「啟用推播」。');
+assert.equal(pushSubscribeCalls, subscribeCallsBeforePermissionTimeout,
+  'A pending Edge permission request times out before PushManager.subscribe is called.');
+assert.equal(elements.get('#pushNotificationEnable').disabled, false,
+  'The activation button is unlocked after an Edge permission timeout.');
+assert.deepEqual(
+  pushDiagnostics
+    .map(item => item.detail.stage)
+    .filter(stage => ['permission-request-start', 'enable-failed', 'enable-finished'].includes(stage))
+    .slice(-3),
+  ['permission-request-start', 'enable-failed', 'enable-finished']
+);
 
 elements.get('#notificationList').children[0].dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
