@@ -21,6 +21,7 @@
   const inAppBrowser = !standalone && inAppBrowserPattern.test(window.navigator?.userAgent || '');
   let client;
   let inAppBrowserNotice;
+  let initializationPhase = 'auth0';
   const emptyClaimVerification = () => Object.freeze({
     checked: false,
     exists: false,
@@ -200,11 +201,14 @@
         throw new Error('Auth0 session claim validation failed closed.');
       }
       if (environment.dataBackend === 'postgres') {
+        initializationPhase = 'app-session';
         setStatus('Auth0 驗證成功，正在載入 PostgreSQL Staging 資料…');
         const bootstrap = await window.shiftPostgresCloud.connect({
           getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } })
         });
+        initializationPhase = 'app-ui';
         await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
+        window.shiftPostgresCloud.activateForegroundSync();
         setStatus('PostgreSQL Staging 資料載入完成。');
       } else {
         setStatus('Auth0 Staging login succeeded; the session claim is present and matches the Auth0 session ID.');
@@ -291,7 +295,8 @@
 
   initialize().catch(async error => {
     if (await recoverInvalidPostgresSession(error)) return;
-    setStatus(`Auth0 Staging 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
+    const system = initializationPhase === 'auth0' ? 'Auth0 Staging' : 'PostgreSQL Staging';
+    setStatus(`${system} 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
     if (loginButton) loginButton.disabled = true;
   });
 })();

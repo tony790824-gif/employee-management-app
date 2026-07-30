@@ -464,6 +464,9 @@ const foregroundContext = vm.createContext({
 });
 vm.runInContext(postgresCloudSource, foregroundContext, { filename: 'postgres-cloud-foreground.js' });
 await foregroundWindow.shiftPostgresCloud.connect({ getAccessToken: async () => 'synthetic-token' });
+assert.equal(foregroundTimers.size, 0,
+  'foreground polling must wait until the authenticated application UI has entered');
+foregroundWindow.shiftPostgresCloud.activateForegroundSync();
 foregroundNow += 2_000;
 
 const resetForegroundObservations = () => {

@@ -81,6 +81,7 @@ assert.equal(written[0].employees.length, 1);
 assert.equal(context.window.shiftPostgresCloud.isConnected(), true);
 assert.equal(context.window.shiftPostgresCloud.hasEmployeeSession(), true);
 assert.equal(cloudStatus.textContent, 'PostgreSQL Staging');
+context.window.shiftPostgresCloud.activateForegroundSync();
 
 await context.window.shiftPostgresCloud.saveEmployeeLeave('2026-07', ['2026-07-23']);
 await context.window.shiftPostgresCloud.saveBossLeave('employee-1', '2026-07', []);

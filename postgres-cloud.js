@@ -13,6 +13,7 @@
   let foregroundPollTimer = null;
   let foregroundPromise = null;
   let foregroundFailureReported = false;
+  let foregroundSyncActivated = false;
   let lastForegroundCompletedAt = 0;
   let lastUserActivityAt = Date.now();
   let revisionChannel = null;
@@ -162,7 +163,8 @@
   }
 
   const canRunForegroundSync = () => Boolean(
-    client
+    foregroundSyncActivated
+    && client
     && currentSession
     && window.navigator?.onLine !== false
   );
@@ -296,6 +298,8 @@
 
   async function connect({ getAccessToken }) {
     if (typeof getAccessToken !== 'function') throw new Error('PostgreSQL 登入缺少 Access Token provider。');
+    foregroundSyncActivated = false;
+    stopForegroundSync();
     client = window.BankePostgresApi.createClient({
       baseUrl: environment.postgresApiUrl,
       getAccessToken,
@@ -307,8 +311,16 @@
     const bootstrap = await refreshBootstrap();
     lastForegroundCompletedAt = Date.now();
     lastUserActivityAt = Date.now();
-    startForegroundPolling();
     return bootstrap;
+  }
+
+  function activateForegroundSync() {
+    if (!client || !currentSession) {
+      throw new Error('PostgreSQL Staging Session 尚未完成，無法啟動同步。');
+    }
+    foregroundSyncActivated = true;
+    lastUserActivityAt = Date.now();
+    startForegroundPolling();
   }
 
   async function executeAndRefresh(commandName, input) {
@@ -384,6 +396,7 @@
 
   async function logout() {
     const activeClient = client;
+    foregroundSyncActivated = false;
     stopForegroundSync();
     client = null;
     currentSession = null;
@@ -409,10 +422,14 @@
     revisionChannel?.close();
     revisionChannel = null;
   });
-  document.addEventListener('postgres-session-cleared', stopForegroundSync);
+  document.addEventListener('postgres-session-cleared', () => {
+    foregroundSyncActivated = false;
+    stopForegroundSync();
+  });
 
   window.shiftPostgresCloud = Object.freeze({
     connect,
+    activateForegroundSync,
     logout,
     refreshBootstrap,
     saveEmployeeLeave,

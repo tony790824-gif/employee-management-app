@@ -43,6 +43,9 @@ assert.match(authSource, /Line\\\/\|\\bFBAN\\\/\|\\bFBAV\\\/\|\\bFB_IAB\\\/\|\\b
 assert.match(authSource, /目前使用的是 App 內建瀏覽器，登入可能無法完成。請按右上角「⋯」/);
 assert.match(authSource, /window\.navigator\.clipboard\.writeText\(redirectUri\)/);
 assert.match(authSource, /showInAppBrowserNotice\(\)\) return/);
+assert.match(authSource, /initializationPhase = 'app-session'/);
+assert.match(authSource, /await window\.shiftAppSession\.enter[\s\S]*activateForegroundSync\(\)/);
+assert.match(authSource, /initializationPhase === 'auth0' \? 'Auth0 Staging' : 'PostgreSQL Staging'/);
 assert.doesNotMatch(authSource, /console\.(?:log|info|debug)/, 'Staging auth entry must not expose tokens in logs.');
 
 const sessionId = 'synthetic-session-id';
@@ -55,6 +58,7 @@ const removedSessionKeys = [];
 let sensitiveStateCleared = 0;
 let providerLogoutCalls = 0;
 let appSessionEntries = 0;
+let foregroundSyncActivations = 0;
 const authClient = {
   isAuthenticated: async () => true,
   getTokenSilently: async () => `header.${accessTokenPayload}.signature`,
@@ -84,7 +88,8 @@ const sandbox = {
         const error = new Error('Authorization or command validation failed.');
         error.code = 'SESSION_INVALID';
         throw error;
-      }
+      },
+      activateForegroundSync: () => { foregroundSyncActivations += 1; }
     },
     shiftAppSession: { enter: async () => { appSessionEntries += 1; } },
     shiftStateStore: { clearSensitive: () => { sensitiveStateCleared += 1; } }
@@ -110,6 +115,7 @@ assert.equal(providerLogoutCalls, 1, 'Expired local sessions must trigger Auth0 
 assert.equal(sensitiveStateCleared, 1, 'Expired local sessions must clear cached sensitive state.');
 assert.deepEqual(removedSessionKeys, ['staging:shift-postgres-auth']);
 assert.equal(appSessionEntries, 0, 'The application must not enter an invalid PostgreSQL session.');
+assert.equal(foregroundSyncActivations, 0, 'Invalid sessions must not activate protected foreground polling.');
 assert.equal(hint.textContent, 'STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
 assert.equal(loginButton.textContent, '使用 Auth0 登入');
 assert.equal(loginButton.disabled, false);
@@ -119,6 +125,94 @@ await sandbox.window.shiftStagingAuth.logoutProvider();
 assert.equal(providerLogoutCalls, 2, 'manual logout must invoke Auth0 provider logout');
 assert.equal(loginButton.textContent, '使用 Auth0 登入', 'logout must restore the login action immediately');
 assert.equal(hint.textContent, 'STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
+
+const successfulOrder = [];
+const successfulLoginButton = { disabled: false, textContent: '', onclick: null };
+const successfulHint = { textContent: '' };
+const successfulAuthClient = {
+  handleRedirectCallback: async () => { successfulOrder.push('callback'); },
+  isAuthenticated: async () => { successfulOrder.push('authenticated'); return true; },
+  getTokenSilently: async () => {
+    successfulOrder.push('access-token');
+    return `header.${accessTokenPayload}.signature`;
+  },
+  getIdTokenClaims: async () => {
+    successfulOrder.push('id-token');
+    return { sid: sessionId };
+  }
+};
+const successfulSandbox = {
+  window: {
+    shiftEnvironment: {
+      name: 'staging',
+      dataBackend: 'postgres',
+      auth: {
+        domain: profile.auth.domain,
+        clientId: profile.auth.clientId,
+        audience: profile.auth.audience
+      },
+      storageKey: key => `staging:${key}`
+    },
+    location: {
+      href: 'https://draft.staging.example/?code=synthetic&state=synthetic',
+      search: '?code=synthetic&state=synthetic'
+    },
+    history: { replaceState: () => successfulOrder.push('history') },
+    auth0: {
+      createAuth0Client: async () => {
+        successfulOrder.push('client');
+        return successfulAuthClient;
+      }
+    },
+    shiftPostgresCloud: {
+      connect: async ({ getAccessToken }) => {
+        successfulOrder.push('connect');
+        await getAccessToken();
+        return { role: 'employee', employeeId: 'employee-1' };
+      },
+      activateForegroundSync: () => successfulOrder.push('activate-sync')
+    },
+    shiftAppSession: {
+      enter: async () => successfulOrder.push('enter-ui')
+    },
+    shiftStateStore: { clearSensitive() {} }
+  },
+  document: {
+    title: 'Staging',
+    querySelector: selector => selector === '#bossLogin'
+      ? successfulLoginButton
+      : selector === '#loginHint'
+        ? successfulHint
+        : null
+  },
+  sessionStorage: { removeItem() {} },
+  URL,
+  URLSearchParams,
+  TextDecoder,
+  Uint8Array,
+  atob: value => Buffer.from(value, 'base64').toString('binary'),
+  setTimeout,
+  clearTimeout
+};
+vm.runInNewContext(authSource, successfulSandbox, { filename: 'staging-auth-success.js' });
+for (let index = 0; index < 8; index += 1) await Promise.resolve();
+await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 0));
+assert.deepEqual(successfulOrder, [
+  'client',
+  'callback',
+  'history',
+  'authenticated',
+  'access-token',
+  'id-token',
+  'connect',
+  'access-token',
+  'enter-ui',
+  'activate-sync'
+], 'Auth0 callback, App Session, bootstrap UI, and polling activation must remain strictly ordered.');
+assert.equal(successfulLoginButton.disabled, true);
+assert.equal(successfulLoginButton.textContent, 'Auth0 已登入');
+assert.equal(successfulHint.textContent, 'PostgreSQL Staging 資料載入完成。');
 
 const createElement = tagName => {
   const listeners = new Map();
