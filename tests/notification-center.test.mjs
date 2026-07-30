@@ -80,7 +80,7 @@ const pushSubscription = {
   endpoint: pushEndpoint,
   toJSON: () => ({
     endpoint: pushEndpoint,
-    expirationTime: null,
+    expirationTime: 0,
     keys: {
       p256dh: 'a'.repeat(88),
       auth: 'b'.repeat(24)
@@ -235,6 +235,8 @@ await new Promise(resolve => setImmediate(resolve));
 assert.equal(pushSubscribeCalls, 1, 'A clean Windows profile creates one browser subscription.');
 assert.equal(registeredPushInputs.length, 1, 'The browser subscription is registered before testing.');
 assert.equal(registeredPushInputs[0].endpoint, pushEndpoint);
+assert.equal(registeredPushInputs[0].expirationTime, null,
+  'Edge expirationTime=0 is normalized to the database no-expiration representation.');
 assert.equal(elements.get('#pushNotificationTest').hidden, false);
 elements.get('#pushNotificationTest').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));

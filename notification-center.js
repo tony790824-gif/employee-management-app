@@ -96,7 +96,7 @@
     }
     return {
       endpoint: value.endpoint,
-      expirationTime: value.expirationTime ?? null,
+      expirationTime: value.expirationTime === 0 ? null : (value.expirationTime ?? null),
       p256dh: value.keys.p256dh,
       auth: value.keys.auth,
       userAgent: String(navigator.userAgent || '').slice(0, 256),
