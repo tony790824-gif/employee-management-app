@@ -175,6 +175,7 @@ const sandbox = {
   structuredClone,
   navigator: {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+    userActivation: { isActive: true },
     serviceWorker
   },
   Notification,
@@ -184,6 +185,7 @@ const sandbox = {
     Notification,
     navigator: {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+      userActivation: { isActive: true },
       serviceWorker
     },
     location: { search: '' },
@@ -296,16 +298,22 @@ assert.deepEqual(
 
 pushSubscribePending = false;
 Notification.permission = 'default';
-Notification.requestPermission = async () => new Promise(() => {});
+let pendingPermissionRequestCalls = 0;
+Notification.requestPermission = () => {
+  pendingPermissionRequestCalls += 1;
+  return new Promise(() => {});
+};
 const subscribeCallsBeforePermissionTimeout = pushSubscribeCalls;
 elements.get('#pushNotificationEnable').dispatch('click');
+assert.equal(pendingPermissionRequestCalls, 1,
+  'Notification.requestPermission is invoked synchronously by the direct click handler.');
 assert.equal(elements.get('#notificationMessage').textContent,
   '正在確認此測試網址的通知權限…');
 assert.equal(elements.get('#pushNotificationEnable').disabled, true);
 await new Promise(resolve => setTimeout(resolve, 15));
 await new Promise(resolve => setImmediate(resolve));
 assert.equal(elements.get('#notificationMessage').textContent,
-  'Edge 未完成此測試網址的通知授權，請重新整理後再按一次「啟用推播」。');
+  'Edge 尚未完成此測試網址的通知授權。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。');
 assert.equal(pushSubscribeCalls, subscribeCallsBeforePermissionTimeout,
   'A pending Edge permission request times out before PushManager.subscribe is called.');
 assert.equal(elements.get('#pushNotificationEnable').disabled, false,
@@ -317,6 +325,7 @@ const permissionDiagnostics = pushDiagnostics
 assert.deepEqual(permissionDiagnostics.map(detail => detail.stage),
   ['permission-before', 'permission-after']);
 assert.equal(permissionDiagnostics[0].permission, 'default');
+assert.equal(permissionDiagnostics[0].userActivation, true);
 assert.equal(permissionDiagnostics[1].permission, 'default');
 assert.equal(permissionDiagnostics[1].errorCode, 'PUSH_PERMISSION_TIMEOUT');
 
@@ -337,7 +346,7 @@ Notification.permission = 'denied';
 elements.get('#pushNotificationEnable').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
 assert.equal(elements.get('#notificationMessage').textContent,
-  'Edge 尚未允許此測試網址傳送通知，請確認網址列旁的通知權限後再試。');
+  'Edge 已拒絕此測試網址的通知權限。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。');
 
 assert.deepEqual(
   [...new Set(pushDiagnostics.map(item => item.detail.stage))].sort(),

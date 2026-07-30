@@ -51,8 +51,8 @@
     WORKSPACE_ACCESS_DENIED: '目前帳號無法在這個工作區使用測試通知。',
     WEB_PUSH_UNAVAILABLE: '測試環境的背景推播服務暫時無法使用。',
     ORIGIN_NOT_ALLOWED: '此測試網址尚未加入允許清單。',
-    PUSH_PERMISSION_TIMEOUT: 'Edge 未完成此測試網址的通知授權，請重新整理後再按一次「啟用推播」。',
-    PUSH_PERMISSION_DENIED: 'Edge 尚未允許此測試網址傳送通知，請確認網址列旁的通知權限後再試。',
+    PUSH_PERMISSION_TIMEOUT: 'Edge 尚未完成此測試網址的通知授權。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。',
+    PUSH_PERMISSION_DENIED: 'Edge 已拒絕此測試網址的通知權限。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。',
     PUSH_PERMISSION_REQUIRED: '尚未完成此測試網址的通知授權，請允許通知後再試。',
     PUSH_SERVICE_WORKER_TIMEOUT: '瀏覽器背景服務尚未就緒，請重新整理頁面後再試。',
     PUSH_SUBSCRIPTION_LOOKUP_TIMEOUT: '無法讀取此裝置的推播狀態，請關閉並重新開啟瀏覽器後再試。',
@@ -152,6 +152,7 @@
 
   function pushDiagnostic(stage, {
     permission = '',
+    userActivation = null,
     errorCode = ''
   } = {}) {
     if (window.shiftEnvironment?.name !== 'staging' || !PUSH_DIAGNOSTIC_STAGES.has(stage)) return;
@@ -162,6 +163,7 @@
     window.console?.info?.('[Bankeban push setup]', Object.freeze({
       stage,
       ...(safePermission ? { permission: safePermission } : {}),
+      ...(typeof userActivation === 'boolean' ? { userActivation } : {}),
       ...(safeErrorCode ? { errorCode: safeErrorCode } : {})
     }));
   }
@@ -277,7 +279,7 @@
     }
   }
 
-  async function enablePush({ replace = false } = {}) {
+  function startPushActivation({ replace = false } = {}) {
     if (pushMutationPromise) {
       setMessage('推播設定正在處理，請稍候。');
       return;
@@ -286,14 +288,35 @@
       setMessage('此瀏覽器或目前環境不支援背景推播。');
       return;
     }
+    const permissionBefore = Notification.permission;
+    pushDiagnostic('permission-before', {
+      permission: permissionBefore,
+      userActivation: navigator.userActivation?.isActive === true
+    });
+    let permissionRequest;
+    try {
+      permissionRequest = permissionBefore === 'default'
+        ? Notification.requestPermission()
+        : Promise.resolve(permissionBefore);
+    } catch (error) {
+      pushDiagnostic('permission-after', {
+        permission: Notification.permission,
+        errorCode: error?.name || 'UNKNOWN'
+      });
+      setMessage(pushErrorMessage(error, '無法取得通知權限，請確認 Edge 網站權限後再試。'));
+      return;
+    }
+    void enablePush({ replace, permissionBefore, permissionRequest });
+  }
+
+  async function enablePush({ replace = false, permissionBefore, permissionRequest }) {
     pushMutationPromise = (async () => {
-      let permission = Notification.permission;
+      let permission = permissionBefore;
       let permissionAfterLogged = false;
       let subscriptionReady = false;
       let subscribeFailureLogged = false;
       try {
         setMessage('正在啟用背景推播…');
-        pushDiagnostic('permission-before', { permission });
         if (isAppleMobile() && !isStandalone()) {
           throw new Error('iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
         }
@@ -301,7 +324,7 @@
           setMessage('正在確認此測試網址的通知權限…');
           try {
             permission = await withPushBrowserTimeout(
-              Notification.requestPermission(),
+              permissionRequest,
               'PUSH_PERMISSION_TIMEOUT'
             );
           } catch (error) {
@@ -509,9 +532,9 @@
   trigger.addEventListener('click', openNotificationCenter);
   close.addEventListener('click', () => dialog.close());
   markAll.addEventListener('click', () => void markAllRead());
-  pushEnable?.addEventListener('click', () => void enablePush());
+  pushEnable?.addEventListener('click', () => startPushActivation());
   pushDisable?.addEventListener('click', () => void disablePush());
-  pushRepair?.addEventListener('click', () => void enablePush({ replace: true }));
+  pushRepair?.addEventListener('click', () => startPushActivation({ replace: true }));
   pushTest?.addEventListener('click', () => void testPush());
   dialog.addEventListener('click', event => {
     if (event.target === dialog) dialog.close();
