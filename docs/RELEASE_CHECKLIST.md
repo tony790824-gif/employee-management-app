@@ -1,5 +1,26 @@
 # 班客邦 Release Checklist
 
+## Sprint 29 — Windows Edge and Apple Home Screen PWA Web Push gate
+
+- [x] Existing standard Web Push, VAPID, Notification Center, Service Worker, and Staging
+  provider allowlist architecture is reused without Firebase/APNs/email/SMS.
+- [x] Desktop-style iPadOS is classified as `ipados`; Apple activation is limited to a Home
+  Screen standalone PWA.
+- [x] Denied/unsupported activation cannot leave the Push operation lock permanently active.
+- [x] Duplicate activation, controlled unregister/disable, and stale account-switch
+  subscription handling have automated coverage.
+- [x] Notification click focuses/opens only a same-origin Notification Center target and
+  external targets fail closed.
+- [x] Stable notification tags and mark-all-read badge/list consistency have automated
+  coverage.
+- [ ] Windows Edge installed-PWA physical-device checklist is owner-verified.
+- [ ] iPhone Home Screen PWA physical-device checklist is owner-verified.
+- [ ] iPad Home Screen PWA physical-device checklist is owner-verified.
+- [ ] Sprint 29 may be marked COMPLETE only after all available required physical-device
+  evidence is recorded; current status is **PARTIAL / PENDING USER VERIFICATION**.
+- [x] Production, Production database/Migration/Auth0, Google Sheets, Apps Script, and
+  Production deployment were not operated.
+
 ## Sprint 28 — FCM standard Web Push transport hardening
 
 - [x] Chrome/Android endpoints are restricted to exact `fcm.googleapis.com`; arbitrary HTTPS and lookalike hosts fail closed.

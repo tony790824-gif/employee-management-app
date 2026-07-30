@@ -1,5 +1,18 @@
 # 班客邦 Product Backlog
 
+## 2026-07-30 — Sprint 29 Web Push release gate
+
+- **Status:** **PARTIAL / PENDING USER VERIFICATION**; overall completion remains **95%**.
+- **Automated gate:** iPadOS desktop-UA detection, Apple Home Screen-only activation, Push
+  operation-lock recovery, duplicate-activation protection, controlled disable/re-subscribe,
+  account-switch isolation, same-origin notification click, stable tags, and badge/read-state
+  consistency are covered.
+- **Remaining unique work:** execute the physical Windows Edge, iPhone Home Screen PWA, and
+  iPad Home Screen PWA checklist in `docs/SPRINT_29_WEB_PUSH_RELEASE_GATE.md`. Do not infer PASS
+  from automation or the completed Android evidence.
+- **Release boundary:** Production, Production database/migrations/Auth0, Google Sheets, Apps
+  Script, and Production deployment remain out of scope.
+
 ## 2026-07-30 — Sprint 28 FCM transport hardening
 
 - **Status:** **COMPLETE**. After 20:22 (Asia/Taipei), the owner verified the latest `STAGING POSTGRES` installed Android PWA by confirming Push enabled, sending a test notification from that same Android device, returning to the Home screen, and receiving the Android system background notification.

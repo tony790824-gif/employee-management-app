@@ -103,7 +103,10 @@
   }
   const isStandalone = () => window.matchMedia?.('(display-mode: standalone)').matches
     || navigator.standalone === true;
-  const isAppleMobile = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+  const isIPadOs = () => /ipad/i.test(navigator.userAgent || '')
+    || (String(navigator.platform || '') === 'MacIntel'
+      && Number(navigator.maxTouchPoints || 0) > 1);
+  const isAppleMobile = () => /iphone|ipod/i.test(navigator.userAgent || '') || isIPadOs();
   const base64UrlBytes = value => {
     const padding = '='.repeat((4 - (value.length % 4)) % 4);
     const binary = atob((value + padding).replaceAll('-', '+').replaceAll('_', '/'));
@@ -111,7 +114,7 @@
   };
   const platform = () => {
     const agent = String(navigator.userAgent || '').toLowerCase();
-    if (agent.includes('ipad')) return 'ipados';
+    if (isIPadOs()) return 'ipados';
     if (agent.includes('iphone') || agent.includes('ipod')) return 'ios';
     if (agent.includes('android')) return 'android';
     if (agent.includes('windows')) return 'windows';
@@ -155,6 +158,16 @@
 
   function pushErrorMessage(error, fallback) {
     const code = String(error?.code || '');
+    if (isAppleMobile()) {
+      const appleMessage = {
+        PUSH_PERMISSION_TIMEOUT: 'iPhone／iPad 尚未完成通知授權。請確認從主畫面開啟班客邦，並到「設定」→「通知」允許通知後再試。',
+        PUSH_PERMISSION_DENIED: 'iPhone／iPad 已拒絕通知權限。請到「設定」→「通知」允許班客邦通知，再回到主畫面 PWA 重試。',
+        PUSH_PERMISSION_REQUIRED: 'iPhone／iPad 尚未允許通知，請從主畫面 PWA 重新啟用。',
+        PUSH_SUBSCRIPTION_CREATE_TIMEOUT: 'iPhone／iPad 未能完成推播訂閱，請確認通知權限與網路後再試。',
+        PUSH_APPLE_HOME_SCREEN_REQUIRED: 'iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。'
+      }[code];
+      if (appleMessage) return appleMessage;
+    }
     if (code) return pushErrorMessages[code] || fallback;
     if (error?.name === 'NotAllowedError') return '瀏覽器未允許通知，請確認網站通知權限後再試。';
     if (error?.name === 'AbortError') return '瀏覽器中止了推播訂閱，請確認網路後再試。';
@@ -357,7 +370,7 @@
   }
 
   async function enablePush({ replace = false, permissionBefore, permissionRequest }) {
-    pushMutationPromise = (async () => {
+    const operation = (async () => {
       let permission = permissionBefore;
       let permissionAfterLogged = false;
       let subscriptionReady = false;
@@ -365,7 +378,9 @@
       try {
         setMessage('正在啟用背景推播…');
         if (isAppleMobile() && !isStandalone()) {
-          throw new Error('iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
+          const error = new Error('Apple Home Screen PWA required');
+          error.code = 'PUSH_APPLE_HOME_SCREEN_REQUIRED';
+          throw error;
         }
         if (permission === 'default') {
           setMessage('正在確認此測試網址的通知權限…');
@@ -434,13 +449,16 @@
           });
         }
         setMessage(pushErrorMessage(error, '無法啟用背景推播，請稍後再試。'));
-      } finally {
-        pushMutationPromise = null;
-        renderPushSettings();
       }
     })();
+    pushMutationPromise = operation;
     renderPushSettings();
-    await pushMutationPromise;
+    try {
+      await operation;
+    } finally {
+      if (pushMutationPromise === operation) pushMutationPromise = null;
+      renderPushSettings();
+    }
   }
 
   async function disablePush() {

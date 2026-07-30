@@ -1,5 +1,19 @@
 # Standard Web Push threat model
 
+## Sprint 29 release-gate hardening
+
+- A desktop-style iPadOS user agent is treated as Apple mobile and must still be launched from
+  an installed Home Screen PWA before Push activation.
+- A permission-denied or unsupported activation that completes synchronously cannot retain a
+  stale in-flight lock and block later controlled recovery.
+- A browser subscription left after logout/account switching is never silently attached to a
+  new Session; the existing controlled unregister/re-register flow is required.
+- Repeated notification delivery uses a stable notification ID tag; notification click rejects
+  external targets and falls back to the same-origin Notification Center.
+- Windows Edge, iPhone Home Screen PWA, and iPad Home Screen PWA remain physical-device
+  **PENDING USER VERIFICATION**. This does not weaken the existing Session, Workspace, provider
+  allowlist, or VAPID controls.
+
 ## Trust boundaries
 
 - Browser/PWA subscription material is untrusted input until validated by the API and controlled database function.

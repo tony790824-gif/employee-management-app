@@ -1,5 +1,24 @@
 # 班客邦 Project Health Report
 
+## 2026-07-30 — Sprint 29 health update
+
+- **Sprint status:** **PARTIAL / PENDING USER VERIFICATION**.
+- **Overall completion:** **95%**, unchanged because the Windows Edge and Apple Home Screen PWA
+  physical-device release gate has not yet been supplied.
+- **Reliability:** Push mutation locking now clears even when denied/unsupported activation
+  completes before its first asynchronous boundary; duplicate activation remains guarded.
+- **Compatibility:** desktop-style iPadOS is correctly classified and receives Apple-specific
+  Home Screen/permission guidance instead of macOS or Edge guidance.
+- **Consistency:** automated tests cover stable system-notification tags, same-origin click
+  routing, badge/read-state convergence, controlled disable, and stale account-switch
+  subscriptions.
+- **Security:** Session, Membership, Workspace, endpoint-provider allowlist, RLS, least
+  privilege, VAPID, and Notification Center source-of-truth boundaries are unchanged.
+- **Remaining release risk:** Windows Edge, iPhone Home Screen PWA, and iPad Home Screen PWA
+  require owner-run evidence. Production release is not approved.
+- **Production status:** no deployment, database/Migration/Auth0 operation, Google Sheets, or
+  Apps Script change.
+
 ## 2026-07-30 — Sprint 28 health update
 
 - **Sprint status: COMPLETE. Overall completion: 95% (previously 94%).** Transport/lifecycle automation is hardened and the owner supplied the missing Android Chrome/installed-PWA background-delivery evidence after 20:22 (Asia/Taipei).

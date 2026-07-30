@@ -1,5 +1,22 @@
 # AI Handoff
 
+## 2026-07-30 handoff — Sprint 29 Web Push release gate
+
+- Status: **PARTIAL / PENDING USER VERIFICATION**; overall completion remains **95%**.
+- Starting baseline: `27ccc0aac2b1977365163874c2ed56459e9b4cd0`.
+- Sprint 28 Android installed-PWA background delivery is accepted. Do not repeat or redesign it.
+- Automated release-gate hardening now covers desktop-style iPadOS classification, Apple
+  Home Screen-only Push, synchronous operation-lock recovery, duplicate activation,
+  controlled disable/re-subscribe, stale subscription/account switching, same-origin
+  notification clicks, stable tags, and badge/read-state consistency.
+- Required remaining evidence is physical Windows Edge, iPhone Home Screen PWA, and iPad Home
+  Screen PWA execution of `docs/SPRINT_29_WEB_PUSH_RELEASE_GATE.md`.
+- Do not mark a device PASS from emulation. Safe failure evidence is limited to capability
+  booleans, permission state, HTTP status, safe error code, request ID, device/browser version,
+  and observation time.
+- No Production, Production database/Migration/Auth0, Google Sheets, Apps Script, Firebase,
+  APNs, email, SMS, or Production deployment operation is authorized.
+
 ## 2026-07-30 handoff — Sprint 28 FCM transport hardening
 
 - Sprint 28 is **COMPLETE**. Implementation baseline: `d19765f9bf8be3f8812f783f03b081aaf5678c75`; assessed completion is **95%** (previously 94%).

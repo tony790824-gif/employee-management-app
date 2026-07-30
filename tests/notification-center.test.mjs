@@ -96,8 +96,10 @@ let pushSubscribePending = false;
 let pushServerCount = 0;
 let pushTestError = null;
 const registeredPushInputs = [];
+const unregisteredPushEndpoints = [];
 const testedPushEndpoints = [];
 let pushSubscribeCalls = 0;
+let markAllCalls = 0;
 const dom = {
   element(tag, options = {}, children = []) {
     const item = node();
@@ -126,7 +128,18 @@ const cloud = {
       unreadCount: 0
     };
   },
-  markAllNotificationsRead: async () => {},
+  markAllNotificationsRead: async () => {
+    markAllCalls += 1;
+    payload = {
+      ...payload,
+      items: payload.items.map(item => ({
+        ...item,
+        readAt: item.readAt || '2026-07-29T00:02:00.000Z',
+        revision: Number(item.revision) + 1
+      })),
+      unreadCount: 0
+    };
+  },
   pushStatus: async () => ({
     ok: true,
     available: true,
@@ -136,7 +149,8 @@ const cloud = {
     registeredPushInputs.push(structuredClone(input));
     pushServerCount = 1;
   },
-  unregisterPushSubscription: async () => {
+  unregisterPushSubscription: async endpoint => {
+    unregisteredPushEndpoints.push(endpoint);
     pushServerCount = 0;
   },
   sendTestPush: async endpoint => {
@@ -175,6 +189,8 @@ const sandbox = {
   structuredClone,
   navigator: {
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+    platform: 'Win32',
+    maxTouchPoints: 0,
     userActivation: { isActive: true },
     serviceWorker
   },
@@ -186,6 +202,8 @@ const sandbox = {
     Notification,
     navigator: {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/138.0.0.0',
+      platform: 'Win32',
+      maxTouchPoints: 0,
       userActivation: { isActive: true },
       serviceWorker
     },
@@ -287,18 +305,25 @@ pushTestError = null;
 elements.get('#pushNotificationDisable').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
 await new Promise(resolve => setImmediate(resolve));
+assert.deepEqual(unregisteredPushEndpoints, [pushEndpoint],
+  'Disabling Push removes the current server registration before browser cleanup.');
+assert.equal(browserSubscription, null, 'Disabling Push removes the browser subscription.');
 pushSubscribePending = true;
+const subscribeCallsBeforeDuplicateActivation = pushSubscribeCalls;
 elements.get('#pushNotificationEnable').dispatch('click');
 assert.match(elements.get('#notificationMessage').textContent, /^正在(?:啟用背景推播|連接瀏覽器推播服務)…$/,
   'Edge activation immediately shows progress instead of appearing unresponsive.');
 assert.equal(elements.get('#pushNotificationEnable').disabled, true,
   'The activation button is locked while Edge is creating the subscription.');
+elements.get('#pushNotificationEnable').dispatch('click');
 await new Promise(resolve => setTimeout(resolve, 15));
 await new Promise(resolve => setImmediate(resolve));
 assert.equal(elements.get('#notificationMessage').textContent,
   '瀏覽器未能完成推播訂閱，請確認 Windows 通知服務與網路後再試。');
 assert.equal(registeredPushInputs.length, 1,
   'A browser subscription timeout occurs before any push.register API request.');
+assert.equal(pushSubscribeCalls, subscribeCallsBeforeDuplicateActivation + 1,
+  'Rapid duplicate activation clicks share one in-flight browser subscription request.');
 assert.equal(elements.get('#pushNotificationEnable').disabled, false,
   'The activation button becomes actionable again after a browser timeout.');
 assert.deepEqual(
@@ -353,6 +378,9 @@ const registrationsBeforeLateGrant = registeredPushInputs.length;
 elements.get('#pushNotificationEnable').dispatch('click');
 await new Promise(resolve => setTimeout(resolve, 20));
 await new Promise(resolve => setImmediate(resolve));
+for (let attempt = 0; attempt < 5 && elements.get('#pushNotificationEnable').disabled; attempt += 1) {
+  await new Promise(resolve => setImmediate(resolve));
+}
 assert.equal(registeredPushInputs.length, registrationsBeforeLateGrant + 1,
   'If Edge grants permission but leaves requestPermission pending, activation continues to subscribe.');
 assert.equal(elements.get('#notificationMessage').textContent, '此裝置已啟用背景推播。');
@@ -360,6 +388,10 @@ assert.equal(elements.get('#notificationMessage').textContent, '此裝置已啟�
 Notification.permission = 'denied';
 elements.get('#pushNotificationEnable').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+for (let attempt = 0; attempt < 5 && elements.get('#pushNotificationEnable').disabled; attempt += 1) {
+  await new Promise(resolve => setImmediate(resolve));
+}
 assert.equal(elements.get('#notificationMessage').textContent,
   'Edge 已拒絕此測試網址的通知權限。請點網址列左側圖示 →「此網站的權限」→「通知」→「允許」，再重新整理。');
 
@@ -382,6 +414,52 @@ assert.equal(
 );
 sandbox.window.shiftEnvironment.webPushPublicKey = 'AQ';
 
+const activePushManager = {
+  getSubscription: async () => browserSubscription,
+  subscribe: async () => {
+    pushSubscribeCalls += 1;
+    browserSubscription = pushSubscription;
+    return browserSubscription;
+  }
+};
+serviceWorker.ready = Promise.resolve({ pushManager: activePushManager });
+sandbox.navigator.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15';
+sandbox.navigator.platform = 'MacIntel';
+sandbox.navigator.maxTouchPoints = 5;
+sandbox.window.matchMedia = () => ({ matches: false });
+Notification.permission = 'granted';
+pushServerCount = 0;
+browserSubscription = null;
+elements.get('#notificationButton').dispatch('click');
+await new Promise(resolve => setTimeout(resolve, 10));
+await new Promise(resolve => setImmediate(resolve));
+const registrationsBeforeIpadTab = registeredPushInputs.length;
+assert.equal(elements.get('#pushNotificationEnable').disabled, false,
+  'Previous Push activation has settled before the isolated iPadOS scenario.');
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationMessage').textContent,
+  'iPhone／iPad 必須先加入主畫面，再從主畫面開啟才能啟用推播。');
+assert.equal(registeredPushInputs.length, registrationsBeforeIpadTab,
+  'An iPadOS desktop-style Safari tab cannot be mistaken for a Home Screen PWA.');
+
+sandbox.window.matchMedia = () => ({ matches: true });
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(registeredPushInputs.length, registrationsBeforeIpadTab + 1);
+assert.equal(registeredPushInputs.at(-1).platform, 'ipados',
+  'A desktop-style iPadOS user agent is registered as ipados, not macos.');
+Notification.permission = 'denied';
+elements.get('#pushNotificationEnable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.match(elements.get('#notificationMessage').textContent, /^iPhone／iPad 已拒絕通知權限/);
+Notification.permission = 'granted';
+elements.get('#pushNotificationDisable').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+
 serviceWorker.ready = Promise.resolve({ pushManager: null });
 elements.get('#notificationButton').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));
@@ -401,6 +479,30 @@ assert.deepEqual(marked, [{ id: notification.id, revision: 0 }]);
 assert.equal(elements.get('#notificationBadge').hidden, true);
 assert.equal(elements.get('#notificationSummary').textContent, '沒有未讀通知');
 
+payload = {
+  ok: true,
+  items: [
+    { ...notification, readAt: null, revision: 2 },
+    {
+      ...notification,
+      id: '00000000-0000-4000-8000-000000000015',
+      title: '另一則通知',
+      readAt: null,
+      revision: 0
+    }
+  ],
+  unreadCount: 2
+};
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#notificationBadge').textContent, '2');
+elements.get('#notificationMarkAllRead').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(markAllCalls, 1);
+assert.equal(elements.get('#notificationBadge').hidden, true,
+  'Mark-all keeps the badge and Notification Center unread count consistent.');
+
 payload = { ok: true, items: [], unreadCount: 0 };
 documentListeners.get('postgres-bootstrap-refreshed')();
 await new Promise(resolve => setImmediate(resolve));
@@ -416,5 +518,21 @@ documentListeners.get('postgres-session-cleared')();
 assert.equal(elements.get('#notificationButton').hidden, true);
 assert.equal(elements.get('#notificationDialog').open, false);
 assert.equal(elements.get('#notificationList').children.length, 1, 'Logged-out UI renders only the empty state.');
+
+const registrationsBeforeAccountSwitch = registeredPushInputs.length;
+payload = { ok: true, items: [], unreadCount: 0 };
+pushServerCount = 0;
+browserSubscription = pushSubscription;
+serviceWorker.ready = Promise.resolve({ pushManager: activePushManager });
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+elements.get('#notificationButton').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(elements.get('#pushNotificationRepair').hidden, false,
+  'A browser subscription left by another Session requires controlled re-registration.');
+assert.equal(elements.get('#pushNotificationEnable').hidden, true);
+assert.equal(registeredPushInputs.length, registrationsBeforeAccountSwitch,
+  'Account switching never silently binds an existing browser subscription to the new Session.');
 
 console.log('Notification Center UI, badge, read state and revision refresh tests passed.');

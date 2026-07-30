@@ -1,5 +1,21 @@
 # 班客邦
 
+## Sprint 29 Web Push release gate (2026-07-30)
+
+- Sprint 29 is **PARTIAL / PENDING USER VERIFICATION**. Overall completion remains **95%**.
+- The existing Notification Center, VAPID, standard Web Push, Service Worker, Session, and
+  Workspace boundaries remain authoritative; no Firebase SDK/project or second Push path was
+  introduced.
+- Automated coverage now includes iPadOS desktop-UA recognition, Home Screen-only Apple Push,
+  denied/unsupported activation lock recovery, subscription de-duplication, controlled disable
+  and account-switch recovery, notification-click same-origin behavior, and badge/read-state
+  consistency.
+- Windows Edge, iPhone Home Screen PWA, and iPad Home Screen PWA remain real-device
+  **PENDING USER VERIFICATION**. Follow
+  [the Sprint 29 checklist](docs/SPRINT_29_WEB_PUSH_RELEASE_GATE.md).
+- Production, Production database, Production Auth0, Google Sheets, Apps Script, and
+  Production deployment remain unchanged.
+
 ## Sprint 28 FCM standard Web Push transport acceptance (2026-07-30)
 
 - Sprint 28 is **COMPLETE**. The implementation baseline is commit `d19765f9bf8be3f8812f783f03b081aaf5678c75`.

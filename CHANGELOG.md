@@ -1,5 +1,21 @@
 # Change Log
 
+## 2026-07-30 — Sprint 29 Web Push release-gate hardening
+
+- Recognized desktop-style iPadOS Safari as `ipados` and kept Apple Push activation restricted
+  to an installed Home Screen PWA.
+- Fixed the Push operation lock when permission denial or the Home Screen requirement completes
+  synchronously, so the UI remains actionable for a later permission change or re-subscription.
+- Added Apple-specific, actionable Chinese permission/subscription guidance without changing
+  the standard Web Push transport or security boundary.
+- Strengthened automated coverage for duplicate activation, controlled disable, stale
+  subscription/account switching, same-origin notification clicks, stable notification tags,
+  and badge/Notification Center read-state consistency.
+- Sprint 29 remains **PARTIAL / PENDING USER VERIFICATION** for Windows Edge, iPhone Home Screen
+  PWA, and iPad Home Screen PWA. Overall completion remains 95%.
+- Production, databases, migrations, Auth0, Render/Netlify architecture, Google Sheets, and
+  Apps Script were not modified or deployed.
+
 ## 2026-07-30 — Sprint 28 FCM transport hardening
 
 - Kept ADR 0017 standard Web Push: `web-push`, VAPID, the browser Push API, and the existing Service Worker. No Firebase SDK, Firebase project, FCM registration token, or parallel worker was added.

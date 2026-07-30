@@ -1,5 +1,26 @@
 # Next unique work — Sprint 29 remaining Web Push real-device release gate
 
+## Current Sprint 29 status
+
+Automated hardening is complete, but Sprint 29 remains
+**PARTIAL / PENDING USER VERIFICATION** at **95%** overall completion.
+
+The only remaining work is to execute
+`docs/SPRINT_29_WEB_PUSH_RELEASE_GATE.md` on:
+
+1. Windows Edge installed PWA.
+2. iPhone Home Screen PWA.
+3. iPad Home Screen PWA.
+
+For each device, record permission, initial/de-duplicated subscription, foreground/background/
+closed delivery, notification click, badge/list/read consistency, disable, re-subscribe, logout,
+account switch, and Workspace isolation. Do not use Safari tabs or viewport simulation as Apple
+Home Screen PWA evidence.
+
+Do not begin a new feature Sprint, deploy Production, run a Production Migration, modify a
+Production database/Auth0 tenant, or introduce Firebase/APNs/email/SMS before this evidence is
+recorded.
+
 ## Current gate
 
 Sprint 28 is **COMPLETE**. After 20:22 (Asia/Taipei), the owner verified background

@@ -1,5 +1,23 @@
 # Codex Context
 
+## 2026-07-30 current state — Sprint 29 Web Push release gate
+
+- Sprint 29 status is **PARTIAL / PENDING USER VERIFICATION**; assessed completion stays at
+  **95%**.
+- Sprint 28 Android installed-PWA background delivery remains accepted and is not being redone.
+- The existing standard Web Push/VAPID/Service Worker architecture remains unchanged.
+- Minimal hardening covers desktop-style iPadOS recognition, Home Screen-only Apple activation,
+  synchronous Push-lock recovery, de-duplication, controlled disable/re-subscribe,
+  account-switch isolation, same-origin notification click, and badge/read-state consistency.
+- Windows Edge, iPhone Home Screen PWA, and iPad Home Screen PWA may be marked PASS only from
+  owner-supplied physical-device evidence using
+  `docs/SPRINT_29_WEB_PUSH_RELEASE_GATE.md`.
+- Never add Firebase, APNs, email, SMS, a second Service Worker, or a second notification state
+  store. Do not alter accepted Session, Membership, Workspace, RLS, or provider allowlist
+  boundaries.
+- Production, Production database/Migration/Auth0, Google Sheets, Apps Script, and Production
+  deployment remain untouched.
+
 ## 2026-07-30 current state — Sprint 28 FCM transport hardening
 
 - Sprint 28 status: **COMPLETE**. Current assessed completion is **95%** (previously 94%).

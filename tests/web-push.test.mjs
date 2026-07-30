@@ -274,6 +274,22 @@ assert.deepEqual(shownNotifications, [{
   }
 }], 'A standard Web Push event renders one bounded background system notification.');
 
+workerListeners.get('push')({
+  data: {
+    json: () => ({
+      notificationId: delivery.payload.notificationId,
+      title: delivery.payload.title,
+      body: delivery.payload.body,
+      url: '/?open=notifications'
+    })
+  },
+  waitUntil: promise => { pushWork = promise; }
+});
+await pushWork;
+assert.equal(shownNotifications.length, 2);
+assert.equal(shownNotifications[0].options.tag, shownNotifications[1].options.tag,
+  'Foreground/background delivery of one notification uses one stable tag instead of duplicate system entries.');
+
 let notificationClickWork;
 workerListeners.get('notificationclick')({
   notification: {
@@ -302,6 +318,18 @@ workerListeners.get('notificationclick')({
 await notificationClickWork;
 assert.deepEqual(openedWindows, ['https://draft.staging.example/?open=notifications'],
   'A new window is opened only when no same-origin client exists.');
+
+matchedClients = [];
+workerListeners.get('notificationclick')({
+  notification: {
+    data: { url: 'https://attacker.invalid/notifications' },
+    close() {}
+  },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.equal(openedWindows.at(-1), 'https://draft.staging.example/?open=notifications',
+  'An external notification target fails closed to the same-origin Notification Center.');
 
 matchedClients = [{
   url: 'https://draft.staging.example/employee',
