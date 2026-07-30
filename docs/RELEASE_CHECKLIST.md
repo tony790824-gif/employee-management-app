@@ -9,7 +9,9 @@
 - [x] Foreground Notification Center, unread badge, background notification display, same-origin click-to-focus/open, and subscription-change signaling have automated coverage.
 - [x] Workspace A/B, live Session/Membership, endpoint ownership, API table denial, and worker-function separation remain enforced.
 - [x] Production, Production database, Production Auth0, Google Sheets, and Apps Script were not modified or deployed.
-- [ ] Android Chrome/installed-PWA background delivery, click, badge/list consistency, disable, and re-subscribe are **PENDING USER VERIFICATION**.
+- [x] Android Chrome/installed-PWA core background delivery is owner-verified after 20:22 (Asia/Taipei) on 2026-07-30: Push enabled, same-device test sent, App returned to the Home screen, and Android system background notification received.
+- [x] Sprint 28 is **COMPLETE** at implementation baseline `d19765f9bf8be3f8812f783f03b081aaf5678c75`; current assessed completion is 95%.
+- [ ] Notification click, badge/list consistency, disable, and re-subscribe remain recommended real-device evidence for the Sprint 29 cross-device release gate; automated coverage already passes.
 
 ## Sprint 27 — Standard Web Push
 

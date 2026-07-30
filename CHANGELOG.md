@@ -6,7 +6,8 @@
 - Verified that Chrome/Android subscriptions use the strict `fcm.googleapis.com` provider boundary and that arbitrary or lookalike HTTPS endpoints remain rejected.
 - Extended synthetic Neon Staging coverage for subscription registration, same-endpoint update, controlled removal, re-subscription, and HTTP 404/410 endpoint revocation.
 - Strengthened browser-worker coverage for background notification display, same-origin notification click handling, browser-managed subscription-change notification, foreground Notification Center refresh, and unread badge behavior.
-- Production, Production database, Production Auth0, Google Sheets, and Apps Script were not modified or deployed. Android Chrome real-device delivery remains pending owner verification.
+- Closed Sprint 28 after the owner verified the latest `STAGING POSTGRES` installed Android PWA after 20:22 (Asia/Taipei): Push showed enabled, a same-device test was sent, and the Android system background notification arrived after returning to the Home screen.
+- Updated assessed completion from 94% to 95%. Production, Production database, Production Auth0, Google Sheets, Apps Script, and Production deployment were not modified or operated.
 
 ## 2026-07-30 — Sprint 27 Edge Web Push provider allowlist
 

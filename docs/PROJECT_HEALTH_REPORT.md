@@ -2,12 +2,14 @@
 
 ## 2026-07-30 — Sprint 28 health update
 
-- **Overall completion: 94%.** Transport/lifecycle automation is hardened; Android Chrome real-device evidence remains pending, so completion is not increased.
+- **Sprint status: COMPLETE. Overall completion: 95% (previously 94%).** Transport/lifecycle automation is hardened and the owner supplied the missing Android Chrome/installed-PWA background-delivery evidence after 20:22 (Asia/Taipei).
 - **Architecture:** ADR 0017 standard Web Push remains intact. FCM is only the browser Push Service hostname used by Chrome/Android; there is no Firebase SDK, project, registration token, or second Service Worker.
 - **Reliability:** create/update/remove/re-subscribe and real PostgreSQL 404/410 revocation paths are covered with synthetic Staging data and fixture cleanup.
 - **Security:** provider allowlisting, Session/Membership/Workspace authorization, cross-Workspace denial, endpoint ownership, payload minimization, API/worker Role separation, and secret-free logs remain enforced.
-- **Known acceptance risk:** Android Chrome transport hardening and the earlier iPhone Home Screen PWA background-delivery path are **PENDING USER VERIFICATION**.
+- **Android real-device evidence:** latest `STAGING POSTGRES` installed PWA showed Push enabled; a test sent from that same Android device produced an Android system background notification after returning to the Home screen.
+- **Remaining acceptance risk:** Windows Edge re-registration and iPhone/iPad Home Screen PWA release-gate evidence remain separate from the completed Android Sprint.
 - **Release status: No.** Production remains unchanged and is not approved.
+- **Next recommended Sprint:** Sprint 29 — remaining Web Push real-device release gate for Windows Edge and iPhone/iPad Home Screen PWA.
 
 ## 2026-07-29 — Sprint 27 health update
 

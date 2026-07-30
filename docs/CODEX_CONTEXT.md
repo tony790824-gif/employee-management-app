@@ -2,13 +2,14 @@
 
 ## 2026-07-30 current state — Sprint 28 FCM transport hardening
 
-- Current assessed completion remains **94%**. Automated transport hardening is complete; Android Chrome real-device delivery is **PENDING USER VERIFICATION**.
-- Source baseline: `8cfdc7f7a15f6afe59c584c517dd2957453eebb0`.
+- Sprint 28 status: **COMPLETE**. Current assessed completion is **95%** (previously 94%).
+- Implementation baseline: `d19765f9bf8be3f8812f783f03b081aaf5678c75`.
 - ADR 0017 remains authoritative: Chrome and Android use standard Web Push through an `fcm.googleapis.com` Push Subscription endpoint, VAPID, `web-push`, and the existing Service Worker.
 - No Firebase SDK, Firebase project, FCM registration token, second notification store, or second Service Worker exists.
 - Synthetic Neon Staging verifies registration, same-endpoint update, controlled removal, re-subscription, 404/410 endpoint revocation, Workspace A/B isolation, Session/Membership checks, and API/worker least privilege.
 - Browser automation verifies background system-notification rendering, same-origin click-to-focus/open, subscription-change signaling, foreground Notification Center refresh, and unread badge behavior.
-- Windows Chrome has prior owner evidence for standard Web Push system delivery. Android Chrome remains **PENDING USER VERIFICATION** and must not be inferred from automated FCM endpoint tests.
+- Windows Chrome has prior owner evidence for standard Web Push system delivery. After 20:22 (Asia/Taipei), the owner verified the latest `STAGING POSTGRES` installed Android PWA: Push showed enabled, the test notification was sent from that same Android device, and the Android system background notification arrived after returning to the Home screen.
+- Next recommended work: Sprint 29 — remaining Web Push real-device release gate for Windows Edge and iPhone/iPad Home Screen PWA. Do not infer those device results from Android or automation.
 - Production, Production database, Production Auth0, Google Sheets, and Apps Script remain unchanged.
 
 ## 2026-07-29 current state — Sprint 27 Standard Web Push

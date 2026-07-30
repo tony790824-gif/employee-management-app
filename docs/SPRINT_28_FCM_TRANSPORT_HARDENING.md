@@ -1,5 +1,12 @@
 # Sprint 28 — FCM standard Web Push transport hardening
 
+## Status
+
+**COMPLETE** as of 2026-07-30 after 20:22 (Asia/Taipei).
+
+Implementation baseline: `d19765f9bf8be3f8812f783f03b081aaf5678c75`.
+Current assessed project completion: **95%**.
+
 ## Decision boundary
 
 ADR 0017 remains authoritative. Chrome and Android use the standard browser Push
@@ -31,7 +38,15 @@ data operation is part of this Sprint.
 ## Real-device status
 
 - Windows Chrome standard Web Push system delivery: prior owner evidence exists.
-- Android Chrome / installed PWA: **PENDING USER VERIFICATION**.
+- Android Chrome / installed PWA: **PASS**. On the latest `STAGING POSTGRES`
+  Draft, Push showed enabled; the owner sent a test notification from that same
+  Android device, returned to the Home screen, and received the Android system
+  background notification.
 
-Automated FCM endpoint tests do not substitute for a real Android device. Follow
-the exact Android checklist at the top of `docs/NEXT_SPRINT.md`.
+This real-device evidence closes Sprint 28. It does not expand beyond the reported
+flow; notification click, badge/list consistency, disable, and re-subscribe retain
+automated coverage and are recommended within the Sprint 29 real-device release
+gate.
+
+Production, Production database, Production Auth0, Google Sheets, Apps Script,
+and Production deployment were not modified or operated.

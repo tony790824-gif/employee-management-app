@@ -2,11 +2,13 @@
 
 ## 2026-07-30 handoff — Sprint 28 FCM transport hardening
 
-- Source baseline: `8cfdc7f7a15f6afe59c584c517dd2957453eebb0`; assessed completion remains **94%** pending Android real-device evidence.
+- Sprint 28 is **COMPLETE**. Implementation baseline: `d19765f9bf8be3f8812f783f03b081aaf5678c75`; assessed completion is **95%** (previously 94%).
 - The accepted design is still ADR 0017 standard Web Push. `fcm.googleapis.com` is the Chrome/Android browser Push Service transport, not a Firebase SDK integration.
 - Automated browser and live synthetic Neon Staging tests cover subscription create/update/delete/re-subscribe, 404/410 cleanup, background notification display, click handling, badge/foreground Notification Center refresh, live Session/Membership checks, cross-Workspace denial, and least privilege.
 - No Firebase project, SDK, registration token, second Service Worker, schema change, Migration, or cloud resource was introduced.
-- Next unique work is owner-run Android Chrome/PWA verification. Record it as `PENDING USER VERIFICATION` until a real Android device proves registration, background delivery, notification click, badge/list consistency, disable, and re-subscribe.
+- Real-device evidence recorded after 20:22 (Asia/Taipei): on the latest `STAGING POSTGRES` installed Android PWA, Push showed enabled; the owner sent a test notification on that same Android device, returned to the Home screen, and received the Android system background notification.
+- Do not extend that evidence beyond the reported flow. Automated coverage exists for click, badge/list, disable, and re-subscribe, while any additional real-device release evidence remains part of the next gate.
+- Next recommended work is Sprint 29 — remaining Web Push real-device release gate for Windows Edge and iPhone/iPad Home Screen PWA, Staging-only.
 - Production, Production database, Production Auth0, Google Sheets, and Apps Script were not modified or deployed.
 
 ## 2026-07-30 — Edge Web Push re-registration correction

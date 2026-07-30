@@ -1,33 +1,41 @@
-# Next unique work — Sprint 28 Android Chrome standard Web Push acceptance
+# Next unique work — Sprint 29 remaining Web Push real-device release gate
 
 ## Current gate
 
-Sprint 28 automated FCM transport hardening is complete. Chrome/Android remains on
-ADR 0017 standard Web Push through the browser-created `fcm.googleapis.com`
-subscription. No Firebase SDK, Firebase project, FCM registration token, or second
-Service Worker is permitted.
+Sprint 28 is **COMPLETE**. After 20:22 (Asia/Taipei), the owner verified background
+system delivery from the latest `STAGING POSTGRES` installed Android PWA by sending
+a test notification on that same Android device and returning to the Home screen.
+The implementation baseline is `d19765f9bf8be3f8812f783f03b081aaf5678c75`;
+current assessed completion is **95%**.
 
-## Android Chrome / installed PWA — PENDING USER VERIFICATION
+ADR 0017 remains authoritative. No Firebase SDK/project/token, second Service Worker,
+Production deployment, Production database operation, or Production Migration is
+permitted.
 
-1. Open the current non-Production `STAGING POSTGRES` Draft in Android Chrome, sign in, and confirm Notification Center loads.
-2. Enable background Push from the in-App control and grant notification permission.
-3. Confirm the UI reports Push enabled; close and reopen Notification Center and confirm the state persists.
-4. Send one rate-limited test notification and confirm an Android system notification appears while the App is backgrounded.
-5. Tap the system notification. If an authenticated App client exists, confirm it is focused and Notification Center opens; otherwise confirm the same-origin App opens and retains a valid Session.
-6. Confirm the in-App unread badge and Notification Center entry match the system notification without exposing private request reasons.
-7. Disable Push, confirm the browser and server registration are removed, then enable it again and confirm re-subscription succeeds.
-8. Repeat after clearing only the browser site data to cover a new subscription. Do not reuse Production credentials or data.
+## Sprint 29 scope
 
-## PASS / FAIL
+1. Windows Edge: controlled unregister → browser unsubscribe/new subscription → controlled register → enabled UI.
+2. Windows Edge: same-device background test, notification click focus/navigation, badge/list consistency, disable, and re-subscribe.
+3. iPhone/iPad Home Screen PWA: permission, subscription, same-device background delivery, click, badge/list consistency, disable, and re-subscribe.
+4. Confirm each device remains bound to the live Session, Membership, and Workspace and never exposes another Workspace.
+5. Use only the current isolated non-Production `STAGING POSTGRES` Draft and existing services. Make no code change unless a reproducible defect requires a separate minimal fix.
 
-- `PASS`: all eight steps succeed on a real Android Chrome device with no cross-Workspace data, logout, sensitive Console output, or Production request.
+## PASS / FAIL / BLOCKED
+
+- `PASS`: the full device-specific flow succeeds with no cross-Workspace data, unexpected logout, sensitive Console output, or Production request.
 - `FAIL`: a reproducible product defect occurs. Capture only the HTTP status, safe error code, request ID, and step; never capture a token or full subscription endpoint.
-- `BLOCKED`: no Android device is available or external Staging allowlists are incomplete.
+- `BLOCKED`: the required device is unavailable or an external Staging-only allowlist is incomplete.
+
+## Sprint 28 completed acceptance record
+
+- Android Chrome/installed PWA background delivery: **PASS**, owner-verified after 20:22 (Asia/Taipei) on 2026-07-30.
+- Verified flow: latest `STAGING POSTGRES` Draft → Notification Center shows Push enabled → same Android device sends test → return to Android Home screen → system background notification received.
+- This record does not claim unreported device actions. Click, badge/list, disable, and re-subscribe retain automated coverage and are recommended for the Sprint 29 real-device release gate.
 
 ## Stop conditions
 
 - Stop on any Production URL/database, cross-Workspace delivery, missing Session/Membership enforcement, full endpoint/key exposure, or request to weaken the provider allowlist.
-- Do not start another feature Sprint until the owner records the Android result.
+- Do not start Production rollout, Production Migration, or a new notification transport from this acceptance Sprint.
 
 ---
 

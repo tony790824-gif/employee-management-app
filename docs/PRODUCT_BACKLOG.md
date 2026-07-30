@@ -2,10 +2,12 @@
 
 ## 2026-07-30 — Sprint 28 FCM transport hardening
 
-- **Completion:** remains **94%**. Automated and synthetic Staging evidence is complete; Android Chrome real-device delivery is **PENDING USER VERIFICATION**.
+- **Status:** **COMPLETE**. After 20:22 (Asia/Taipei), the owner verified the latest `STAGING POSTGRES` installed Android PWA by confirming Push enabled, sending a test notification from that same Android device, returning to the Home screen, and receiving the Android system background notification.
+- **Completion:** **95%** (previously 94%). The increase closes Sprint 28's Android real-device delivery gap without treating remaining Production release and operations gates as complete.
 - **Completed:** strict Chrome/Android `fcm.googleapis.com` standard Web Push transport checks; subscription register/update/unregister/re-subscribe; 404/410 endpoint cleanup; background Service Worker notification; same-origin click handling; foreground Notification Center/badge refresh; Workspace/Session/Membership isolation.
 - **Architecture unchanged:** no Firebase SDK/project/token, second Service Worker, schema change, Migration, or parallel notification path.
-- **Next unique priority:** execute the real Android Chrome/PWA checklist in `docs/NEXT_SPRINT.md`; do not infer device PASS from synthetic endpoint tests.
+- **Implementation baseline:** `d19765f9bf8be3f8812f783f03b081aaf5678c75`.
+- **Next unique priority:** Sprint 29 — remaining Web Push real-device release gate for Windows Edge and iPhone/iPad Home Screen PWA, using only isolated Staging.
 - **Production:** not modified, migrated, or deployed.
 
 ## 2026-07-29 — Sprint 27 Standard Web Push programming complete

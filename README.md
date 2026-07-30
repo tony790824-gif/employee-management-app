@@ -1,5 +1,13 @@
 # 班客邦
 
+## Sprint 28 FCM standard Web Push transport acceptance (2026-07-30)
+
+- Sprint 28 is **COMPLETE**. The implementation baseline is commit `d19765f9bf8be3f8812f783f03b081aaf5678c75`.
+- Automated and synthetic Staging coverage remains green for standard Web Push through the browser-created `fcm.googleapis.com` endpoint, subscription lifecycle, 404/410 cleanup, Service Worker delivery, Notification Center refresh, and Workspace/Session isolation.
+- After 20:22 (Asia/Taipei), the owner verified the latest `STAGING POSTGRES` installed Android PWA: Push showed enabled, a test notification was sent from that same Android device, and an Android system notification arrived after returning to the Home screen.
+- Current assessed completion is **95%**. Production, Production database, Production Auth0, Google Sheets, Apps Script, and Production deployment remain unchanged.
+- The next recommended Sprint is the remaining Web Push real-device release gate for Windows Edge and iPhone/iPad Home Screen PWA; it must remain Staging-only.
+
 ## Standard Web Push delivery (Sprint 27, 2026-07-29)
 
 - Notification Center remains the source of truth; standard Web Push is a best-effort background delivery channel.

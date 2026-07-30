@@ -3,8 +3,9 @@
 ## Status
 
 Accepted for Staging implementation. Windows Chrome has prior owner delivery
-evidence; Android Chrome and iPhone Home Screen PWA remain
-`PENDING USER VERIFICATION`.
+evidence. Android Chrome installed-PWA background delivery was owner-verified
+after 20:22 (Asia/Taipei) on 2026-07-30. iPhone/iPad Home Screen PWA and the
+remaining cross-device release gate remain `PENDING USER VERIFICATION`.
 
 ## Decision
 

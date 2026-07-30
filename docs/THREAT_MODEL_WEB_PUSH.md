@@ -32,4 +32,4 @@
 - The isolated Render Staging worker and protected VAPID settings are active; Production remains inactive.
 - Browser vendor delivery is best effort and may be throttled.
 - iPhone/iPad requires a Home Screen web app; ordinary Safari-tab behavior is not equivalent.
-- Android Chrome background delivery and PWA lifecycle evidence remains `PENDING USER VERIFICATION`.
+- Android Chrome installed-PWA background delivery was owner-verified after 20:22 (Asia/Taipei) on 2026-07-30 using a same-device Staging test notification. iPhone/iPad Home Screen PWA and remaining cross-device release evidence remain pending.
