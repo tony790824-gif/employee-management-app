@@ -53,9 +53,11 @@ self.addEventListener('notificationclick',event=>{
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     for(const client of windows){
       if(new URL(client.url).origin!==self.location.origin)continue;
-      if('focus'in client)await client.focus();
-      if('navigate'in client)await client.navigate(target);
-      return;
+      try{
+        const focused='focus'in client?await client.focus():client;
+        (focused||client).postMessage?.({type:'BANKE_OPEN_NOTIFICATION_CENTER',path});
+        return;
+      }catch{}
     }
     if(self.clients.openWindow)await self.clients.openWindow(target);
   })());

@@ -141,6 +141,7 @@ const cloud = {
     return { ok: true };
   }
 };
+const serviceWorkerListeners = new Map();
 const serviceWorker = {
   ready: Promise.resolve({
     pushManager: {
@@ -152,7 +153,7 @@ const serviceWorker = {
       }
     }
   }),
-  addEventListener() {}
+  addEventListener(type, listener) { serviceWorkerListeners.set(type, listener); }
 };
 const Notification = {
   permission: 'granted',
@@ -199,6 +200,13 @@ assert.equal(elements.get('#notificationButton').hidden, false);
 assert.equal(elements.get('#notificationBadge').hidden, false);
 assert.equal(elements.get('#notificationBadge').textContent, '1');
 assert.equal(elements.get('#notificationList').children.length, 1);
+
+serviceWorkerListeners.get('message')({
+  data: { type: 'BANKE_OPEN_NOTIFICATION_CENTER', path: '/?open=notifications' }
+});
+assert.equal(elements.get('#notificationDialog').open, true,
+  'A focused authenticated client opens Notification Center without reloading.');
+elements.get('#notificationDialog').close();
 
 elements.get('#notificationButton').dispatch('click');
 assert.equal(elements.get('#notificationDialog').open, true);

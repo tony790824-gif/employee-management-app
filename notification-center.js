@@ -381,13 +381,16 @@
     await mutationPromise;
   }
 
-  trigger.addEventListener('click', () => {
+  const openNotificationCenter = () => {
+    if (!cloud.isConnected()) return false;
     setMessage();
     if (typeof dialog.showModal === 'function') dialog.showModal();
     else dialog.setAttribute('open', '');
     void loadNotifications();
     void refreshPushStatus();
-  });
+    return true;
+  };
+  trigger.addEventListener('click', openNotificationCenter);
   close.addEventListener('click', () => dialog.close());
   markAll.addEventListener('click', () => void markAllRead());
   pushEnable?.addEventListener('click', () => void enablePush());
@@ -415,16 +418,15 @@
       renderPushSettings();
       setMessage('推播訂閱已變更，請重新註冊此裝置。');
     }
+    if (event.data?.type === 'BANKE_OPEN_NOTIFICATION_CENTER') {
+      openNotificationCenter();
+    }
   });
   const openFromPush = typeof URLSearchParams === 'function'
     && new URLSearchParams(window.location?.search || '').get('open') === 'notifications';
   if (openFromPush) {
     window.addEventListener('load', () => {
-      if (!cloud.isConnected()) return;
-      if (typeof dialog.showModal === 'function') dialog.showModal();
-      else dialog.setAttribute('open', '');
-      void loadNotifications();
-      void refreshPushStatus();
+      openNotificationCenter();
     }, { once: true });
   }
 

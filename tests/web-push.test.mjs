@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 import { createWebPushDispatcher, webPushConfig } from '../server/web-push.mjs';
 import { createCommandService } from '../server/commands.mjs';
 import { validateCommand } from '../server/validation.mjs';
@@ -144,8 +145,87 @@ assert.match(worker, /addEventListener\('push'/);
 assert.match(worker, /showNotification/);
 assert.match(worker, /addEventListener\('notificationclick'/);
 assert.match(worker, /openWindow/);
+assert.match(worker, /BANKE_OPEN_NOTIFICATION_CENTER/);
+assert.doesNotMatch(worker, /client\.navigate\(target\)/);
 assert.match(worker, /addEventListener\('pushsubscriptionchange'/);
 assert.doesNotMatch(worker, /Authorization|accessToken|refreshToken|privateKey/);
+
+const workerListeners = new Map();
+const focusedMessages = [];
+const openedWindows = [];
+let focusedClients = 0;
+let matchedClients = [{
+  url: 'https://draft.staging.example/employee',
+  async focus() {
+    focusedClients += 1;
+    return this;
+  },
+  postMessage(message) {
+    focusedMessages.push(structuredClone(message));
+  },
+  async navigate() {
+    throw new Error('Existing authenticated clients must not be navigated.');
+  }
+}];
+const workerSandbox = {
+  self: {
+    location: { origin: 'https://draft.staging.example' },
+    addEventListener: (type, listener) => workerListeners.set(type, listener),
+    skipWaiting: async () => {},
+    registration: { showNotification: async () => {} },
+    clients: {
+      claim: async () => {},
+      matchAll: async () => matchedClients,
+      openWindow: async url => { openedWindows.push(url); }
+    }
+  },
+  caches: {
+    open: async () => ({
+      addAll: async () => {},
+      match: async () => null,
+      put: async () => {}
+    }),
+    keys: async () => [],
+    delete: async () => true
+  },
+  fetch: async () => new Response('{}'),
+  Response,
+  URL,
+  JSON,
+  Number,
+  Promise,
+  structuredClone
+};
+vm.runInContext(worker, vm.createContext(workerSandbox), { filename: 'service-worker.js' });
+
+let notificationClickWork;
+workerListeners.get('notificationclick')({
+  notification: {
+    data: { url: '/?open=notifications' },
+    close() {}
+  },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.equal(focusedClients, 1);
+assert.deepEqual(focusedMessages, [{
+  type: 'BANKE_OPEN_NOTIFICATION_CENTER',
+  path: '/?open=notifications'
+}]);
+assert.deepEqual(openedWindows, [],
+  'An existing same-origin authenticated client must be focused instead of opening a new window.');
+
+matchedClients = [];
+workerListeners.get('notificationclick')({
+  notification: {
+    data: { url: '/?open=notifications' },
+    close() {}
+  },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.deepEqual(openedWindows, ['https://draft.staging.example/?open=notifications'],
+  'A new window is opened only when no same-origin client exists.');
 
 const serviceQueries = [];
 let pushSchemaAvailable = true;
