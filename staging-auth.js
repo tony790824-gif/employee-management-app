@@ -15,6 +15,7 @@
   const redirectUri = new URL('./', window.location.href).href;
   const sessionClaimName = 'https://banke.tw/session_id';
   const sessionReauthenticationCodes = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
+  const identityAccessDeniedCode = 'IDENTITY_ACCESS_DENIED';
   const inAppBrowserPattern = /(?:\bLine\/|\bFBAN\/|\bFBAV\/|\bFB_IAB\/|\bInstagram\b|\bMessenger\b)/i;
   const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches === true
     || window.navigator?.standalone === true;
@@ -274,6 +275,21 @@
     return true;
   };
 
+  const recoverDeniedPostgresIdentity = error => {
+    if (environment.dataBackend !== 'postgres' || error?.code !== identityAccessDeniedCode) return false;
+
+    sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
+    window.shiftStateStore?.clearSensitive?.();
+    claimVerification = emptyClaimVerification();
+    setStatus('此 Auth0 Staging 帳號尚未綁定可用的工作區，或帳號已停權。請更換為已核准的老闆或員工測試帳號。');
+    if (loginButton) {
+      loginButton.disabled = false;
+      loginButton.textContent = '更換登入帳號';
+      loginButton.onclick = logoutProvider;
+    }
+    return true;
+  };
+
   for (const legacyControl of [phoneLabel, pinLabel, activationLabel, employeeLoginButton]) {
     if (!legacyControl) continue;
     legacyControl.hidden = true;
@@ -295,6 +311,7 @@
 
   initialize().catch(async error => {
     if (await recoverInvalidPostgresSession(error)) return;
+    if (recoverDeniedPostgresIdentity(error)) return;
     const system = initializationPhase === 'auth0' ? 'Auth0 Staging' : 'PostgreSQL Staging';
     setStatus(`${system} 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
     if (loginButton) loginButton.disabled = true;

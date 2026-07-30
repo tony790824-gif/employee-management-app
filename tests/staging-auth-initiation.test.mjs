@@ -46,6 +46,8 @@ assert.match(authSource, /showInAppBrowserNotice\(\)\) return/);
 assert.match(authSource, /initializationPhase = 'app-session'/);
 assert.match(authSource, /await window\.shiftAppSession\.enter[\s\S]*activateForegroundSync\(\)/);
 assert.match(authSource, /initializationPhase === 'auth0' \? 'Auth0 Staging' : 'PostgreSQL Staging'/);
+assert.match(authSource, /IDENTITY_ACCESS_DENIED/);
+assert.match(authSource, /loginButton\.textContent = '更換登入帳號'/);
 assert.doesNotMatch(authSource, /console\.(?:log|info|debug)/, 'Staging auth entry must not expose tokens in logs.');
 
 const sessionId = 'synthetic-session-id';
@@ -213,6 +215,77 @@ assert.deepEqual(successfulOrder, [
 assert.equal(successfulLoginButton.disabled, true);
 assert.equal(successfulLoginButton.textContent, 'Auth0 已登入');
 assert.equal(successfulHint.textContent, 'PostgreSQL Staging 資料載入完成。');
+
+const deniedLoginButton = { disabled: false, textContent: '', onclick: null };
+const deniedHint = { textContent: '' };
+const deniedSessionKeys = [];
+let deniedSensitiveStateCleared = 0;
+let deniedProviderLogoutCalls = 0;
+let deniedAppSessionEntries = 0;
+let deniedForegroundSyncActivations = 0;
+const deniedAuthClient = {
+  isAuthenticated: async () => true,
+  getTokenSilently: async () => `header.${accessTokenPayload}.signature`,
+  getIdTokenClaims: async () => ({ sid: sessionId }),
+  logout: async ({ logoutParams }) => {
+    deniedProviderLogoutCalls += 1;
+    assert.equal(logoutParams.returnTo, 'https://draft.staging.example/');
+  }
+};
+const deniedSandbox = {
+  window: {
+    shiftEnvironment: {
+      name: 'staging',
+      dataBackend: 'postgres',
+      auth: {
+        domain: profile.auth.domain,
+        clientId: profile.auth.clientId,
+        audience: profile.auth.audience
+      },
+      storageKey: key => `staging:${key}`
+    },
+    location: { href: 'https://draft.staging.example/' },
+    history: { replaceState() {} },
+    auth0: { createAuth0Client: async () => deniedAuthClient },
+    shiftPostgresCloud: {
+      connect: async () => {
+        const error = new Error('Authorization or command validation failed.');
+        error.code = 'IDENTITY_ACCESS_DENIED';
+        error.status = 403;
+        throw error;
+      },
+      activateForegroundSync: () => { deniedForegroundSyncActivations += 1; }
+    },
+    shiftAppSession: { enter: async () => { deniedAppSessionEntries += 1; } },
+    shiftStateStore: { clearSensitive: () => { deniedSensitiveStateCleared += 1; } }
+  },
+  document: {
+    title: 'Staging',
+    querySelector: selector => selector === '#bossLogin' ? deniedLoginButton : selector === '#loginHint' ? deniedHint : null
+  },
+  sessionStorage: { removeItem: key => deniedSessionKeys.push(key) },
+  URL,
+  URLSearchParams,
+  TextDecoder,
+  Uint8Array,
+  atob: value => Buffer.from(value, 'base64').toString('binary'),
+  setTimeout,
+  clearTimeout
+};
+vm.runInNewContext(authSource, deniedSandbox, { filename: 'staging-auth-identity-denied.js' });
+await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 0));
+
+assert.equal(deniedProviderLogoutCalls, 0, 'Denied identities must not be silently redirected in a loop.');
+assert.equal(deniedSensitiveStateCleared, 1, 'Denied identities must clear cached sensitive state.');
+assert.deepEqual(deniedSessionKeys, ['staging:shift-postgres-auth']);
+assert.equal(deniedAppSessionEntries, 0, 'Denied identities must not enter the application UI.');
+assert.equal(deniedForegroundSyncActivations, 0, 'Denied identities must not activate protected polling.');
+assert.match(deniedHint.textContent, /尚未綁定可用的工作區/);
+assert.equal(deniedLoginButton.textContent, '更換登入帳號');
+assert.equal(deniedLoginButton.disabled, false);
+await deniedLoginButton.onclick();
+assert.equal(deniedProviderLogoutCalls, 1, 'The account-switch action must perform Auth0 provider logout.');
 
 const createElement = tagName => {
   const listeners = new Map();
