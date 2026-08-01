@@ -1,5 +1,25 @@
 # AI Handoff
 
+## 2026-08-01 handoff — Sprint 30 Offline First
+
+- Status: implementation and automated gates complete; physical offline/recovery verification is
+  **PENDING USER VERIFICATION**. Overall assessed completion is **96%**.
+- The sole offline controller is `postgres-offline.js`, used only by the PostgreSQL browser path.
+  It owns the bounded resource cache, reviewed Command queue, idempotency-key persistence,
+  exponential backoff, replay serialization, revision conflict detection, and account isolation.
+- Cached reads cover bootstrap (including employees and shifts), time-off, and notifications.
+  Google Sheets does not load or execute this controller.
+- Existing Commands are reused. Offline support includes clock in/out, leave replacement,
+  schedule/time-off submit/cancel, and shift creation. Update/delete shift Commands do not exist
+  and must not be simulated client-side.
+- On recovery, queued writes drain before foreground refresh resumes. Successful replay fetches
+  canonical bootstrap; a revision conflict is retained for explicit discard/review and never
+  silently overwrites server state.
+- Do not weaken the online Auth0/App Session check to make cold offline login appear supported.
+  Do not store tokens, cookies, raw Session IDs, email, or secrets in browser persistence.
+- Production, databases, migrations, Auth0/Render/Netlify configuration, Google Sheets, and Apps
+  Script were not operated.
+
 ## 2026-07-30 handoff — Sprint 29 Web Push release gate
 
 - Status: **PARTIAL / PENDING USER VERIFICATION**; overall completion remains **95%**.

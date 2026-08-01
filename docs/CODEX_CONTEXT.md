@@ -1,5 +1,24 @@
 # Codex Context
 
+## 2026-08-01 current state — Sprint 30 Offline First
+
+- Sprint 30 implementation and automated acceptance are complete; real-device offline recovery
+  remains **PENDING USER VERIFICATION**. Overall assessed completion is **96%**.
+- `STAGING POSTGRES` now keeps a bounded, versioned, environment- and user-scoped offline cache
+  for bootstrap, employees, shifts, time-off requests, and notifications.
+- The existing Command API remains authoritative. Supported offline writes are attendance clock
+  in/out, monthly leave replacement, schedule/time-off submissions and cancellations, and the
+  existing `shifts.create` Command. There is no fabricated `shifts.update` or `shifts.delete` path.
+- Queued writes receive one idempotency key at enqueue time, use bounded exponential backoff,
+  drain sequentially after `online`, and stop safely on a bootstrap-revision conflict instead of
+  overwriting newer server data.
+- Auth0 tokens, cookies, raw Session IDs, email addresses, and secrets are never stored in the
+  offline store. A SHA-256 session binding scopes the cache, and logout/account switching clears it.
+- A cold start while fully offline still requires the existing Auth0/App Session trust boundary;
+  offline mode does not bypass authentication. This limitation is intentional and security-critical.
+- Production, Production database/Migration/Auth0, Google Sheets, Apps Script, and Production
+  deployment remain untouched.
+
 ## 2026-07-30 current state — Sprint 29 Web Push release gate
 
 - Sprint 29 status is **PARTIAL / PENDING USER VERIFICATION**; assessed completion stays at

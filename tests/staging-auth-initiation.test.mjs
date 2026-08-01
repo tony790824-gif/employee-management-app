@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import vm from 'node:vm';
@@ -72,6 +73,7 @@ const authClient = {
 };
 const sandbox = {
   window: {
+    crypto: webcrypto,
     shiftEnvironment: {
       name: 'staging',
       dataBackend: 'postgres',
@@ -104,6 +106,7 @@ const sandbox = {
   URL,
   URLSearchParams,
   TextDecoder,
+  TextEncoder,
   Uint8Array,
   atob: value => Buffer.from(value, 'base64').toString('binary'),
   setTimeout,
@@ -112,6 +115,7 @@ const sandbox = {
 vm.runInNewContext(authSource, sandbox, { filename: 'staging-auth.js' });
 await new Promise(resolve => setTimeout(resolve, 0));
 await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 20));
 
 assert.equal(providerLogoutCalls, 1, 'Expired local sessions must trigger Auth0 provider reauthentication.');
 assert.equal(sensitiveStateCleared, 1, 'Expired local sessions must clear cached sensitive state.');
@@ -145,6 +149,7 @@ const successfulAuthClient = {
 };
 const successfulSandbox = {
   window: {
+    crypto: webcrypto,
     shiftEnvironment: {
       name: 'staging',
       dataBackend: 'postgres',
@@ -191,6 +196,7 @@ const successfulSandbox = {
   URL,
   URLSearchParams,
   TextDecoder,
+  TextEncoder,
   Uint8Array,
   atob: value => Buffer.from(value, 'base64').toString('binary'),
   setTimeout,
@@ -200,6 +206,7 @@ vm.runInNewContext(authSource, successfulSandbox, { filename: 'staging-auth-succ
 for (let index = 0; index < 8; index += 1) await Promise.resolve();
 await new Promise(resolve => setTimeout(resolve, 0));
 await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 20));
 assert.deepEqual(successfulOrder, [
   'client',
   'callback',
@@ -234,6 +241,7 @@ const deniedAuthClient = {
 };
 const deniedSandbox = {
   window: {
+    crypto: webcrypto,
     shiftEnvironment: {
       name: 'staging',
       dataBackend: 'postgres',
@@ -267,6 +275,7 @@ const deniedSandbox = {
   URL,
   URLSearchParams,
   TextDecoder,
+  TextEncoder,
   Uint8Array,
   atob: value => Buffer.from(value, 'base64').toString('binary'),
   setTimeout,
@@ -275,6 +284,7 @@ const deniedSandbox = {
 vm.runInNewContext(authSource, deniedSandbox, { filename: 'staging-auth-identity-denied.js' });
 await new Promise(resolve => setTimeout(resolve, 0));
 await new Promise(resolve => setTimeout(resolve, 0));
+await new Promise(resolve => setTimeout(resolve, 20));
 
 assert.equal(deniedProviderLogoutCalls, 0, 'Denied identities must not be silently redirected in a loop.');
 assert.equal(deniedSensitiveStateCleared, 1, 'Denied identities must clear cached sensitive state.');
@@ -326,6 +336,7 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
   };
   const scenarioSandbox = {
     window: {
+      crypto: webcrypto,
       shiftEnvironment: {
         name: 'staging',
         dataBackend: 'postgres',
@@ -358,6 +369,7 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
     URL,
     URLSearchParams,
     TextDecoder,
+    TextEncoder,
     Uint8Array,
     atob: value => Buffer.from(value, 'base64').toString('binary'),
     setTimeout,
@@ -365,6 +377,7 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
   };
   vm.runInNewContext(authSource, scenarioSandbox, { filename: 'staging-auth.js' });
   await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise(resolve => setTimeout(resolve, 20));
   return { authClientCreations, body, copiedUrls, loginButton: scenarioLoginButton, hint: scenarioHint };
 };
 

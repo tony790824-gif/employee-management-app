@@ -35,6 +35,10 @@
         <strong id="currentUserDisplayName" class="current-user-name"></strong>
         <span id="currentUserRole" class="current-user-role"></span>
       </section>
+      <section id="offlineSyncStatus" class="offline-sync-status" role="status" aria-live="polite" hidden>
+        <span id="offlineSyncMessage"></span>
+        <button id="offlineSyncDiscard" class="ghost" type="button" hidden>放棄待同步操作並更新</button>
+      </section>
       <button class="ghost notification-trigger" id="notificationButton" type="button" hidden aria-haspopup="dialog" aria-controls="notificationDialog">通知<span id="notificationBadge" class="notification-badge" hidden aria-label="0 則未讀通知">0</span></button>
       <div class="access-controls"><span id="cloudStatus" class="cloud-status">Google Sheets</span><button class="ghost" id="installAppBtn" hidden>安裝到手機</button><button class="ghost" id="cloudConfigBtn">雲端設定</button><label>登入身份<select id="roleSelect"><option value="boss">老闆登入</option><option value="employee">員工登入</option></select></label><label id="employeeModeWrap">選擇員工<select id="employeeModeSelect"></select></label><button class="ghost" id="employeeLeaveBtn" hidden>申請請假</button><button class="ghost" id="backupBtn">備份</button><button class="ghost" id="restoreBtn">還原</button><input id="restoreFile" type="file" accept="application/json" hidden /><button class="ghost" id="logoutBtn">登出</button><button class="ghost" id="printBtn">列印／另存 PDF</button></div>
     </header>
@@ -87,6 +91,7 @@
     <script src="postgres-api-client.js"></script>
     <script src="google-sheets-config.js"></script>
     <script src="state-store.js"></script>
+    <script src="postgres-offline.js"></script>
     <script src="postgres-cloud.js"></script>
     <script src="account-security.js"></script>
     <script src="cloud-sync.js"></script>

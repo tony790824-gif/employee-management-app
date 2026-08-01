@@ -6,9 +6,13 @@
 
   const stateStore = window.shiftStateStore;
   const workspacePattern = /^ws_[a-f0-9]{32}$/;
+  const ownerBindingPattern = /^[a-f0-9]{64}$/;
   let client = null;
   let currentSession = null;
   let currentUser = null;
+  let identityBinding = '';
+  let commandRevision = null;
+  let offlineRetryTimer = null;
   let foregroundDebounceTimer = null;
   let foregroundPollTimer = null;
   let foregroundPromise = null;
@@ -26,8 +30,72 @@
   const REVISION_SIGNAL_TYPE = 'banke-bootstrap-revision';
   const REVISION_STORAGE_KEY = environment.storageKey('postgres-revision-signal');
   const REVISION_CHANNEL_NAME = `${environment.storagePrefix || 'banke:'}postgres-revision-v1`;
+  const OFFLINE_OWNER_KEY = environment.storageKey('postgres-offline-owner-v1');
+  let offlineRuntime = null;
+  try {
+    offlineRuntime = window.BankePostgresOffline?.create({
+      storageKey: environment.storageKey('postgres-offline-v1')
+    }) || null;
+  } catch (error) {
+    console.warn('PostgreSQL offline storage unavailable', { code: error?.code || 'OFFLINE_STORAGE_UNAVAILABLE' });
+  }
+  const offlinePanel = document.querySelector('#offlineSyncStatus');
+  const offlineMessage = document.querySelector('#offlineSyncMessage');
+  const offlineDiscard = document.querySelector('#offlineSyncDiscard');
 
   const isEmployeeSession = () => currentSession?.role === 'employee' && Boolean(currentSession.employeeId);
+
+  function updateOfflineStatus({ conflict = false, failed = false } = {}) {
+    if (!offlinePanel || !offlineMessage || !offlineRuntime || !currentSession) {
+      if (offlinePanel) offlinePanel.hidden = true;
+      return;
+    }
+    const queue = offlineRuntime.queueSnapshot();
+    const pending = queue.filter(item => item.status === 'pending').length;
+    const hasConflict = conflict || queue.some(item => item.status === 'conflict');
+    const hasFailed = failed || queue.some(item => item.status === 'failed');
+    offlinePanel.hidden = window.navigator?.onLine !== false && !queue.length;
+    offlineDiscard.hidden = !hasConflict && !hasFailed;
+    offlineMessage.textContent = hasConflict
+      ? '伺服器資料已更新，待同步操作未自動送出。請放棄後重新確認並操作。'
+      : hasFailed
+        ? '有待同步操作被伺服器拒絕，請放棄後重新確認並操作。'
+        : pending
+          ? `離線模式：${pending} 筆操作等待安全同步。`
+          : '目前離線，畫面顯示最近一次安全同步資料。';
+  }
+
+  function fallbackOwnerBinding() {
+    let value = String(sessionStorage.getItem(OFFLINE_OWNER_KEY) || '');
+    if (!ownerBindingPattern.test(value)) {
+      const entropy = window.crypto.randomUUID().replaceAll('-', '');
+      value = `${entropy}${entropy}`;
+      sessionStorage.setItem(OFFLINE_OWNER_KEY, value);
+    }
+    return value;
+  }
+
+  function bindOfflineOwner() {
+    if (!offlineRuntime || !currentSession) return;
+    try {
+      offlineRuntime.bindOwner(identityBinding || fallbackOwnerBinding());
+      updateOfflineStatus();
+    } catch (error) {
+      console.warn('PostgreSQL offline identity binding failed', { code: error?.code || 'OFFLINE_OWNER_INVALID' });
+      offlineRuntime = null;
+      if (offlinePanel) offlinePanel.hidden = true;
+    }
+  }
+
+  function cacheOfflineResource(name, payload) {
+    if (!offlineRuntime || !currentSession) return payload;
+    try {
+      offlineRuntime.cacheResource(name, payload);
+    } catch (error) {
+      console.warn('PostgreSQL offline cache write failed', { code: error?.code || 'OFFLINE_CACHE_FAILED' });
+    }
+    return payload;
+  }
 
   function validateCurrentUser(value, payload) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -154,6 +222,8 @@
     stateStore.write(mergeBootstrapSections(previousData, bootstrap.data, changedSections));
     currentSession = Object.freeze({ role: bootstrap.role, employeeId: bootstrap.employeeId || '' });
     currentUser = bootstrap.currentUser;
+    bindOfflineOwner();
+    cacheOfflineResource('bootstrap', bootstrap);
     sessionStorage.setItem(environment.storageKey('shift-postgres-auth'), JSON.stringify(currentSession));
     document.dispatchEvent(new CustomEvent('postgres-bootstrap-refreshed', {
       detail: { source, revision: nextRevision, changedSections, currentUserChanged }
@@ -181,6 +251,7 @@
 
   async function runForegroundSync() {
     if (!canRunForegroundSync()) return null;
+    if (offlineRuntime?.isDraining()) return null;
     if (foregroundPromise) return foregroundPromise;
     foregroundPromise = (async () => {
       try {
@@ -296,21 +367,29 @@
     });
   }
 
-  async function connect({ getAccessToken }) {
+  async function connect({ getAccessToken, offlineIdentityBinding = '' }) {
     if (typeof getAccessToken !== 'function') throw new Error('PostgreSQL 登入缺少 Access Token provider。');
+    if (offlineIdentityBinding && !ownerBindingPattern.test(offlineIdentityBinding)) {
+      throw new Error('PostgreSQL 離線身份綁定格式不正確。');
+    }
+    identityBinding = offlineIdentityBinding;
     foregroundSyncActivated = false;
     stopForegroundSync();
     client = window.BankePostgresApi.createClient({
       baseUrl: environment.postgresApiUrl,
       getAccessToken,
       getWorkspaceId: async () => environment.postgresWorkspaceId,
-      onCommandRevision: announceRevision
+      onCommandRevision: revision => {
+        commandRevision = revision;
+        announceRevision(revision);
+      }
     });
     await client.readiness();
     await client.establishSession();
     const bootstrap = await refreshBootstrap();
     lastForegroundCompletedAt = Date.now();
     lastUserActivityAt = Date.now();
+    void drainOfflineQueue();
     return bootstrap;
   }
 
@@ -323,11 +402,96 @@
     startForegroundPolling();
   }
 
+  function cancelOfflineRetry() {
+    if (offlineRetryTimer !== null) clearTimeout(offlineRetryTimer);
+    offlineRetryTimer = null;
+  }
+
+  function scheduleOfflineRetry(retryAt) {
+    cancelOfflineRetry();
+    if (!Number.isFinite(retryAt) || retryAt <= 0 || !client || !currentSession
+      || window.navigator?.onLine === false) return;
+    offlineRetryTimer = setTimeout(() => {
+      offlineRetryTimer = null;
+      void drainOfflineQueue();
+    }, Math.max(0, retryAt - Date.now()));
+  }
+
+  function offlineQueueResult(record) {
+    updateOfflineStatus();
+    document.dispatchEvent(new CustomEvent('postgres-offline-command-queued', {
+      detail: { commandName: record.commandName, duplicate: Boolean(record.duplicate) }
+    }));
+    return Object.freeze({ ok: true, queued: true, duplicate: Boolean(record.duplicate) });
+  }
+
+  function enqueueOfflineCommand(commandName, input, idempotencyKey) {
+    if (!offlineRuntime?.isQueueable(commandName)) {
+      const error = new Error('這項操作必須連線後才能完成。');
+      error.code = 'OFFLINE_COMMAND_NOT_ALLOWED';
+      throw error;
+    }
+    const baseRevision = Number(stateStore.read()?.sync?.revision);
+    const record = offlineRuntime.enqueue({ commandName, input, baseRevision, idempotencyKey });
+    return offlineQueueResult(record);
+  }
+
+  async function drainOfflineQueue() {
+    if (!offlineRuntime || !client || !currentSession || window.navigator?.onLine === false) {
+      updateOfflineStatus();
+      return null;
+    }
+    if (foregroundPromise) await foregroundPromise;
+    cancelOfflineRetry();
+    let outcome;
+    try {
+      outcome = await offlineRuntime.drain({
+        getRevision: async () => validateRevision(await client.bootstrapRevision()),
+        execute: async record => {
+          commandRevision = null;
+          const result = await client.executeCommand(record.commandName, record.input, {
+            idempotencyKey: record.idempotencyKey
+          });
+          return { result, revision: commandRevision };
+        },
+        onChange: change => {
+          updateOfflineStatus({ conflict: change.type === 'conflict', failed: change.type === 'failed' });
+          document.dispatchEvent(new CustomEvent('postgres-offline-queue-changed', {
+            detail: { type: change.type, commandName: change.record?.commandName || '' }
+          }));
+        }
+      });
+      if (outcome?.completed) await refreshBootstrap({ source: 'offline-recovery' });
+      scheduleOfflineRetry(outcome?.retryAt || 0);
+      updateOfflineStatus({ conflict: outcome?.conflict, failed: outcome?.failed });
+      if (foregroundSyncActivated) startForegroundPolling();
+      return outcome;
+    } catch (error) {
+      if (!offlineRuntime.isNetworkError(error)) {
+        console.warn('PostgreSQL offline queue drain failed', {
+          code: error?.code || 'OFFLINE_DRAIN_FAILED',
+          status: Number(error?.status || 0),
+          requestId: error?.requestId || ''
+        });
+      }
+      updateOfflineStatus();
+      return null;
+    }
+  }
+
   async function executeAndRefresh(commandName, input) {
     if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
-    const result = await client.executeCommand(commandName, input);
-    await refreshBootstrap();
-    return result;
+    const idempotencyKey = offlineRuntime ? window.crypto.randomUUID() : '';
+    if (window.navigator?.onLine === false) return enqueueOfflineCommand(commandName, input, idempotencyKey);
+    try {
+      const result = await client.executeCommand(commandName, input,
+        idempotencyKey ? { idempotencyKey } : undefined);
+      await refreshBootstrap();
+      return result;
+    } catch (error) {
+      if (offlineRuntime?.isNetworkError(error)) return enqueueOfflineCommand(commandName, input, idempotencyKey);
+      throw error;
+    }
   }
 
   const saveEmployeeLeave = (month, dates) => executeAndRefresh('leaves.replace-month', { month, dates });
@@ -355,9 +519,19 @@
     'attendance.approve-hours',
     { attendanceId, hours, baseRevision }
   );
-  const listTimeOffRequests = () => {
+  const listTimeOffRequests = async () => {
     if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
-    return client.listTimeOffRequests();
+    if (window.navigator?.onLine === false) {
+      const cached = offlineRuntime?.readResource('timeOff');
+      if (cached) return cached;
+    }
+    try {
+      return cacheOfflineResource('timeOff', await client.listTimeOffRequests());
+    } catch (error) {
+      const cached = offlineRuntime?.isNetworkError(error) && offlineRuntime.readResource('timeOff');
+      if (cached) return cached;
+      throw error;
+    }
   };
   const submitScheduleLeaveRequest = input => executeAndRefresh('schedule-leave-requests.submit', input);
   const cancelScheduleLeaveRequest = (requestId, baseRevision) => executeAndRefresh(
@@ -377,9 +551,19 @@
     'time-off-requests.reject',
     { requestId, baseRevision, reviewNote }
   );
-  const listNotifications = () => {
+  const listNotifications = async () => {
     if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
-    return client.listNotifications();
+    if (window.navigator?.onLine === false) {
+      const cached = offlineRuntime?.readResource('notifications');
+      if (cached) return cached;
+    }
+    try {
+      return cacheOfflineResource('notifications', await client.listNotifications());
+    } catch (error) {
+      const cached = offlineRuntime?.isNetworkError(error) && offlineRuntime.readResource('notifications');
+      if (cached) return cached;
+      throw error;
+    }
   };
   const markNotificationRead = (notificationId, baseRevision) => executeAndRefresh(
     'notifications.mark-read',
@@ -398,12 +582,18 @@
     const activeClient = client;
     foregroundSyncActivated = false;
     stopForegroundSync();
+    cancelOfflineRetry();
+    offlineRuntime?.clearAll();
     client = null;
     currentSession = null;
     currentUser = null;
+    identityBinding = '';
+    commandRevision = null;
     foregroundFailureReported = false;
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
+    sessionStorage.removeItem(OFFLINE_OWNER_KEY);
     stateStore.clearSensitive();
+    updateOfflineStatus();
     document.dispatchEvent(new CustomEvent('postgres-session-cleared'));
     if (activeClient) await activeClient.logout();
   }
@@ -412,8 +602,14 @@
   document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('pageshow', handleForegroundEntry);
   window.addEventListener('focus', handleForegroundEntry);
-  window.addEventListener('online', handleForegroundEntry);
-  window.addEventListener('offline', stopForegroundSync);
+  window.addEventListener('online', () => {
+    void drainOfflineQueue().finally(handleForegroundEntry);
+  });
+  window.addEventListener('offline', () => {
+    stopForegroundSync();
+    cancelOfflineRetry();
+    updateOfflineStatus();
+  });
   ['pointerdown', 'keydown', 'touchstart'].forEach(type =>
     window.addEventListener(type, handleActivity, { passive: true }));
   window.addEventListener('pagehide', stopForegroundSync);
@@ -425,6 +621,18 @@
   document.addEventListener('postgres-session-cleared', () => {
     foregroundSyncActivated = false;
     stopForegroundSync();
+    cancelOfflineRetry();
+  });
+  offlineDiscard?.addEventListener('click', async () => {
+    offlineRuntime?.clearQueue();
+    updateOfflineStatus();
+    if (client && currentSession && window.navigator?.onLine !== false) {
+      try {
+        await refreshBootstrap({ source: 'offline-conflict-discard' });
+      } catch (error) {
+        offlineMessage.textContent = '目前無法取得伺服器最新資料，請在網路穩定後再試一次。';
+      }
+    }
   });
 
   window.shiftPostgresCloud = Object.freeze({
@@ -453,6 +661,8 @@
     registerPushSubscription,
     unregisterPushSubscription,
     sendTestPush,
+    drainOfflineQueue,
+    getOfflineQueue: () => offlineRuntime?.queueSnapshot() || [],
     hasEmployeeSession: isEmployeeSession,
     isConnected: () => Boolean(currentSession),
     getSession: () => currentSession,

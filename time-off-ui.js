@@ -261,7 +261,7 @@
       await performAction(async () => {
         const input = { month: month.value, dates: [...scheduleDates].sort() };
         if (existing) Object.assign(input, { requestId: existing.id, baseRevision: existing.revision });
-        await cloud.submitScheduleLeaveRequest(input);
+        return cloud.submitScheduleLeaveRequest(input);
       }, '排休申請已送出，請等待管理者審核。');
     });
     const form = dom.element('section', { className: 'time-off-form-card' }, [
@@ -423,7 +423,11 @@
     panel.classList.add('is-busy');
     setMessage('處理中…');
     try {
-      await action();
+      const result = await action();
+      if (result?.queued) {
+        setMessage('目前離線，申請已安全暫存；連線恢復後會自動送出。', 'success');
+        return;
+      }
       payload = await cloud.listTimeOffRequests();
       payloadFingerprint = stableJson(payload);
       publishApprovedLeaveCoverage(payload?.approvedLeaveCoverage);

@@ -51,6 +51,11 @@ assert.ok(
   entryHtml.indexOf('state-store.js') < entryHtml.indexOf('postgres-cloud.js'),
   'PostgreSQL adapter must load after the state store it depends on'
 );
+assert.ok(
+  entryHtml.indexOf('state-store.js') < entryHtml.indexOf('postgres-offline.js')
+    && entryHtml.indexOf('postgres-offline.js') < entryHtml.indexOf('postgres-cloud.js'),
+  'PostgreSQL offline runtime must load between canonical state and the cloud adapter'
+);
 
 const loginSource = await readFile('login.js', 'utf8');
 assert.match(loginSource, /dataBackend === 'postgres'[\s\S]*Auth0 owns restoration/,
@@ -84,11 +89,11 @@ assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.product
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
 assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL rehearsal 與正常 Staging 必須共用清除範圍');
-assert.match(rehearsalWorker, /banke-staging-postgres-v6/);
-assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v6/);
-assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v6/);
-assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v6"/);
-assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v6"/);
+assert.match(rehearsalWorker, /banke-staging-postgres-v7/);
+assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v7/);
+assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v7/);
+assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v7"/);
+assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v7"/);
 assert.notEqual(
   stagingIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
   rehearsalIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],

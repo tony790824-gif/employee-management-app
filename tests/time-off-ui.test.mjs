@@ -24,8 +24,10 @@ for (const method of [
   assert.match(cloud, new RegExp(`const ${method}\\s*=`), `PostgreSQL cloud 必須提供 ${method}`);
 }
 
-assert.match(cloud, /const listTimeOffRequests = \(\) =>[\s\S]*client\.listTimeOffRequests\(\)/,
+assert.match(cloud, /const listTimeOffRequests = async \(\) =>[\s\S]*client\.listTimeOffRequests\(\)/,
   '唯讀申請清單必須沿用既有 PostgreSQL API Client');
+assert.match(ui, /result\?\.queued[\s\S]*目前離線，申請已安全暫存/,
+  '離線申請必須清楚標示為待同步，不得假裝伺服器已完成');
 assert.match(ui, /pending:\s*'待審核'/);
 assert.match(ui, /approved:\s*'已核准'/);
 assert.match(ui, /rejected:\s*'已拒絕'/);

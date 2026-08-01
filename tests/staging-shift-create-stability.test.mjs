@@ -646,6 +646,7 @@ foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
 assert.equal(foregroundTimers.size, 0, 'offline focus must not schedule a request');
 foregroundWindow.navigator.onLine = true;
 foregroundWindow.dispatchEvent(new TestCustomEvent('online'));
+await new Promise(resolve => setImmediate(resolve));
 assert.equal(foregroundTimerCount(2_000), 1, 'online recovery must resume active polling');
 foregroundWindow.dispatchEvent(new TestCustomEvent('pagehide'));
 assert.equal(foregroundTimers.size, 0, 'page unload must stop foreground polling');

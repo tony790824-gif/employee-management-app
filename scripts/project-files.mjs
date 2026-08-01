@@ -14,6 +14,7 @@ export const deployFiles = Object.freeze([
   'environment.css',
   'environment-config.js',
   'postgres-api-client.js',
+  'postgres-offline.js',
   'postgres-cloud.js',
   'google-sheets-config.js',
   'state-store.js',

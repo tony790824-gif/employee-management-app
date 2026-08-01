@@ -23,6 +23,7 @@
   let client;
   let inAppBrowserNotice;
   let initializationPhase = 'auth0';
+  let verifiedOfflineBinding = '';
   const emptyClaimVerification = () => Object.freeze({
     checked: false,
     exists: false,
@@ -57,6 +58,11 @@
         typeof auth0SessionId === 'string' &&
         claimValue === auth0SessionId
     });
+    if (claimVerification.matchesAuth0SessionId && window.crypto?.subtle) {
+      const bytes = new TextEncoder().encode(`${authConfig.domain}\u0000${auth0SessionId}`);
+      const digest = new Uint8Array(await window.crypto.subtle.digest('SHA-256', bytes));
+      verifiedOfflineBinding = [...digest].map(value => value.toString(16).padStart(2, '0')).join('');
+    }
     return claimVerification;
   };
 
@@ -202,10 +208,12 @@
         throw new Error('Auth0 session claim validation failed closed.');
       }
       if (environment.dataBackend === 'postgres') {
+        if (!verifiedOfflineBinding) throw new Error('Auth0 identity binding is unavailable.');
         initializationPhase = 'app-session';
         setStatus('Auth0 驗證成功，正在載入 PostgreSQL Staging 資料…');
         const bootstrap = await window.shiftPostgresCloud.connect({
-          getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } })
+          getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
+          offlineIdentityBinding: verifiedOfflineBinding
         });
         initializationPhase = 'app-ui';
         await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
@@ -237,6 +245,7 @@
 
   const resetLoggedOutUi = () => {
     claimVerification = emptyClaimVerification();
+    verifiedOfflineBinding = '';
     setStatus('STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
     if (loginButton) {
       loginButton.disabled = false;

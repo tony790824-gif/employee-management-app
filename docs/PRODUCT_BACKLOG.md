@@ -1,5 +1,21 @@
 # 班客邦 Product Backlog
 
+## 2026-08-01 — Sprint 30 Offline First
+
+- **Status:** implementation and automated acceptance complete; real-device offline/recovery gate
+  is **PENDING USER VERIFICATION**. Overall completion is **96%**.
+- **Completed:** bounded offline cache for bootstrap/employees/shifts/time-off/notifications;
+  reviewed Command queue; enqueue-time idempotency; sequential replay; exponential backoff;
+  online recovery; bootstrap-revision conflict protection; logout/account-switch isolation.
+- **Existing Command boundary:** clock in/out, monthly leave replacement, schedule/time-off
+  submit/cancel, and shift creation are queueable. Missing shift update/delete Commands were not
+  invented.
+- **Security boundary:** no token, cookie, raw Session ID, email, secret, or database credential is
+  persisted. Cold offline login does not bypass Auth0 or the App Session.
+- **Remaining unique work:** execute `docs/SPRINT_30_OFFLINE_FIRST_REVIEW.md` on real Windows and
+  installed mobile PWA devices. Sprint 29 Apple/Edge evidence remains a separate open release gate.
+- **Production:** not modified, migrated, configured, or deployed.
+
 ## 2026-07-30 — Sprint 29 Web Push release gate
 
 - **Status:** **PARTIAL / PENDING USER VERIFICATION**; overall completion remains **95%**.

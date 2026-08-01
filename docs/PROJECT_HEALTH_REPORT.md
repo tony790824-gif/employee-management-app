@@ -1,5 +1,24 @@
 # 班客邦 Project Health Report
 
+## 2026-08-01 — Sprint 30 health update
+
+- **Sprint status:** implementation/automation complete; real-device recovery is
+  **PENDING USER VERIFICATION**. Overall completion is **96%**.
+- **Reliability:** reviewed PostgreSQL Commands can be queued offline, de-duplicated by stable
+  input and idempotency key, replayed sequentially with bounded exponential backoff, and retried
+  when connectivity returns.
+- **Conflict safety:** replay compares the server bootstrap revision with the enqueue-time base.
+  Conflicts stop and remain visible; no automatic last-write-wins overwrite is used.
+- **Data safety:** cache size and queue/input counts are bounded. Logout and account switch clear
+  user-scoped data; tokens, cookies, raw Session IDs, email, and secrets are excluded.
+- **Known limitations:** initial authentication still requires network; shift update/delete have no
+  existing backend Commands and are not available offline; physical weak-network and storage-
+  pressure acceptance remains pending.
+- **Regression boundary:** Google Sheets does not execute the PostgreSQL offline controller;
+  Notification Center uses its existing API and cached read representation.
+- **Production status:** no deployment, database/Migration/Auth0 operation, Google Sheets, or Apps
+  Script change.
+
 ## 2026-07-30 — Sprint 29 health update
 
 - **Sprint status:** **PARTIAL / PENDING USER VERIFICATION**.

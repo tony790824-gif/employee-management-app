@@ -1,4 +1,27 @@
-# Next unique work — Sprint 29 remaining Web Push real-device release gate
+# Next unique work — Sprint 30 real-device offline acceptance
+
+## Current Sprint 30 status
+
+Implementation and automated gates are complete. Overall assessed completion is **96%**; the only
+Sprint 30 remainder is physical-device verification using
+`docs/SPRINT_30_OFFLINE_FIRST_REVIEW.md`.
+
+Verify on the isolated `STAGING POSTGRES` Draft only:
+
+1. Load while online, then go offline and confirm cached schedule, employee, time-off, and
+   Notification Center data remain readable.
+2. Queue a clock action, time-off action, and supported shift creation; confirm pending status and
+   no duplicate submission from repeated taps.
+3. Restore the network and confirm sequential automatic delivery, canonical bootstrap refresh,
+   and persistence after reload.
+4. Create a server-side revision change from another client before reconnecting and confirm the
+   queued operation stops as a visible conflict instead of overwriting data.
+5. Logout and switch accounts; confirm the previous account's cache and queue are unavailable.
+
+Do not treat a cold offline start as an authenticated login, do not invent missing shift update/
+delete Commands, and do not deploy or modify Production.
+
+## Historical — Sprint 29 remaining Web Push real-device release gate
 
 ## Current Sprint 29 status
 

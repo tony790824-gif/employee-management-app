@@ -61,7 +61,10 @@
     clockBusy = true;
     render();
     try {
-      if (requireCloudSession()) await employeeCloud().clockInEmployee();
+      if (requireCloudSession()) {
+        const result = await employeeCloud().clockInEmployee();
+        if (result?.queued) alert('目前離線，上班打卡已暫存，連線恢復後會自動送出。');
+      }
       else {
         const data = read();
         if (activeRecord(data, employeeId)) return;
@@ -83,7 +86,8 @@
     clockBusy = true;
     render();
     try {
-      if (requireCloudSession()) await employeeCloud().clockOutEmployee();
+      let result;
+      if (requireCloudSession()) result = await employeeCloud().clockOutEmployee();
       else {
         const data = read();
         const record = activeRecord(data, employeeId);
@@ -93,7 +97,9 @@
         record.note = '員工已完成打卡；老闆可在出勤／請假調整時數。';
         write(data);
       }
-      alert('已打卡下班，老闆可再確認或修改工作時數。');
+      alert(result?.queued
+        ? '目前離線，下班打卡已暫存，連線恢復後會自動送出。'
+        : '已打卡下班，老闆可再確認或修改工作時數。');
     } catch (error) {
       alert(error.message || '下班打卡失敗，請稍後再試。');
     } finally {

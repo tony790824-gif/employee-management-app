@@ -1,5 +1,24 @@
 # Change Log
 
+## 2026-08-01 — Sprint 30 Offline First
+
+- Added a bounded, versioned offline cache for PostgreSQL bootstrap, employee, shift, time-off, and
+  Notification Center data without changing the Google Sheets path.
+- Added a reviewed offline Command queue for attendance, leave/time-off operations, and existing
+  shift creation, with stable de-duplication and enqueue-time idempotency keys.
+- Added sequential recovery, bounded exponential backoff, online retry, canonical bootstrap
+  refresh, and server-revision conflict protection.
+- Scoped persisted data to the Staging environment and a one-way Auth0 Session binding; logout and
+  account switching clear cached data. No token, cookie, raw Session ID, email, or secret is stored.
+- Added a visible pending/conflict state and explicit safe discard-and-refresh action. Offline
+  submissions no longer claim server persistence before replay succeeds.
+- Bumped future Service Worker cache versions so an eventual authorized build does not retain an
+  obsolete app shell. No Production deployment occurred.
+- Added automated coverage for caching, queue allowlisting, de-duplication, idempotency, retry,
+  conflict detection, replay serialization, account isolation, online recovery, and logout cleanup.
+- Production, databases, migrations, Auth0/Render/Netlify configuration, Google Sheets, and Apps
+  Script were not modified or deployed.
+
 ## 2026-07-30 — Sprint 29 Web Push release-gate hardening
 
 - Recognized desktop-style iPadOS Safari as `ipados` and kept Apple Push activation restricted
