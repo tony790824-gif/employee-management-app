@@ -16,6 +16,8 @@ const EXPECTED_CHECKSUM =
   '31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476';
 const EXPECTED_EDGE_ALLOWLIST_CHECKSUM =
   '48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277';
+const EXPECTED_PRIORITY_CHECKSUM =
+  '5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f';
 const TEST_ORIGIN = 'https://web-push-e2e.staging.invalid';
 const TEST_ISSUER = 'https://web-push-e2e.staging.invalid/';
 const { Client } = pg;
@@ -58,14 +60,15 @@ function edgeEndpoint(label) {
   return `https://wns2-by3p.notify.windows.com/w/?token=bankeban-${label}-${randomUUID()}`;
 }
 
-function subscriptionBody(targetEndpoint, platform = 'windows') {
+function subscriptionBody(targetEndpoint, platform = 'windows', clientMode = 'browser') {
   return {
     endpoint: targetEndpoint,
     expirationTime: null,
     p256dh: 'A'.repeat(88),
     auth: 'B'.repeat(24),
     userAgent: 'Synthetic Bankeban Staging E2E',
-    platform
+    platform,
+    clientMode
   };
 }
 
@@ -153,6 +156,26 @@ async function createWorkspaceFixture(label, sequence) {
   return { organization, workspace, bossUser, employeeUser, employee };
 }
 
+async function createSyntheticNotification(workspaceId, recipientUserId, label) {
+  return inWorkspace(workspaceId, async () => {
+    const sourceEventId = (await owner.query(
+      `INSERT INTO outbox_events(workspace_id, event_type, aggregate_type, aggregate_id, payload)
+       VALUES ($1, 'synthetic.priority.test', 'notification_priority_test', $2, '{}'::jsonb)
+       RETURNING id`,
+      [workspaceId, label]
+    )).rows[0].id;
+    return (await owner.query(
+      `INSERT INTO notifications(
+         workspace_id, recipient_user_id, source_event_id, notification_type,
+         title, body, resource_type, resource_id
+       ) VALUES ($1, $2, $3, 'schedule_updated', 'Synthetic priority',
+         'Synthetic priority body', 'notification_priority_test', $4)
+       RETURNING id`,
+      [workspaceId, recipientUserId, sourceEventId, label]
+    )).rows[0].id;
+  });
+}
+
 async function destroyWorkspaceFixture(fixture) {
   await inWorkspace(fixture.workspace, async () => {
     await owner.query('DELETE FROM workspaces WHERE id = $1', [fixture.workspace]);
@@ -180,6 +203,13 @@ try {
   assert.deepEqual(edgeAllowlistMigration, {
     name: 'edge_web_push_provider_allowlist',
     checksum: EXPECTED_EDGE_ALLOWLIST_CHECKSUM
+  });
+  const priorityMigration = (await owner.query(
+    `SELECT name, checksum FROM schema_migrations WHERE version = '0020'`
+  )).rows[0];
+  assert.deepEqual(priorityMigration, {
+    name: 'push_subscription_priority',
+    checksum: EXPECTED_PRIORITY_CHECKSUM
   });
   assert.equal((await owner.query('SELECT current_database() AS name')).rows[0].name, 'neondb');
   assert.notEqual(
@@ -263,6 +293,7 @@ try {
   assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 0);
 
   const bossAEndpoint = endpoint('boss-a');
+  const bossAPwaEndpoint = endpoint('boss-a-pwa');
   const bossBEndpoint = endpoint('boss-b');
   assert.equal((await command(
     base, bossA, 'push.register', subscriptionBody(bossAEndpoint)
@@ -296,11 +327,31 @@ try {
     base, bossA, 'push.register', subscriptionBody(bossAEndpoint)
   )).data.registered, true);
   assert.equal((await command(
+    base, bossA, 'push.register', subscriptionBody(bossAPwaEndpoint, 'windows', 'pwa')
+  )).data.registered, true);
+  assert.equal((await command(
     base, bossB, 'push.register', subscriptionBody(bossBEndpoint, 'android')
   )).data.registered, true);
-  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 1);
+  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 2);
   assert.equal(new URL(bossAEndpoint).hostname, 'fcm.googleapis.com');
   assert.equal(new URL(bossBEndpoint).hostname, 'fcm.googleapis.com');
+
+  const browserOnlyNotification = await createSyntheticNotification(
+    workspaceB.workspace, workspaceB.bossUser, `browser-only-${randomUUID()}`
+  );
+  assert.deepEqual((await owner.query(
+    `SELECT subscription.endpoint
+       FROM push_deliveries delivery
+       JOIN push_subscriptions subscription
+         ON subscription.workspace_id = delivery.workspace_id
+        AND subscription.id = delivery.subscription_id
+      WHERE delivery.workspace_id = $1 AND delivery.notification_id = $2`,
+    [workspaceB.workspace, browserOnlyNotification]
+  )).rows.map(row => row.endpoint), [bossBEndpoint]);
+  const workspaceBDeliveryCountBefore = (await owner.query(
+    `SELECT count(*)::integer AS count FROM push_deliveries WHERE workspace_id = $1`,
+    [workspaceB.workspace]
+  )).rows[0].count;
 
   const crossWorkspace = await request(
     base,
@@ -387,14 +438,50 @@ try {
   assert.equal(bossADelivery.length, 1);
   assert.equal(bossADelivery[0].status, 'pending');
   assert.equal(bossADelivery[0].delivery_type, 'notification');
-  assert.equal(bossADelivery[0].endpoint, bossAEndpoint);
+  assert.equal(bossADelivery[0].endpoint, bossAPwaEndpoint);
   assert.equal(JSON.stringify(bossADelivery[0].payload).includes('reason'), false);
   assert.equal((await owner.query(
     `SELECT count(*)::integer AS count
        FROM push_deliveries
       WHERE workspace_id = $1`,
     [workspaceB.workspace]
-  )).rows[0].count, 0);
+  )).rows[0].count, workspaceBDeliveryCountBefore);
+
+  const androidBrowserEndpoint = endpoint('employee-a-android-browser');
+  const androidPwaEndpoint = endpoint('employee-a-android-pwa');
+  await command(base, employeeA, 'push.register',
+    subscriptionBody(androidBrowserEndpoint, 'android', 'browser'));
+  await command(base, employeeA, 'push.register',
+    subscriptionBody(androidPwaEndpoint, 'android', 'pwa'));
+  const androidNotification = await createSyntheticNotification(
+    workspaceA.workspace, workspaceA.employeeUser, `android-pwa-${randomUUID()}`
+  );
+  assert.deepEqual((await owner.query(
+    `SELECT subscription.endpoint
+       FROM push_deliveries delivery
+       JOIN push_subscriptions subscription
+         ON subscription.workspace_id = delivery.workspace_id
+        AND subscription.id = delivery.subscription_id
+      WHERE delivery.workspace_id = $1 AND delivery.notification_id = $2`,
+    [workspaceA.workspace, androidNotification]
+  )).rows.map(row => row.endpoint), [androidPwaEndpoint]);
+
+  const iosBrowserEndpoint = endpoint('boss-b-ios-browser');
+  const iosPwaEndpoint = endpoint('boss-b-ios-pwa');
+  await command(base, bossB, 'push.register', subscriptionBody(iosBrowserEndpoint, 'ios', 'browser'));
+  await command(base, bossB, 'push.register', subscriptionBody(iosPwaEndpoint, 'ios', 'pwa'));
+  const iosNotification = await createSyntheticNotification(
+    workspaceB.workspace, workspaceB.bossUser, `ios-pwa-${randomUUID()}`
+  );
+  assert.deepEqual((await owner.query(
+    `SELECT subscription.endpoint
+       FROM push_deliveries delivery
+       JOIN push_subscriptions subscription
+         ON subscription.workspace_id = delivery.workspace_id
+        AND subscription.id = delivery.subscription_id
+      WHERE delivery.workspace_id = $1 AND delivery.notification_id = $2`,
+    [workspaceB.workspace, iosNotification]
+  )).rows.map(row => row.endpoint), [iosPwaEndpoint]);
 
   const testPush = await command(base, bossA, 'push.test', { endpoint: bossAEndpoint });
   assert.equal(testPush.data.queued, true);
@@ -497,7 +584,7 @@ try {
   assert.equal((await command(
     base, bossA, 'push.unregister', { endpoint: bossAEndpoint }
   )).data.unregistered, true);
-  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 0);
+  assert.equal((await request(base, '/v1/push/status', bossA, 200)).activeSubscriptionCount, 1);
   const endpointDigest = createHash('sha256').update(bossAEndpoint).digest();
   const revoked = (await owner.query(
     `SELECT revoked_at IS NOT NULL AS revoked

@@ -2,6 +2,7 @@
 
 ## 2026-08-02 Sprint 31 health delta
 
+- **Subscription duplication:** mitigated in Neon Staging by `0020_push_subscription_priority`; synthetic Windows/Android/iOS PWA priority and Browser fallback pass without direct API table grants. Residual gate is Windows physical verification, so status remains PENDING and overall completion remains 97%.
 - **Overall:** 97%; automated and Staging database acceptance complete, real-device delivery pending.
 - **Architecture:** PASS — one transactional outbox projection, one Notification Center, and the existing durable Web Push queue/worker; no duplicate transport or client-created server notification.
 - **Authorization/privacy:** PASS — live Workspace/Membership/role resolution, applicant/affected-employee targeting, actor exclusion, preferences, bounded metadata, and zero direct API table access.

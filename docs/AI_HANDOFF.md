@@ -2,6 +2,8 @@
 
 ## 2026-08-02 handoff — Sprint 31 Real Event Notifications
 
+- Final fix: Staging-only `0020_push_subscription_priority` adds validated `client_mode` metadata. For one Workspace/User, all active PWA subscriptions are selected; active Browser subscriptions are selected only when no active PWA exists. This preserves multi-PWA delivery while preventing the reported PWA-plus-Browser duplicate. Browser mode is a fallback, not a second Notification Center row.
+- Checksum `5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f`, Neon Staging apply, API Role direct-table denial, synthetic Windows/Android/iOS priority, Browser-only fallback, Workspace A/B isolation, deduplication, Badge, and notificationclick regression pass. Final Windows real-device evidence remains **PENDING USER VERIFICATION**.
 - Status: implementation, full automated gates, Neon Staging Migration rehearsal, and synthetic database/API/Web Push E2E complete; physical-device delivery is **PENDING USER VERIFICATION**. Completion: **97%**.
 - Migration `0019_real_event_notifications` is Staging-only with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`; apply/down/reapply and exact API grants passed. Production and pending `0009`/`0010` were not touched.
 - Real notifications are created only after the business Command commits its outbox row. Recipient resolution is server-side and live-Membership-scoped; actor self-notification, forged recipient, cross-Workspace access, and direct API table access fail closed.

@@ -19,7 +19,7 @@ Apple remains `push.apple.com` and its subdomains. Other HTTPS hosts and lookali
 suffixes remain rejected. `0018` is Staging-only and is not applied to Production.
 
 - `GET /v1/push/status` returns the current authorized Session's active subscription count.
-- `push.register` accepts only an approved HTTPS Web Push endpoint, browser `p256dh`/`auth` keys, expiration, bounded user agent, and platform. Workspace/User/Session are always resolved server-side.
+- `push.register` accepts only an approved HTTPS Web Push endpoint, browser `p256dh`/`auth` keys, expiration, bounded user agent, platform, and display-derived `clientMode` (`pwa` or `browser`). Workspace/User/Session are always resolved server-side. Older callers that omit the additive priority metadata safely default to Browser fallback metadata. Push delivery prefers every active PWA subscription for the recipient and uses active Browser subscriptions only when the recipient has no active PWA subscription.
 - `push.unregister` can revoke only the caller's own Workspace/User endpoint and makes pending deliveries dead.
 - `push.test` can target only the caller's active current-Session endpoint and is limited to three requests per ten minutes for the Workspace/User safety window. The fourth request returns `429 PUSH_RATE_LIMITED`; clients must not treat it as Session invalidation.
 - Missing Migration support returns an optional-capability response or `503 WEB_PUSH_UNAVAILABLE`; other authorization/database errors fail closed.

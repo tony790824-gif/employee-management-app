@@ -33,6 +33,7 @@
   let preferenceMutationPromise = null;
   let pushMutationPromise = null;
   let currentPushSubscription = null;
+  let currentPushClientMode = null;
   let pushAvailable = false;
   let activePushSubscriptionCount = 0;
   let registrationPushManagerAvailable = null;
@@ -141,7 +142,8 @@
       p256dh: value.keys.p256dh,
       auth: value.keys.auth,
       userAgent: String(navigator.userAgent || '').slice(0, 256),
-      platform: platform()
+      platform: platform(),
+      clientMode: window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser'
     };
   }
 
@@ -333,13 +335,28 @@
           currentPushSubscription = registrationPushManagerAvailable
             ? await registration.pushManager.getSubscription()
             : null;
+          if (!currentPushSubscription) currentPushClientMode = null;
+          const detectedMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
+          if (currentPushSubscription && detectedMode === 'pwa' && currentPushClientMode !== 'pwa') {
+            try {
+              await cloud.registerPushSubscription(subscriptionInput(currentPushSubscription));
+              currentPushClientMode = 'pwa';
+              activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
+            } catch (error) {
+              pushDiagnostic('subscription-metadata-failed', {
+                errorCode: error?.code || error?.name || 'UNKNOWN'
+              });
+            }
+          }
         } catch {
           registrationPushManagerAvailable = false;
           currentPushSubscription = null;
+          currentPushClientMode = null;
         }
       } else {
         registrationPushManagerAvailable = false;
         currentPushSubscription = null;
+        currentPushClientMode = null;
       }
       logPushSupport();
       renderPushSettings();
@@ -348,6 +365,7 @@
       pushAvailable = false;
       activePushSubscriptionCount = 0;
       currentPushSubscription = null;
+      currentPushClientMode = null;
       logPushSupport();
       renderPushSettings();
       return null;
@@ -455,6 +473,7 @@
         setMessage('正在儲存此裝置的推播設定…');
         await cloud.registerPushSubscription(subscriptionInput(subscription));
         currentPushSubscription = subscription;
+        currentPushClientMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
         activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
         setMessage('此裝置已啟用背景推播。');
       } catch (error) {
@@ -484,6 +503,7 @@
         await cloud.unregisterPushSubscription(subscription.endpoint);
         await subscription.unsubscribe();
         currentPushSubscription = null;
+        currentPushClientMode = null;
         activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
         setMessage('此裝置的背景推播已停用。');
       } catch (error) {
@@ -502,6 +522,7 @@
     await cloud.unregisterPushSubscription(subscription.endpoint);
     await subscription.unsubscribe();
     currentPushSubscription = null;
+    currentPushClientMode = null;
     activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
     return true;
   }
@@ -708,6 +729,7 @@
     pushAvailable = false;
     activePushSubscriptionCount = 0;
     currentPushSubscription = null;
+    currentPushClientMode = null;
     registrationPushManagerAvailable = null;
     lastPushSupportDiagnostic = '';
     trigger.hidden = true;
@@ -719,6 +741,7 @@
   window.navigator?.serviceWorker?.addEventListener?.('message', event => {
     if (event.data?.type === 'BANKE_PUSH_SUBSCRIPTION_CHANGED') {
       currentPushSubscription = null;
+      currentPushClientMode = null;
       renderPushSettings();
       setMessage('推播訂閱已變更，請重新註冊此裝置。');
     }

@@ -2,6 +2,7 @@
 
 ## Sprint 31 real event notifications (2026-08-02)
 
+- The final duplicate-delivery fix adds Staging-only Migration `0020_push_subscription_priority`: registration records display-derived `clientMode`, and delivery sends to active PWA subscriptions while treating Browser subscriptions as fallback only when no active PWA exists for that Workspace/User. Notification Center remains one row per event.
 - Sprint 31 implementation and automated/Staging database acceptance are complete; physical-device delivery remains **PENDING USER VERIFICATION**. Overall assessed completion is **97%**.
 - Additive Staging-only Migration `0019_real_event_notifications` extends the existing transactional outbox projection for employee clock-in/out, leave requests/results, and affected-employee schedule updates.
 - Recipients are resolved server-side from live Workspace Membership and role. Actors never receive their own manager notification, cross-Workspace delivery fails closed, and notification preferences cover clock, leave, and shift events.

@@ -4,6 +4,9 @@
   const button = document.querySelector('#installAppBtn');
   let deferred;
   const installed = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  window.shiftPwaContext = Object.freeze({
+    mode: () => installed() ? 'pwa' : 'browser'
+  });
   const serviceWorkerUrl = window.shiftEnvironment?.serviceWorkerUrl || './service-worker.js';
   const publishClientMode = async () => {
     if (!installed() || !('serviceWorker' in navigator)) return;

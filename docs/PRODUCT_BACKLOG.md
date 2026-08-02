@@ -2,6 +2,7 @@
 
 ## Sprint 31 status — Real Event Notifications (2026-08-02)
 
+- **Final P0/P1 hardening complete in code/Staging:** `0020_push_subscription_priority` prefers active PWA subscriptions and uses Browser only as fallback for the same Workspace/User. Final same-Windows duplicate-notification evidence remains pending; completion stays **97%**.
 - **Implemented and Staging-accepted:** transactional real-event projection for clock-in/out, leave submission/result, and affected-employee schedule updates; centralized live Membership/role recipient resolution; actor self-exclusion; clock/leave/shift preferences; database deduplication; existing durable Web Push reuse.
 - **Security accepted:** Workspace A/B isolation, cross-recipient denial, no private request detail/credential metadata, API Role zero table access, exact controlled-function grants, and bounded metadata/destination allowlist.
 - **Still pending:** physical Windows/iPhone/iPad/Android delivery and preference acceptance. Overall completion is **97%** until owner evidence is recorded.

@@ -192,7 +192,8 @@ export function validateCommand(name, input) {
     };
   }
   if (name === 'push.register') {
-    exactKeys(input, ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform'],
+    exactKeys(input, ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform',
+      'clientMode'],
       ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform']);
     assert(input.expirationTime === null
       || (Number.isSafeInteger(input.expirationTime)
@@ -208,13 +209,16 @@ export function validateCommand(name, input) {
       && PUSH_KEY_PATTERN.test(input.auth),
     400, 'COMMAND_INVALID', 'auth is invalid.');
     assert(PUSH_PLATFORMS.includes(input.platform), 400, 'COMMAND_INVALID', 'platform is invalid.');
+    const clientMode = input.clientMode ?? 'browser';
+    assert(['pwa', 'browser'].includes(clientMode), 400, 'COMMAND_INVALID', 'clientMode is invalid.');
     return {
       endpoint: pushEndpoint(input.endpoint),
       expirationTime: input.expirationTime,
       p256dh: input.p256dh,
       auth: input.auth,
       userAgent: text(input.userAgent, 'userAgent', { max: 256 }),
-      platform: input.platform
+      platform: input.platform,
+      clientMode
     };
   }
   if (name === 'push.unregister' || name === 'push.test') {

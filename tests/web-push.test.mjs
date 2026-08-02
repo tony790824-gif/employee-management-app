@@ -17,7 +17,8 @@ const subscriptionInput = {
   p256dh: 'D'.repeat(87),
   auth: 'E'.repeat(22),
   userAgent: 'Synthetic browser',
-  platform: 'windows'
+  platform: 'windows',
+  clientMode: 'pwa'
 };
 
 assert.deepEqual(webPushConfig({}), { enabled: false });
@@ -68,7 +69,8 @@ for (const invalid of [
   },
   { ...subscriptionInput, p256dh: 'short' },
   { ...subscriptionInput, auth: 'bad value with spaces' },
-  { ...subscriptionInput, platform: 'attacker' }
+  { ...subscriptionInput, platform: 'attacker' },
+  { ...subscriptionInput, clientMode: 'attacker' }
 ]) {
   assert.throws(() => validateCommand('push.register', invalid), error =>
     error?.code === 'COMMAND_INVALID' && error?.status === 400);
@@ -193,6 +195,11 @@ assert.match(worker, /BANKE_OPEN_NOTIFICATION_DESTINATION/);
 assert.match(worker, /BANKE_CLIENT_MODE/);
 assert.match(pwa, /BANKE_CLIENT_MODE/);
 assert.match(pwa, /standalone:\s*true/);
+assert.match(pwa, /shiftPwaContext/);
+assert.match(pwa, /mode:\s*\(\) => installed\(\) \? 'pwa' : 'browser'/);
+assert.match(ui, /clientMode:\s*window\.shiftPwaContext\?\.mode\?\.\(\) === 'pwa'/);
+assert.match(ui, /currentPushSubscription && detectedMode === 'pwa'/);
+assert.match(ui, /subscription-metadata-failed/);
 assert.doesNotMatch(worker, /client\.navigate\(target\)/);
 assert.match(worker, /addEventListener\('pushsubscriptionchange'/);
 assert.doesNotMatch(worker, /Authorization|accessToken|refreshToken|privateKey/);

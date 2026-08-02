@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-03 — Sprint 31 Push Subscription Priority
+
+- Added Staging-only Migration `0020_push_subscription_priority` and validated `pwa`/`browser` registration metadata.
+- Real-event delivery now sends to active PWA subscriptions and uses Browser subscriptions only when the Workspace/User has no active PWA, preventing duplicate PWA-plus-Browser system notifications while preserving Browser fallback.
+- Kept Notification Center one-row semantics, Workspace isolation, endpoint allowlists, delivery deduplication, Badge, notificationclick, and API least privilege unchanged.
+- Neon Staging checksum, least-privilege inspection, and synthetic Windows/Android/iOS priority E2E pass. Windows physical duplicate-notification verification remains pending; Production was not operated.
+
 ## 2026-08-01 — Sprint 30 Offline First
 
 - Added a bounded, versioned offline cache for PostgreSQL bootstrap, employee, shift, time-off, and

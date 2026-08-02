@@ -6,7 +6,7 @@ Migration `0019_real_event_notifications` adds `notification_preferences` with f
 
 The centralized `resolve_notification_recipients` SECURITY DEFINER function accepts no client recipient. It resolves active Workspace members, enforces boss/manager or affected-employee targeting, excludes the actor, and applies `clock_events`, `leave_events`, or `shift_events`. PUBLIC cannot execute it and the runtime API Role cannot directly read either notification table.
 
-Neon Staging apply/down/reapply passed with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. `0009` and `0010` remain intentionally pending; Production is unchanged. Rollback refuses to discard real Sprint 31 notification rows silently.
+Neon Staging apply/down/reapply for `0019` passed with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Additive Staging-only `0020_push_subscription_priority` is applied with checksum `5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f`; it adds `push_subscriptions.client_mode` and selects active PWA subscriptions before Browser fallback without widening API Role table privileges. `0009` and `0010` remain intentionally pending; Production is unchanged. Rollback refuses to discard real Sprint 31 notification rows silently.
 
 ## Migration 0018 — Edge Web Push provider allowlist (Staging only, 2026-07-30)
 

@@ -4,6 +4,13 @@ Status: **PENDING USER VERIFICATION**
 Automated/Staging database status: PASS
 Overall assessed completion: **97%**
 
+## Final duplicate-delivery hardening
+
+- Staging-only Migration `0020_push_subscription_priority` adds validated `client_mode` (`pwa` or `browser`) to the existing subscription model. Older callers safely default to Browser.
+- Recipient delivery selects all active PWA subscriptions for the Workspace/User. Browser subscriptions are used only when there is no active PWA, so multiple legitimate installed PWA devices remain reachable while Browser fallback does not duplicate them.
+- The signal comes from the existing standalone display-mode check, not User Agent alone. No fingerprint, Firebase token, second Service Worker, or second Notification Center record was added.
+- Checksum and least-privilege inspection plus synthetic Windows/Android/iOS priority, Browser fallback, Workspace isolation, deduplication, Badge, and notificationclick regression pass. Windows physical duplicate-notification verification remains pending.
+
 ## Accepted implementation
 
 - Employee clock-in/out → all active same-Workspace boss/manager recipients, excluding actor.

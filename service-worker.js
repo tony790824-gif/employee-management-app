@@ -1,5 +1,5 @@
 const CACHE_PREFIX='banke-production-';
-const CACHE='banke-production-v6';
+const CACHE='banke-production-v7';
 const REVISION_CACHE_KEY='./__banke_bootstrap_revision__';
 const PWA_CLIENT_CACHE='banke-pwa-client-v1';
 const PWA_CLIENT_CACHE_KEY='./__banke_standalone_client__';

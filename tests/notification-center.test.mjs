@@ -254,7 +254,8 @@ const sandbox = {
       }
     },
     shiftPostgresCloud: cloud,
-    shiftDomSafety: dom
+    shiftDomSafety: dom,
+    shiftPwaContext: { mode: () => 'browser' }
   },
   document: {
     querySelector: selector => elements.get(selector) || null,
@@ -329,6 +330,8 @@ assert.equal(registeredPushInputs.length, 1, 'The browser subscription is regist
 assert.equal(registeredPushInputs[0].endpoint, pushEndpoint);
 assert.equal(registeredPushInputs[0].expirationTime, null,
   'Edge expirationTime=0 is normalized to the database no-expiration representation.');
+assert.equal(registeredPushInputs[0].clientMode, 'browser',
+  'An ordinary Browser registration declares fallback mode without relying on User Agent.');
 assert.equal(elements.get('#pushNotificationTest').hidden, false);
 elements.get('#pushNotificationTest').dispatch('click');
 await new Promise(resolve => setImmediate(resolve));

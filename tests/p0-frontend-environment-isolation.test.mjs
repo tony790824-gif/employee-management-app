@@ -89,11 +89,11 @@ assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.product
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
 assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL rehearsal 與正常 Staging 必須共用清除範圍');
-assert.match(rehearsalWorker, /banke-staging-postgres-v9/);
-assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v9/);
-assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v9/);
-assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v9"/);
-assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v9"/);
+assert.match(rehearsalWorker, /banke-staging-postgres-v10/);
+assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v10/);
+assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v10/);
+assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v10"/);
+assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v10"/);
 assert.notEqual(
   stagingIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
   rehearsalIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],

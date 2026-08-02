@@ -2,6 +2,7 @@
 
 ## Sprint 31 real-event notification Staging operations
 
+0. Manage the final duplicate-delivery metadata only with `pnpm db:push-subscription-priority:staging status|up`. The runner requires `BANK_ENV=staging`, separate Migrator/API roles, required Migration `0019`, an advisory lock, checksum ledger consistency, controlled-function execution, and zero API direct table access. Never use it against Production.
 1. Confirm `BANK_ENV=staging`, approved direct Neon host, separate migrator/API roles, and ignored `.env`; never print URLs or keys.
 2. Use `pnpm db:real-event-notifications:staging status|up`. Rollback additionally requires the one-process Staging confirmation `BANK_ALLOW_STAGING_REAL_EVENT_NOTIFICATIONS_ROLLBACK=ROLLBACK_BANKE_STAGING_REAL_EVENT_NOTIFICATIONS`.
 3. Approved checksum is `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Stop on any mismatch.
@@ -10,6 +11,7 @@
 6. A notification row is authoritative; system Push is asynchronous. Temporary provider failures retry through the existing bounded queue; 404/410 revoke the stale subscription. Never replay a business Command to force Push.
 7. Physical Windows/iPhone/iPad/Android delivery remains a separate release gate. Production migration/deployment is forbidden without explicit future approval.
 8. For notification-click acceptance, verify the installed PWA has been launched once after the new Service Worker activates. A click must focus that PWA and post an allowlisted destination; clock events open Attendance, shift events open Schedule, and leave/time-off events open Time-Off. If the PWA is closed, one safe same-scope window may be opened. Do not diagnose by logging notification payloads, endpoints, cookies, or Session identifiers.
+9. For Subscription Priority acceptance, register the same Staging Workspace/User in an installed PWA and an ordinary Browser, then trigger one real event. Expect one Notification Center row and PWA system delivery only. After controlled PWA disable/unregister, the next event must produce one Browser fallback delivery. Do not identify a device through fingerprinting or log endpoint/key values.
 
 ## PostgreSQL Identity Staging（未接 Production）
 
