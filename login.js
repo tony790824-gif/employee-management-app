@@ -14,6 +14,7 @@
   const APP_SCRIPTS = Object.freeze([
     'dom-safety.js',
     'current-user-ui.js',
+    'notification-navigation.js',
     'app.js',
     'access.js',
     'employee-work.js',

@@ -1,9 +1,10 @@
+importScripts('./notification-navigation.js');
 const CACHE_PREFIX='banke-production-';
 const CACHE='banke-production-v7';
 const REVISION_CACHE_KEY='./__banke_bootstrap_revision__';
 const PWA_CLIENT_CACHE='banke-pwa-client-v1';
 const PWA_CLIENT_CACHE_KEY='./__banke_standalone_client__';
-const FILES=['./','./index.html','./style.css','./access.css','./login.css','./login-screen.css','./employee-calendar.css','./employee-layout.css','./time-off-ui.css','./notification-center.css','./environment.css','./environment-config.js','./postgres-api-client.js','./state-store.js','./postgres-offline.js','./account-security.js','./dom-safety.js','./current-user-ui.js','./app.js','./access.js','./employee-work.js','./boss-hours.js','./management-actions.js','./cloud-sync.js','./google-sheets-config.js','./google-sheets-cloud.js','./enhancements.js','./pwa.js','./employee-layout.js','./time-off-ui.js','./notification-center.js','./manifest.webmanifest','./app-icon.svg'];
+const FILES=['./','./index.html','./style.css','./access.css','./login.css','./login-screen.css','./employee-calendar.css','./employee-layout.css','./time-off-ui.css','./notification-center.css','./environment.css','./environment-config.js','./postgres-api-client.js','./state-store.js','./postgres-offline.js','./account-security.js','./dom-safety.js','./current-user-ui.js','./notification-navigation.js','./app.js','./access.js','./employee-work.js','./boss-hours.js','./management-actions.js','./cloud-sync.js','./google-sheets-config.js','./google-sheets-cloud.js','./enhancements.js','./pwa.js','./employee-layout.js','./time-off-ui.js','./notification-center.js','./manifest.webmanifest','./app-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 const validRevision=value=>Number.isSafeInteger(Number(value))&&Number(value)>=0;
@@ -46,31 +47,11 @@ self.addEventListener('message',event=>{
     event.waitUntil(rememberStandaloneClient(event));
   }
 });
-const NOTIFICATION_DESTINATIONS=Object.freeze({
-  clock_in:'/?open=attendance',
-  clock_out:'/?open=attendance',
-  shift_updated:'/?open=schedule',
-  schedule_updated:'/?open=schedule',
-  leave_requested:'/?open=time-off',
-  leave_approved:'/?open=time-off',
-  leave_rejected:'/?open=time-off',
-  time_off_submitted:'/?open=time-off',
-  time_off_cancelled:'/?open=time-off',
-  time_off_approved:'/?open=time-off',
-  time_off_rejected:'/?open=time-off'
-});
-const ALLOWED_NOTIFICATION_PATHS=new Set([
-  '/?open=notifications','/?open=attendance','/?open=schedule','/?open=time-off'
-]);
 const ALLOWED_APP_IDS=new Set([
   'banke-production','banke-staging','banke-staging-postgres','banke-local'
 ]);
-const safeNotificationPath=(type,rawUrl)=>{
-  const mapped=NOTIFICATION_DESTINATIONS[String(type||'').toLowerCase()];
-  if(mapped)return mapped;
-  return typeof rawUrl==='string'&&ALLOWED_NOTIFICATION_PATHS.has(rawUrl)
-    ?rawUrl:'/?open=notifications';
-};
+const safeNotificationPath=type=>self.shiftNotificationNavigation?.pathForType(type)
+  ||'/?open=notifications';
 const safePushPayload=event=>{
   try{
     const value=event.data?.json();
@@ -79,7 +60,7 @@ const safePushPayload=event=>{
     const body=String(value.body||'您有一則新通知').slice(0,500);
     const notificationId=/^[a-f0-9-]{36}$/i.test(String(value.notificationId||''))?String(value.notificationId):'';
     const type=String(value.type||'').toLowerCase();
-    const url=safeNotificationPath(type,value.url);
+    const url=safeNotificationPath(type);
     return{title,body,notificationId,type,url};
   }catch{return null}
 };
@@ -98,7 +79,7 @@ self.addEventListener('push',event=>{
 self.addEventListener('notificationclick',event=>{
   event.notification.close();
   const notificationType=String(event.notification?.data?.type||'').toLowerCase();
-  const path=safeNotificationPath(notificationType,event.notification?.data?.url);
+  const path=safeNotificationPath(notificationType);
   event.waitUntil((async()=>{
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     const scope=self.registration?.scope||`${self.location.origin}/`;

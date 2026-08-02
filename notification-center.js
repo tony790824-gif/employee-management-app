@@ -4,6 +4,7 @@
   if (window.shiftEnvironment?.dataBackend !== 'postgres') return;
   const cloud = window.shiftPostgresCloud;
   const dom = window.shiftDomSafety;
+  const navigation = window.shiftNotificationNavigation;
   const trigger = document.querySelector('#notificationButton');
   const badge = document.querySelector('#notificationBadge');
   const dialog = document.querySelector('#notificationDialog');
@@ -23,7 +24,7 @@
   const pushDisable = document.querySelector('#pushNotificationDisable');
   const pushRepair = document.querySelector('#pushNotificationRepair');
   const pushTest = document.querySelector('#pushNotificationTest');
-  if (!cloud || !dom || !trigger || !badge || !dialog || !close || !markAll || !summary || !message || !list) return;
+  if (!cloud || !dom || !navigation || !trigger || !badge || !dialog || !close || !markAll || !summary || !message || !list) return;
 
   let items = [];
   let unreadCount = 0;
@@ -266,7 +267,11 @@
         dom.element('p', { className: 'notification-item-body', text: item.body })
       ]);
       button.disabled = Boolean(mutationPromise);
-      if (unread) button.addEventListener('click', () => void markRead(item));
+      button.addEventListener('click', () => {
+        const path = navigation.pathForType(item.type);
+        openNotificationDestination(path);
+        if (unread) void markRead(item);
+      });
       return button;
     }));
   }
@@ -677,19 +682,8 @@
     void refreshPushStatus();
     return true;
   };
-  const NOTIFICATION_OPEN_TARGETS = Object.freeze({
-    notifications: 'notifications',
-    attendance: 'attendance',
-    schedule: 'schedule',
-    'time-off': 'time-off'
-  });
-  const notificationOpenTarget = path => {
-    if (typeof path !== 'string') return '';
-    const match = /^\/\?open=(notifications|attendance|schedule|time-off)$/.exec(path);
-    return match ? NOTIFICATION_OPEN_TARGETS[match[1]] : '';
-  };
   const openNotificationDestination = path => {
-    const target = notificationOpenTarget(path);
+    const target = navigation.targetForPath(path);
     if (!target) return false;
     if (!cloud.isConnected()) {
       pendingNotificationDestination = path;
@@ -755,9 +749,7 @@
   const openTarget = typeof URLSearchParams === 'function'
     ? new URLSearchParams(window.location?.search || '').get('open')
     : '';
-  const openFromPush = openTarget && NOTIFICATION_OPEN_TARGETS[openTarget]
-    ? `/?open=${openTarget}`
-    : '';
+  const openFromPush = navigation.pathForTarget(openTarget);
   if (openFromPush) {
     window.addEventListener('load', () => {
       openNotificationDestination(openFromPush);

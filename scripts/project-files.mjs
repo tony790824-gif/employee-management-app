@@ -21,6 +21,7 @@ export const deployFiles = Object.freeze([
   'account-security.js',
   'dom-safety.js',
   'current-user-ui.js',
+  'notification-navigation.js',
   'app.js',
   'access.js',
   'employee-work.js',

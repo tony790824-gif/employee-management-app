@@ -170,6 +170,7 @@ assert.deepEqual(
 );
 
 const ui = await readFile('notification-center.js', 'utf8');
+const navigationSource = await readFile('notification-navigation.js', 'utf8');
 const login = await readFile('login.js', 'utf8');
 const pwa = await readFile('pwa.js', 'utf8');
 const worker = await readFile('service-worker.js', 'utf8');
@@ -190,6 +191,7 @@ assert.match(login, /PUSH_UNREGISTER_FAILED/);
 assert.match(worker, /addEventListener\('push'/);
 assert.match(worker, /showNotification/);
 assert.match(worker, /addEventListener\('notificationclick'/);
+assert.match(worker, /importScripts\('\.\/notification-navigation\.js'\)/);
 assert.match(worker, /openWindow/);
 assert.match(worker, /BANKE_OPEN_NOTIFICATION_DESTINATION/);
 assert.match(worker, /BANKE_CLIENT_MODE/);
@@ -226,7 +228,12 @@ let matchedClients = [{
   }
 }];
 const cacheStorage = new Map();
+let workerContext;
 const workerSandbox = {
+  importScripts: path => {
+    assert.equal(path, './notification-navigation.js');
+    vm.runInContext(navigationSource, workerContext, { filename: 'notification-navigation.js' });
+  },
   self: {
     location: { origin: 'https://draft.staging.example' },
     addEventListener: (type, listener) => workerListeners.set(type, listener),
@@ -260,7 +267,8 @@ const workerSandbox = {
   Promise,
   structuredClone
 };
-vm.runInContext(worker, vm.createContext(workerSandbox), { filename: 'service-worker.js' });
+workerContext = vm.createContext(workerSandbox);
+vm.runInContext(worker, workerContext, { filename: 'service-worker.js' });
 
 let pushWork;
 workerListeners.get('push')({

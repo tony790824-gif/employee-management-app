@@ -3,6 +3,7 @@ import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
 const source = await readFile('notification-center.js', 'utf8');
+const navigationSource = await readFile('notification-navigation.js', 'utf8');
 const css = await readFile('notification-center.css', 'utf8');
 const html = await readFile('index.html', 'utf8');
 const login = await readFile('login.js', 'utf8');
@@ -11,8 +12,10 @@ const worker = await readFile('service-worker.js', 'utf8');
 assert.match(html, /id="notificationButton"[\s\S]*id="notificationBadge"/);
 assert.match(html, /id="notificationDialog"[\s\S]*id="notificationMarkAllRead"[\s\S]*id="notificationList"/);
 assert.match(login, /'notification-center\.js'/);
+assert.match(login, /'notification-navigation\.js'/);
 assert.match(worker, /notification-center\.css/);
 assert.match(worker, /notification-center\.js/);
+assert.match(worker, /importScripts\('\.\/notification-navigation\.js'\)/);
 assert.match(worker, /BANKE_BOOTSTRAP_REVISION_AVAILABLE/);
 assert.match(css, /\.notification-trigger\[hidden\]\{display:none!important\}/);
 assert.match(css, /min-height:44px/);
@@ -263,8 +266,32 @@ const sandbox = {
   }
 };
 sandbox.window.window = sandbox.window;
+vm.runInNewContext(navigationSource, sandbox, { filename: 'notification-navigation.js' });
 vm.runInNewContext(source, sandbox, { filename: 'notification-center.js' });
 await new Promise(resolve => setImmediate(resolve));
+
+const navigationCases = new Map([
+  ['clock_in', 'attendance'],
+  ['clock_out', 'attendance'],
+  ['shift_updated', 'schedule'],
+  ['leave_requested', 'time-off'],
+  ['leave_approved', 'time-off'],
+  ['leave_rejected', 'time-off'],
+  ['unknown', 'notifications']
+]);
+for (const [type, target] of navigationCases) {
+  assert.equal(sandbox.window.shiftNotificationNavigation.targetForType(type), target);
+  assert.equal(
+    sandbox.window.shiftNotificationNavigation.pathForType(type),
+    `/?open=${target}`
+  );
+}
+for (const unsafe of [
+  'https://attacker.invalid/', '//attacker.invalid', 'javascript:alert(1)',
+  'data:text/html,bad', '/?open=schedule&next=bad', '/?open=schedule#bad', '/unknown'
+]) {
+  assert.equal(sandbox.window.shiftNotificationNavigation.targetForPath(unsafe), '');
+}
 
 assert.equal(listCalls, 1, 'Authenticated initialization loads recipient notifications once.');
 assert.equal(elements.get('#notificationButton').hidden, false);
@@ -542,6 +569,38 @@ await new Promise(resolve => setImmediate(resolve));
 assert.deepEqual(marked, [{ id: notification.id, revision: 0 }]);
 assert.equal(elements.get('#notificationBadge').hidden, true);
 assert.equal(elements.get('#notificationSummary').textContent, '沒有未讀通知');
+assert.equal(routeActivations.at(-1), 'time-off',
+  'Clicking a Notification Center row uses the same time-off destination as notificationclick.');
+assert.equal(elements.get('#notificationDialog').open, false,
+  'Clicking a routed Notification Center row closes the dialog without reloading.');
+
+payload = {
+  ok: true,
+  items: [...navigationCases].map(([type], index) => ({
+    ...notification,
+    id: `00000000-0000-4000-8000-${String(index + 20).padStart(12, '0')}`,
+    type,
+    title: `Synthetic ${type}`,
+    readAt: '2026-07-29T00:01:00.000Z'
+  })),
+  unreadCount: 0,
+  preferences: payload.preferences
+};
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+for (const [[type, target], index] of [...navigationCases].map((entry, index) => [entry, index])) {
+  elements.get('#notificationDialog').showModal();
+  elements.get('#notificationList').children[index].dispatch('click');
+  await new Promise(resolve => setImmediate(resolve));
+  if (target === 'notifications') {
+    assert.equal(elements.get('#notificationDialog').open, true,
+      `${type} safely remains in Notification Center.`);
+  } else {
+    assert.equal(routeActivations.at(-1), target, `${type} routes to ${target}.`);
+    assert.equal(elements.get('#notificationDialog').open, false, `${type} closes Notification Center.`);
+  }
+}
+await new Promise(resolve => setImmediate(resolve));
 
 payload = {
   ok: true,

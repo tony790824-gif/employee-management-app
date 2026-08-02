@@ -87,6 +87,7 @@ assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.staging
   'PostgreSQL rehearsal must not load the Google Sheets Staging iframe');
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
+const rehearsalNavigation = await readFile('dist-staging-postgres/notification-navigation.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
 assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL rehearsal 與正常 Staging 必須共用清除範圍');
 assert.match(rehearsalWorker, /banke-staging-postgres-v10/);
@@ -121,8 +122,13 @@ const workerSelf = {
     ]
   }
 };
-vm.runInContext(rehearsalWorker, vm.createContext({
+let workerContext;
+const workerSandbox = {
   self: workerSelf,
+  importScripts: path => {
+    assert.equal(path, './notification-navigation.js');
+    vm.runInContext(rehearsalNavigation, workerContext, { filename: 'notification-navigation.js' });
+  },
   caches: {
     open: async () => ({
       addAll: async () => {},
@@ -137,7 +143,9 @@ vm.runInContext(rehearsalWorker, vm.createContext({
   JSON,
   Number,
   Promise
-}), { filename: 'staging-postgres-service-worker.js' });
+};
+workerContext = vm.createContext(workerSandbox);
+vm.runInContext(rehearsalWorker, workerContext, { filename: 'staging-postgres-service-worker.js' });
 let revisionWork;
 workerListeners.get('message')({
   data: { type: 'BANKE_BOOTSTRAP_REVISION', revision: 42 },
