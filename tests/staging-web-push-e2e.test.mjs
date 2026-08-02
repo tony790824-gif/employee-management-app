@@ -18,6 +18,8 @@ const EXPECTED_EDGE_ALLOWLIST_CHECKSUM =
   '48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277';
 const EXPECTED_PRIORITY_CHECKSUM =
   '5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f';
+const EXPECTED_FALLBACK_CHECKSUM =
+  '7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4';
 const TEST_ORIGIN = 'https://web-push-e2e.staging.invalid';
 const TEST_ISSUER = 'https://web-push-e2e.staging.invalid/';
 const { Client } = pg;
@@ -211,6 +213,13 @@ try {
     name: 'push_subscription_priority',
     checksum: EXPECTED_PRIORITY_CHECKSUM
   });
+  const fallbackMigration = (await owner.query(
+    `SELECT name, checksum FROM schema_migrations WHERE version = '0021'`
+  )).rows[0];
+  assert.deepEqual(fallbackMigration, {
+    name: 'push_delivery_fallback',
+    checksum: EXPECTED_FALLBACK_CHECKSUM
+  });
   assert.equal((await owner.query('SELECT current_database() AS name')).rows[0].name, 'neondb');
   assert.notEqual(
     new URL(process.env.DATABASE_API_URL).username,
@@ -381,11 +390,19 @@ try {
     assert.equal((await command(
       base, employeeA, 'push.test', { endpoint: staleEndpoint }
     )).data.queued, true);
-    const claim = (await owner.query(
-      `SELECT app_private.worker_claim_push_deliveries($1, 50) AS result`,
-      [`push-e2e-expired-${statusCode}`]
-    )).rows[0].result;
-    const staleDelivery = claim.items.find(item => item.endpoint === staleEndpoint);
+    const staleDelivery = (await owner.query(
+      `UPDATE push_deliveries delivery
+          SET status = 'processing', attempt_count = delivery.attempt_count + 1,
+              claimed_at = clock_timestamp()
+         FROM push_subscriptions subscription
+        WHERE subscription.workspace_id = delivery.workspace_id
+          AND subscription.id = delivery.subscription_id
+          AND subscription.endpoint_hash = digest($1, 'sha256')
+          AND delivery.delivery_type = 'push_test'
+          AND delivery.status = 'pending'
+      RETURNING delivery.id, subscription.endpoint`,
+      [staleEndpoint]
+    )).rows[0];
     assert.ok(staleDelivery, `The ${statusCode} synthetic FCM delivery must be claimed.`);
     const completion = (await owner.query(
       `SELECT app_private.worker_complete_push_delivery(
@@ -424,7 +441,7 @@ try {
   assert.equal(submitted.status, 'pending');
 
   const bossADelivery = (await owner.query(
-    `SELECT delivery.id, delivery.status, delivery.delivery_type, delivery.payload,
+    `SELECT delivery.id, delivery.notification_id, delivery.status, delivery.delivery_type, delivery.payload,
             subscription.endpoint
        FROM push_deliveries delivery
        JOIN push_subscriptions subscription
@@ -446,6 +463,44 @@ try {
       WHERE workspace_id = $1`,
     [workspaceB.workspace]
   )).rows[0].count, workspaceBDeliveryCountBefore);
+
+  await owner.query(
+    `UPDATE push_deliveries
+        SET status = 'processing', attempt_count = attempt_count + 1,
+            claimed_at = clock_timestamp()
+      WHERE workspace_id = $1 AND id = $2`,
+    [workspaceA.workspace, bossADelivery[0].id]
+  );
+  const pwaExpiry = (await owner.query(
+    `SELECT app_private.worker_complete_push_delivery(
+       $1, 'expired', 410, 'SUBSCRIPTION_EXPIRED'
+     ) AS result`,
+    [bossADelivery[0].id]
+  )).rows[0].result;
+  assert.deepEqual(pwaExpiry, { ok: true, status: 'dead' });
+  const fallbackDeliveries = (await owner.query(
+    `SELECT subscription.endpoint, delivery.status
+       FROM push_deliveries delivery
+       JOIN push_subscriptions subscription
+         ON subscription.workspace_id = delivery.workspace_id
+        AND subscription.id = delivery.subscription_id
+      WHERE delivery.workspace_id = $1 AND delivery.notification_id = $2
+      ORDER BY delivery.created_at, delivery.id`,
+    [workspaceA.workspace, bossADelivery[0].notification_id]
+  )).rows;
+  assert.deepEqual(fallbackDeliveries, [
+    { endpoint: bossAPwaEndpoint, status: 'dead' },
+    { endpoint: bossAEndpoint, status: 'pending' }
+  ], 'An expired PWA delivery safely falls back to the active browser subscription.');
+  assert.equal((await owner.query(
+    `SELECT count(*)::integer AS count
+       FROM notifications
+      WHERE workspace_id = $1 AND id = $2`,
+    [workspaceA.workspace, bossADelivery[0].notification_id]
+  )).rows[0].count, 1, 'Push fallback never duplicates the Notification Center event.');
+  assert.equal((await command(
+    base, bossA, 'push.register', subscriptionBody(bossAPwaEndpoint, 'windows', 'pwa')
+  )).data.registered, true);
 
   const androidBrowserEndpoint = endpoint('employee-a-android-browser');
   const androidPwaEndpoint = endpoint('employee-a-android-pwa');

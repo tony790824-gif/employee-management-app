@@ -2,6 +2,7 @@
 
 ## 2026-08-02 handoff — Sprint 31 Real Event Notifications
 
+- Regression closure: PWA subscription mode/session reconciliation now runs at authenticated bootstrap instead of only when Notification Center opens. Staging-only `0021_push_delivery_fallback` (`7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`) queues Browser fallback only after the preferred PWA returns 404/410 and is revoked. Neon Staging and synthetic E2E pass; Windows system notification remains **PENDING USER VERIFICATION**.
 - Final fix: Staging-only `0020_push_subscription_priority` adds validated `client_mode` metadata. For one Workspace/User, all active PWA subscriptions are selected; active Browser subscriptions are selected only when no active PWA exists. This preserves multi-PWA delivery while preventing the reported PWA-plus-Browser duplicate. Browser mode is a fallback, not a second Notification Center row.
 - Checksum `5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f`, Neon Staging apply, API Role direct-table denial, synthetic Windows/Android/iOS priority, Browser-only fallback, Workspace A/B isolation, deduplication, Badge, and notificationclick regression pass. Final Windows real-device evidence remains **PENDING USER VERIFICATION**.
 - Status: implementation, full automated gates, Neon Staging Migration rehearsal, and synthetic database/API/Web Push E2E complete; physical-device delivery is **PENDING USER VERIFICATION**. Completion: **97%**.

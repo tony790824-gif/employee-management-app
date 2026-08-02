@@ -33,6 +33,7 @@
   let mutationPromise = null;
   let preferenceMutationPromise = null;
   let pushMutationPromise = null;
+  let pushStatusPromise = null;
   let currentPushSubscription = null;
   let currentPushClientMode = null;
   let pushAvailable = false;
@@ -323,58 +324,65 @@
       : '只有按下「啟用推播」後，瀏覽器才會詢問通知權限。';
   }
 
-  async function refreshPushStatus() {
-    if (!pushSettings || !cloud.isConnected()) return null;
-    try {
-      const status = await cloud.pushStatus();
-      pushAvailable = status?.ok === true && status?.available !== false;
-      activePushSubscriptionCount = Number.isSafeInteger(Number(status?.activeSubscriptionCount))
-        ? Math.max(0, Number(status.activeSubscriptionCount))
-        : 0;
-      registrationPushManagerAvailable = null;
-      const initialSupport = pushSupportSnapshot();
-      if (pushBrowserCapable(initialSupport)) {
-        try {
-          const registration = await navigator.serviceWorker.ready;
-          registrationPushManagerAvailable = Boolean(registration?.pushManager);
-          currentPushSubscription = registrationPushManagerAvailable
-            ? await registration.pushManager.getSubscription()
-            : null;
-          if (!currentPushSubscription) currentPushClientMode = null;
-          const detectedMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
-          if (currentPushSubscription && detectedMode === 'pwa' && currentPushClientMode !== 'pwa') {
-            try {
-              await cloud.registerPushSubscription(subscriptionInput(currentPushSubscription));
-              currentPushClientMode = 'pwa';
-              activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
-            } catch (error) {
-              pushDiagnostic('subscription-metadata-failed', {
-                errorCode: error?.code || error?.name || 'UNKNOWN'
-              });
+  function refreshPushStatus() {
+    if (!pushSettings || !cloud.isConnected()) return Promise.resolve(null);
+    if (pushStatusPromise) return pushStatusPromise;
+    const operation = (async () => {
+      try {
+        const status = await cloud.pushStatus();
+        pushAvailable = status?.ok === true && status?.available !== false;
+        activePushSubscriptionCount = Number.isSafeInteger(Number(status?.activeSubscriptionCount))
+          ? Math.max(0, Number(status.activeSubscriptionCount))
+          : 0;
+        registrationPushManagerAvailable = null;
+        const initialSupport = pushSupportSnapshot();
+        if (pushBrowserCapable(initialSupport)) {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            registrationPushManagerAvailable = Boolean(registration?.pushManager);
+            currentPushSubscription = registrationPushManagerAvailable
+              ? await registration.pushManager.getSubscription()
+              : null;
+            if (!currentPushSubscription) currentPushClientMode = null;
+            const detectedMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
+            if (currentPushSubscription && detectedMode === 'pwa' && currentPushClientMode !== 'pwa') {
+              try {
+                await cloud.registerPushSubscription(subscriptionInput(currentPushSubscription));
+                currentPushClientMode = 'pwa';
+                activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
+              } catch (error) {
+                pushDiagnostic('subscription-metadata-failed', {
+                  errorCode: error?.code || error?.name || 'UNKNOWN'
+                });
+              }
             }
+          } catch {
+            registrationPushManagerAvailable = false;
+            currentPushSubscription = null;
+            currentPushClientMode = null;
           }
-        } catch {
+        } else {
           registrationPushManagerAvailable = false;
           currentPushSubscription = null;
           currentPushClientMode = null;
         }
-      } else {
-        registrationPushManagerAvailable = false;
+        logPushSupport();
+        renderPushSettings();
+        return status;
+      } catch {
+        pushAvailable = false;
+        activePushSubscriptionCount = 0;
         currentPushSubscription = null;
         currentPushClientMode = null;
+        logPushSupport();
+        renderPushSettings();
+        return null;
       }
-      logPushSupport();
-      renderPushSettings();
-      return status;
-    } catch {
-      pushAvailable = false;
-      activePushSubscriptionCount = 0;
-      currentPushSubscription = null;
-      currentPushClientMode = null;
-      logPushSupport();
-      renderPushSettings();
-      return null;
-    }
+    })();
+    pushStatusPromise = operation;
+    return operation.finally(() => {
+      if (pushStatusPromise === operation) pushStatusPromise = null;
+    });
   }
 
   function startPushActivation({ replace = false } = {}) {
@@ -714,6 +722,7 @@
   });
   document.addEventListener('postgres-bootstrap-refreshed', () => {
     void loadNotifications({ silent: true });
+    void refreshPushStatus();
     if (pendingNotificationDestination) openNotificationDestination(pendingNotificationDestination);
   });
   document.addEventListener('postgres-session-cleared', () => {
@@ -724,6 +733,7 @@
     activePushSubscriptionCount = 0;
     currentPushSubscription = null;
     currentPushClientMode = null;
+    pushStatusPromise = null;
     registrationPushManagerAvailable = null;
     lastPushSupportDiagnostic = '';
     trigger.hidden = true;
@@ -762,4 +772,5 @@
   render();
   renderPreferences();
   void loadNotifications({ silent: true });
+  void refreshPushStatus();
 })();

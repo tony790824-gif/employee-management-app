@@ -125,6 +125,7 @@ let browserSubscription = null;
 let pushSubscribePending = false;
 let pushServerCount = 0;
 let pushTestError = null;
+let pwaMode = 'browser';
 const registeredPushInputs = [];
 const unregisteredPushEndpoints = [];
 const testedPushEndpoints = [];
@@ -258,7 +259,7 @@ const sandbox = {
     },
     shiftPostgresCloud: cloud,
     shiftDomSafety: dom,
-    shiftPwaContext: { mode: () => 'browser' }
+    shiftPwaContext: { mode: () => pwaMode }
   },
   document: {
     querySelector: selector => elements.get(selector) || null,
@@ -630,6 +631,19 @@ payload = { ok: true, items: [], unreadCount: 0 };
 documentListeners.get('postgres-bootstrap-refreshed')();
 await new Promise(resolve => setImmediate(resolve));
 assert.equal(listCalls >= 3, true, 'Bootstrap revision refresh reloads recipient notifications.');
+
+const registrationsBeforePwaResume = registeredPushInputs.length;
+pwaMode = 'pwa';
+browserSubscription = pushSubscription;
+serviceWorker.ready = Promise.resolve({ pushManager: activePushManager });
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(registeredPushInputs.length, registrationsBeforePwaResume + 1,
+  'An authenticated PWA reconciles its existing subscription before Notification Center opens.');
+assert.equal(registeredPushInputs.at(-1).clientMode, 'pwa',
+  'Foreground bootstrap reconciliation records the installed client as the preferred PWA mode.');
+pwaMode = 'browser';
 
 payload = { ok: true, workspaceId: 'ws_0123456789abcdef0123456789abcdef', items: [], unreadCount: 0, available: false };
 documentListeners.get('postgres-bootstrap-refreshed')();

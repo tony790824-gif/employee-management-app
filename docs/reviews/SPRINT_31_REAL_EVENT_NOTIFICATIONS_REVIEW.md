@@ -6,6 +6,8 @@ Overall assessed completion: **97%**
 
 ## Final duplicate-delivery hardening
 
+- Regression fix: an installed PWA now reconciles its existing browser subscription to `client_mode=pwa` and the current authenticated Session immediately after bootstrap, not only after Notification Center is opened.
+- Staging-only Migration `0021_push_delivery_fallback` (`7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`) retains PWA-only initial delivery. If that PWA explicitly returns 404/410, it is revoked and the same notification is idempotently queued to an eligible Browser fallback. Other failures do not bypass retry or authorization controls.
 - Staging-only Migration `0020_push_subscription_priority` adds validated `client_mode` (`pwa` or `browser`) to the existing subscription model. Older callers safely default to Browser.
 - Recipient delivery selects all active PWA subscriptions for the Workspace/User. Browser subscriptions are used only when there is no active PWA, so multiple legitimate installed PWA devices remain reachable while Browser fallback does not duplicate them.
 - The signal comes from the existing standalone display-mode check, not User Agent alone. No fingerprint, Firebase token, second Service Worker, or second Notification Center record was added.

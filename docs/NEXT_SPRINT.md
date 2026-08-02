@@ -2,7 +2,7 @@
 
 Status: **PENDING USER VERIFICATION**. Do not infer device PASS from automation.
 
-0. On one Windows machine, enable Push in the installed PWA and in an ordinary Browser for the same Staging Workspace/User. Trigger one real event and confirm exactly one Windows system notification is delivered by the PWA. Disable/unregister the PWA, trigger another event, and confirm the Browser fallback receives exactly one notification. Confirm Notification Center still contains one row per event.
+0. On one Windows machine, open and authenticate the installed PWA before triggering an event so its existing subscription is reconciled to the current Session. Also enable Push in an ordinary Browser for the same Staging Workspace/User. Trigger one real event and confirm exactly one Windows system notification is delivered by the PWA. Disable/unregister the PWA, trigger another event, and confirm the Browser fallback receives exactly one notification. Confirm Notification Center still contains one row per event. A synthetic Staging 410 recovery already passes, but this physical result remains pending.
 1. On Windows and an installed mobile PWA, sign in as one employee and one boss/manager in the same Staging Workspace.
 2. Employee clocks in and out; only boss/manager devices must receive one Notification Center row and one system push per active device. The actor must not receive a manager notification.
 3. Employee submits scheduled leave and ad-hoc leave; only authorized reviewers receive them. Approve one and reject one; only the applicant receives each result.

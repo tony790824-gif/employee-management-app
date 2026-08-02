@@ -2,6 +2,7 @@
 
 ## 2026-08-02 current state — Sprint 31 Real Event Notifications
 
+- The final Windows PWA regression fix reconciles existing PWA subscription metadata/session binding on authenticated bootstrap, before events can be queued. Staging-only `0021_push_delivery_fallback` (`7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`) adds Browser fallback only after a selected PWA returns 404/410 and is revoked. Synthetic real-engine E2E passes; Windows PWA delivery remains **PENDING USER VERIFICATION**.
 - Sprint 31 final duplicate-delivery hardening uses Staging-only `0020_push_subscription_priority` (`5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f`). `push.register` stores display-derived `pwa`/`browser` mode; event delivery sends to all active PWA subscriptions and uses Browser subscriptions only when the Workspace/User has no active PWA. It does not use User Agent as the priority signal or add device fingerprinting.
 - Neon Staging apply, checksum, least privilege, Browser fallback, Windows/Android/iOS PWA priority, Notification Center single-row behavior, Workspace isolation, deduplication, Badge, and notificationclick regression pass. Real Windows duplicate-notification revalidation remains **PENDING USER VERIFICATION**.
 - Sprint 31 code, automated gates, Neon Staging apply/down/reapply, least-privilege checks, and synthetic Workspace A/B E2E are complete. Physical Windows/iPhone/iPad/Android delivery remains **PENDING USER VERIFICATION**; assessed completion is **97%**.

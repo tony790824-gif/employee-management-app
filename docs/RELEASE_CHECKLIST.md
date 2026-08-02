@@ -12,6 +12,8 @@
 - [x] Workspace A/B isolation, cross-recipient denial, actor exclusion, and private-detail exclusion pass synthetic E2E.
 - [x] Notification click uses exact same-scope destinations, prefers the recorded installed PWA client, never navigates/reloads an authenticated client, and opens one safe window only when no suitable PWA client exists.
 - [x] `0020_push_subscription_priority` is applied only to Neon Staging; its checksum, least privilege, Browser-only fallback, Windows/Android/iOS PWA priority, Workspace isolation, Notification Center single-row behavior, deduplication, Badge, and notificationclick regressions pass.
+- [x] `0021_push_delivery_fallback` is applied only to Neon Staging with checksum `7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`; PWA 404/410 revocation produces one eligible Browser fallback without duplicating Notification Center rows or widening API Role privileges.
+- [x] Authenticated bootstrap reconciles an existing installed-PWA subscription to `client_mode=pwa` and the current Session before real-event delivery selection.
 - [x] Source/Staging PostgreSQL Service Worker caches advanced to `banke-production-v7` / `banke-staging-postgres-v10` so installed clients do not retain the pre-priority worker.
 - [ ] Same Windows Workspace/User with installed PWA plus Browser receives exactly one PWA system notification; Browser receives one only after the PWA subscription is disabled — PENDING USER VERIFICATION.
 - [ ] Windows physical-device delivery/click/badge/preferences — PENDING USER VERIFICATION.

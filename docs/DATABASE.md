@@ -8,6 +8,8 @@ The centralized `resolve_notification_recipients` SECURITY DEFINER function acce
 
 Neon Staging apply/down/reapply for `0019` passed with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Additive Staging-only `0020_push_subscription_priority` is applied with checksum `5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f`; it adds `push_subscriptions.client_mode` and selects active PWA subscriptions before Browser fallback without widening API Role table privileges. `0009` and `0010` remain intentionally pending; Production is unchanged. Rollback refuses to discard real Sprint 31 notification rows silently.
 
+Additive Staging-only `0021_push_delivery_fallback` is applied with checksum `7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`. It preserves PWA-first selection and changes only delivery completion: an explicit PWA 404/410 expiry revokes that subscription and idempotently queues the same notification for an eligible active Browser subscription. Session, Membership, Workspace, active-user checks, one Notification Center row, API Role direct-table denial, and the separate Push worker role remain enforced. Production is unchanged.
+
 ## Migration 0018 — Edge Web Push provider allowlist (Staging only, 2026-07-30)
 
 Migration `0018_edge_web_push_provider_allowlist` extends the existing Web Push endpoint

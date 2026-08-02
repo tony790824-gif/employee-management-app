@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-03 — Sprint 31 PWA delivery fallback regression fix
+
+- Reconciled an existing installed-PWA Push subscription immediately after authenticated PostgreSQL bootstrap instead of waiting until Notification Center is opened.
+- Added Staging-only Migration `0021_push_delivery_fallback`: an eligible PWA remains the only initial delivery target; only an explicit PWA 404/410 expiry revokes it and idempotently queues the same notification for an eligible Browser fallback.
+- Neon Staging checksum, API/Push Role separation, synthetic 404/410 recovery, single Notification Center row, Workspace isolation, Badge, deduplication, and notificationclick regressions pass. Windows PWA system-delivery revalidation remains pending; Production was not operated.
+
 ## 2026-08-03 — Sprint 31 Push Subscription Priority
 
 - Added Staging-only Migration `0020_push_subscription_priority` and validated `pwa`/`browser` registration metadata.
