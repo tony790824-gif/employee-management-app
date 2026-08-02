@@ -1,5 +1,14 @@
 # AI Handoff
 
+## 2026-08-02 handoff — Sprint 31 Real Event Notifications
+
+- Status: implementation, full automated gates, Neon Staging Migration rehearsal, and synthetic database/API/Web Push E2E complete; physical-device delivery is **PENDING USER VERIFICATION**. Completion: **97%**.
+- Migration `0019_real_event_notifications` is Staging-only with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`; apply/down/reapply and exact API grants passed. Production and pending `0009`/`0010` were not touched.
+- Real notifications are created only after the business Command commits its outbox row. Recipient resolution is server-side and live-Membership-scoped; actor self-notification, forged recipient, cross-Workspace access, and direct API table access fail closed.
+- Clock, leave, and shift preferences apply to future events without disabling Notification Center or the existing `push.test` diagnostic path.
+- Synthetic E2E passed two active managers, employee self-exclusion, leave applicant targeting, affected-employee shift targeting, preference suppression, idempotent projection, badge/revision refresh, 404/410 cleanup, and Workspace A/B isolation.
+- Next and only work: execute the Sprint 31 physical-device checklist on Windows and installed iPhone/iPad/Android PWAs. Do not start a new feature Sprint until those results are recorded.
+
 ## 2026-08-01 handoff — Sprint 30 Offline First
 
 - Status: implementation and automated gates complete; physical offline/recovery verification is

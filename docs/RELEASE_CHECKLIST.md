@@ -1,5 +1,21 @@
 # 班客邦 Release Checklist
 
+## Sprint 31 real-event notification gate (Staging only)
+
+- [x] `0019_real_event_notifications` checksum verified and Neon Staging apply/down/reapply completed.
+- [x] Clock-in/out notify active boss/manager recipients in the same Workspace and exclude the actor.
+- [x] Leave submissions notify only active reviewers; approval/rejection notify only the applicant.
+- [x] Schedule creation/direct approved leave update notify only the affected employee.
+- [x] Clock/leave/shift preferences suppress only future matching notifications; `push.test` remains independent.
+- [x] Notification/outbox/delivery idempotency, bounded retry, 404/410 cleanup, Badge/revision refresh, and click destination allowlist remain covered.
+- [x] API Role has zero direct notification/preference table privilege and only reviewed controlled function execution.
+- [x] Workspace A/B isolation, cross-recipient denial, actor exclusion, and private-detail exclusion pass synthetic E2E.
+- [ ] Windows physical-device delivery/click/badge/preferences — PENDING USER VERIFICATION.
+- [ ] iPhone Home Screen PWA delivery/click/badge/preferences — PENDING USER VERIFICATION.
+- [ ] iPad Home Screen PWA delivery/click/badge/preferences — PENDING USER VERIFICATION.
+- [ ] Android installed PWA real business-event delivery/preferences — PENDING USER VERIFICATION.
+- [x] Production, Production DB/Migration/Auth0, Google Sheets, Apps Script, and Production deployment were not touched.
+
 ## Sprint 29 — Windows Edge and Apple Home Screen PWA Web Push gate
 
 - [x] Existing standard Web Push, VAPID, Notification Center, Service Worker, and Staging

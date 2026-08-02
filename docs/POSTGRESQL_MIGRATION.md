@@ -1,5 +1,12 @@
 # PostgreSQL migration runbook
 
+## 2026-08-02 ledger update
+
+- `0019_real_event_notifications` — applied only to Neon Staging; apply/down/reapply PASS.
+- SHA-256: `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`.
+- Adds notification preferences and transactionally projects real clock/leave/shift events through live Membership recipient resolution.
+- `0009` and `0010` remain intentionally pending; Production was not connected or modified.
+
 ## Isolated UI bootstrap rehearsal
 
 The source now includes a least-privilege `app_private.api_bootstrap` function, authenticated `GET /v1/bootstrap` route and a separate `dist-staging-postgres/` frontend. This is an opt-in Staging rehearsal and does not alter the committed normal Staging or Production profiles.

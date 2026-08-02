@@ -18,6 +18,7 @@ export const API_FUNCTIONS = Object.freeze([
   'app_private.api_list_notifications(text,text,text)',
   'app_private.api_notification_revision(text,text,text)',
   'app_private.api_execute_notification_command(text,text,text,text,jsonb,text,text,text)',
+  'app_private.api_update_notification_preferences(text,text,text,text,jsonb,text,text,text)',
   'app_private.api_push_status(text,text,text)',
   'app_private.api_execute_push_command(text,text,text,text,jsonb,text,text,text)'
 ]);
@@ -70,7 +71,7 @@ async function quoted(client, format, ...values) {
   return result.rows[0].sql;
 }
 
-export async function applyApiRoleGrants(client, apiUrl) {
+export async function applyApiRoleGrants(client, apiUrl, functionAllowlist = API_FUNCTIONS) {
   const role = apiUrl.username;
   const password = apiUrl.password;
   if (!/^[a-z][a-z0-9_]{2,62}$/.test(role) || !password) throw new Error('DATABASE_API_URL role/password 格式不正確。');
@@ -116,7 +117,7 @@ export async function applyApiRoleGrants(client, apiUrl) {
   await client.query(await quoted(client, 'REVOKE ALL ON ALL SEQUENCES IN SCHEMA public, app_private FROM %I', role));
   await client.query('REVOKE ALL ON ALL FUNCTIONS IN SCHEMA app_private FROM PUBLIC');
   await client.query(await quoted(client, 'REVOKE ALL ON ALL FUNCTIONS IN SCHEMA app_private FROM %I', role));
-  for (const signature of API_FUNCTIONS) {
+  for (const signature of functionAllowlist) {
     const functionAudit = await client.query(
       `SELECT procedure.prosecdef,
               coalesce(array_to_string(procedure.proconfig, ','), '') AS settings

@@ -1,5 +1,14 @@
 # 班客邦 Project Health Report
 
+## 2026-08-02 Sprint 31 health delta
+
+- **Overall:** 97%; automated and Staging database acceptance complete, real-device delivery pending.
+- **Architecture:** PASS — one transactional outbox projection, one Notification Center, and the existing durable Web Push queue/worker; no duplicate transport or client-created server notification.
+- **Authorization/privacy:** PASS — live Workspace/Membership/role resolution, applicant/affected-employee targeting, actor exclusion, preferences, bounded metadata, and zero direct API table access.
+- **Reliability:** PASS — command receipt plus per-recipient event/dedup unique indexes, per-subscription delivery uniqueness, bounded retry/dead state, and 404/410 revocation remain intact.
+- **Migration:** `0019_real_event_notifications` apply/down/reapply PASS on Neon Staging with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`.
+- **Remaining risk:** physical system delivery, click, badge, and preference behavior on Windows/iPhone/iPad/Android is **PENDING USER VERIFICATION**. Production readiness cannot be raised from automation alone.
+
 ## 2026-08-01 — Sprint 30 health update
 
 - **Sprint status:** implementation/automation complete; real-device recovery is

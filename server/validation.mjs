@@ -179,6 +179,18 @@ export function validateCommand(name, input) {
     exactKeys(input, []);
     return {};
   }
+  if (name === 'notifications.update-preferences') {
+    exactKeys(input, ['clockEvents', 'leaveEvents', 'shiftEvents'],
+      ['clockEvents', 'leaveEvents', 'shiftEvents']);
+    for (const field of ['clockEvents', 'leaveEvents', 'shiftEvents']) {
+      assert(typeof input[field] === 'boolean', 400, 'COMMAND_INVALID', `${field} 必須是 boolean。`);
+    }
+    return {
+      clockEvents: input.clockEvents,
+      leaveEvents: input.leaveEvents,
+      shiftEvents: input.shiftEvents
+    };
+  }
   if (name === 'push.register') {
     exactKeys(input, ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform'],
       ['endpoint', 'expirationTime', 'p256dh', 'auth', 'userAgent', 'platform']);
@@ -238,6 +250,7 @@ export const commandNames = Object.freeze([
   'time-off-requests.reject',
   'notifications.mark-read',
   'notifications.mark-all-read',
+  'notifications.update-preferences',
   'push.register',
   'push.unregister',
   'push.test'
@@ -254,7 +267,8 @@ export const timeOffCommandNames = Object.freeze([
 
 export const notificationCommandNames = Object.freeze([
   'notifications.mark-read',
-  'notifications.mark-all-read'
+  'notifications.mark-all-read',
+  'notifications.update-preferences'
 ]);
 
 export const pushCommandNames = Object.freeze([

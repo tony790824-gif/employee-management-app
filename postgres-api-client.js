@@ -20,6 +20,7 @@
     'time-off-requests.reject',
     'notifications.mark-read',
     'notifications.mark-all-read',
+    'notifications.update-preferences',
     'push.register',
     'push.unregister',
     'push.test'

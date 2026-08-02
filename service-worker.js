@@ -1,5 +1,5 @@
 const CACHE_PREFIX='banke-production-';
-const CACHE='banke-production-v4';
+const CACHE='banke-production-v5';
 const REVISION_CACHE_KEY='./__banke_bootstrap_revision__';
 const FILES=['./','./index.html','./style.css','./access.css','./login.css','./login-screen.css','./employee-calendar.css','./employee-layout.css','./time-off-ui.css','./notification-center.css','./environment.css','./environment-config.js','./postgres-api-client.js','./state-store.js','./postgres-offline.js','./account-security.js','./dom-safety.js','./current-user-ui.js','./app.js','./access.js','./employee-work.js','./boss-hours.js','./management-actions.js','./cloud-sync.js','./google-sheets-config.js','./google-sheets-cloud.js','./enhancements.js','./pwa.js','./employee-layout.js','./time-off-ui.js','./notification-center.js','./manifest.webmanifest','./app-icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));

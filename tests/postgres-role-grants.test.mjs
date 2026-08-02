@@ -61,6 +61,7 @@ assert.deepEqual(API_FUNCTIONS, [
   'app_private.api_list_notifications(text,text,text)',
   'app_private.api_notification_revision(text,text,text)',
   'app_private.api_execute_notification_command(text,text,text,text,jsonb,text,text,text)',
+  'app_private.api_update_notification_preferences(text,text,text,text,jsonb,text,text,text)',
   'app_private.api_push_status(text,text,text)',
   'app_private.api_execute_push_command(text,text,text,text,jsonb,text,text,text)'
 ]);

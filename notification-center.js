@@ -12,6 +12,10 @@
   const summary = document.querySelector('#notificationSummary');
   const message = document.querySelector('#notificationMessage');
   const list = document.querySelector('#notificationList');
+  const preferenceClock = document.querySelector('#notificationClockEvents');
+  const preferenceLeave = document.querySelector('#notificationLeaveEvents');
+  const preferenceShift = document.querySelector('#notificationShiftEvents');
+  const preferenceSave = document.querySelector('#notificationPreferenceSave');
   const pushSettings = document.querySelector('#pushNotificationSettings');
   const pushStatusText = document.querySelector('#pushNotificationStatus');
   const pushHelp = document.querySelector('#pushNotificationHelp');
@@ -23,8 +27,10 @@
 
   let items = [];
   let unreadCount = 0;
+  let preferences = Object.freeze({ clockEvents: true, leaveEvents: true, shiftEvents: true, revision: 0 });
   let loadPromise = null;
   let mutationPromise = null;
+  let preferenceMutationPromise = null;
   let pushMutationPromise = null;
   let currentPushSubscription = null;
   let pushAvailable = false;
@@ -260,6 +266,14 @@
       if (unread) button.addEventListener('click', () => void markRead(item));
       return button;
     }));
+  }
+
+  function renderPreferences() {
+    if (!preferenceClock || !preferenceLeave || !preferenceShift || !preferenceSave) return;
+    preferenceClock.checked = preferences.clockEvents;
+    preferenceLeave.checked = preferences.leaveEvents;
+    preferenceShift.checked = preferences.shiftEvents;
+    preferenceSave.disabled = Boolean(preferenceMutationPromise);
   }
 
   function renderPushSettings() {
@@ -527,7 +541,28 @@
       revision: Number(item.revision)
     }));
     if (normalized.length !== payload.items.length) throw new Error('通知資料包含無效欄位。');
-    return { items: normalized, unreadCount: Number(payload.unreadCount), available: true };
+    const rawPreferences = payload.preferences ?? {
+      clockEvents: true, leaveEvents: true, shiftEvents: true, revision: 0
+    };
+    if (!rawPreferences || typeof rawPreferences !== 'object'
+      || typeof rawPreferences.clockEvents !== 'boolean'
+      || typeof rawPreferences.leaveEvents !== 'boolean'
+      || typeof rawPreferences.shiftEvents !== 'boolean'
+      || !Number.isSafeInteger(Number(rawPreferences.revision))
+      || Number(rawPreferences.revision) < 0) {
+      throw new Error('通知偏好設定格式無效。');
+    }
+    return {
+      items: normalized,
+      unreadCount: Number(payload.unreadCount),
+      available: true,
+      preferences: Object.freeze({
+        clockEvents: rawPreferences.clockEvents,
+        leaveEvents: rawPreferences.leaveEvents,
+        shiftEvents: rawPreferences.shiftEvents,
+        revision: Number(rawPreferences.revision)
+      })
+    };
   }
 
   async function loadNotifications({ silent = false } = {}) {
@@ -538,10 +573,12 @@
         const next = normalizePayload(await cloud.listNotifications());
         items = next.items;
         unreadCount = next.unreadCount;
+        if (next.preferences) preferences = next.preferences;
         trigger.hidden = !next.available;
         if (!next.available && dialog.open) dialog.close();
         setMessage();
         render();
+        renderPreferences();
         return next;
       } catch (error) {
         if (!silent) setMessage(error?.message || '通知載入失敗，請稍後再試。');
@@ -585,6 +622,30 @@
     await mutationPromise;
   }
 
+  async function savePreferences() {
+    if (preferenceMutationPromise || !preferenceClock || !preferenceLeave || !preferenceShift) return;
+    const next = Object.freeze({
+      clockEvents: preferenceClock.checked === true,
+      leaveEvents: preferenceLeave.checked === true,
+      shiftEvents: preferenceShift.checked === true
+    });
+    preferenceMutationPromise = (async () => {
+      try {
+        const result = await cloud.updateNotificationPreferences(next);
+        preferences = Object.freeze({ ...next, revision: Number(result?.data?.revision || 0) });
+        setMessage('通知設定已儲存。');
+      } catch (error) {
+        renderPreferences();
+        setMessage(error?.message || '通知設定無法儲存，請稍後再試。');
+      } finally {
+        preferenceMutationPromise = null;
+        renderPreferences();
+      }
+    })();
+    renderPreferences();
+    await preferenceMutationPromise;
+  }
+
   const openNotificationCenter = () => {
     if (!cloud.isConnected()) return false;
     setMessage();
@@ -597,6 +658,7 @@
   trigger.addEventListener('click', openNotificationCenter);
   close.addEventListener('click', () => dialog.close());
   markAll.addEventListener('click', () => void markAllRead());
+  preferenceSave?.addEventListener('click', () => void savePreferences());
   pushEnable?.addEventListener('click', () => startPushActivation());
   pushDisable?.addEventListener('click', () => void disablePush());
   pushRepair?.addEventListener('click', () => startPushActivation({ replace: true }));
@@ -608,6 +670,7 @@
   document.addEventListener('postgres-session-cleared', () => {
     items = [];
     unreadCount = 0;
+    preferences = Object.freeze({ clockEvents: true, leaveEvents: true, shiftEvents: true, revision: 0 });
     pushAvailable = false;
     activePushSubscriptionCount = 0;
     currentPushSubscription = null;
@@ -616,6 +679,7 @@
     trigger.hidden = true;
     setMessage();
     render();
+    renderPreferences();
     if (dialog.open) dialog.close();
   });
   window.navigator?.serviceWorker?.addEventListener?.('message', event => {
@@ -640,5 +704,6 @@
     unregisterCurrentPushForLogout
   });
   render();
+  renderPreferences();
   void loadNotifications({ silent: true });
 })();

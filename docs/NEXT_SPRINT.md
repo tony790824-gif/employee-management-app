@@ -1,4 +1,19 @@
-# Next unique work — Sprint 30 real-device offline acceptance
+# Next unique gate — Sprint 31 physical-device real-event notification acceptance
+
+Status: **PENDING USER VERIFICATION**. Do not infer device PASS from automation.
+
+1. On Windows and an installed mobile PWA, sign in as one employee and one boss/manager in the same Staging Workspace.
+2. Employee clocks in and out; only boss/manager devices must receive one Notification Center row and one system push per active device. The actor must not receive a manager notification.
+3. Employee submits scheduled leave and ad-hoc leave; only authorized reviewers receive them. Approve one and reject one; only the applicant receives each result.
+4. Boss creates a shift/direct approved leave update for the employee; only that affected employee receives the schedule notification.
+5. Confirm unread badge, list ordering, mark-read state, Smart Polling, foreground/background delivery, and notification click opening the existing Notification Center without full reload.
+6. Turn off each of clock/leave/shift categories in turn and prove new matching events stop while other categories and `push.test` continue.
+7. Repeat with a second Workspace account and verify no event crosses the tenant boundary.
+8. Record Windows, iPhone Home Screen PWA, iPad Home Screen PWA, and Android installed PWA separately as PASS/FAIL/BLOCKED.
+
+Stop after evidence collection. Production, Migration, Auth0, Render architecture, and Production databases remain out of scope.
+
+# Historical Sprint 30 real-device offline acceptance
 
 ## Current Sprint 30 status
 

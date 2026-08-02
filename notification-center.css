@@ -8,6 +8,11 @@
 .notification-toolbar{display:flex;justify-content:flex-end;margin-bottom:10px}
 .notification-toolbar button{min-height:44px}
 .push-notification-settings{display:grid;gap:10px;margin:10px 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#faf7ff}
+.notification-preference-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}
+.notification-preference-settings>div,.notification-preference-settings>button{grid-column:1/-1}
+.notification-preference-settings h3,.notification-preference-settings p{margin:0}
+.notification-preference-settings label{display:flex;align-items:center;gap:8px;min-height:44px;overflow-wrap:anywhere}
+.notification-preference-settings input{width:20px;height:20px;flex:0 0 auto}
 .push-notification-settings[hidden]{display:none!important}
 .push-notification-settings h3,.push-notification-settings p{margin:0}
 .push-notification-actions{display:flex;flex-wrap:wrap;gap:8px}
@@ -23,6 +28,7 @@
 .notification-item-body{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.5;overflow-wrap:anywhere}
 .notification-empty{padding:28px 12px;text-align:center;color:var(--muted)}
 @media(max-width:720px){
+  .notification-preference-settings{grid-template-columns:1fr}
   .notification-trigger{order:2}
   .notification-dialog>section{padding:16px}
   .notification-list{max-height:62vh}

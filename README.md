@@ -1,5 +1,13 @@
 # 班客邦
 
+## Sprint 31 real event notifications (2026-08-02)
+
+- Sprint 31 implementation and automated/Staging database acceptance are complete; physical-device delivery remains **PENDING USER VERIFICATION**. Overall assessed completion is **97%**.
+- Additive Staging-only Migration `0019_real_event_notifications` extends the existing transactional outbox projection for employee clock-in/out, leave requests/results, and affected-employee schedule updates.
+- Recipients are resolved server-side from live Workspace Membership and role. Actors never receive their own manager notification, cross-Workspace delivery fails closed, and notification preferences cover clock, leave, and shift events.
+- Notification Center remains the durable source of truth. Existing Web Push queue/worker, Smart Polling, Service Worker, badge, read state, and test-notification flow are reused without a second delivery architecture.
+- Production, Production database/Auth0, Google Sheets, Apps Script, and Production deployment remain unchanged. See [Sprint 31 review](docs/reviews/SPRINT_31_REAL_EVENT_NOTIFICATIONS_REVIEW.md).
+
 ## Sprint 29 Web Push release gate (2026-07-30)
 
 - Sprint 29 is **PARTIAL / PENDING USER VERIFICATION**. Overall completion remains **95%**.

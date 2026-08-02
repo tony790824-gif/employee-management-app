@@ -48,6 +48,10 @@ const selectors = [
   '#notificationSummary',
   '#notificationMessage',
   '#notificationList',
+  '#notificationClockEvents',
+  '#notificationLeaveEvents',
+  '#notificationShiftEvents',
+  '#notificationPreferenceSave',
   '#pushNotificationSettings',
   '#pushNotificationStatus',
   '#pushNotificationHelp',
@@ -72,7 +76,12 @@ const notification = {
   createdAt: '2026-07-29T00:00:00.000Z',
   revision: 0
 };
-let payload = { ok: true, items: [notification], unreadCount: 1 };
+let payload = {
+  ok: true,
+  items: [notification],
+  unreadCount: 1,
+  preferences: { clockEvents: true, leaveEvents: true, shiftEvents: true, revision: 0 }
+};
 let listCalls = 0;
 const marked = [];
 const pushEndpoint = 'https://fcm.googleapis.com/fcm/send/fresh-profile-subscription-endpoint';
@@ -100,6 +109,7 @@ const unregisteredPushEndpoints = [];
 const testedPushEndpoints = [];
 let pushSubscribeCalls = 0;
 let markAllCalls = 0;
+const preferenceInputs = [];
 const dom = {
   element(tag, options = {}, children = []) {
     const item = node();
@@ -139,6 +149,11 @@ const cloud = {
       })),
       unreadCount: 0
     };
+  },
+  updateNotificationPreferences: async input => {
+    preferenceInputs.push(structuredClone(input));
+    payload.preferences = { ...input, revision: payload.preferences.revision + 1 };
+    return { ok: true, data: structuredClone(payload.preferences) };
   },
   pushStatus: async () => ({
     ok: true,
@@ -237,6 +252,11 @@ assert.equal(elements.get('#notificationButton').hidden, false);
 assert.equal(elements.get('#notificationBadge').hidden, false);
 assert.equal(elements.get('#notificationBadge').textContent, '1');
 assert.equal(elements.get('#notificationList').children.length, 1);
+elements.get('#notificationLeaveEvents').checked = false;
+elements.get('#notificationPreferenceSave').dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.deepEqual(preferenceInputs, [{ clockEvents: true, leaveEvents: false, shiftEvents: true }]);
+assert.equal(elements.get('#notificationMessage').textContent, '通知設定已儲存。');
 
 serviceWorkerListeners.get('message')({
   data: { type: 'BANKE_OPEN_NOTIFICATION_CENTER', path: '/?open=notifications' }

@@ -1,5 +1,15 @@
 # 班客邦營運 Runbook（Google Sheets 過渡期）
 
+## Sprint 31 real-event notification Staging operations
+
+1. Confirm `BANK_ENV=staging`, approved direct Neon host, separate migrator/API roles, and ignored `.env`; never print URLs or keys.
+2. Use `pnpm db:real-event-notifications:staging status|up`. Rollback additionally requires the one-process Staging confirmation `BANK_ALLOW_STAGING_REAL_EVENT_NOTIFICATIONS_ROLLBACK=ROLLBACK_BANKE_STAGING_REAL_EVENT_NOTIFICATIONS`.
+3. Approved checksum is `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Stop on any mismatch.
+4. Run `pnpm test:real-event-notifications:staging` and `pnpm test:web-push:staging`. Tests use synthetic Workspace data and must finish with cleanup.
+5. Validate manager/applicant/affected-employee targeting, actor exclusion, preference suppression, badge/read state, and Workspace A/B denial. Logs may contain request ID/status/error code only—not tokens, endpoints, Session IDs, or personal data.
+6. A notification row is authoritative; system Push is asynchronous. Temporary provider failures retry through the existing bounded queue; 404/410 revoke the stale subscription. Never replay a business Command to force Push.
+7. Physical Windows/iPhone/iPad/Android delivery remains a separate release gate. Production migration/deployment is forbidden without explicit future approval.
+
 ## PostgreSQL Identity Staging（未接 Production）
 
 - 只可使用 `BANK_ENV=staging`、固定 Staging database host、獨立 runtime/migrator roles 與隔離 Auth0 Staging tenant。

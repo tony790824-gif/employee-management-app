@@ -65,6 +65,12 @@ assert.deepEqual(validateCommand('notifications.mark-read', {
   baseRevision: 2
 });
 assert.deepEqual(validateCommand('notifications.mark-all-read', {}), {});
+assert.deepEqual(validateCommand('notifications.update-preferences', {
+  clockEvents: true, leaveEvents: false, shiftEvents: true
+}), { clockEvents: true, leaveEvents: false, shiftEvents: true });
+assert.throws(() => validateCommand('notifications.update-preferences', {
+  clockEvents: true, leaveEvents: true, shiftEvents: true, workspaceId: 'attacker'
+}), error => error.code === 'COMMAND_INVALID');
 assert.throws(() => validateCommand('notifications.mark-read', {
   notificationId: 'not-a-notification',
   baseRevision: 0

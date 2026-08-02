@@ -1,5 +1,15 @@
 # Codex Context
 
+## 2026-08-02 current state — Sprint 31 Real Event Notifications
+
+- Sprint 31 code, automated gates, Neon Staging apply/down/reapply, least-privilege checks, and synthetic Workspace A/B E2E are complete. Physical Windows/iPhone/iPad/Android delivery remains **PENDING USER VERIFICATION**; assessed completion is **97%**.
+- `0019_real_event_notifications` checksum: `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. It is applied only to Neon Staging; `0009`/`0010` and Production remain untouched.
+- The existing outbox trigger is the only business-event notification engine. Supported real events are employee clock-in/out to active managers, leave submission to active managers, leave approval/rejection to the applicant, and schedule creation/direct leave update to the affected employee.
+- A centralized resolver uses live Workspace, Membership, role, employee mapping, actor self-exclusion, and recipient preferences. Client-provided recipient/role data is never authoritative.
+- `notification_preferences` provides `clockEvents`, `leaveEvents`, and `shiftEvents`; defaults preserve existing behavior. API Role access remains controlled-function-only with zero direct notification/preference table privilege.
+- Existing Notification Center, unread badge, Smart Polling, Service Worker, durable Push queue/worker, 404/410 cleanup, test notifications, and destination allowlist remain authoritative.
+- `shifts.update`, `shifts.delete`, and an announcement module do not exist; Sprint 31 does not fabricate them. Real-device delivery evidence is the only next gate.
+
 ## 2026-08-01 current state — Sprint 30 Offline First
 
 - Sprint 30 implementation and automated acceptance are complete; real-device offline recovery

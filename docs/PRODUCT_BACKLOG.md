@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 31 status — Real Event Notifications (2026-08-02)
+
+- **Implemented and Staging-accepted:** transactional real-event projection for clock-in/out, leave submission/result, and affected-employee schedule updates; centralized live Membership/role recipient resolution; actor self-exclusion; clock/leave/shift preferences; database deduplication; existing durable Web Push reuse.
+- **Security accepted:** Workspace A/B isolation, cross-recipient denial, no private request detail/credential metadata, API Role zero table access, exact controlled-function grants, and bounded metadata/destination allowlist.
+- **Still pending:** physical Windows/iPhone/iPad/Android delivery and preference acceptance. Overall completion is **97%** until owner evidence is recorded.
+- **Not implemented by design:** announcement module and shift update/delete Commands. No placeholder notification is claimed for unavailable business Commands.
+- **Production:** unchanged and not deployed; `0019` is Neon Staging-only, while `0009`/`0010` remain intentionally unapplied.
+
 ## 2026-08-01 — Sprint 30 Offline First
 
 - **Status:** implementation and automated acceptance complete; real-device offline/recovery gate

@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-07-29.3
-  description: Staging transition API with accepted Auth0, Session/tenant boundaries, Time-Off, Notification Center, and standard Web Push registration/delivery foundations. Production cutover is not approved.
-  x-baseline-commit: 99c75eac113e950eb6c1948762c9bf5f1e9a8036
-  x-project-completion: 94
-  x-staging-migration: 0013_time_off_requests, 0014_notification_center, 0015_notification_command_validation, and 0016_web_push_subscriptions applied
+  version: 2026-08-02.1
+  description: Staging transition API with accepted Auth0, Session/tenant boundaries, Time-Off, real-event Notification Center, and standard Web Push delivery. Production cutover is not approved.
+  x-baseline-commit: 290f62ff65a19401bac7461745f41cb88701f1ab
+  x-project-completion: 97
+  x-staging-migration: 0013 through 0019 applied except intentionally pending 0009 and 0010
 servers:
   - url: http://127.0.0.1:8080/v1
     description: Local development only
@@ -65,7 +65,7 @@ paths:
         - $ref: '#/components/parameters/WorkspaceId'
       responses:
         '200':
-          description: Recipient-scoped notification list and unread count
+          description: Recipient-scoped notification list, unread count, and clock/leave/shift preferences
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
   /push/status:
@@ -128,6 +128,7 @@ paths:
               - time-off-requests.reject
               - notifications.mark-read
               - notifications.mark-all-read
+              - notifications.update-preferences
               - push.register
               - push.unregister
               - push.test

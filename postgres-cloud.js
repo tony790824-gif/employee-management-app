@@ -588,6 +588,9 @@
     { notificationId, baseRevision }
   );
   const markAllNotificationsRead = () => executeAndRefresh('notifications.mark-all-read', {});
+  const updateNotificationPreferences = preferences => executeAndRefresh(
+    'notifications.update-preferences', preferences
+  );
   const pushStatus = () => {
     if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
     return client.pushStatus();
@@ -675,6 +678,7 @@
     listNotifications,
     markNotificationRead,
     markAllNotificationsRead,
+    updateNotificationPreferences,
     pushStatus,
     registerPushSubscription,
     unregisterPushSubscription,

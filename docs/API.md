@@ -1,5 +1,13 @@
 # API 文件（現況與目標）
 
+## Sprint 31 real-event notification contract
+
+- Existing business Commands remain unchanged. After their transaction inserts an outbox event, the database projects `clock_in`, `clock_out`, `leave_requested`, `leave_approved`, `leave_rejected`, or `shift_updated` to server-resolved recipients.
+- `GET /v1/notifications` additionally returns `preferences: { clockEvents, leaveEvents, shiftEvents, revision }`; notification items remain recipient-only and contain no leave reason or authentication material.
+- `notifications.update-preferences` accepts exactly three booleans: `clockEvents`, `leaveEvents`, and `shiftEvents`. It uses the existing Session, Workspace, idempotency, audit, request-size, and controlled-function boundary.
+- Recipient user/role, actor, Workspace, and employee mapping are never accepted from the browser. `X-Workspace-Id` remains untrusted requested scope.
+- Web Push remains an asynchronous delivery channel from the durable queue. Business Commands do not wait for provider delivery, and `push.test` remains a separate diagnostic Command.
+
 ## 2026-07-29 — Standard Web Push API
 
 Migration `0016_web_push_subscriptions` is active only in Neon Staging.

@@ -187,7 +187,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const validated = validateCommand(commandName, input);
       const signed = context(identity, workspaceId, 'command');
       const prepared = internalInput(commandName, validated, idFactory, clock);
-      const databaseFunction = timeOffCommandNames.includes(commandName)
+      const databaseFunction = commandName === 'notifications.update-preferences'
+        ? 'app_private.api_update_notification_preferences'
+        : timeOffCommandNames.includes(commandName)
         ? 'app_private.api_execute_time_off_command'
         : notificationCommandNames.includes(commandName)
           ? 'app_private.api_execute_notification_command'

@@ -1,5 +1,9 @@
 # PostgreSQL migration and snapshot import
 
+## Real-event notification migration
+
+`0019_real_event_notifications` is a Staging-only additive extension of the existing Notification Center/outbox/Web Push path. Use `pnpm db:real-event-notifications:staging status|up`; rollback requires the dedicated Staging confirmation documented in `docs/RUNBOOK.md`. Approved checksum: `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Production, `0009`, and `0010` are not part of this operation.
+
 `database/migrations/` is the executable source of truth for the formal PostgreSQL schema. `docs/schema.sql` remains a historical design reference only.
 
 ## Time-off request migration

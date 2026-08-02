@@ -1,5 +1,13 @@
 # Database 文件（現況與目標）
 
+## Migration 0019 — Real Event Notifications (Staging only, 2026-08-02)
+
+Migration `0019_real_event_notifications` adds `notification_preferences` with forced RLS and a composite Workspace/Membership foreign key; extends `notifications` with actor, same-origin destination, SHA-256 deduplication key, and a 2 KiB allowlisted metadata object; and replaces only the outbox projection function. It does not alter business Command semantics.
+
+The centralized `resolve_notification_recipients` SECURITY DEFINER function accepts no client recipient. It resolves active Workspace members, enforces boss/manager or affected-employee targeting, excludes the actor, and applies `clock_events`, `leave_events`, or `shift_events`. PUBLIC cannot execute it and the runtime API Role cannot directly read either notification table.
+
+Neon Staging apply/down/reapply passed with checksum `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. `0009` and `0010` remain intentionally pending; Production is unchanged. Rollback refuses to discard real Sprint 31 notification rows silently.
+
 ## Migration 0018 — Edge Web Push provider allowlist (Staging only, 2026-07-30)
 
 Migration `0018_edge_web_push_provider_allowlist` extends the existing Web Push endpoint

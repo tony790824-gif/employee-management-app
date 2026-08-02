@@ -131,10 +131,12 @@ async function createWorkspaceFixture(label, sequence) {
 
 async function destroyWorkspaceFixture(fixture) {
   await inWorkspace(fixture.workspace, async () => {
+    await owner.query('DELETE FROM shifts WHERE workspace_id = $1', [fixture.workspace]);
+    await owner.query('DELETE FROM attendance_records WHERE workspace_id = $1', [fixture.workspace]);
     await owner.query('DELETE FROM workspaces WHERE id = $1', [fixture.workspace]);
   });
   await owner.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [
-    [fixture.bossUser, fixture.employeeUser]
+    [fixture.bossUser, fixture.employeeUser, ...(fixture.extraUsers || [])]
   ]);
   await owner.query('DELETE FROM organizations WHERE id = $1', [fixture.organization]);
 }
@@ -144,6 +146,26 @@ let api;
 const fixtures = [];
 const principals = [];
 try {
+  const staleFixtures = (await owner.query(
+    `SELECT organization.id AS organization_id, workspace.id AS workspace_id,
+            array_agg(member.user_id) FILTER (WHERE member.user_id IS NOT NULL) AS user_ids
+       FROM organizations organization
+       JOIN workspaces workspace ON workspace.organization_id = organization.id
+       LEFT JOIN workspace_members member ON member.workspace_id = workspace.id
+      WHERE organization.name LIKE 'Synthetic Notification %'
+      GROUP BY organization.id, workspace.id`
+  )).rows;
+  for (const stale of staleFixtures) {
+    await inWorkspace(stale.workspace_id, async () => {
+      await owner.query('DELETE FROM shifts WHERE workspace_id = $1', [stale.workspace_id]);
+      await owner.query('DELETE FROM attendance_records WHERE workspace_id = $1', [stale.workspace_id]);
+      await owner.query('DELETE FROM workspaces WHERE id = $1', [stale.workspace_id]);
+    });
+    if (stale.user_ids?.length) {
+      await owner.query('DELETE FROM users WHERE id = ANY($1::uuid[])', [stale.user_ids]);
+    }
+    await owner.query('DELETE FROM organizations WHERE id = $1', [stale.organization_id]);
+  }
   const migration = (await owner.query(
     `SELECT name, checksum FROM schema_migrations WHERE version = '0014'`
   )).rows[0];
@@ -154,9 +176,22 @@ try {
 
   const [workspaceA, workspaceB] = await Promise.all([
     createWorkspaceFixture('A', 1),
-    createWorkspaceFixture('B', 4)
+    createWorkspaceFixture('B', 6)
   ]);
   fixtures.push(workspaceA, workspaceB);
+  const managerAUser = (await owner.query(
+    "INSERT INTO users(phone, status) VALUES ($1, 'active') RETURNING id",
+    [phone(4)]
+  )).rows[0].id;
+  workspaceA.extraUsers = [managerAUser];
+  await inWorkspace(workspaceA.workspace, async () => {
+    await owner.query(
+      `INSERT INTO workspace_members(
+         workspace_id, user_id, role, status, auth_status, display_name
+       ) VALUES ($1, $2, 'manager', 'active', 'active', $3)`,
+      [workspaceA.workspace, managerAUser, 'Synthetic Manager A']
+    );
+  });
   const definitions = [
     {
       token: 'notification-boss-a',
@@ -171,6 +206,13 @@ try {
       userId: workspaceA.employeeUser,
       employeeId: workspaceA.employee,
       identity: syntheticIdentity('employee-a')
+    },
+    {
+      token: 'notification-manager-a',
+      workspaceId: workspaceA.workspace,
+      userId: managerAUser,
+      employeeId: null,
+      identity: syntheticIdentity('manager-a')
     },
     {
       token: 'notification-boss-b',
@@ -224,7 +266,7 @@ try {
   api.listen(0, '127.0.0.1');
   await once(api, 'listening');
   const base = `http://127.0.0.1:${api.address().port}`;
-  const [bossA, employeeA, bossB, employeeB] = definitions;
+  const [bossA, employeeA, managerA, bossB, employeeB] = definitions;
   for (const principal of definitions) {
     assert.equal((await request(base, '/v1/auth/session', principal, 201)).payload.ok, true);
   }
@@ -259,10 +301,13 @@ try {
   const bossNotifications = (await request(base, '/v1/notifications', bossA, 200)).payload;
   assert.equal(bossNotifications.unreadCount, 1);
   assert.equal(bossNotifications.items.length, 1, 'idempotent replay must not duplicate a notification');
-  assert.equal(bossNotifications.items[0].type, 'time_off_submitted');
+  assert.equal(bossNotifications.items[0].type, 'leave_requested');
   assert.equal(bossNotifications.items[0].resourceId, submitted.data.id);
   assert.equal(JSON.stringify(bossNotifications).includes('reason'), false);
   const bossNotification = bossNotifications.items[0];
+  const managerNotifications = (await request(base, '/v1/notifications', managerA, 200)).payload;
+  assert.equal(managerNotifications.unreadCount, 1,
+    'all active managers in the Workspace receive a leave-request notification');
 
   const bossRevisionAfter = (await request(
     base, '/v1/bootstrap/revision', bossA, 200
@@ -319,7 +364,7 @@ try {
   assert.equal(approved.data.status, 'approved');
   const employeeNotifications = (await request(base, '/v1/notifications', employeeA, 200)).payload;
   assert.equal(employeeNotifications.unreadCount, 1);
-  assert.equal(employeeNotifications.items[0].type, 'time_off_approved');
+  assert.equal(employeeNotifications.items[0].type, 'leave_approved');
   assert.equal(employeeNotifications.items[0].resourceId, submitted.data.id);
   const employeeRevisionAfter = (await request(
     base, '/v1/bootstrap/revision', employeeA, 200
@@ -344,8 +389,46 @@ try {
   })).payload;
   assert.equal(rejected.data.status, 'rejected');
   const afterReject = (await request(base, '/v1/notifications', employeeA, 200)).payload;
-  assert.equal(afterReject.items[0].type, 'time_off_rejected');
+  assert.equal(afterReject.items[0].type, 'leave_rejected');
   assert.equal(JSON.stringify(afterReject).includes(privateReason), false);
+
+  const employeeCountBeforeClock = afterReject.items.length;
+  assert.equal((await command(base, employeeA, 'attendance.clock-in', {})).payload.ok, true);
+  assert.equal((await request(base, '/v1/notifications', bossA, 200)).payload.items[0].type, 'clock_in');
+  assert.equal((await request(base, '/v1/notifications', managerA, 200)).payload.items[0].type, 'clock_in');
+  assert.equal((await request(base, '/v1/notifications', employeeA, 200)).payload.items.length,
+    employeeCountBeforeClock, 'the actor must not receive their own manager notification');
+  assert.equal((await request(base, '/v1/notifications', bossB, 200)).payload.items.length, 0,
+    'clock notifications cannot cross Workspace boundaries');
+
+  assert.equal((await command(base, employeeA, 'attendance.clock-out', {})).payload.ok, true);
+  assert.equal((await request(base, '/v1/notifications', bossA, 200)).payload.items[0].type, 'clock_out');
+
+  assert.equal((await command(base, bossA, 'shifts.create', {
+    employeeId: workspaceA.employee,
+    date: '2097-09-20',
+    startTime: '09:00',
+    endTime: '17:00',
+    note: 'Synthetic shift notification'
+  })).payload.ok, true);
+  assert.equal((await request(base, '/v1/notifications', employeeA, 200)).payload.items[0].type,
+    'shift_updated');
+
+  const preferenceResult = (await command(
+    base, bossA, 'notifications.update-preferences', {
+      clockEvents: false,
+      leaveEvents: true,
+      shiftEvents: true
+    }, 201, `notification-e2e-preference-${randomUUID()}`
+  )).payload;
+  assert.equal(preferenceResult.data.clockEvents, false);
+  const bossBeforeDisabledClock = (await request(base, '/v1/notifications', bossA, 200)).payload.items.length;
+  await command(base, employeeA, 'attendance.clock-in', {});
+  assert.equal((await request(base, '/v1/notifications', bossA, 200)).payload.items.length,
+    bossBeforeDisabledClock, 'disabled clock events must not create a recipient notification');
+  assert.equal((await request(base, '/v1/notifications', managerA, 200)).payload.items[0].type,
+    'clock_in', 'another manager with clock events enabled still receives the event');
+  await command(base, employeeA, 'attendance.clock-out', {});
 
   const invalidInput = await command(base, bossA, 'notifications.mark-read', {
     notificationId: "' OR 1=1 --",
@@ -365,6 +448,10 @@ try {
     () => apiPool.query('UPDATE notifications SET read_at = clock_timestamp()'),
     error => error.code === '42501'
   );
+  await assert.rejects(
+    () => apiPool.query('SELECT user_id FROM notification_preferences LIMIT 1'),
+    error => error.code === '42501'
+  );
   const apiRole = new URL(process.env.DATABASE_API_URL).username;
   const privileges = (await owner.query(
     `SELECT
@@ -372,6 +459,7 @@ try {
        has_table_privilege($1, 'public.notifications', 'INSERT') AS table_insert,
        has_table_privilege($1, 'public.notifications', 'UPDATE') AS table_update,
        has_table_privilege($1, 'public.notifications', 'DELETE') AS table_delete,
+       has_table_privilege($1, 'public.notification_preferences', 'SELECT') AS preference_select,
        has_function_privilege(
          $1, 'app_private.api_list_notifications(text,text,text)', 'EXECUTE'
        ) AS read_execute,
@@ -393,6 +481,7 @@ try {
     table_insert: false,
     table_update: false,
     table_delete: false,
+    preference_select: false,
     read_execute: true,
     revision_execute: true,
     command_execute: true,
@@ -428,6 +517,12 @@ try {
     bossSubmissionNotification: 'passed',
     employeeApprovalNotification: 'passed',
     employeeRejectionNotification: 'passed',
+    managerClockInNotification: 'passed',
+    managerClockOutNotification: 'passed',
+    affectedEmployeeShiftNotification: 'passed',
+    actorSelfExclusion: 'passed',
+    multiManagerResolution: 'passed',
+    notificationPreferences: 'passed',
     unreadBadgeState: 'passed',
     unreadFirstNewestOrdering: 'passed',
     idempotentEventProjection: 'passed',
