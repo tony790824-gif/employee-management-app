@@ -17,6 +17,7 @@
     if (!employeeCloud()?.hasEmployeeSession()) throw new Error('員工登入狀態已失效，請重新登入。');
     return true;
   };
+  const unresolvedAttendanceMessage = '你仍有一筆尚未打卡下班的紀錄，請先完成下班打卡。';
   let clockBusy = false;
 
   const panel = document.createElement('section');
@@ -34,7 +35,17 @@
   $('#schedule .calendar-box').insertAdjacentElement('afterend', panel);
 
   function activeRecord(data, employeeId) {
-    return (data.attendance || []).find(item => item.employeeId === employeeId && item.date === today() && item.type === '出勤' && item.clockIn && !item.clockOut);
+    return (data.attendance || []).find(item =>
+      item.employeeId === employeeId && item.type === '出勤' && item.clockIn && !item.clockOut);
+  }
+
+  function activeRecordLabel(record) {
+    if (!record) return '';
+    const startedAt = new Date(record.clockIn);
+    const time = Number.isNaN(startedAt.getTime()) ? '' : new Intl.DateTimeFormat('zh-TW', {
+      timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false
+    }).format(startedAt);
+    return [record.date || '', time].filter(Boolean).join(' ');
   }
 
   function render() {
@@ -46,9 +57,11 @@
     const employee = (data.employees || []).find(item => item.id === employeeId);
     const active = activeRecord(data, employeeId);
     const completed = (data.attendance || []).filter(item => item.employeeId === employeeId && item.type === '出勤' && item.date?.startsWith(month())).reduce((sum, item) => sum + Number(item.hours || 0), 0);
-    const ongoing = active && active.date.startsWith(month()) ? roundedHours(active.clockIn) : 0;
+    const ongoing = active?.date?.startsWith(month()) ? roundedHours(active.clockIn) : 0;
     $('#employeeEarnings').textContent = money((completed + ongoing) * Number(employee?.rate || 0));
-    $('#clockStatus').textContent = active ? `已於 ${new Date(active.clockIn).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} 上班；下班後由老闆確認時數。` : '尚未打卡；完成工作後請按「打卡下班」。';
+    $('#clockStatus').textContent = active
+      ? `尚有 ${activeRecordLabel(active)} 的上班紀錄未打卡下班；請先完成下班打卡。`
+      : '尚未打卡；完成工作後請按「打卡下班」。';
     $('#clockInBtn').hidden = Boolean(active);
     $('#clockOutBtn').hidden = !active;
     $('#clockInBtn').disabled = clockBusy;
@@ -58,6 +71,11 @@
   $('#clockInBtn').onclick = async () => {
     const employeeId = currentId();
     if (!employeeId || clockBusy) return;
+    if (activeRecord(read(), employeeId)) {
+      alert(unresolvedAttendanceMessage);
+      render();
+      return;
+    }
     clockBusy = true;
     render();
     try {
@@ -73,7 +91,12 @@
         write(data);
       }
     } catch (error) {
-      alert(error.message || '上班打卡失敗，請稍後再試。');
+      if (error?.code === 'RESOURCE_CONFLICT') {
+        try { await employeeCloud()?.refreshBootstrap?.({ source: 'attendance-clock-in-conflict' }); } catch {}
+        alert(unresolvedAttendanceMessage);
+      } else {
+        alert(error.message || '上班打卡失敗，請稍後再試。');
+      }
     } finally {
       clockBusy = false;
       render();

@@ -54,15 +54,19 @@
     const pending = queue.filter(item => item.status === 'pending').length;
     const hasConflict = conflict || queue.some(item => item.status === 'conflict');
     const hasFailed = failed || queue.some(item => item.status === 'failed');
+    const hasClockInConflict = queue.some(item => item.status === 'failed'
+      && item.commandName === 'attendance.clock-in' && item.errorCode === 'RESOURCE_CONFLICT');
     offlinePanel.hidden = window.navigator?.onLine !== false && !queue.length;
     offlineDiscard.hidden = !hasConflict && !hasFailed;
     offlineMessage.textContent = hasConflict
       ? '伺服器資料已更新，待同步操作未自動送出。請放棄後重新確認並操作。'
-      : hasFailed
-        ? '有待同步操作被伺服器拒絕，請放棄後重新確認並操作。'
-        : pending
-          ? `離線模式：${pending} 筆操作等待安全同步。`
-          : '目前離線，畫面顯示最近一次安全同步資料。';
+      : hasClockInConflict
+        ? '你仍有一筆尚未打卡下班的紀錄，請先完成下班打卡。'
+        : hasFailed
+          ? '有待同步操作被伺服器拒絕，請放棄後重新確認並操作。'
+          : pending
+            ? `離線模式：${pending} 筆操作等待安全同步。`
+            : '目前離線，畫面顯示最近一次安全同步資料。';
   }
 
   function fallbackOwnerBinding() {
@@ -462,6 +466,20 @@
         }
       });
       if (outcome?.completed) await refreshBootstrap({ source: 'offline-recovery' });
+      const hasClockInConflict = outcome?.failed && offlineRuntime.queueSnapshot().some(item =>
+        item.status === 'failed' && item.commandName === 'attendance.clock-in'
+        && item.errorCode === 'RESOURCE_CONFLICT');
+      if (hasClockInConflict) {
+        try {
+          await refreshBootstrap({ source: 'offline-clock-in-conflict' });
+        } catch (error) {
+          console.warn('PostgreSQL attendance conflict refresh failed', {
+            code: error?.code || 'ATTENDANCE_CONFLICT_REFRESH_FAILED',
+            status: Number(error?.status || 0),
+            requestId: error?.requestId || ''
+          });
+        }
+      }
       scheduleOfflineRetry(outcome?.retryAt || 0);
       updateOfflineStatus({ conflict: outcome?.conflict, failed: outcome?.failed });
       if (foregroundSyncActivated) startForegroundPolling();

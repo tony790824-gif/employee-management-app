@@ -200,7 +200,17 @@ let browserData = {
 let storedData = structuredClone(browserData);
 let commandCalls = 0;
 let commandKey = '';
+let commandFailure = null;
+let bootstrapCalls = 0;
 let onCommandRevision;
+const offlinePanelElement = { hidden: true };
+const offlineMessageElement = { textContent: '' };
+const offlineDiscardElement = { hidden: true, addEventListener() {} };
+const offlineElements = new Map([
+  ['#offlineSyncStatus', offlinePanelElement],
+  ['#offlineSyncMessage', offlineMessageElement],
+  ['#offlineSyncDiscard', offlineDiscardElement]
+]);
 const browserWindow = {
   crypto: { randomUUID: () => `10000000-0000-4000-8000-${String(++uuidSequence).padStart(12, '0')}` },
   navigator: { onLine: true },
@@ -221,11 +231,14 @@ const browserWindow = {
       return {
         readiness: async () => ({ ok: true }),
         establishSession: async () => ({ ok: true }),
-        bootstrap: async () => ({
-          ok: true, workspaceId, role: 'employee', employeeId: 'employee-1',
-          currentUser: { displayName: 'Synthetic', role: 'employee', employeeId: 'employee-1', workspaceId },
-          data: structuredClone(browserData)
-        }),
+        bootstrap: async () => {
+          bootstrapCalls += 1;
+          return {
+            ok: true, workspaceId, role: 'employee', employeeId: 'employee-1',
+            currentUser: { displayName: 'Synthetic', role: 'employee', employeeId: 'employee-1', workspaceId },
+            data: structuredClone(browserData)
+          };
+        },
         bootstrapRevision: async () => ({ ok: true, workspaceId, revision: browserRevision }),
         listTimeOffRequests: async () => ({ ok: true, ownRequests: [{ id: 'request-browser' }] }),
         listNotifications: async () => ({ ok: true, items: [{ id: 'notification-browser' }], unreadCount: 1 }),
@@ -234,6 +247,7 @@ const browserWindow = {
           commandKey = options.idempotencyKey;
           assert.equal(commandName, 'attendance.clock-in');
           assert.deepEqual({ ...input }, {});
+          if (commandFailure) throw commandFailure;
           browserRevision += 1;
           browserData.sync.revision = browserRevision;
           browserData.attendance.push({ id: 'attendance-online', employeeId: 'employee-1' });
@@ -247,7 +261,7 @@ const browserWindow = {
 };
 const browserDocument = {
   visibilityState: 'visible',
-  querySelector: () => null,
+  querySelector: selector => offlineElements.get(selector) || null,
   addEventListener: (type, listener) => documentListeners.set(type, listener),
   dispatchEvent: event => browserEvents.push(event)
 };
@@ -289,6 +303,31 @@ assert.equal(commandCalls, 1, 'online recovery must replay the queued command on
 assert.equal(commandKey, queuedKey, 'online recovery must preserve the enqueue-time idempotency key');
 assert.equal(browserWindow.shiftPostgresCloud.getOfflineQueue().length, 0);
 assert.equal(storedData.attendance[0].id, 'attendance-online', 'successful recovery must refresh the canonical bootstrap');
+
+browserWindow.navigator.onLine = false;
+const conflictQueuedResult = await browserWindow.shiftPostgresCloud.clockInEmployee();
+assert.equal(conflictQueuedResult.queued, true, 'offline clock-in must remain queueable when no open record is cached');
+commandFailure = Object.assign(new Error('Synthetic open attendance conflict'), {
+  code: 'RESOURCE_CONFLICT', status: 409, requestId: 'safe-request-id'
+});
+const bootstrapCallsBeforeConflict = bootstrapCalls;
+browserWindow.navigator.onLine = true;
+windowListeners.get('online')();
+for (let index = 0; index < 12; index += 1) await Promise.resolve();
+await new Promise(resolve => setTimeout(resolve, 0));
+const [failedClockIn] = browserWindow.shiftPostgresCloud.getOfflineQueue();
+assert.equal(failedClockIn.status, 'failed');
+assert.equal(failedClockIn.errorCode, 'RESOURCE_CONFLICT');
+assert.equal(
+  offlineMessageElement.textContent,
+  '你仍有一筆尚未打卡下班的紀錄，請先完成下班打卡。',
+  'offline replay conflict must show an actionable attendance message'
+);
+assert.equal(
+  bootstrapCalls,
+  bootstrapCallsBeforeConflict + 1,
+  'offline replay conflict must refresh the canonical bootstrap once'
+);
 await browserWindow.shiftPostgresCloud.logout();
 assert.equal(browserValues.has('test:postgres-offline-v1'), false, 'logout must clear the integrated offline cache and queue');
 
