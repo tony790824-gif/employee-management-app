@@ -10,6 +10,8 @@
 - [x] Notification/outbox/delivery idempotency, bounded retry, 404/410 cleanup, Badge/revision refresh, and click destination allowlist remain covered.
 - [x] API Role has zero direct notification/preference table privilege and only reviewed controlled function execution.
 - [x] Workspace A/B isolation, cross-recipient denial, actor exclusion, and private-detail exclusion pass synthetic E2E.
+- [x] Notification click uses exact same-scope destinations, prefers the recorded installed PWA client, never navigates/reloads an authenticated client, and opens one safe window only when no suitable PWA client exists.
+- [x] Source/Staging PostgreSQL Service Worker caches advanced to `banke-production-v6` / `banke-staging-postgres-v9` so installed clients do not retain the pre-hotfix worker.
 - [ ] Windows physical-device delivery/click/badge/preferences — PENDING USER VERIFICATION.
 - [ ] iPhone Home Screen PWA delivery/click/badge/preferences — PENDING USER VERIFICATION.
 - [ ] iPad Home Screen PWA delivery/click/badge/preferences — PENDING USER VERIFICATION.

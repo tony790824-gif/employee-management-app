@@ -9,6 +9,7 @@
 5. Validate manager/applicant/affected-employee targeting, actor exclusion, preference suppression, badge/read state, and Workspace A/B denial. Logs may contain request ID/status/error code only—not tokens, endpoints, Session IDs, or personal data.
 6. A notification row is authoritative; system Push is asynchronous. Temporary provider failures retry through the existing bounded queue; 404/410 revoke the stale subscription. Never replay a business Command to force Push.
 7. Physical Windows/iPhone/iPad/Android delivery remains a separate release gate. Production migration/deployment is forbidden without explicit future approval.
+8. For notification-click acceptance, verify the installed PWA has been launched once after the new Service Worker activates. A click must focus that PWA and post an allowlisted destination; clock events open Attendance, shift events open Schedule, and leave/time-off events open Time-Off. If the PWA is closed, one safe same-scope window may be opened. Do not diagnose by logging notification payloads, endpoints, cookies, or Session identifiers.
 
 ## PostgreSQL Identity Staging（未接 Production）
 

@@ -37,6 +37,7 @@
   let activePushSubscriptionCount = 0;
   let registrationPushManagerAvailable = null;
   let lastPushSupportDiagnostic = '';
+  let pendingNotificationDestination = '';
   const configuredPushTimeout = Number(window.shiftEnvironment?.pushOperationTimeoutMs);
   const PUSH_BROWSER_OPERATION_TIMEOUT_MS = Number.isSafeInteger(configuredPushTimeout)
     && configuredPushTimeout >= 1
@@ -655,6 +656,36 @@
     void refreshPushStatus();
     return true;
   };
+  const NOTIFICATION_OPEN_TARGETS = Object.freeze({
+    notifications: 'notifications',
+    attendance: 'attendance',
+    schedule: 'schedule',
+    'time-off': 'time-off'
+  });
+  const notificationOpenTarget = path => {
+    if (typeof path !== 'string') return '';
+    const match = /^\/\?open=(notifications|attendance|schedule|time-off)$/.exec(path);
+    return match ? NOTIFICATION_OPEN_TARGETS[match[1]] : '';
+  };
+  const openNotificationDestination = path => {
+    const target = notificationOpenTarget(path);
+    if (!target) return false;
+    if (!cloud.isConnected()) {
+      pendingNotificationDestination = path;
+      return false;
+    }
+    pendingNotificationDestination = '';
+    if (target === 'notifications') return openNotificationCenter();
+    if (dialog.open) dialog.close();
+    if (target === 'time-off' && window.shiftTimeOffUi?.activate) {
+      window.shiftTimeOffUi.activate();
+      return true;
+    }
+    const tab = document.querySelector(`[data-tab="${target}"]`);
+    if (!tab || typeof tab.click !== 'function') return false;
+    tab.click();
+    return true;
+  };
   trigger.addEventListener('click', openNotificationCenter);
   close.addEventListener('click', () => dialog.close());
   markAll.addEventListener('click', () => void markAllRead());
@@ -666,7 +697,10 @@
   dialog.addEventListener('click', event => {
     if (event.target === dialog) dialog.close();
   });
-  document.addEventListener('postgres-bootstrap-refreshed', () => void loadNotifications({ silent: true }));
+  document.addEventListener('postgres-bootstrap-refreshed', () => {
+    void loadNotifications({ silent: true });
+    if (pendingNotificationDestination) openNotificationDestination(pendingNotificationDestination);
+  });
   document.addEventListener('postgres-session-cleared', () => {
     items = [];
     unreadCount = 0;
@@ -689,14 +723,21 @@
       setMessage('推播訂閱已變更，請重新註冊此裝置。');
     }
     if (event.data?.type === 'BANKE_OPEN_NOTIFICATION_CENTER') {
-      openNotificationCenter();
+      openNotificationDestination('/?open=notifications');
+    }
+    if (event.data?.type === 'BANKE_OPEN_NOTIFICATION_DESTINATION') {
+      openNotificationDestination(event.data.path);
     }
   });
-  const openFromPush = typeof URLSearchParams === 'function'
-    && new URLSearchParams(window.location?.search || '').get('open') === 'notifications';
+  const openTarget = typeof URLSearchParams === 'function'
+    ? new URLSearchParams(window.location?.search || '').get('open')
+    : '';
+  const openFromPush = openTarget && NOTIFICATION_OPEN_TARGETS[openTarget]
+    ? `/?open=${openTarget}`
+    : '';
   if (openFromPush) {
     window.addEventListener('load', () => {
-      openNotificationCenter();
+      openNotificationDestination(openFromPush);
     }, { once: true });
   }
 

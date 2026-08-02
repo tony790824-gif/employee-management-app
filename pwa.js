@@ -5,7 +5,26 @@
   let deferred;
   const installed = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const serviceWorkerUrl = window.shiftEnvironment?.serviceWorkerUrl || './service-worker.js';
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' }).catch(() => {}));
+  const publishClientMode = async () => {
+    if (!installed() || !('serviceWorker' in navigator)) return;
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      (navigator.serviceWorker.controller || registration.active)?.postMessage({
+        type: 'BANKE_CLIENT_MODE',
+        standalone: true
+      });
+    } catch {}
+  };
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        await navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' });
+        await publishClientMode();
+      } catch {}
+    });
+    navigator.serviceWorker.addEventListener?.('controllerchange', () => void publishClientMode());
+    window.addEventListener('pageshow', () => void publishClientMode());
+  }
   if (button) button.hidden = installed();
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();

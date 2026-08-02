@@ -29,6 +29,14 @@ remaining cross-device release gate remain `PENDING USER VERIFICATION`.
     Web Push transport endpoint. This does not authorize a Firebase SDK, Firebase
     project, FCM registration token, or a second Service Worker. Browser
     subscription keys and VAPID remain the only accepted delivery contract.
+13. A standalone PWA reports only its same-Origin WindowClient identity to the
+    controlling Service Worker. Notification click prefers that client over an
+    ordinary Browser tab, focuses it without navigation/reload, and uses one
+    same-scope `openWindow` fallback only when no suitable PWA client is open.
+14. Click destinations are exact local allowlist entries. Clock events open
+    Attendance, shift events open Schedule, and leave/time-off events open
+    Time-Off. Unknown types and malformed/external destinations fail closed to
+    Notification Center; payload URLs never create an open redirect.
 
 ## Consequences
 

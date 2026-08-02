@@ -169,6 +169,7 @@ assert.deepEqual(
 
 const ui = await readFile('notification-center.js', 'utf8');
 const login = await readFile('login.js', 'utf8');
+const pwa = await readFile('pwa.js', 'utf8');
 const worker = await readFile('service-worker.js', 'utf8');
 const packageManifest = JSON.parse(await readFile('package.json', 'utf8'));
 assert.equal(packageManifest.dependencies?.['web-push'], '3.6.7');
@@ -188,7 +189,10 @@ assert.match(worker, /addEventListener\('push'/);
 assert.match(worker, /showNotification/);
 assert.match(worker, /addEventListener\('notificationclick'/);
 assert.match(worker, /openWindow/);
-assert.match(worker, /BANKE_OPEN_NOTIFICATION_CENTER/);
+assert.match(worker, /BANKE_OPEN_NOTIFICATION_DESTINATION/);
+assert.match(worker, /BANKE_CLIENT_MODE/);
+assert.match(pwa, /BANKE_CLIENT_MODE/);
+assert.match(pwa, /standalone:\s*true/);
 assert.doesNotMatch(worker, /client\.navigate\(target\)/);
 assert.match(worker, /addEventListener\('pushsubscriptionchange'/);
 assert.doesNotMatch(worker, /Authorization|accessToken|refreshToken|privateKey/);
@@ -199,7 +203,10 @@ const openedWindows = [];
 const shownNotifications = [];
 let focusedClients = 0;
 let matchedClients = [{
+  id: 'browser-client',
   url: 'https://draft.staging.example/employee',
+  focused: true,
+  visibilityState: 'visible',
   async focus() {
     focusedClients += 1;
     return this;
@@ -211,12 +218,14 @@ let matchedClients = [{
     throw new Error('Existing authenticated clients must not be navigated.');
   }
 }];
+const cacheStorage = new Map();
 const workerSandbox = {
   self: {
     location: { origin: 'https://draft.staging.example' },
     addEventListener: (type, listener) => workerListeners.set(type, listener),
     skipWaiting: async () => {},
     registration: {
+      scope: 'https://draft.staging.example/',
       showNotification: async (title, options) => {
         shownNotifications.push({ title, options: structuredClone(options) });
       }
@@ -228,10 +237,10 @@ const workerSandbox = {
     }
   },
   caches: {
-    open: async () => ({
+    open: async name => ({
       addAll: async () => {},
-      match: async () => null,
-      put: async () => {}
+      match: async key => cacheStorage.get(`${name}:${key}`)?.clone() || null,
+      put: async (key, value) => { cacheStorage.set(`${name}:${key}`, value.clone()); }
     }),
     keys: async () => [],
     delete: async () => true
@@ -251,6 +260,7 @@ workerListeners.get('push')({
   data: {
     json: () => ({
       notificationId: delivery.payload.notificationId,
+      type: 'clock_in',
       title: delivery.payload.title,
       body: delivery.payload.body,
       url: '/?open=notifications'
@@ -269,7 +279,8 @@ assert.deepEqual(shownNotifications, [{
     renotify: false,
     data: {
       notificationId: delivery.payload.notificationId,
-      url: '/?open=notifications'
+      type: 'clock_in',
+      url: '/?open=attendance'
     }
   }
 }], 'A standard Web Push event renders one bounded background system notification.');
@@ -278,6 +289,7 @@ workerListeners.get('push')({
   data: {
     json: () => ({
       notificationId: delivery.payload.notificationId,
+      type: 'clock_in',
       title: delivery.payload.title,
       body: delivery.payload.body,
       url: '/?open=notifications'
@@ -293,7 +305,7 @@ assert.equal(shownNotifications[0].options.tag, shownNotifications[1].options.ta
 let notificationClickWork;
 workerListeners.get('notificationclick')({
   notification: {
-    data: { url: '/?open=notifications' },
+    data: { type: 'clock_in', url: '/?open=notifications' },
     close() {}
   },
   waitUntil: promise => { notificationClickWork = promise; }
@@ -301,8 +313,9 @@ workerListeners.get('notificationclick')({
 await notificationClickWork;
 assert.equal(focusedClients, 1);
 assert.deepEqual(focusedMessages, [{
-  type: 'BANKE_OPEN_NOTIFICATION_CENTER',
-  path: '/?open=notifications'
+  type: 'BANKE_OPEN_NOTIFICATION_DESTINATION',
+  path: '/?open=attendance',
+  notificationType: 'clock_in'
 }]);
 assert.deepEqual(openedWindows, [],
   'An existing same-origin authenticated client must be focused instead of opening a new window.');
@@ -310,19 +323,19 @@ assert.deepEqual(openedWindows, [],
 matchedClients = [];
 workerListeners.get('notificationclick')({
   notification: {
-    data: { url: '/?open=notifications' },
+    data: { type: 'shift_updated', url: '/?open=notifications' },
     close() {}
   },
   waitUntil: promise => { notificationClickWork = promise; }
 });
 await notificationClickWork;
-assert.deepEqual(openedWindows, ['https://draft.staging.example/?open=notifications'],
+assert.deepEqual(openedWindows, ['https://draft.staging.example/?open=schedule'],
   'A new window is opened only when no same-origin client exists.');
 
 matchedClients = [];
 workerListeners.get('notificationclick')({
   notification: {
-    data: { url: 'https://attacker.invalid/notifications' },
+    data: { type: 'unknown', url: 'https://attacker.invalid/notifications' },
     close() {}
   },
   waitUntil: promise => { notificationClickWork = promise; }
@@ -330,6 +343,109 @@ workerListeners.get('notificationclick')({
 await notificationClickWork;
 assert.equal(openedWindows.at(-1), 'https://draft.staging.example/?open=notifications',
   'An external notification target fails closed to the same-origin Notification Center.');
+
+let pwaFocuses = 0;
+let browserFocuses = 0;
+const browserClient = {
+  id: 'browser-client-new',
+  url: 'https://draft.staging.example/',
+  focused: true,
+  visibilityState: 'visible',
+  async focus() { browserFocuses += 1; return this; },
+  postMessage(message) { focusedMessages.push(structuredClone(message)); }
+};
+const pwaClient = {
+  id: 'pwa-client',
+  url: 'https://draft.staging.example/?app=banke-staging-postgres',
+  focused: false,
+  visibilityState: 'hidden',
+  async focus() { pwaFocuses += 1; return this; },
+  postMessage(message) { focusedMessages.push(structuredClone(message)); }
+};
+let clientModeWork;
+workerListeners.get('message')({
+  data: { type: 'BANKE_CLIENT_MODE', standalone: true },
+  source: pwaClient,
+  waitUntil: promise => { clientModeWork = promise; }
+});
+await clientModeWork;
+matchedClients = [browserClient, pwaClient];
+workerListeners.get('notificationclick')({
+  notification: { data: { type: 'shift_updated' }, close() {} },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.equal(pwaFocuses, 1, 'An installed PWA client is preferred over a focused Browser tab.');
+assert.equal(browserFocuses, 0, 'The Browser tab is not focused when the installed PWA is available.');
+assert.deepEqual(focusedMessages.at(-1), {
+  type: 'BANKE_OPEN_NOTIFICATION_DESTINATION',
+  path: '/?open=schedule',
+  notificationType: 'shift_updated'
+});
+
+matchedClients = [browserClient];
+workerListeners.get('notificationclick')({
+  notification: { data: { type: 'leave_approved' }, close() {} },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.equal(browserFocuses, 0,
+  'A stale Browser tab is not selected when an installed PWA marker exists but the PWA is closed.');
+assert.equal(openedWindows.at(-1),
+  'https://draft.staging.example/?app=banke-staging-postgres&open=time-off',
+  'A closed installed PWA is relaunched through one safe in-scope openWindow target.');
+
+cacheStorage.clear();
+const secondPwaClient = {
+  id: 'pwa-client-b',
+  url: 'https://draft.staging.example/?app=banke-staging-postgres',
+  focused: true,
+  visibilityState: 'visible',
+  async focus() { pwaFocuses += 10; return this; },
+  postMessage(message) { focusedMessages.push(structuredClone(message)); }
+};
+matchedClients = [pwaClient, secondPwaClient, browserClient];
+workerListeners.get('notificationclick')({
+  notification: { data: { type: 'clock_out' }, close() {} },
+  waitUntil: promise => { notificationClickWork = promise; }
+});
+await notificationClickWork;
+assert.equal(pwaFocuses, 11,
+  'Multiple clients are selected deterministically by PWA mode, focus, visibility and stable identity.');
+
+const expectedDestinations = new Map([
+  ['clock_in', 'attendance'],
+  ['clock_out', 'attendance'],
+  ['shift_updated', 'schedule'],
+  ['schedule_updated', 'schedule'],
+  ['leave_requested', 'time-off'],
+  ['leave_approved', 'time-off'],
+  ['leave_rejected', 'time-off'],
+  ['time_off_submitted', 'time-off'],
+  ['time_off_cancelled', 'time-off'],
+  ['time_off_approved', 'time-off'],
+  ['time_off_rejected', 'time-off']
+]);
+matchedClients = [];
+for (const [type, destination] of expectedDestinations) {
+  workerListeners.get('notificationclick')({
+    notification: { data: { type, url: '/?open=notifications' }, close() {} },
+    waitUntil: promise => { notificationClickWork = promise; }
+  });
+  await notificationClickWork;
+  assert.equal(openedWindows.at(-1), `https://draft.staging.example/?open=${destination}`);
+}
+for (const unsafe of [
+  '//attacker.invalid', 'javascript:alert(1)', 'data:text/html,bad',
+  '/?open=schedule&next=https://attacker.invalid', '/?open=schedule#bad', '/unknown'
+]) {
+  workerListeners.get('notificationclick')({
+    notification: { data: { type: 'unknown', url: unsafe }, close() {} },
+    waitUntil: promise => { notificationClickWork = promise; }
+  });
+  await notificationClickWork;
+  assert.equal(openedWindows.at(-1), 'https://draft.staging.example/?open=notifications');
+}
 
 matchedClients = [{
   url: 'https://draft.staging.example/employee',

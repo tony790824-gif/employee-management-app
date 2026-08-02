@@ -21,6 +21,7 @@ assert.doesNotMatch(source, /localStorage|sessionStorage|Authorization|accessTok
 
 function node() {
   const listeners = new Map();
+  const classes = new Set();
   return {
     hidden: false,
     disabled: false,
@@ -28,12 +29,23 @@ function node() {
     textContent: '',
     children: [],
     attributes: new Map(),
-    classList: { toggle() {} },
+    classList: {
+      toggle(name, force) {
+        if (force === true) classes.add(name);
+        else if (force === false) classes.delete(name);
+        else if (classes.has(name)) classes.delete(name);
+        else classes.add(name);
+      },
+      add(...names) { names.forEach(name => classes.add(name)); },
+      remove(...names) { names.forEach(name => classes.delete(name)); },
+      contains(name) { return classes.has(name); }
+    },
     append(...children) { this.children.push(...children); },
     replaceChildren(...children) { this.children = children; },
     setAttribute(name, value) { this.attributes.set(name, String(value)); },
     addEventListener(type, listener) { listeners.set(type, listener); },
     dispatch(type, event = {}) { return listeners.get(type)?.({ target: this, ...event }); },
+    click() { return this.dispatch('click'); },
     showModal() { this.open = true; },
     close() { this.open = false; }
   };
@@ -61,6 +73,12 @@ const selectors = [
   '#pushNotificationTest'
 ];
 const elements = new Map(selectors.map(selector => [selector, node()]));
+const routeActivations = [];
+for (const target of ['schedule', 'attendance', 'time-off']) {
+  const route = node();
+  route.click = () => { routeActivations.push(target); };
+  elements.set(`[data-tab="${target}"]`, route);
+}
 elements.get('#notificationButton').hidden = true;
 elements.get('#notificationBadge').hidden = true;
 elements.get('#notificationMessage').hidden = true;
@@ -264,6 +282,29 @@ serviceWorkerListeners.get('message')({
 assert.equal(elements.get('#notificationDialog').open, true,
   'A focused authenticated client opens Notification Center without reloading.');
 elements.get('#notificationDialog').close();
+
+for (const [path, expected] of [
+  ['/?open=attendance', 'attendance'],
+  ['/?open=schedule', 'schedule'],
+  ['/?open=time-off', 'time-off']
+]) {
+  serviceWorkerListeners.get('message')({
+    data: { type: 'BANKE_OPEN_NOTIFICATION_DESTINATION', path }
+  });
+  assert.equal(routeActivations.at(-1), expected,
+    `A focused authenticated client routes ${path} without reload or login.`);
+}
+const activationCount = routeActivations.length;
+for (const path of [
+  'https://attacker.invalid/', '//attacker.invalid', 'javascript:alert(1)',
+  '/?open=schedule&next=bad', '/?open=schedule#bad', '/unknown'
+]) {
+  serviceWorkerListeners.get('message')({
+    data: { type: 'BANKE_OPEN_NOTIFICATION_DESTINATION', path }
+  });
+}
+assert.equal(routeActivations.length, activationCount,
+  'Notification navigation rejects every destination outside the exact local allowlist.');
 
 elements.get('#notificationButton').dispatch('click');
 assert.equal(elements.get('#notificationDialog').open, true);

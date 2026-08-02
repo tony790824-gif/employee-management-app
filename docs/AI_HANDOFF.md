@@ -8,6 +8,7 @@
 - Clock, leave, and shift preferences apply to future events without disabling Notification Center or the existing `push.test` diagnostic path.
 - Synthetic E2E passed two active managers, employee self-exclusion, leave applicant targeting, affected-employee shift targeting, preference suppression, idempotent projection, badge/revision refresh, 404/410 cleanup, and Workspace A/B isolation.
 - Next and only work: execute the Sprint 31 physical-device checklist on Windows and installed iPhone/iPad/Android PWAs. Do not start a new feature Sprint until those results are recorded.
+- A Windows notification-click hotfix now records the standalone PWA client, prefers it over Browser tabs, focuses and posts an allowlisted local destination without reload, and opens one safe in-scope window only when the PWA is closed. Revalidate clock → Attendance, shift → Schedule, leave/time-off → Time-Off, plus preserved Session behavior; status remains **PENDING USER VERIFICATION**.
 
 ## 2026-08-01 handoff — Sprint 30 Offline First
 

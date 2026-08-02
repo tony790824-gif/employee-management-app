@@ -11,6 +11,8 @@ Overall assessed completion: **97%**
 - Existing shift creation/direct approved leave update → affected employee only.
 - Central recipient resolver, bounded metadata, same-origin destination, deterministic recipient deduplication, and clock/leave/shift preferences.
 - Existing Notification Center, Badge, revision sync, durable Web Push queue, bounded retry, 404/410 cleanup, and diagnostic `push.test` remain intact.
+- The notification-click hotfix records only the installed PWA client identity, prefers that client over a Browser tab, focuses it without navigation/reload, and uses one in-scope `openWindow` fallback only when no suitable PWA client is open.
+- Click destinations are an exact local allowlist: clock events → Attendance, shift events → Schedule, and leave/time-off events → Time-Off. External, protocol-relative, `javascript:`, `data:`, extra-query, hash, and unknown destinations fail closed to Notification Center.
 
 ## Database evidence
 
@@ -33,9 +35,10 @@ For Windows and each installed iPhone/iPad/Android PWA:
 2. Perform employee clock-in and clock-out; verify only reviewer devices receive one event each.
 3. Submit scheduled and ad-hoc leave; verify reviewers receive the submissions. Approve one and reject one; verify only the applicant receives results.
 4. Create a shift for the employee; verify only that employee receives the schedule event.
-5. Check system notification, Notification Center row, unread Badge, mark-read synchronization, and notification click opening/focusing the app.
-6. Disable each preference category and repeat one matching event; verify no new matching row or Push while other categories and `push.test` still work.
-7. Repeat one negative attempt using Workspace B and confirm no cross-Workspace notification.
+5. Check system notification, Notification Center row, unread Badge, mark-read synchronization, and notification click focusing the installed PWA (not a Browser tab): clock → Attendance, shift → Schedule, leave/time-off → Time-Off.
+6. Close the installed PWA, keep a same-Origin Browser tab open, click another notification, and verify one installed PWA window opens at the allowlisted destination without forcing a valid Session to log in again.
+7. Disable each preference category and repeat one matching event; verify no new matching row or Push while other categories and `push.test` still work.
+8. Repeat one negative attempt using Workspace B and confirm no cross-Workspace notification.
 
 Record each device as PASS/FAIL/BLOCKED. No physical-device item is currently claimed PASS by Codex.
 

@@ -9,6 +9,7 @@
 - `notification_preferences` provides `clockEvents`, `leaveEvents`, and `shiftEvents`; defaults preserve existing behavior. API Role access remains controlled-function-only with zero direct notification/preference table privilege.
 - Existing Notification Center, unread badge, Smart Polling, Service Worker, durable Push queue/worker, 404/410 cleanup, test notifications, and destination allowlist remain authoritative.
 - `shifts.update`, `shifts.delete`, and an announcement module do not exist; Sprint 31 does not fabricate them. Real-device delivery evidence is the only next gate.
+- Sprint 31 notification-click hotfix: the Service Worker now distinguishes an installed standalone PWA from an ordinary same-Origin Browser tab, focuses the PWA without reload, and routes clock/schedule/time-off events through an exact same-scope destination allowlist. The Staging PostgreSQL cache version is `banke-staging-postgres-v9`; Windows installed-PWA revalidation remains **PENDING USER VERIFICATION**.
 
 ## 2026-08-01 current state — Sprint 30 Offline First
 
