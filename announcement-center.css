@@ -1,5 +1,8 @@
 .announcement-dialog{width:min(680px,94vw);max-height:min(780px,90vh)}
 .announcement-dialog>section{padding:22px}
+.announcement-dialog [hidden]{display:none}
+.announcement-list-actions{display:flex;justify-content:flex-end;margin:12px 0}
+.announcement-list-actions button{min-height:44px}
 .announcement-list{display:grid;gap:10px;max-height:58vh;overflow:auto;padding:2px}
 .announcement-item{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:left;background:#fff;color:var(--ink);font:inherit;cursor:pointer}
 .announcement-item.is-unread{border-color:#8d67c5;background:#f8f2ff}
@@ -15,6 +18,7 @@
 .announcement-detail{overflow-wrap:anywhere}
 .announcement-detail h3{font-size:22px;margin:12px 0}
 .announcement-detail p:not(.announcement-detail-meta){white-space:pre-wrap;line-height:1.7}
+.announcement-back{min-height:44px;margin-top:16px}
 @media(max-width:720px){
   .announcement-dialog>section{padding:16px}
   .announcement-list{max-height:64vh}

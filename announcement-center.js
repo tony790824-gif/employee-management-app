@@ -11,6 +11,8 @@
   const close = document.querySelector('#announcementClose');
   const summary = document.querySelector('#announcementSummary');
   const message = document.querySelector('#announcementMessage');
+  const listActions = document.querySelector('#announcementListActions');
+  const createButton = document.querySelector('#announcementCreate');
   const list = document.querySelector('#announcementList');
   const detail = document.querySelector('#announcementDetail');
   const detailTitle = document.querySelector('#announcementDetailTitle');
@@ -28,7 +30,8 @@
   const audience = document.querySelector('#announcementAudience');
   const cancelEdit = document.querySelector('#announcementCancelEdit');
   const save = document.querySelector('#announcementSave');
-  if (!cloud || !dom || !navigation || !trigger || !badge || !dialog || !list || !detail || !editor) return;
+  if (!cloud || !dom || !navigation || !trigger || !badge || !dialog || !listActions
+    || !createButton || !list || !detail || !editor) return;
 
   const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
   const AUDIENCE_LABELS = Object.freeze({ ALL: '所有人', MANAGER: '管理者', EMPLOYEE: '員工' });
@@ -37,6 +40,7 @@
   let unreadCount = 0;
   let loadPromise = null;
   let mutationPromise = null;
+  let uiMode = 'list';
 
   const managerSession = () => ['boss', 'manager'].includes(cloud.getCurrentUser()?.role);
   const validAnnouncement = item => item && typeof item === 'object'
@@ -73,12 +77,27 @@
     audience.value = 'ALL';
     save.textContent = '發布公告';
   };
+  const setMode = requestedMode => {
+    const nextMode = ['list', 'detail', 'editor'].includes(requestedMode)
+      && (requestedMode !== 'editor' || managerSession()) ? requestedMode : 'list';
+    uiMode = nextMode;
+    list.hidden = nextMode !== 'list';
+    listActions.hidden = nextMode !== 'list' || !managerSession();
+    createButton.hidden = listActions.hidden;
+    detail.hidden = nextMode !== 'detail';
+    editor.hidden = nextMode !== 'editor';
+    managerActions.hidden = nextMode !== 'detail' || !managerSession();
+  };
   const showList = () => {
     current = null;
-    detail.hidden = true;
-    list.hidden = false;
-    editor.hidden = !managerSession();
-    managerActions.hidden = true;
+    setMode('list');
+  };
+  const showCreate = () => {
+    if (!managerSession()) return;
+    current = null;
+    resetEditor();
+    setMode('editor');
+    title.focus();
   };
   const showDialog = () => {
     if (dialog.open) return true;
@@ -134,6 +153,7 @@
         unreadCount = Math.max(0, Number(payload.unreadCount) || 0);
         trigger.hidden = false;
         renderList();
+        setMode(uiMode);
         return payload;
       } catch (error) {
         if (!silent) setMessage(error?.message || '公告載入失敗，請稍後再試。');
@@ -169,10 +189,7 @@
     detailTitle.textContent = item.title;
     detailContent.textContent = item.content;
     detailMeta.textContent = `${AUDIENCE_LABELS[item.audience]} · ${formatDate(item.publishedAt)}`;
-    list.hidden = true;
-    editor.hidden = true;
-    detail.hidden = false;
-    managerActions.hidden = !managerSession();
+    setMode('detail');
     if (!item.readAt) {
       void cloud.markAnnouncementRead(item.id).then(() => load({ silent: true })).catch(() => {});
     }
@@ -187,9 +204,7 @@
     content.value = current.content;
     audience.value = current.audience;
     save.textContent = '儲存修改';
-    detail.hidden = true;
-    list.hidden = false;
-    editor.hidden = false;
+    setMode('editor');
     title.focus();
   }
 
@@ -245,6 +260,7 @@
   trigger.addEventListener('click', () => navigation.openAnnouncement('/announcements'));
   close.addEventListener('click', () => dialog.close());
   back.addEventListener('click', showList);
+  createButton.addEventListener('click', showCreate);
   editor.addEventListener('submit', event => void saveAnnouncement(event));
   cancelEdit.addEventListener('click', () => { resetEditor(); showList(); });
   editButton.addEventListener('click', editCurrent);
@@ -258,6 +274,7 @@
     unreadCount = 0;
     trigger.hidden = true;
     resetEditor();
+    setMode('list');
     renderList();
     if (dialog.open) dialog.close();
   });
@@ -265,6 +282,7 @@
   if (directId) window.addEventListener('load', () => void open(directId), { once: true });
 
   window.shiftAnnouncementCenter = Object.freeze({ open });
+  setMode('list');
   renderList();
   void load({ silent: true });
 })();

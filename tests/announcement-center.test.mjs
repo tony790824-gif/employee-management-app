@@ -127,15 +127,21 @@ assert.equal(navigation.pathForNotification({
 assert.equal(navigation.targetForPath(`/announcements/${announcementId}`), 'announcements');
 assert.equal(navigation.announcementIdForPath(`/announcements/${announcementId}`), announcementId);
 
-const [uiSource, notificationSource, workerSource, clientSource] = await Promise.all([
+const [uiSource, notificationSource, workerSource, clientSource, uiCss, indexSource] = await Promise.all([
   readFile('announcement-center.js', 'utf8'),
   readFile('notification-center.js', 'utf8'),
   readFile('service-worker.js', 'utf8'),
-  readFile('postgres-api-client.js', 'utf8')
+  readFile('postgres-api-client.js', 'utf8'),
+  readFile('announcement-center.css', 'utf8'),
+  readFile('index.html', 'utf8')
 ]);
 assert.match(uiSource, /cloud\.listAnnouncements\(\)/);
 assert.match(uiSource, /cloud\.markAnnouncementRead\(item\.id\)/);
 assert.match(uiSource, /\['boss', 'manager'\]\.includes/);
+assert.match(uiSource, /setMode\('detail'\)/);
+assert.match(uiCss, /\.announcement-dialog \[hidden\]\{display:none\}/,
+  'Management controls marked hidden cannot be made visible by component display styles.');
+assert.match(indexSource, /id="announcementCreate"/);
 assert.doesNotMatch(uiSource, /fetch\(|attendance|leave_selections|localStorage/,
   'Announcement UI must use the controlled client and not write unrelated data directly.');
 assert.match(notificationSource, /navigation\.pathForNotification\(item\)/,
@@ -215,7 +221,8 @@ function uiNode() {
 
 const announcementSelectors = [
   '#announcementButton', '#announcementBadge', '#announcementDialog', '#announcementClose',
-  '#announcementSummary', '#announcementMessage', '#announcementList', '#announcementDetail',
+  '#announcementSummary', '#announcementMessage', '#announcementListActions', '#announcementCreate',
+  '#announcementList', '#announcementDetail',
   '#announcementDetailTitle', '#announcementDetailContent', '#announcementDetailMeta',
   '#announcementBack', '#announcementManagerActions', '#announcementEdit', '#announcementDelete',
   '#announcementEditor', '#announcementEditId', '#announcementEditRevision', '#announcementTitle',
@@ -247,6 +254,7 @@ const announcementUiDom = {
   },
   replace(target, ...children) { target.replaceChildren(...children); }
 };
+let announcementRole = 'employee';
 const announcementUiContext = {
   Intl,
   Date,
@@ -259,7 +267,7 @@ const announcementUiContext = {
     shiftDomSafety: announcementUiDom,
     shiftPostgresCloud: {
       isConnected: () => true,
-      getCurrentUser: () => ({ role: 'employee' }),
+      getCurrentUser: () => ({ role: announcementRole }),
       listAnnouncements: async () => ({ ok: true, items: [announcementItem], unreadCount: 1 }),
       markAnnouncementRead: async () => ({ ok: true }),
       createAnnouncement: async () => ({ ok: true }),
@@ -283,6 +291,10 @@ assert.equal(announcementElements.get('#announcementDialog').open, true,
   'A queued notification destination opens after Announcement Center initialization.');
 assert.equal(announcementElements.get('#announcementDetail').hidden, false);
 assert.equal(announcementElements.get('#announcementDetailTitle').textContent, 'Sprint 32 測試');
+assert.equal(announcementElements.get('#announcementEditor').hidden, true,
+  'An Employee notification destination opens detail mode without rendering the management form.');
+assert.equal(announcementElements.get('#announcementListActions').hidden, true);
+assert.equal(announcementElements.get('#announcementManagerActions').hidden, true);
 
 announcementElements.get('#announcementDialog').close();
 await announcementElements.get('#announcementButton').click();
@@ -290,6 +302,11 @@ assert.equal(announcementElements.get('#announcementDialog').open, true,
   'The top Announcement button opens the Announcement list.');
 assert.equal(announcementElements.get('#announcementList').hidden, false);
 assert.equal(announcementElements.get('#announcementList').children.length, 1);
+assert.equal(announcementElements.get('#announcementEditor').hidden, true,
+  'Employee list mode never renders create or edit controls.');
+assert.equal(announcementElements.get('#announcementCreate').hidden, true,
+  'Employee list mode does not render the create action.');
+assert.equal(announcementElements.get('#announcementListActions').hidden, true);
 
 announcementElements.get('#announcementDialog').close();
 await announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
@@ -299,6 +316,32 @@ assert.equal(announcementElements.get('#announcementDialog').open, true,
   'An announcement_created destination opens the same Announcement dialog.');
 assert.equal(announcementElements.get('#announcementDetail').hidden, false);
 assert.equal(announcementElements.get('#announcementDetailTitle').textContent, 'Sprint 32 測試');
+assert.equal(announcementElements.get('#announcementEditor').hidden, true);
+
+announcementRole = 'boss';
+await announcementUiContext.window.shiftNotificationNavigation.openAnnouncement('/announcements');
+assert.equal(announcementElements.get('#announcementList').hidden, false);
+assert.equal(announcementElements.get('#announcementListActions').hidden, false,
+  'Manager list mode renders the explicit create action.');
+assert.equal(announcementElements.get('#announcementEditor').hidden, true,
+  'Manager list mode does not default to a blank publishing form.');
+announcementElements.get('#announcementCreate').dispatch('click');
+assert.equal(announcementElements.get('#announcementEditor').hidden, false,
+  'Create mode appears only after the Manager explicitly selects New Announcement.');
+assert.equal(announcementElements.get('#announcementList').hidden, true);
+announcementElements.get('#announcementCancelEdit').dispatch('click');
+assert.equal(announcementElements.get('#announcementEditor').hidden, true);
+assert.equal(announcementElements.get('#announcementList').hidden, false);
+await announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
+  `/announcements/${announcementId}`
+);
+assert.equal(announcementElements.get('#announcementManagerActions').hidden, false,
+  'Manager detail mode renders edit and delete actions.');
+assert.equal(announcementElements.get('#announcementEditor').hidden, true);
+announcementElements.get('#announcementEdit').dispatch('click');
+assert.equal(announcementElements.get('#announcementEditor').hidden, false,
+  'Edit mode appears only after the Manager explicitly selects Edit.');
+assert.equal(announcementElements.get('#announcementDetail').hidden, true);
 assert.equal(announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
   '/announcements/javascript:alert(1)'
 ), false, 'Unsafe or invalid Announcement destinations fail closed.');
