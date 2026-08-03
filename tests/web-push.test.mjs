@@ -210,6 +210,74 @@ assert.deepEqual(
   [delivery.id, 'retry', 503, 'PUSH_SERVICE_ERROR']
 );
 
+const fcmForbiddenSecrets = {
+  accessToken: 'synthetic-provider-access-token',
+  jwt: 'eyJhbGciOiJFUzI1NiJ9.c3ludGhldGlj.c2lnbmF0dXJl',
+  cookie: 'provider-session=synthetic-cookie'
+};
+const fcmForbidden = dispatcherScenario(async () => {
+  throw Object.assign(new Error('synthetic forbidden'), {
+    statusCode: 403,
+    body: JSON.stringify({
+      error: {
+        code: 403,
+        status: 'PERMISSION_DENIED',
+        message: 'VAPID public key does not match this subscription.'
+      },
+      endpoint,
+      accessToken: fcmForbiddenSecrets.accessToken,
+      jwt: fcmForbiddenSecrets.jwt
+    }),
+    headers: {
+      'content-type': 'application/json; charset=UTF-8',
+      'x-fcm-error': 'VAPID_KEY_MISMATCH',
+      authorization: `Bearer ${fcmForbiddenSecrets.accessToken}`,
+      cookie: fcmForbiddenSecrets.cookie,
+      'set-cookie': fcmForbiddenSecrets.cookie,
+      'x-subscription-endpoint': endpoint
+    }
+  });
+});
+await fcmForbidden.dispatcher.drainOnce();
+assert.deepEqual(
+  fcmForbidden.queries.find(item => item.sql.includes('worker_complete_push_delivery')).parameters,
+  [delivery.id, 'dead', 403, 'PUSH_REJECTED'],
+  'FCM 403 keeps the existing dead-delivery classification.'
+);
+const fcmForbiddenLog = JSON.parse(fcmForbidden.logs.at(-1));
+assert.deepEqual(fcmForbiddenLog.providerResponse, {
+  status: 403,
+  body: {
+    error: {
+      code: 403,
+      status: 'PERMISSION_DENIED',
+      message: 'VAPID public key does not match this subscription.'
+    },
+    endpoint: '[REDACTED]',
+    accessToken: '[REDACTED]',
+    jwt: '[REDACTED]'
+  },
+  headers: {
+    'content-type': 'application/json; charset=UTF-8',
+    'x-fcm-error': 'VAPID_KEY_MISMATCH',
+    authorization: '[REDACTED]',
+    cookie: '[REDACTED]',
+    'set-cookie': '[REDACTED]',
+    'x-subscription-endpoint': '[REDACTED]'
+  }
+}, 'FCM 403 diagnostics preserve the provider reason while redacting sensitive response data.');
+for (const sensitive of [
+  endpoint,
+  subscriptionInput.p256dh,
+  subscriptionInput.auth,
+  privateKey,
+  fcmForbiddenSecrets.accessToken,
+  fcmForbiddenSecrets.jwt,
+  fcmForbiddenSecrets.cookie
+]) {
+  assert.doesNotMatch(fcmForbidden.logs.join('\n'), new RegExp(sensitive.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+}
+
 const ui = await readFile('notification-center.js', 'utf8');
 const navigationSource = await readFile('notification-navigation.js', 'utf8');
 const login = await readFile('login.js', 'utf8');

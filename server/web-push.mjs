@@ -6,6 +6,8 @@ const MAX_PAYLOAD_BYTES = 3_072;
 const VAPID_PUBLIC_KEY_PATTERN = /^[A-Za-z0-9_-]{80,120}$/;
 const VAPID_PRIVATE_KEY_PATTERN = /^[A-Za-z0-9_-]{40,64}$/;
 const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+const REDACTED = '[REDACTED]';
+const SENSITIVE_FIELD_PATTERN = /authorization|cookie|token|secret|credential|private.?key|endpoint|p256dh|auth|jwt/i;
 
 function required(value, name) {
   const normalized = String(value || '').trim();
@@ -56,6 +58,83 @@ function classifyFailure(error) {
     return { outcome: 'retry', statusCode, errorCode: 'PUSH_TIMEOUT' };
   }
   return { outcome: 'dead', statusCode, errorCode: 'PUSH_REJECTED' };
+}
+
+function redactProviderString(value, secrets) {
+  let result = String(value);
+  for (const secret of secrets) {
+    if (secret) result = result.replaceAll(String(secret), REDACTED);
+  }
+  return result
+    .replace(/\b(?:Bearer|Basic)\s+[A-Za-z0-9._~+/=-]+/gi, REDACTED)
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, REDACTED)
+    .replace(/((?:access|refresh|id)[_-]?token\s*[=:]\s*)[^\s,;"'}]+/gi, `$1${REDACTED}`);
+}
+
+function sanitizeProviderValue(value, secrets, seen = new WeakSet()) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'string') return redactProviderString(value, secrets);
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  if (typeof value === 'bigint') return String(value);
+  if (Buffer.isBuffer(value)) return redactProviderString(value.toString('utf8'), secrets);
+  if (Array.isArray(value)) return value.map(item => sanitizeProviderValue(item, secrets, seen));
+  if (typeof value !== 'object') return null;
+  if (seen.has(value)) return '[REDACTED_CIRCULAR]';
+  seen.add(value);
+  const sanitized = {};
+  for (const [key, item] of Object.entries(value)) {
+    sanitized[key] = SENSITIVE_FIELD_PATTERN.test(key)
+      ? REDACTED
+      : sanitizeProviderValue(item, secrets, seen);
+  }
+  return sanitized;
+}
+
+function sanitizeProviderBody(body, secrets) {
+  if (body === null || body === undefined) return null;
+  const text = Buffer.isBuffer(body) ? body.toString('utf8') : body;
+  if (typeof text !== 'string') return sanitizeProviderValue(text, secrets);
+  try {
+    return sanitizeProviderValue(JSON.parse(text), secrets);
+  } catch {
+    return redactProviderString(text, secrets);
+  }
+}
+
+function providerHeaderEntries(headers) {
+  if (!headers) return [];
+  if (typeof headers.entries === 'function') {
+    try {
+      return [...headers.entries()];
+    } catch {
+      return [];
+    }
+  }
+  return Array.isArray(headers) ? headers : Object.entries(headers);
+}
+
+function sanitizeProviderHeaders(headers, secrets) {
+  const sanitized = {};
+  for (const entry of providerHeaderEntries(headers)) {
+    if (!Array.isArray(entry) || entry.length < 2) continue;
+    const name = String(entry[0]).toLowerCase();
+    sanitized[name] = SENSITIVE_FIELD_PATTERN.test(name)
+      ? REDACTED
+      : sanitizeProviderValue(entry[1], secrets);
+  }
+  return sanitized;
+}
+
+function providerFailureEvidence(error, item, config) {
+  const status = safeStatusCode(error);
+  if (status === null || status < 400) return null;
+  const response = error?.response && typeof error.response === 'object' ? error.response : null;
+  const secrets = [item.endpoint, item.p256dh, item.auth, config.privateKey];
+  return {
+    status,
+    body: sanitizeProviderBody(error?.body ?? response?.body, secrets),
+    headers: sanitizeProviderHeaders(error?.headers ?? response?.headers, secrets)
+  };
 }
 
 function validDelivery(value) {
@@ -162,13 +241,15 @@ export function createWebPushDispatcher({
     } catch (error) {
       const failure = classifyFailure(error);
       await complete(item.id, failure.outcome, failure.statusCode, failure.errorCode);
+      const providerResponse = providerFailureEvidence(error, item, config);
       logger.warn(JSON.stringify({
         level: 'warn',
         event: 'web_push_delivery',
         deliveryId: item.id,
         outcome: failure.outcome,
         statusCode: failure.statusCode,
-        errorCode: failure.errorCode
+        errorCode: failure.errorCode,
+        ...(providerResponse ? { providerResponse } : {})
       }));
     }
   }
