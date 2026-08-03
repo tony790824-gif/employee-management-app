@@ -346,4 +346,52 @@ assert.equal(announcementUiContext.window.shiftNotificationNavigation.openAnnoun
   '/announcements/javascript:alert(1)'
 ), false, 'Unsafe or invalid Announcement destinations fail closed.');
 
+const directRouteElements = new Map(announcementSelectors.map(selector => [selector, uiNode()]));
+directRouteElements.get('#announcementButton').hidden = true;
+directRouteElements.get('#announcementBadge').hidden = true;
+directRouteElements.get('#announcementMessage').hidden = true;
+const directRouteDocumentListeners = new Map();
+let directRouteConnected = false;
+const directRouteContext = {
+  Intl,
+  Date,
+  Promise,
+  window: {
+    location: { pathname: `/announcements/${announcementId}` },
+    confirm: () => true,
+    shiftEnvironment: { dataBackend: 'postgres' },
+    shiftDomSafety: announcementUiDom,
+    shiftPostgresCloud: {
+      isConnected: () => directRouteConnected,
+      getCurrentUser: () => ({ role: 'employee' }),
+      listAnnouncements: async () => ({ ok: true, items: [announcementItem], unreadCount: 1 }),
+      markAnnouncementRead: async () => ({ ok: true }),
+      createAnnouncement: async () => ({ ok: true }),
+      updateAnnouncement: async () => ({ ok: true }),
+      deleteAnnouncement: async () => ({ ok: true })
+    }
+  },
+  document: {
+    querySelector: selector => directRouteElements.get(selector) || null,
+    addEventListener(type, listener) { directRouteDocumentListeners.set(type, listener); }
+  }
+};
+directRouteContext.window.window = directRouteContext.window;
+vm.runInNewContext(navigationSource, directRouteContext, { filename: 'notification-navigation.js' });
+vm.runInNewContext(uiSource, directRouteContext, { filename: 'announcement-center.js' });
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(directRouteElements.get('#announcementDialog').open, false,
+  'A direct Announcement route waits safely while authenticated bootstrap is incomplete.');
+directRouteConnected = true;
+directRouteDocumentListeners.get('postgres-bootstrap-refreshed')?.({ detail: { source: 'login' } });
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(directRouteElements.get('#announcementDialog').open, true,
+  'A direct browser load of an Announcement route opens the dialog after authenticated bootstrap.');
+assert.equal(directRouteElements.get('#announcementDetail').hidden, false,
+  'A direct browser load restores Announcement detail mode without Notification Center navigation.');
+assert.equal(directRouteElements.get('#announcementDetailTitle').textContent, announcementItem.title);
+assert.equal(directRouteElements.get('#announcementEditor').hidden, true,
+  'A direct Employee route does not expose Announcement management controls.');
+
 console.log('Announcement REST API, client navigation, read marker, and frontend boundary tests passed.');

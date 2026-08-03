@@ -41,6 +41,8 @@
   let loadPromise = null;
   let mutationPromise = null;
   let uiMode = 'list';
+  let pendingRoutePath = navigation.targetForPath(window.location?.pathname || '') === 'announcements'
+    ? window.location.pathname : '';
 
   const managerSession = () => ['boss', 'manager'].includes(cloud.getCurrentUser()?.role);
   const validAnnouncement = item => item && typeof item === 'object'
@@ -196,6 +198,14 @@
     return true;
   }
 
+  async function openAnnouncementFromRoute() {
+    if (!pendingRoutePath || !cloud.isConnected()) return false;
+    const routePath = pendingRoutePath;
+    const opened = await navigation.openAnnouncement(routePath);
+    if (opened) pendingRoutePath = '';
+    return opened;
+  }
+
   function editCurrent() {
     if (!managerSession() || !current) return;
     editId.value = current.id;
@@ -266,7 +276,9 @@
   editButton.addEventListener('click', editCurrent);
   deleteButton.addEventListener('click', () => void deleteCurrent());
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  document.addEventListener('postgres-bootstrap-refreshed', () => void load({ silent: true }));
+  document.addEventListener('postgres-bootstrap-refreshed', () => void (
+    pendingRoutePath ? openAnnouncementFromRoute() : load({ silent: true })
+  ));
   document.addEventListener('announcement-changed', () => void load({ silent: true }));
   document.addEventListener('postgres-session-cleared', () => {
     items = [];
@@ -278,11 +290,9 @@
     renderList();
     if (dialog.open) dialog.close();
   });
-  const directId = /^\/announcements\/([a-f0-9-]{36})$/i.exec(window.location?.pathname || '')?.[1] || '';
-  if (directId) window.addEventListener('load', () => void open(directId), { once: true });
-
   window.shiftAnnouncementCenter = Object.freeze({ open });
   setMode('list');
   renderList();
   void load({ silent: true });
+  void openAnnouncementFromRoute();
 })();
