@@ -126,6 +126,9 @@ const pushSubscription = {
 let browserSubscription = null;
 let pushSubscribePending = false;
 let pushServerCount = 0;
+let pushStatusCalls = 0;
+let pushRegisterError = null;
+let pushRegisterPersists = true;
 let pushTestError = null;
 let pwaMode = 'browser';
 const registeredPushInputs = [];
@@ -179,14 +182,18 @@ const cloud = {
     payload.preferences = { ...input, revision: payload.preferences.revision + 1 };
     return { ok: true, data: structuredClone(payload.preferences) };
   },
-  pushStatus: async () => ({
-    ok: true,
-    available: true,
-    activeSubscriptionCount: pushServerCount
-  }),
+  pushStatus: async () => {
+    pushStatusCalls += 1;
+    return {
+      ok: true,
+      available: true,
+      activeSubscriptionCount: pushServerCount
+    };
+  },
   registerPushSubscription: async input => {
     registeredPushInputs.push(structuredClone(input));
-    pushServerCount = 1;
+    if (pushRegisterError) throw pushRegisterError;
+    if (pushRegisterPersists) pushServerCount = 1;
   },
   unregisterPushSubscription: async endpoint => {
     unregisteredPushEndpoints.push(endpoint);
@@ -663,6 +670,7 @@ await new Promise(resolve => setImmediate(resolve));
 assert.equal(listCalls >= 3, true, 'Bootstrap revision refresh reloads recipient notifications.');
 
 const registrationsBeforePwaResume = registeredPushInputs.length;
+const pushStatusCallsBeforePwaResume = pushStatusCalls;
 pwaMode = 'pwa';
 browserSubscription = pushSubscription;
 serviceWorker.ready = Promise.resolve({ pushManager: activePushManager });
@@ -673,7 +681,10 @@ assert.equal(registeredPushInputs.length, registrationsBeforePwaResume + 1,
   'An authenticated PWA reconciles its existing subscription before Notification Center opens.');
 assert.equal(registeredPushInputs.at(-1).clientMode, 'pwa',
   'Foreground bootstrap reconciliation records the installed client as the preferred PWA mode.');
+assert.equal(pushStatusCalls >= pushStatusCallsBeforePwaResume + 2, true,
+  'Automatic PWA reconciliation re-queries server state before showing Push as enabled.');
 const registrationsBeforeSessionRepair = registeredPushInputs.length;
+const pushStatusCallsBeforeSessionRepair = pushStatusCalls;
 pushServerCount = 0;
 documentListeners.get('postgres-bootstrap-refreshed')();
 await new Promise(resolve => setImmediate(resolve));
@@ -682,6 +693,8 @@ assert.equal(registeredPushInputs.length, registrationsBeforeSessionRepair + 1,
   'A PWA subscription is rebound when the current App Session has no active server registration.');
 assert.equal(registeredPushInputs.at(-1).clientMode, 'pwa',
   'Session repair preserves the preferred PWA subscription mode.');
+assert.equal(pushStatusCalls >= pushStatusCallsBeforeSessionRepair + 2, true,
+  'A new App Session is shown as enabled only after the server confirms the rebound subscription.');
 pwaMode = 'browser';
 
 payload = { ok: true, workspaceId: 'ws_0123456789abcdef0123456789abcdef', items: [], unreadCount: 0, available: false };
@@ -698,6 +711,9 @@ assert.equal(elements.get('#notificationList').children.length, 1, 'Logged-out U
 const registrationsBeforeAccountSwitch = registeredPushInputs.length;
 payload = { ok: true, items: [], unreadCount: 0 };
 pushServerCount = 0;
+pushRegisterError = Object.assign(new Error('Subscription belongs to another principal.'), {
+  code: 'PUSH_SUBSCRIPTION_CONFLICT'
+});
 browserSubscription = pushSubscription;
 serviceWorker.ready = Promise.resolve({ pushManager: activePushManager });
 documentListeners.get('postgres-bootstrap-refreshed')();
@@ -708,7 +724,23 @@ await new Promise(resolve => setImmediate(resolve));
 assert.equal(elements.get('#pushNotificationRepair').hidden, false,
   'A browser subscription left by another Session requires controlled re-registration.');
 assert.equal(elements.get('#pushNotificationEnable').hidden, true);
-assert.equal(registeredPushInputs.length, registrationsBeforeAccountSwitch,
-  'Account switching never silently binds an existing browser subscription to the new Session.');
+assert.equal(registeredPushInputs.length > registrationsBeforeAccountSwitch, true,
+  'A browser fallback also attempts the existing secure server rebind flow after Session renewal.');
+assert.equal(elements.get('#pushNotificationStatus').textContent, '推播需要重新註冊',
+  'A rejected cross-account rebind never claims that Push is enabled.');
+pushRegisterError = null;
+
+const registrationsBeforeUnconfirmedBinding = registeredPushInputs.length;
+pushRegisterPersists = false;
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(registeredPushInputs.length, registrationsBeforeUnconfirmedBinding + 1,
+  'An unconfirmed binding attempts registration exactly once per bootstrap refresh.');
+assert.equal(elements.get('#pushNotificationStatus').textContent, '推播需要重新註冊',
+  'A successful command without a confirmed active server subscription remains repairable, not enabled.');
+assert.equal(elements.get('#pushNotificationTest').hidden, true,
+  'Test Push remains unavailable until the current Session binding is confirmed by the server.');
+pushRegisterPersists = true;
 
 console.log('Notification Center UI, badge, read state and revision refresh tests passed.');

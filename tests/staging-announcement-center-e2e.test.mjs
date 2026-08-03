@@ -189,7 +189,8 @@ try {
   api.listen(0, '127.0.0.1');
   await once(api, 'listening');
   const base = `http://127.0.0.1:${api.address().port}`;
-  const [bossA, employeeA, bossB, employeeB] = definitions;
+  const [bossA, originalEmployeeA, bossB, employeeB] = definitions;
+  let employeeA = originalEmployeeA;
   for (const principal of definitions) {
     const established = await request(base, '/v1/auth/session', principal, 201, { method: 'POST' });
     assert.equal(established.ok, true);
@@ -211,6 +212,59 @@ try {
     }
   );
   assert.equal(registeredPush.data.registered, true);
+  assert.equal((await request(base, '/v1/push/status', employeeA, 200)).activeSubscriptionCount, 1);
+
+  const reboundIdentity = Object.freeze({
+    ...identity('employee-a-rebound'),
+    subject: employeeA.identity.subject
+  });
+  const reboundEmployeeA = {
+    ...employeeA,
+    token: `announcement-employee-a-rebound-${randomUUID()}`,
+    identity: reboundIdentity
+  };
+  identities.set(reboundEmployeeA.token, reboundEmployeeA.identity);
+  assert.equal((await request(
+    base, '/v1/auth/session', reboundEmployeeA, 201, { method: 'POST' }
+  )).ok, true);
+  assert.equal((await request(base, '/v1/push/status', reboundEmployeeA, 200)).activeSubscriptionCount, 0,
+    'A renewed App Session does not inherit a stale Session subscription implicitly.');
+  const reboundPush = await request(
+    base, '/v1/commands/push.register', reboundEmployeeA, 201, {
+      method: 'POST', key: `announcement-live-rebind-${randomUUID()}`,
+      body: {
+        endpoint: employeePushEndpoint,
+        expirationTime: null,
+        p256dh: 'A'.repeat(88),
+        auth: 'B'.repeat(24),
+        userAgent: 'Synthetic Announcement Staging PWA',
+        platform: 'windows',
+        clientMode: 'pwa'
+      }
+    }
+  );
+  assert.equal(reboundPush.data.registered, true);
+  assert.equal((await request(
+    base, '/v1/push/status', reboundEmployeeA, 200
+  )).activeSubscriptionCount, 1,
+  'The renewed App Session is confirmed only after the existing local endpoint is securely rebound.');
+  const reboundSubscription = (await owner.query(
+    `SELECT subscription.workspace_id, subscription.user_id, subscription.client_mode,
+            session.provider_session_id, subscription.revoked_at
+       FROM push_subscriptions subscription
+       JOIN app_private.auth_sessions session ON session.id = subscription.session_id
+      WHERE subscription.endpoint_hash = digest($1, 'sha256')`,
+    [employeePushEndpoint]
+  )).rows;
+  assert.equal(reboundSubscription.length, 1);
+  assert.deepEqual(reboundSubscription[0], {
+    workspace_id: workspaceA.workspace,
+    user_id: workspaceA.employee,
+    client_mode: 'pwa',
+    provider_session_id: reboundEmployeeA.identity.sessionId,
+    revoked_at: null
+  });
+  employeeA = reboundEmployeeA;
 
   const revisionBefore = (await request(base, '/v1/bootstrap/revision', employeeA, 200)).revision;
   const createKey = `announcement-live-create-${randomUUID()}`;

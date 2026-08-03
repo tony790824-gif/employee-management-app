@@ -3,7 +3,9 @@
   if (window.LOCAL_PREVIEW) return;
   const button = document.querySelector('#installAppBtn');
   let deferred;
-  const installed = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const installed = () => window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: window-controls-overlay)').matches
+    || window.navigator.standalone === true;
   window.shiftPwaContext = Object.freeze({
     mode: () => installed() ? 'pwa' : 'browser'
   });

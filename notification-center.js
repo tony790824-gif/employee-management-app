@@ -36,6 +36,7 @@
   let pushStatusPromise = null;
   let currentPushSubscription = null;
   let currentPushClientMode = null;
+  let pushBindingFailed = false;
   let pushAvailable = false;
   let activePushSubscriptionCount = 0;
   let registrationPushManagerAvailable = null;
@@ -112,7 +113,9 @@
     window.console?.info?.('[Bankeban push support]', diagnostic);
   }
   const isStandalone = () => window.matchMedia?.('(display-mode: standalone)').matches
+    || window.matchMedia?.('(display-mode: window-controls-overlay)').matches
     || navigator.standalone === true;
+  const pushClientMode = () => window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
   const isIPadOs = () => /ipad/i.test(navigator.userAgent || '')
     || (String(navigator.platform || '') === 'MacIntel'
       && Number(navigator.maxTouchPoints || 0) > 1);
@@ -145,8 +148,27 @@
       auth: value.keys.auth,
       userAgent: String(navigator.userAgent || '').slice(0, 256),
       platform: platform(),
-      clientMode: window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser'
+      clientMode: pushClientMode()
     };
+  }
+
+  async function registerAndConfirmPushBinding(subscription) {
+    const expectedMode = pushClientMode();
+    await cloud.registerPushSubscription(subscriptionInput(subscription));
+    const confirmed = await cloud.pushStatus();
+    const confirmedCount = Number.isSafeInteger(Number(confirmed?.activeSubscriptionCount))
+      ? Math.max(0, Number(confirmed.activeSubscriptionCount))
+      : 0;
+    if (confirmed?.ok !== true || confirmed?.available === false || confirmedCount < 1) {
+      const error = new Error('Push subscription binding was not confirmed.');
+      error.code = 'PUSH_BINDING_NOT_CONFIRMED';
+      throw error;
+    }
+    pushAvailable = true;
+    activePushSubscriptionCount = confirmedCount;
+    currentPushClientMode = expectedMode;
+    pushBindingFailed = false;
+    return confirmed;
   }
 
   const validNotification = item => item
@@ -291,8 +313,11 @@
     if (!pushAvailable) return;
     const busy = Boolean(pushMutationPromise);
     const denied = pushCapable() && Notification.permission === 'denied';
-    const registered = Boolean(currentPushSubscription) && activePushSubscriptionCount > 0;
-    const needsRepair = Boolean(currentPushSubscription) && activePushSubscriptionCount === 0;
+    const registered = Boolean(currentPushSubscription)
+      && activePushSubscriptionCount > 0
+      && currentPushClientMode === pushClientMode()
+      && !pushBindingFailed;
+    const needsRepair = Boolean(currentPushSubscription) && !registered;
     pushEnable.hidden = registered || needsRepair || denied;
     pushDisable.hidden = !registered;
     pushRepair.hidden = !registered && !needsRepair;
@@ -316,7 +341,7 @@
     }
     pushStatusText.textContent = registered
       ? `此裝置已啟用背景推播（目前帳號共 ${activePushSubscriptionCount} 個有效裝置）`
-      : needsRepair ? '此裝置的推播訂閱需要重新註冊' : '此裝置尚未啟用背景推播';
+      : needsRepair ? '推播需要重新註冊' : '此裝置尚未啟用背景推播';
     pushHelp.textContent = registered
       ? '推播是通知中心的傳送方式；完整通知仍以通知中心為準。'
       : needsRepair
@@ -344,14 +369,16 @@
               ? await registration.pushManager.getSubscription()
               : null;
             if (!currentPushSubscription) currentPushClientMode = null;
-            const detectedMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
-            if (currentPushSubscription && detectedMode === 'pwa'
-              && (activePushSubscriptionCount === 0 || currentPushClientMode !== 'pwa')) {
+            const detectedMode = pushClientMode();
+            if (currentPushSubscription
+              && (activePushSubscriptionCount === 0 || currentPushClientMode !== detectedMode)) {
               try {
-                await cloud.registerPushSubscription(subscriptionInput(currentPushSubscription));
-                currentPushClientMode = 'pwa';
-                activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
+                await registerAndConfirmPushBinding(currentPushSubscription);
               } catch (error) {
+                activePushSubscriptionCount = 0;
+                currentPushClientMode = null;
+                pushBindingFailed = true;
+                setMessage('推播需要重新註冊。');
                 pushDiagnostic('subscription-metadata-failed', {
                   errorCode: error?.code || error?.name || 'UNKNOWN'
                 });
@@ -375,6 +402,7 @@
         activePushSubscriptionCount = 0;
         currentPushSubscription = null;
         currentPushClientMode = null;
+        pushBindingFailed = false;
         logPushSupport();
         renderPushSettings();
         return null;
@@ -485,10 +513,8 @@
         }
         subscriptionReady = true;
         setMessage('正在儲存此裝置的推播設定…');
-        await cloud.registerPushSubscription(subscriptionInput(subscription));
+        await registerAndConfirmPushBinding(subscription);
         currentPushSubscription = subscription;
-        currentPushClientMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
-        activePushSubscriptionCount = Math.max(1, activePushSubscriptionCount);
         setMessage('此裝置已啟用背景推播。');
       } catch (error) {
         if (permission === 'granted' && !subscriptionReady && !subscribeFailureLogged) {
@@ -518,6 +544,7 @@
         await subscription.unsubscribe();
         currentPushSubscription = null;
         currentPushClientMode = null;
+        pushBindingFailed = false;
         activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
         setMessage('此裝置的背景推播已停用。');
       } catch (error) {
@@ -537,6 +564,7 @@
     await subscription.unsubscribe();
     currentPushSubscription = null;
     currentPushClientMode = null;
+    pushBindingFailed = false;
     activePushSubscriptionCount = Math.max(0, activePushSubscriptionCount - 1);
     return true;
   }
@@ -735,6 +763,7 @@
     activePushSubscriptionCount = 0;
     currentPushSubscription = null;
     currentPushClientMode = null;
+    pushBindingFailed = false;
     pushStatusPromise = null;
     registrationPushManagerAvailable = null;
     lastPushSupportDiagnostic = '';
@@ -748,6 +777,7 @@
     if (event.data?.type === 'BANKE_PUSH_SUBSCRIPTION_CHANGED') {
       currentPushSubscription = null;
       currentPushClientMode = null;
+      pushBindingFailed = false;
       renderPushSettings();
       setMessage('推播訂閱已變更，請重新註冊此裝置。');
     }
