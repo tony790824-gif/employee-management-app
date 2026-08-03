@@ -188,4 +188,119 @@ assert.ok(clientCalls.slice(2).every(call => call.options.headers['Idempotency-K
   'Every Announcement mutation uses an Idempotency-Key.');
 assert.ok(clientCalls.every(call => call.options.headers['X-Workspace-Id'] === workspaceId));
 
+function uiNode() {
+  const listeners = new Map();
+  return {
+    hidden: false,
+    disabled: false,
+    open: false,
+    value: '',
+    textContent: '',
+    children: [],
+    attributes: new Map(),
+    append(...children) { this.children.push(...children); },
+    replaceChildren(...children) { this.children = children; },
+    setAttribute(name, value) {
+      this.attributes.set(name, String(value));
+      if (name === 'open') this.open = true;
+    },
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    dispatch(type, event = {}) { return listeners.get(type)?.({ target: this, ...event }); },
+    click() { return this.dispatch('click'); },
+    showModal() { this.open = true; },
+    close() { this.open = false; },
+    focus() {}
+  };
+}
+
+const announcementSelectors = [
+  '#announcementButton', '#announcementBadge', '#announcementDialog', '#announcementClose',
+  '#announcementSummary', '#announcementMessage', '#announcementList', '#announcementDetail',
+  '#announcementDetailTitle', '#announcementDetailContent', '#announcementDetailMeta',
+  '#announcementBack', '#announcementManagerActions', '#announcementEdit', '#announcementDelete',
+  '#announcementEditor', '#announcementEditId', '#announcementEditRevision', '#announcementTitle',
+  '#announcementContent', '#announcementAudience', '#announcementCancelEdit', '#announcementSave'
+];
+const announcementElements = new Map(announcementSelectors.map(selector => [selector, uiNode()]));
+announcementElements.get('#announcementButton').hidden = true;
+announcementElements.get('#announcementBadge').hidden = true;
+announcementElements.get('#announcementMessage').hidden = true;
+const announcementDocumentListeners = new Map();
+const announcementItem = {
+  id: announcementId,
+  title: 'Sprint 32 測試',
+  content: 'Synthetic announcement detail',
+  audience: 'ALL',
+  publishedAt: '2026-08-03T00:00:00.000Z',
+  readAt: null,
+  revision: 0
+};
+const announcementUiDom = {
+  element(tag, options = {}, children = []) {
+    const item = uiNode();
+    item.tag = tag;
+    item.className = options.className || '';
+    item.textContent = options.text ?? '';
+    Object.entries(options.attributes || {}).forEach(([name, value]) => item.setAttribute(name, value));
+    item.append(...children);
+    return item;
+  },
+  replace(target, ...children) { target.replaceChildren(...children); }
+};
+const announcementUiContext = {
+  Intl,
+  Date,
+  Promise,
+  window: {
+    location: { pathname: '/' },
+    addEventListener() {},
+    confirm: () => true,
+    shiftEnvironment: { dataBackend: 'postgres' },
+    shiftDomSafety: announcementUiDom,
+    shiftPostgresCloud: {
+      isConnected: () => true,
+      getCurrentUser: () => ({ role: 'employee' }),
+      listAnnouncements: async () => ({ ok: true, items: [announcementItem], unreadCount: 1 }),
+      markAnnouncementRead: async () => ({ ok: true }),
+      createAnnouncement: async () => ({ ok: true }),
+      updateAnnouncement: async () => ({ ok: true }),
+      deleteAnnouncement: async () => ({ ok: true })
+    }
+  },
+  document: {
+    querySelector: selector => announcementElements.get(selector) || null,
+    addEventListener(type, listener) { announcementDocumentListeners.set(type, listener); }
+  }
+};
+announcementUiContext.window.window = announcementUiContext.window;
+vm.runInNewContext(navigationSource, announcementUiContext, { filename: 'notification-navigation.js' });
+assert.equal(announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
+  `/announcements/${announcementId}`
+), false, 'A safe Announcement destination waits until the authenticated UI has registered its opener.');
+vm.runInNewContext(uiSource, announcementUiContext, { filename: 'announcement-center.js' });
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(announcementElements.get('#announcementDialog').open, true,
+  'A queued notification destination opens after Announcement Center initialization.');
+assert.equal(announcementElements.get('#announcementDetail').hidden, false);
+assert.equal(announcementElements.get('#announcementDetailTitle').textContent, 'Sprint 32 測試');
+
+announcementElements.get('#announcementDialog').close();
+await announcementElements.get('#announcementButton').click();
+assert.equal(announcementElements.get('#announcementDialog').open, true,
+  'The top Announcement button opens the Announcement list.');
+assert.equal(announcementElements.get('#announcementList').hidden, false);
+assert.equal(announcementElements.get('#announcementList').children.length, 1);
+
+announcementElements.get('#announcementDialog').close();
+await announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
+  `/announcements/${announcementId}`
+);
+assert.equal(announcementElements.get('#announcementDialog').open, true,
+  'An announcement_created destination opens the same Announcement dialog.');
+assert.equal(announcementElements.get('#announcementDetail').hidden, false);
+assert.equal(announcementElements.get('#announcementDetailTitle').textContent, 'Sprint 32 測試');
+assert.equal(announcementUiContext.window.shiftNotificationNavigation.openAnnouncement(
+  '/announcements/javascript:alert(1)'
+), false, 'Unsafe or invalid Announcement destinations fail closed.');
+
 console.log('Announcement REST API, client navigation, read marker, and frontend boundary tests passed.');

@@ -31,7 +31,7 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
   postgresWorkspaceId: rehearsalWorkspaceId,
   storagePrefix: 'banke:staging-postgres:',
   cachePrefix: 'banke-staging-postgres-',
-  cacheName: 'banke-staging-postgres-v11',
+  cacheName: 'banke-staging-postgres-v12',
   manifest: Object.freeze({
     id: './?app=banke-staging-postgres', name: '班表管理 STAGING POSTGRES',
     shortName: '班表 STG PG', startUrl: './?app=banke-staging-postgres'

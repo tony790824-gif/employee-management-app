@@ -97,6 +97,8 @@ const notification = {
   createdAt: '2026-07-29T00:00:00.000Z',
   revision: 0
 };
+const announcementId = '00000000-0000-4000-8000-000000000022';
+const announcementActivations = [];
 let payload = {
   ok: true,
   items: [notification],
@@ -268,6 +270,10 @@ const sandbox = {
 };
 sandbox.window.window = sandbox.window;
 vm.runInNewContext(navigationSource, sandbox, { filename: 'notification-navigation.js' });
+sandbox.window.shiftNotificationNavigation.registerAnnouncementOpener(id => {
+  announcementActivations.push(id);
+  return true;
+});
 vm.runInNewContext(source, sandbox, { filename: 'notification-center.js' });
 await new Promise(resolve => setImmediate(resolve));
 
@@ -574,6 +580,30 @@ assert.equal(routeActivations.at(-1), 'time-off',
   'Clicking a Notification Center row uses the same time-off destination as notificationclick.');
 assert.equal(elements.get('#notificationDialog').open, false,
   'Clicking a routed Notification Center row closes the dialog without reloading.');
+
+payload = {
+  ok: true,
+  items: [{
+    ...notification,
+    id: '00000000-0000-4000-8000-000000000016',
+    type: 'announcement_created',
+    title: '📢 新公告',
+    resourceType: 'announcement',
+    resourceId: announcementId,
+    readAt: '2026-07-29T00:01:00.000Z'
+  }],
+  unreadCount: 0,
+  preferences: payload.preferences
+};
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+elements.get('#notificationDialog').showModal();
+elements.get('#notificationList').children[0].dispatch('click');
+await new Promise(resolve => setImmediate(resolve));
+assert.deepEqual(announcementActivations, [announcementId],
+  'An announcement_created Notification Center row opens the matching Announcement detail.');
+assert.equal(elements.get('#notificationDialog').open, false,
+  'Opening an Announcement detail closes Notification Center without reloading.');
 
 payload = {
   ok: true,

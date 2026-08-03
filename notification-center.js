@@ -700,10 +700,7 @@
     pendingNotificationDestination = '';
     if (target === 'notifications') return openNotificationCenter();
     if (dialog.open) dialog.close();
-    if (target === 'announcements' && window.shiftAnnouncementCenter?.open) {
-      window.shiftAnnouncementCenter.open(navigation.announcementIdForPath(path));
-      return true;
-    }
+    if (target === 'announcements') return navigation.openAnnouncement(path);
     if (target === 'time-off' && window.shiftTimeOffUi?.activate) {
       window.shiftTimeOffUi.activate();
       return true;

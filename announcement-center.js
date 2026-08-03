@@ -4,6 +4,7 @@
   if (window.shiftEnvironment?.dataBackend !== 'postgres') return;
   const cloud = window.shiftPostgresCloud;
   const dom = window.shiftDomSafety;
+  const navigation = window.shiftNotificationNavigation;
   const trigger = document.querySelector('#announcementButton');
   const badge = document.querySelector('#announcementBadge');
   const dialog = document.querySelector('#announcementDialog');
@@ -27,7 +28,7 @@
   const audience = document.querySelector('#announcementAudience');
   const cancelEdit = document.querySelector('#announcementCancelEdit');
   const save = document.querySelector('#announcementSave');
-  if (!cloud || !dom || !trigger || !badge || !dialog || !list || !detail || !editor) return;
+  if (!cloud || !dom || !navigation || !trigger || !badge || !dialog || !list || !detail || !editor) return;
 
   const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
   const AUDIENCE_LABELS = Object.freeze({ ALL: '所有人', MANAGER: '管理者', EMPLOYEE: '員工' });
@@ -78,6 +79,17 @@
     list.hidden = false;
     editor.hidden = !managerSession();
     managerActions.hidden = true;
+  };
+  const showDialog = () => {
+    if (dialog.open) return true;
+    try {
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+      return true;
+    } catch {
+      dialog.setAttribute('open', '');
+      return true;
+    }
   };
 
   function renderList() {
@@ -133,11 +145,15 @@
   }
 
   async function open(announcementId = '') {
-    if (!cloud.isConnected()) return false;
     setMessage('');
-    if (typeof dialog.showModal === 'function' && !dialog.open) dialog.showModal();
-    else if (!dialog.open) dialog.setAttribute('open', '');
-    await load({ silent: true });
+    showDialog();
+    if (!cloud.isConnected()) {
+      showList();
+      setMessage('公告服務尚未連線，請稍後再試。');
+      return false;
+    }
+    const loaded = await load({ silent: true });
+    if (!loaded && !items.length) setMessage('公告載入失敗，請稍後再試。');
     if (!announcementId) {
       showList();
       return true;
@@ -225,7 +241,8 @@
     await mutationPromise;
   }
 
-  trigger.addEventListener('click', () => void open());
+  navigation.registerAnnouncementOpener(open);
+  trigger.addEventListener('click', () => navigation.openAnnouncement('/announcements'));
   close.addEventListener('click', () => dialog.close());
   back.addEventListener('click', showList);
   editor.addEventListener('submit', event => void saveAnnouncement(event));
