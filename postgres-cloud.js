@@ -583,6 +583,42 @@
       throw error;
     }
   };
+  const listAnnouncements = async () => {
+    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (window.navigator?.onLine === false) {
+      const cached = offlineRuntime?.readResource('announcements');
+      if (cached) return cached;
+    }
+    try {
+      return cacheOfflineResource('announcements', await client.listAnnouncements());
+    } catch (error) {
+      const cached = offlineRuntime?.isNetworkError(error)
+        && offlineRuntime.readResource('announcements');
+      if (cached) return cached;
+      throw error;
+    }
+  };
+  const getAnnouncement = announcementId => {
+    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    return client.getAnnouncement(announcementId);
+  };
+  async function announcementMutation(operation) {
+    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    const result = await operation(client);
+    await refreshBootstrap({ source: 'announcement-command' });
+    document.dispatchEvent(new CustomEvent('announcement-changed'));
+    return result;
+  }
+  const createAnnouncement = input => announcementMutation(active => active.createAnnouncement(input));
+  const updateAnnouncement = (announcementId, input) => announcementMutation(
+    active => active.updateAnnouncement(announcementId, input)
+  );
+  const deleteAnnouncement = (announcementId, baseRevision) => announcementMutation(
+    active => active.deleteAnnouncement(announcementId, baseRevision)
+  );
+  const markAnnouncementRead = announcementId => announcementMutation(
+    active => active.markAnnouncementRead(announcementId)
+  );
   const markNotificationRead = (notificationId, baseRevision) => executeAndRefresh(
     'notifications.mark-read',
     { notificationId, baseRevision }
@@ -676,6 +712,12 @@
     approveTimeOffRequest,
     rejectTimeOffRequest,
     listNotifications,
+    listAnnouncements,
+    getAnnouncement,
+    createAnnouncement,
+    updateAnnouncement,
+    deleteAnnouncement,
+    markAnnouncementRead,
     markNotificationRead,
     markAllNotificationsRead,
     updateNotificationPreferences,

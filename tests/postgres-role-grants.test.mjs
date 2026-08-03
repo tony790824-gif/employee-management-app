@@ -63,7 +63,12 @@ assert.deepEqual(API_FUNCTIONS, [
   'app_private.api_execute_notification_command(text,text,text,text,jsonb,text,text,text)',
   'app_private.api_update_notification_preferences(text,text,text,text,jsonb,text,text,text)',
   'app_private.api_push_status(text,text,text)',
-  'app_private.api_execute_push_command(text,text,text,text,jsonb,text,text,text)'
+  'app_private.api_execute_push_command(text,text,text,text,jsonb,text,text,text)',
+  'app_private.api_list_announcements(text,text,text)',
+  'app_private.api_get_announcement(text,text,text,uuid)',
+  'app_private.api_announcement_revision(text,text,text)',
+  'app_private.api_execute_announcement_command(text,text,text,text,jsonb,text,text,text)',
+  'app_private.api_mark_announcement_read(text,text,text,uuid,text,text,text)'
 ]);
 
 const source = await readFile(new URL('../database/apply-role-grants.mjs', import.meta.url), 'utf8');

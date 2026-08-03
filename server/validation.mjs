@@ -17,6 +17,7 @@ const PUSH_ENDPOINT_HOST_SUFFIXES = Object.freeze([
   'push.apple.com',
   'notify.windows.com'
 ]);
+const ANNOUNCEMENT_AUDIENCES = Object.freeze(['ALL', 'MANAGER', 'EMPLOYEE']);
 
 function plainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -85,6 +86,46 @@ function pushEndpoint(value) {
 export function validateIdempotencyKey(value) {
   assert(typeof value === 'string' && IDEMPOTENCY_PATTERN.test(value), 400, 'IDEMPOTENCY_KEY_INVALID', 'Idempotency-Key 格式不正確。');
   return value;
+}
+
+export function validateAnnouncementId(value) {
+  return validRequestId(value, 'announcementId');
+}
+
+export function validateAnnouncementMutation(name, input, announcementId = '') {
+  if (name === 'announcements.create') {
+    exactKeys(input, ['title', 'content', 'audience'], ['title', 'content', 'audience']);
+    assert(ANNOUNCEMENT_AUDIENCES.includes(input.audience),
+      400, 'COMMAND_INVALID', 'audience is invalid.');
+    return {
+      title: text(input.title, 'title', { min: 1, max: 120 }),
+      content: text(input.content, 'content', { min: 1, max: 10000 }),
+      audience: input.audience
+    };
+  }
+  const id = validateAnnouncementId(announcementId);
+  if (name === 'announcements.update') {
+    exactKeys(input, ['title', 'content', 'audience', 'baseRevision'],
+      ['title', 'content', 'audience', 'baseRevision']);
+    assert(ANNOUNCEMENT_AUDIENCES.includes(input.audience),
+      400, 'COMMAND_INVALID', 'audience is invalid.');
+    return {
+      announcementId: id,
+      title: text(input.title, 'title', { min: 1, max: 120 }),
+      content: text(input.content, 'content', { min: 1, max: 10000 }),
+      audience: input.audience,
+      baseRevision: validRevision(input.baseRevision)
+    };
+  }
+  if (name === 'announcements.delete') {
+    exactKeys(input, ['baseRevision'], ['baseRevision']);
+    return { announcementId: id, baseRevision: validRevision(input.baseRevision) };
+  }
+  if (name === 'announcements.mark-read') {
+    exactKeys(input, []);
+    return { announcementId: id };
+  }
+  throw new Error(`Unsupported announcement operation: ${name}`);
 }
 
 export function validateCommand(name, input) {

@@ -1,5 +1,14 @@
 # 班客邦 Project Health Report
 
+## 2026-08-03 Sprint 32 health delta
+
+- **Overall:** 98%; Announcement Center engineering and Neon Staging acceptance complete, physical-device gate pending.
+- **Architecture:** PASS — announcements extend the existing outbox, Notification Center, durable Web Push queue/worker, badge, revision sync, and Service Worker; no parallel notification architecture exists.
+- **Authorization/privacy:** PASS — live Session/Membership/role, forced RLS, audience filtering, soft delete, Workspace A/B isolation, bounded metadata, and zero direct API Role table access.
+- **Reliability:** PASS — REST mutations are idempotent, update/delete use optimistic revision, read marking is idempotent, and publication creates one per-recipient notification/delivery path.
+- **Migration:** `0022_announcement_center` apply/rollback/reapply PASS on Neon Staging with checksum `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3`; 0009/0010 and Production unchanged.
+- **Remaining risk:** Windows/Android/iPhone/iPad PWA UI, system delivery, click, and badge evidence is **PENDING USER VERIFICATION**; Production readiness must not be raised from automation alone.
+
 ## 2026-08-02 Sprint 31 health delta
 
 - **Subscription duplication:** mitigated in Neon Staging by `0020_push_subscription_priority`; synthetic Windows/Android/iOS PWA priority and Browser fallback pass without direct API table grants. Residual gate is Windows physical verification, so status remains PENDING and overall completion remains 97%.

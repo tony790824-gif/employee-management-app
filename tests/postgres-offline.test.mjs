@@ -45,10 +45,12 @@ const bootstrap = {
 runtime.cacheResource('bootstrap', bootstrap);
 runtime.cacheResource('timeOff', { ok: true, ownRequests: [{ id: 'request-1', reason: 'synthetic' }] });
 runtime.cacheResource('notifications', { ok: true, items: [{ id: 'notification-1' }], unreadCount: 1 });
+runtime.cacheResource('announcements', { ok: true, items: [{ id: 'announcement-1' }], unreadCount: 1 });
 assert.equal(JSON.stringify(runtime.readResource('bootstrap')), JSON.stringify(bootstrap),
   'bootstrap, employees and shifts must remain readable offline');
 assert.equal(runtime.readResource('timeOff').ownRequests.length, 1, 'time-off data must remain readable offline');
 assert.equal(runtime.readResource('notifications').unreadCount, 1, 'notification data must remain readable offline');
+assert.equal(runtime.readResource('announcements').unreadCount, 1, 'announcement data must remain readable offline');
 
 const queuedClock = runtime.enqueue({
   commandName: 'attendance.clock-in', input: {}, baseRevision: 7, idempotencyKey: 'offline-clock-0001'

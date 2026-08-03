@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
   title: 班客邦 PostgreSQL Command API
-  version: 2026-08-02.1
-  description: Staging transition API with accepted Auth0, Session/tenant boundaries, Time-Off, real-event Notification Center, and standard Web Push delivery. Production cutover is not approved.
-  x-baseline-commit: 290f62ff65a19401bac7461745f41cb88701f1ab
+  version: 2026-08-03.1
+  description: Staging transition API with accepted Auth0, Session/tenant boundaries, Time-Off, Announcement Center, real-event Notification Center, and standard Web Push delivery. Production cutover is not approved.
+  x-baseline-commit: aa859e43ee7af880035229cbb177269a77988a97
   x-project-completion: 97
   x-staging-migration: 0013 through 0019 applied except intentionally pending 0009 and 0010
 servers:
@@ -68,6 +68,109 @@ paths:
           description: Recipient-scoped notification list, unread count, and clock/leave/shift preferences
         '401': { $ref: '#/components/responses/Error' }
         '403': { $ref: '#/components/responses/Error' }
+  /announcements:
+    get:
+      summary: List role-visible Workspace announcements newest first
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+      responses:
+        '200':
+          description: Workspace-isolated announcements and recipient read state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AnnouncementList' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+    post:
+      summary: Publish a Workspace announcement (manager only)
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AnnouncementWrite' }
+      responses:
+        '201': { description: Announcement published and existing notification pipeline invoked }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /announcements/{announcementId}:
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceId'
+      - $ref: '#/components/parameters/AnnouncementId'
+    get:
+      summary: Read one role-visible announcement
+      responses:
+        '200':
+          description: Announcement detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, workspaceId, item]
+                properties:
+                  ok: { type: boolean, enum: [true] }
+                  workspaceId: { type: string }
+                  item: { $ref: '#/components/schemas/Announcement' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    put:
+      summary: Update an announcement using optimistic revision control (manager only)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AnnouncementUpdate' }
+      responses:
+        '200': { description: Announcement updated }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+    delete:
+      summary: Soft-delete an announcement (manager only)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [baseRevision]
+              properties:
+                baseRevision: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: Announcement soft-deleted }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /announcements/{announcementId}/read:
+    post:
+      summary: Mark one role-visible announcement and its existing notification as read
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/AnnouncementId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses:
+        '200': { description: Read marker persisted idempotently }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
   /push/status:
     get:
       summary: Read the current Session's active Web Push subscription count
@@ -164,6 +267,60 @@ components:
       required: true
       description: Untrusted requested workspace; authorization is resolved server-side from live membership.
       schema: { type: string, pattern: '^ws_[a-f0-9]{32}$' }
+    AnnouncementId:
+      in: path
+      name: announcementId
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128 }
+  schemas:
+    AnnouncementAudience:
+      type: string
+      enum: [ALL, MANAGER, EMPLOYEE]
+    Announcement:
+      type: object
+      additionalProperties: false
+      required: [id, title, content, audience, publishedAt, updatedAt, revision]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        content: { type: string, minLength: 1, maxLength: 10000 }
+        audience: { $ref: '#/components/schemas/AnnouncementAudience' }
+        publishedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        readAt: { type: string, format: date-time, nullable: true }
+        revision: { type: integer, minimum: 0 }
+    AnnouncementWrite:
+      type: object
+      additionalProperties: false
+      required: [title, content, audience]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        content: { type: string, minLength: 1, maxLength: 10000 }
+        audience: { $ref: '#/components/schemas/AnnouncementAudience' }
+    AnnouncementUpdate:
+      type: object
+      additionalProperties: false
+      required: [title, content, audience, baseRevision]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        content: { type: string, minLength: 1, maxLength: 10000 }
+        audience: { $ref: '#/components/schemas/AnnouncementAudience' }
+        baseRevision: { type: integer, minimum: 0 }
+    AnnouncementList:
+      type: object
+      required: [ok, workspaceId, items, unreadCount]
+      properties:
+        ok: { type: boolean, enum: [true] }
+        workspaceId: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Announcement' }
+        unreadCount: { type: integer, minimum: 0 }
   securitySchemes:
     BearerAuth:
       type: http

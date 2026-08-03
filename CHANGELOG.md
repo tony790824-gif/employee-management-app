@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-03 — Sprint 32 Announcement Center
+
+- Added Staging-only `0022_announcement_center` with Workspace-scoped announcements, per-user read markers, audience rules, soft delete, forced RLS, controlled functions, and complete rollback protection.
+- Added authenticated Announcement REST endpoints and PostgreSQL frontend list/detail/create/update/delete/read behavior without adding a second API or notification architecture.
+- Published announcements now create `ANNOUNCEMENT_CREATED` through the existing transactional outbox, Notification Center, Web Push queue/worker, unread badge, revision sync, and safe `/announcements/{id}` click navigation.
+- Neon Staging apply/rollback/reapply, checksum, least privilege, Manager/employee permissions, Workspace A/B isolation, notification/badge consistency, idempotency, soft delete, Build, Check, tests, and Release Gate pass. Physical PWA acceptance remains pending; Production was not operated.
+
 ## 2026-08-03 — Sprint 31 PWA delivery fallback regression fix
 
 - Reconciled an existing installed-PWA Push subscription immediately after authenticated PostgreSQL bootstrap instead of waiting until Notification Center is opened.

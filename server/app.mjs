@@ -117,7 +117,7 @@ export function createRequestHandler({
         response.setHeader('Vary', 'Origin');
       }
       if (request.method === 'OPTIONS') {
-        response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+        response.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
         response.setHeader('Access-Control-Allow-Headers', 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Workspace-Id');
         response.statusCode = 204;
         response.end();
@@ -162,6 +162,58 @@ export function createRequestHandler({
       }
       if (request.method === 'GET' && url.pathname === '/v1/notifications') {
         json(response, 200, await commandService.listNotifications({ identity, workspaceId }), requestId);
+        return;
+      }
+      if (request.method === 'GET' && url.pathname === '/v1/announcements') {
+        json(response, 200, await commandService.listAnnouncements({ identity, workspaceId }), requestId);
+        return;
+      }
+      const announcementMatch = /^\/v1\/announcements\/([a-f0-9-]{36})$/i.exec(url.pathname);
+      const announcementReadMatch = /^\/v1\/announcements\/([a-f0-9-]{36})\/read$/i.exec(url.pathname);
+      if (request.method === 'GET' && announcementMatch) {
+        json(response, 200, await commandService.getAnnouncement({
+          identity, workspaceId, announcementId: announcementMatch[1]
+        }), requestId);
+        return;
+      }
+      if (request.method === 'POST' && url.pathname === '/v1/announcements') {
+        const input = await readJson(request);
+        const result = await commandService.createAnnouncement({
+          identity, workspaceId, input,
+          idempotencyKey: String(request.headers['idempotency-key'] || ''), requestId
+        });
+        const revision = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, result.replayed ? 200 : 201, result, requestId, bootstrapRevisionHeaders(revision));
+        return;
+      }
+      if (request.method === 'PUT' && announcementMatch) {
+        const input = await readJson(request);
+        const result = await commandService.updateAnnouncement({
+          identity, workspaceId, announcementId: announcementMatch[1], input,
+          idempotencyKey: String(request.headers['idempotency-key'] || ''), requestId
+        });
+        const revision = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, 200, result, requestId, bootstrapRevisionHeaders(revision));
+        return;
+      }
+      if (request.method === 'DELETE' && announcementMatch) {
+        const input = await readJson(request);
+        const result = await commandService.deleteAnnouncement({
+          identity, workspaceId, announcementId: announcementMatch[1], input,
+          idempotencyKey: String(request.headers['idempotency-key'] || ''), requestId
+        });
+        const revision = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, 200, result, requestId, bootstrapRevisionHeaders(revision));
+        return;
+      }
+      if (request.method === 'POST' && announcementReadMatch) {
+        const input = await readJson(request);
+        const result = await commandService.markAnnouncementRead({
+          identity, workspaceId, announcementId: announcementReadMatch[1], input,
+          idempotencyKey: String(request.headers['idempotency-key'] || ''), requestId
+        });
+        const revision = await commandService.bootstrapRevision({ identity, workspaceId });
+        json(response, 200, result, requestId, bootstrapRevisionHeaders(revision));
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/push/status') {

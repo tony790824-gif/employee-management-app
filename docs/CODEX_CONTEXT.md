@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-08-03 current state — Sprint 32 Announcement Center
+
+- Announcement Center is implemented only on the PostgreSQL path and reuses the existing transactional outbox, Notification Center, Web Push delivery, badge, bootstrap revision, and Service Worker navigation.
+- Staging-only Migration `0022_announcement_center` (`e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3`) adds `announcement` and `announcement_read`, forced RLS, tenant-safe foreign keys, soft delete, audience filtering, and controlled CRUD/read functions. Neon Staging apply/rollback/reapply passed; `0009`/`0010` remain pending.
+- REST uses `GET/POST /v1/announcements`, `GET/PUT/DELETE /v1/announcements/{id}`, and `POST /v1/announcements/{id}/read`. Browser mutations retain bearer identity, live App Session, Workspace Membership, Idempotency-Key, optimistic revision, and request-size limits.
+- `ANNOUNCEMENT_CREATED` is projected to matching live Workspace members through the existing notification/delivery tables. Announcement read state also marks the matching Notification Center row read so both badges remain consistent.
+- Synthetic Neon Staging E2E passes Manager CRUD, employee read/mutation denial, `ALL`/`MANAGER`/`EMPLOYEE`, Workspace A/B isolation, soft delete, notification/badge consistency, idempotency, and API Role direct-table denial. All fixtures were removed.
+- Overall assessed completion is **98%**. Windows/Android/iPhone/iPad installed-PWA acceptance is **PENDING USER VERIFICATION**. Production, Production database/Auth0, Google Sheets, Apps Script, and Production deployment are unchanged.
+
 ## 2026-08-02 current state — Sprint 31 Real Event Notifications
 
 - The final Windows PWA regression fix reconciles existing PWA subscription metadata/session binding on authenticated bootstrap, before events can be queued. Staging-only `0021_push_delivery_fallback` (`7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`) adds Browser fallback only after a selected PWA returns 404/410 and is revoked. Synthetic real-engine E2E passes; Windows PWA delivery remains **PENDING USER VERIFICATION**.

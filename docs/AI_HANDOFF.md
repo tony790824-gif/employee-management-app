@@ -1,5 +1,14 @@
 # AI Handoff
 
+## 2026-08-03 handoff — Sprint 32 Announcement Center
+
+- Status: implementation, Neon Staging Migration rehearsal, real-engine synthetic E2E, and automated gates complete; physical-device acceptance remains **PENDING USER VERIFICATION**. Overall completion: **98%**.
+- `0022_announcement_center` checksum is `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3`; it is applied only to Neon Staging after apply/rollback/reapply. Production and pending `0009`/`0010` were not touched.
+- Manager/boss can create, update, and soft-delete within the live Workspace. Employees have read-only audience-filtered access. Unknown roles and cross-Workspace reads/mutations fail closed.
+- Announcement publication writes one `ANNOUNCEMENT_CREATED` outbox event; existing Notification Center, Push queue/worker, Badge, revision sync, PWA subscription priority/fallback, and click behavior remain authoritative.
+- Announcement read state is per Workspace/user and synchronizes the matching Notification Center unread state. Direct API Role table access remains denied.
+- Next and only gate: execute the Sprint 32 announcement checklist on Windows, Android, iPhone Home Screen PWA, and iPad Home Screen PWA. Do not start another feature until results are recorded.
+
 ## 2026-08-02 handoff — Sprint 31 Real Event Notifications
 
 - Regression closure: PWA subscription mode/session reconciliation now runs at authenticated bootstrap instead of only when Notification Center opens. Staging-only `0021_push_delivery_fallback` (`7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4`) queues Browser fallback only after the preferred PWA returns 404/410 and is revoked. Neon Staging and synthetic E2E pass; Windows system notification remains **PENDING USER VERIFICATION**.

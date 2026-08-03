@@ -4,6 +4,7 @@
   const DEFAULT_TIMEOUT_MS = 15_000;
   const WORKSPACE_PATTERN = /^ws_[a-f0-9]{32}$/;
   const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
+  const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
   const SESSION_INVALID_CODES = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
   const COMMAND_NAMES = Object.freeze([
     'employees.create',
@@ -216,6 +217,43 @@
       bootstrapRevision: () => request('/bootstrap/revision', { bootstrapRevision: true }),
       listTimeOffRequests: () => request('/time-off-requests'),
       listNotifications: () => request('/notifications'),
+      listAnnouncements: () => request('/announcements'),
+      getAnnouncement(announcementId) {
+        if (!UUID_PATTERN.test(String(announcementId || ''))) {
+          throw new PostgresApiError('Announcement ID is invalid.', { code: 'COMMAND_INVALID', status: 400 });
+        }
+        return request(`/announcements/${announcementId}`);
+      },
+      createAnnouncement(input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
+        return request('/announcements', {
+          method: 'POST', body: input, idempotencyKey, commandRevision: true
+        });
+      },
+      updateAnnouncement(announcementId, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
+        if (!UUID_PATTERN.test(String(announcementId || ''))) {
+          throw new PostgresApiError('Announcement ID is invalid.', { code: 'COMMAND_INVALID', status: 400 });
+        }
+        return request(`/announcements/${announcementId}`, {
+          method: 'PUT', body: input, idempotencyKey, commandRevision: true
+        });
+      },
+      deleteAnnouncement(announcementId, baseRevision,
+        { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
+        if (!UUID_PATTERN.test(String(announcementId || ''))) {
+          throw new PostgresApiError('Announcement ID is invalid.', { code: 'COMMAND_INVALID', status: 400 });
+        }
+        return request(`/announcements/${announcementId}`, {
+          method: 'DELETE', body: { baseRevision }, idempotencyKey, commandRevision: true
+        });
+      },
+      markAnnouncementRead(announcementId, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
+        if (!UUID_PATTERN.test(String(announcementId || ''))) {
+          throw new PostgresApiError('Announcement ID is invalid.', { code: 'COMMAND_INVALID', status: 400 });
+        }
+        return request(`/announcements/${announcementId}/read`, {
+          method: 'POST', body: {}, idempotencyKey, commandRevision: true
+        });
+      },
       pushStatus: () => request('/push/status'),
       executeCommand(commandName, input, { idempotencyKey = cryptoImpl.randomUUID() } = {}) {
         if (!COMMAND_NAMES.includes(commandName)) {

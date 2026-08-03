@@ -269,7 +269,7 @@
       ]);
       button.disabled = Boolean(mutationPromise);
       button.addEventListener('click', () => {
-        const path = navigation.pathForType(item.type);
+        const path = navigation.pathForNotification(item);
         openNotificationDestination(path);
         if (unread) void markRead(item);
       });
@@ -700,6 +700,10 @@
     pendingNotificationDestination = '';
     if (target === 'notifications') return openNotificationCenter();
     if (dialog.open) dialog.close();
+    if (target === 'announcements' && window.shiftAnnouncementCenter?.open) {
+      window.shiftAnnouncementCenter.open(navigation.announcementIdForPath(path));
+      return true;
+    }
     if (target === 'time-off' && window.shiftTimeOffUi?.activate) {
       window.shiftTimeOffUi.activate();
       return true;

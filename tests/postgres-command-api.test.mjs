@@ -170,6 +170,12 @@ let databaseNotificationRevision = {
   revisionTotal: 0,
   latestCreatedAt: null
 };
+let databaseAnnouncementRevision = {
+  count: 0,
+  unreadCount: 0,
+  revisionTotal: 0,
+  latestUpdatedAt: null
+};
 const databaseNotifications = {
   ok: true,
   workspaceId,
@@ -188,6 +194,10 @@ const pool = {
     if (sql.includes('api_notification_revision')) {
       if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
       return { rows: [{ result: structuredClone(databaseNotificationRevision) }] };
+    }
+    if (sql.includes('api_announcement_revision')) {
+      if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
+      return { rows: [{ result: structuredClone(databaseAnnouncementRevision) }] };
     }
     if (sql.includes('api_list_notifications')) {
       if (!notificationSchemaAvailable) throw Object.assign(new Error('undefined function'), { code: '42883' });
@@ -245,6 +255,15 @@ databaseNotificationRevision = {
 const changedNotificationRevision = await service.bootstrapRevision({ identity, workspaceId });
 assert.notEqual(changedNotificationRevision.revision, changedDirectLeaveRevision.revision,
   'a recipient-visible notification must change the unified bootstrap revision');
+databaseAnnouncementRevision = {
+  count: 1,
+  unreadCount: 1,
+  revisionTotal: 0,
+  latestUpdatedAt: '2026-08-02T00:00:00.000Z'
+};
+const changedAnnouncementRevision = await service.bootstrapRevision({ identity, workspaceId });
+assert.notEqual(changedAnnouncementRevision.revision, changedNotificationRevision.revision,
+  'a role-visible announcement must change the unified bootstrap revision');
 await service.listTimeOffRequests({ identity, workspaceId });
 await service.listNotifications({ identity, workspaceId });
 notificationSchemaAvailable = false;
@@ -284,7 +303,7 @@ await service.execute({
   input: {}
 });
 await service.logout({ identity, workspaceId });
-assert.equal(queries.length, 31);
+assert.equal(queries.length, 42);
 assert.ok(queries.some(item => item.sql.includes('api_execute_time_off_command')),
   'Time-off commands use their controlled database function');
 assert.ok(queries.some(item => item.sql.includes('api_execute_notification_command')),

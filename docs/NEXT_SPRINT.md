@@ -1,4 +1,18 @@
-# Next unique gate — Sprint 31 physical-device real-event notification acceptance
+# Next unique gate — Sprint 32 Announcement Center physical-device acceptance
+
+Status: **PENDING USER VERIFICATION**. Automation and synthetic Neon Staging E2E cannot replace physical PWA evidence.
+
+1. On Windows PWA, sign in as manager, publish an `ALL` announcement, and confirm one announcement list row, one Notification Center row, badge increment, and one system push.
+2. Click the system notification with the PWA open and closed; confirm the existing PWA is focused/opened at `/announcements/{id}` without full reload or Session loss.
+3. Sign in as employee in the same Workspace and verify list/detail/read state, newest-first ordering, badge decrement, and no create/edit/delete controls.
+4. Publish `MANAGER` and `EMPLOYEE` announcements; verify only matching roles see each announcement and receive its notification.
+5. Repeat with a second Workspace account and verify title, content, read state, notification, and push never cross the tenant boundary.
+6. Soft-delete a Staging announcement and confirm it disappears without deleting or exposing unrelated notifications/data.
+7. Repeat list/detail/read/badge/push/click on Android installed PWA, iPhone Home Screen PWA, and iPad Home Screen PWA. Record each device separately as PASS/FAIL/BLOCKED.
+
+Stop after evidence collection. Production, Production Migration/database/Auth0, Google Sheets, Apps Script, and Production deployment remain out of scope.
+
+# Historical gate — Sprint 31 physical-device real-event notification acceptance
 
 Status: **PENDING USER VERIFICATION**. Do not infer device PASS from automation.
 

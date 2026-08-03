@@ -1,5 +1,21 @@
 # 班客邦 Release Checklist
 
+## Sprint 32 Announcement Center gate (Staging only)
+
+- [x] `0022_announcement_center` apply/rollback/reapply and checksum `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3` verified on Neon Staging.
+- [x] `announcement` and `announcement_read` use tenant-safe foreign keys, indexes, forced RLS, soft delete, and audience constraints.
+- [x] Manager CRUD and employee audience-filtered read pass; employee mutation, unknown role, and cross-Workspace access fail closed.
+- [x] API Role has zero direct table/sequence privilege and only the reviewed Announcement controlled functions.
+- [x] Publication uses one `ANNOUNCEMENT_CREATED` outbox event and the existing Notification Center, Web Push queue/worker, badge, revision, priority/fallback, and deduplication paths.
+- [x] Read state synchronizes the Announcement badge and matching Notification Center row without changing the existing notification schema columns/tables.
+- [x] Navigation is restricted to `/announcements` or `/announcements/{uuid}`; external, protocol-relative, `javascript:`, and `data:` destinations are rejected.
+- [x] Build, Check, full tests, Release Gate, dependency audit, environment isolation, sensitive scan, and `git diff --check` pass.
+- [ ] Windows installed PWA list/detail/read/badge/push/click — PENDING USER VERIFICATION.
+- [ ] Android installed PWA list/detail/read/badge/push/click — PENDING USER VERIFICATION.
+- [ ] iPhone Home Screen PWA list/detail/read/badge/push/click — PENDING USER VERIFICATION.
+- [ ] iPad Home Screen PWA list/detail/read/badge/push/click — PENDING USER VERIFICATION.
+- [x] Production, Production database/Migration/Auth0, Google Sheets, Apps Script, and Production deployment unchanged.
+
 ## Sprint 31 real-event notification gate (Staging only)
 
 - [x] `0019_real_event_notifications` checksum verified and Neon Staging apply/down/reapply completed.

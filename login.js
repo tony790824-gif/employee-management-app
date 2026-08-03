@@ -23,7 +23,8 @@
     'enhancements.js',
     'employee-layout.js',
     'time-off-ui.js',
-    'notification-center.js'
+    'notification-center.js',
+    'announcement-center.js'
   ]);
   let appLoadPromise = null;
   let busy = false;

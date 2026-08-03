@@ -7,7 +7,7 @@
   const MAX_STORE_BYTES = 2_097_152;
   const BASE_RETRY_MS = 1_000;
   const MAX_RETRY_MS = 60_000;
-  const RESOURCE_NAMES = new Set(['bootstrap', 'timeOff', 'notifications']);
+  const RESOURCE_NAMES = new Set(['bootstrap', 'timeOff', 'notifications', 'announcements']);
   const QUEUEABLE_COMMANDS = new Set([
     'attendance.clock-in',
     'attendance.clock-out',

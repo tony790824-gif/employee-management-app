@@ -1,5 +1,14 @@
 # 班客邦
 
+## Sprint 32 Announcement Center (2026-08-03)
+
+- Announcement Center extends the existing PostgreSQL Notification Center; it does not create a second notification store, badge, push queue, or Service Worker.
+- Staging-only Migration `0022_announcement_center` adds Workspace-scoped `announcement` and `announcement_read` tables with forced RLS, soft delete, audience rules (`ALL`, `MANAGER`, `EMPLOYEE`), controlled functions, and zero direct API Role table access.
+- The authenticated REST surface is `GET/POST /v1/announcements`, `GET/PUT/DELETE /v1/announcements/{id}`, and the idempotent read marker `POST /v1/announcements/{id}/read`.
+- Publishing creates `ANNOUNCEMENT_CREATED` through the existing transactional outbox. The existing Notification Center, Web Push queue/worker, badge, revision sync, and safe navigation open `/announcements/{id}`.
+- Neon Staging apply/rollback/reapply, checksum, Manager CRUD, employee audience, Workspace A/B isolation, notification/badge integration, soft delete, and API least privilege pass. Windows/Android/iPhone/iPad PWA acceptance remains **PENDING USER VERIFICATION**. Overall assessed completion is **98%**.
+- Production, Production database/Auth0, Google Sheets, Apps Script, and Production deployment remain unchanged. See [Sprint 32 review](docs/reviews/SPRINT_32_ANNOUNCEMENT_CENTER_REVIEW.md).
+
 ## Sprint 31 real event notifications (2026-08-02)
 
 - The final duplicate-delivery fix adds Staging-only Migration `0020_push_subscription_priority`: registration records display-derived `clientMode`, and delivery sends to active PWA subscriptions while treating Browser subscriptions as fallback only when no active PWA exists for that Workspace/User. Notification Center remains one row per event.

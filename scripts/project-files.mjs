@@ -11,6 +11,7 @@ export const deployFiles = Object.freeze([
   'employee-layout.css',
   'time-off-ui.css',
   'notification-center.css',
+  'announcement-center.css',
   'environment.css',
   'environment-config.js',
   'postgres-api-client.js',
@@ -34,7 +35,9 @@ export const deployFiles = Object.freeze([
   'pwa.js',
   'employee-layout.js',
   'time-off-ui.js',
-  'notification-center.js'
+  'notification-center.js',
+  'announcement-center.js',
+  '_redirects'
 ]);
 
 export const sourceScripts = Object.freeze(

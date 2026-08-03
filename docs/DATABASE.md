@@ -1,5 +1,17 @@
 # Database 文件（現況與目標）
 
+## Migration 0022 — Announcement Center (Staging only, 2026-08-03)
+
+Migration `0022_announcement_center` adds:
+
+- `announcement`: Workspace-scoped title/content, creator, publish/update timestamps, `ALL`/`MANAGER`/`EMPLOYEE` audience, optimistic revision, and `deleted_at` soft delete;
+- `announcement_read`: per-Workspace, per-announcement, per-user read marker;
+- composite Workspace/Membership foreign keys, newest-first and per-user read indexes, forced RLS, and exact constraints;
+- controlled list/detail/revision/CRUD/read functions with PUBLIC revoked and no API Role table/sequence access;
+- one `ANNOUNCEMENT_CREATED` outbox projection into the existing notifications and push-delivery pipeline.
+
+Neon Staging apply/rollback/reapply passed with SHA-256 checksum `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3`. The rollback refuses to discard real announcement or announcement-notification data. Synthetic dual-Workspace fixtures were removed after E2E. `0009`/`0010` remain pending and Production is unchanged.
+
 ## Migration 0019 — Real Event Notifications (Staging only, 2026-08-02)
 
 Migration `0019_real_event_notifications` adds `notification_preferences` with forced RLS and a composite Workspace/Membership foreign key; extends `notifications` with actor, same-origin destination, SHA-256 deduplication key, and a 2 KiB allowlisted metadata object; and replaces only the outbox projection function. It does not alter business Command semantics.

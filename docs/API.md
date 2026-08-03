@@ -1,5 +1,18 @@
 # API 文件（現況與目標）
 
+## Sprint 32 Announcement Center API
+
+Migration `0022_announcement_center` is active only on Neon Staging. All routes require the existing verified bearer identity, live Bankeban Session, `X-Workspace-Id`, active Membership, allowed Origin, and request limits.
+
+- `GET /v1/announcements`: returns at most 100 visible, non-deleted announcements sorted by `publishedAt DESC`; includes caller-specific `readAt` and `unreadCount`.
+- `GET /v1/announcements/{id}`: returns one audience-visible announcement in the caller's Workspace or fails closed.
+- `POST /v1/announcements`: boss/manager only; accepts exact `title`, `content`, and `audience` (`ALL`, `MANAGER`, `EMPLOYEE`).
+- `PUT /v1/announcements/{id}`: boss/manager only; requires the full mutable fields plus `baseRevision`.
+- `DELETE /v1/announcements/{id}`: boss/manager only; requires `baseRevision` and performs soft delete.
+- `POST /v1/announcements/{id}/read`: idempotently marks only the current user as read and synchronizes the matching Notification Center row.
+
+All mutations require `Idempotency-Key`. Browser-supplied creator, recipient, role, Workspace ownership, publication time, notification metadata, or destination is rejected or ignored; these values are derived server-side. Publication emits `ANNOUNCEMENT_CREATED` into the existing outbox and uses the existing notification/push pipeline.
+
 ## Sprint 31 real-event notification contract
 
 - Existing business Commands remain unchanged. After their transaction inserts an outbox event, the database projects `clock_in`, `clock_out`, `leave_requested`, `leave_approved`, `leave_rejected`, or `shift_updated` to server-resolved recipients.

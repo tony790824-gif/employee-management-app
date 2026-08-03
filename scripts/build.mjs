@@ -31,7 +31,7 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
   postgresWorkspaceId: rehearsalWorkspaceId,
   storagePrefix: 'banke:staging-postgres:',
   cachePrefix: 'banke-staging-postgres-',
-  cacheName: 'banke-staging-postgres-v10',
+  cacheName: 'banke-staging-postgres-v11',
   manifest: Object.freeze({
     id: './?app=banke-staging-postgres', name: '班表管理 STAGING POSTGRES',
     shortName: '班表 STG PG', startUrl: './?app=banke-staging-postgres'
@@ -90,7 +90,7 @@ await writeFile(`${outputDirectory}/manifest.webmanifest`, `${JSON.stringify(man
 
 const serviceWorker = (await readFile('service-worker.js', 'utf8'))
   .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${cacheCleanupPrefix}';`)
-  .replace("const CACHE='banke-production-v7';", `const CACHE='${effectiveProfile.cacheName}';`)
+  .replace("const CACHE='banke-production-v8';", `const CACHE='${effectiveProfile.cacheName}';`)
   .replace("'./environment-config.js'", `'./environment-config.js?v=${cacheRevision}'`)
   .replace("'./manifest.webmanifest'", `'./manifest.webmanifest?v=${cacheRevision}'`);
 await writeFile(`${outputDirectory}/service-worker.js`, serviceWorker, 'utf8');

@@ -6,6 +6,8 @@ import {
   pushCommandNames,
   timeOffCommandNames,
   validateCommand,
+  validateAnnouncementId,
+  validateAnnouncementMutation,
   validateIdempotencyKey
 } from './validation.mjs';
 
@@ -31,7 +33,8 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   PUSH_SUBSCRIPTION_CONFLICT: 409,
   PUSH_SUBSCRIPTION_NOT_FOUND: 404,
   PUSH_RATE_LIMITED: 429,
-  PUSH_DELIVERY_NOT_FOUND: 404
+  PUSH_DELIVERY_NOT_FOUND: 404,
+  ANNOUNCEMENT_NOT_FOUND: 404
 });
 
 const DATABASE_ERROR_MESSAGES = Object.freeze({
@@ -53,7 +56,8 @@ function requestHash(commandName, input) {
   return createHash('sha256').update(`${commandName}\n${stableJson(input)}`, 'utf8').digest('hex');
 }
 
-function withBootstrapRevision(result, roleVisibleTimeOff = null, notificationRevision = null) {
+function withBootstrapRevision(result, roleVisibleTimeOff = null, notificationRevision = null,
+  announcementRevision = null) {
   if (!result || result.ok !== true || !result.data || typeof result.data !== 'object' || Array.isArray(result.data)) {
     return result;
   }
@@ -70,7 +74,8 @@ function withBootstrapRevision(result, roleVisibleTimeOff = null, notificationRe
       sync: { ...sync, revision: 0 }
     },
     roleVisibleTimeOff,
-    notificationRevision
+    notificationRevision,
+    announcementRevision
   };
   const revision = Number.parseInt(
     createHash('sha256').update(stableJson(canonical), 'utf8').digest('hex').slice(0, 12),
@@ -152,6 +157,7 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       [timeOffContext.payload, timeOffContext.signature, timeOffContext.keyId]);
     const notificationContext = context(identity, workspaceId, 'read');
     let notificationRevision = null;
+    let announcementRevision = null;
     try {
       notificationRevision = await databaseCall(pool,
         'SELECT app_private.api_notification_revision($1, $2, $3) AS result',
@@ -159,11 +165,43 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
     } catch (error) {
       if (!notificationSchemaUnavailable(error)) throw error;
     }
+    const announcementContext = context(identity, workspaceId, 'read');
+    try {
+      announcementRevision = await databaseCall(pool,
+        'SELECT app_private.api_announcement_revision($1, $2, $3) AS result',
+        [announcementContext.payload, announcementContext.signature, announcementContext.keyId]);
+    } catch (error) {
+      if (!notificationSchemaUnavailable(error)) throw error;
+    }
     return {
-      bootstrap: withBootstrapRevision(bootstrap, timeOff, notificationRevision),
+      bootstrap: withBootstrapRevision(bootstrap, timeOff, notificationRevision, announcementRevision),
       timeOff,
-      notificationRevision
+      notificationRevision,
+      announcementRevision
     };
+  }
+
+  async function executeAnnouncement({
+    identity, workspaceId, operation, input, announcementId = '', idempotencyKey, requestId
+  }) {
+    validateIdempotencyKey(idempotencyKey);
+    const validated = validateAnnouncementMutation(operation, input, announcementId);
+    const signed = context(identity, workspaceId, 'command');
+    if (operation === 'announcements.mark-read') {
+      return databaseCall(pool,
+        'SELECT app_private.api_mark_announcement_read($1, $2, $3, $4::uuid, $5, $6, $7) AS result',
+        [signed.payload, signed.signature, signed.keyId, validated.announcementId,
+          idempotencyKey, requestHash(operation, validated), requestId]);
+    }
+    const prepared = operation === 'announcements.create'
+      ? { ...validated, generatedId: idFactory(), occurredAt: clock().toISOString() }
+      : validated;
+    return databaseCall(pool,
+      `SELECT app_private.api_execute_announcement_command(
+        $1, $2, $3, $4, $5::jsonb, $6, $7, $8
+      ) AS result`,
+      [signed.payload, signed.signature, signed.keyId, operation, JSON.stringify(prepared),
+        idempotencyKey, requestHash(operation, validated), requestId]);
   }
 
   return Object.freeze({
@@ -254,6 +292,36 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
         }
         throw error;
       }
+    },
+
+    async listAnnouncements({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      return databaseCall(pool,
+        'SELECT app_private.api_list_announcements($1, $2, $3) AS result',
+        [signed.payload, signed.signature, signed.keyId]);
+    },
+
+    async getAnnouncement({ identity, workspaceId, announcementId }) {
+      const signed = context(identity, workspaceId, 'read');
+      return databaseCall(pool,
+        'SELECT app_private.api_get_announcement($1, $2, $3, $4::uuid) AS result',
+        [signed.payload, signed.signature, signed.keyId, validateAnnouncementId(announcementId)]);
+    },
+
+    createAnnouncement(args) {
+      return executeAnnouncement({ ...args, operation: 'announcements.create' });
+    },
+
+    updateAnnouncement(args) {
+      return executeAnnouncement({ ...args, operation: 'announcements.update' });
+    },
+
+    deleteAnnouncement(args) {
+      return executeAnnouncement({ ...args, operation: 'announcements.delete' });
+    },
+
+    markAnnouncementRead(args) {
+      return executeAnnouncement({ ...args, operation: 'announcements.mark-read' });
     },
 
     async pushStatus({ identity, workspaceId }) {

@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 32 status — Announcement Center (2026-08-03)
+
+- **Engineering/Staging status:** complete; physical PWA acceptance is **PENDING USER VERIFICATION**. Overall completion is **98%**.
+- **Completed:** Workspace-scoped announcements, Manager CRUD, employee audience filtering, soft delete, read/unread state, newest-first list/detail UI, Notification Center/Web Push/badge integration, and `/announcements/{id}` safe navigation.
+- **Security accepted:** forced RLS, live Session/Membership/role checks, Workspace A/B isolation, API Role zero direct table access, exact controlled-function grants, metadata/destination allowlists, and no token/cookie logging.
+- **Migration:** `0022_announcement_center` is applied only to Neon Staging with checksum `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3`; rollback and reapply passed. `0009`/`0010` and Production remain untouched.
+- **Only remaining gate:** Windows, Android, iPhone Home Screen PWA, and iPad Home Screen PWA announcement/list/badge/push/click verification. Do not infer device PASS from automation.
+
 ## Sprint 31 status — Real Event Notifications (2026-08-02)
 
 - **Final P0/P1 hardening complete in code/Staging:** `0020_push_subscription_priority` prefers active PWA subscriptions and uses Browser only as fallback for the same Workspace/User. Final same-Windows duplicate-notification evidence remains pending; completion stays **97%**.
