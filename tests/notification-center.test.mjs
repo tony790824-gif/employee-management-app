@@ -673,6 +673,15 @@ assert.equal(registeredPushInputs.length, registrationsBeforePwaResume + 1,
   'An authenticated PWA reconciles its existing subscription before Notification Center opens.');
 assert.equal(registeredPushInputs.at(-1).clientMode, 'pwa',
   'Foreground bootstrap reconciliation records the installed client as the preferred PWA mode.');
+const registrationsBeforeSessionRepair = registeredPushInputs.length;
+pushServerCount = 0;
+documentListeners.get('postgres-bootstrap-refreshed')();
+await new Promise(resolve => setImmediate(resolve));
+await new Promise(resolve => setImmediate(resolve));
+assert.equal(registeredPushInputs.length, registrationsBeforeSessionRepair + 1,
+  'A PWA subscription is rebound when the current App Session has no active server registration.');
+assert.equal(registeredPushInputs.at(-1).clientMode, 'pwa',
+  'Session repair preserves the preferred PWA subscription mode.');
 pwaMode = 'browser';
 
 payload = { ok: true, workspaceId: 'ws_0123456789abcdef0123456789abcdef', items: [], unreadCount: 0, available: false };

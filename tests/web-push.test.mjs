@@ -91,7 +91,7 @@ const delivery = {
   attempt: 1
 };
 
-function dispatcherScenario(sendNotification) {
+function dispatcherScenario(sendNotification, claimedDelivery = delivery) {
   const queries = [];
   const logs = [];
   let claimed = false;
@@ -101,7 +101,7 @@ function dispatcherScenario(sendNotification) {
       if (sql.includes('worker_claim_push_deliveries')) {
         if (claimed) return { rows: [{ result: { ok: true, items: [] } }] };
         claimed = true;
-        return { rows: [{ result: { ok: true, items: [structuredClone(delivery)] } }] };
+        return { rows: [{ result: { ok: true, items: [structuredClone(claimedDelivery)] } }] };
       }
       if (sql.includes('worker_complete_push_delivery')) {
         return { rows: [{ result: { ok: true } }] };
@@ -141,6 +141,47 @@ assert.deepEqual(successCompletion.parameters, [delivery.id, 'delivered', 201, '
 assert.doesNotMatch(success.logs.join('\n'), new RegExp(endpoint.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.doesNotMatch(success.logs.join('\n'), new RegExp(privateKey));
 assert.doesNotMatch(success.logs.join('\n'), new RegExp(subscriptionInput.auth));
+
+const announcementId = '00000000-0000-4000-8000-000000000032';
+const announcementDelivery = {
+  ...delivery,
+  id: '00000000-0000-4000-8000-000000000033',
+  payload: {
+    notificationId: '00000000-0000-4000-8000-000000000034',
+    type: 'announcement_created',
+    title: '📢 Synthetic announcement',
+    body: 'Synthetic announcement body',
+    resourceId: announcementId,
+    url: `/announcements/${announcementId}`
+  }
+};
+const announcement = dispatcherScenario(async (_subscription, payload) => {
+  assert.deepEqual(JSON.parse(payload), {
+    ...announcementDelivery.payload,
+    eventType: 'ANNOUNCEMENT_CREATED',
+    announcementId
+  });
+  return { statusCode: 201 };
+}, announcementDelivery);
+assert.equal(await announcement.dispatcher.drainOnce(), 1,
+  'The existing Web Push worker delivers an announcement payload through the shared pipeline.');
+assert.deepEqual(
+  announcement.queries.find(item => item.sql.includes('worker_complete_push_delivery')).parameters,
+  [announcementDelivery.id, 'delivered', 201, '']
+);
+
+const invalidAnnouncement = dispatcherScenario(async () => {
+  throw new Error('An invalid announcement payload must not reach the provider.');
+}, {
+  ...announcementDelivery,
+  id: '00000000-0000-4000-8000-000000000035',
+  payload: { ...announcementDelivery.payload, url: 'https://attacker.invalid/announcement' }
+});
+assert.equal(await invalidAnnouncement.dispatcher.drainOnce(), 1);
+assert.deepEqual(
+  invalidAnnouncement.queries.find(item => item.sql.includes('worker_complete_push_delivery')).parameters,
+  ['00000000-0000-4000-8000-000000000035', 'dead', null, 'PUSH_PAYLOAD_INVALID']
+);
 
 const expired = dispatcherScenario(async () => {
   throw Object.assign(new Error('synthetic expired'), { statusCode: 410 });

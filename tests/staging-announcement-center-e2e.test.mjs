@@ -195,6 +195,23 @@ try {
     assert.equal(established.ok, true);
   }
 
+  const employeePushEndpoint = `https://fcm.googleapis.com/fcm/send/announcement-${randomUUID()}`;
+  const registeredPush = await request(
+    base, '/v1/commands/push.register', employeeA, 201, {
+      method: 'POST', key: `announcement-live-push-${randomUUID()}`,
+      body: {
+        endpoint: employeePushEndpoint,
+        expirationTime: null,
+        p256dh: 'A'.repeat(88),
+        auth: 'B'.repeat(24),
+        userAgent: 'Synthetic Announcement Staging PWA',
+        platform: 'windows',
+        clientMode: 'pwa'
+      }
+    }
+  );
+  assert.equal(registeredPush.data.registered, true);
+
   const revisionBefore = (await request(base, '/v1/bootstrap/revision', employeeA, 200)).revision;
   const createKey = `announcement-live-create-${randomUUID()}`;
   const created = await request(base, '/v1/announcements', bossA, 201, {
@@ -224,6 +241,45 @@ try {
   assert.equal(employeeNotifications.items[0].destination, `/announcements/${announcement.id}`);
   assert.equal(employeeNotifications.unreadCount, 1);
   assert.equal((await request(base, '/v1/notifications', employeeB, 200)).items.length, 0);
+
+  const announcementDeliveries = (await owner.query(
+    `SELECT delivery.payload, subscription.client_mode
+       FROM push_deliveries delivery
+       JOIN notifications notification
+         ON notification.workspace_id = delivery.workspace_id
+        AND notification.id = delivery.notification_id
+       JOIN push_subscriptions subscription
+         ON subscription.workspace_id = delivery.workspace_id
+        AND subscription.id = delivery.subscription_id
+      WHERE notification.workspace_id = $1
+        AND notification.recipient_user_id = $2
+        AND notification.notification_type = 'announcement_created'
+        AND notification.resource_id = $3`,
+    [workspaceA.workspace, employeeA.userId, announcement.id]
+  )).rows;
+  assert.equal(announcementDeliveries.length, 1,
+    'A published announcement creates one Push delivery for the eligible Employee PWA.');
+  assert.equal(announcementDeliveries[0].client_mode, 'pwa');
+  assert.deepEqual(announcementDeliveries[0].payload, {
+    notificationId: employeeNotifications.items[0].id,
+    type: 'announcement_created',
+    title: '📢 新公告',
+    body: 'Synthetic Staging Announcement',
+    resourceId: announcement.id,
+    url: `/announcements/${announcement.id}`
+  });
+  assert.equal((await owner.query(
+    `SELECT count(*)::integer AS count
+       FROM push_deliveries delivery
+       JOIN notifications notification
+         ON notification.workspace_id = delivery.workspace_id
+        AND notification.id = delivery.notification_id
+      WHERE notification.workspace_id = $1
+        AND notification.recipient_user_id = $2
+        AND notification.notification_type = 'announcement_created'
+        AND notification.resource_id = $3`,
+    [workspaceA.workspace, bossA.userId, announcement.id]
+  )).rows[0].count, 0, 'A recipient without an active subscription is skipped safely.');
 
   await request(base, `/v1/announcements/${announcement.id}/read`, employeeA, 200, {
     method: 'POST', key: `announcement-live-read-${randomUUID()}`, body: {}
@@ -267,7 +323,7 @@ try {
   console.log(JSON.stringify({
     migrationChecksum: 'passed', managerCrud: 'passed', employeeRead: 'passed',
     employeeMutation: 'denied', audience: 'passed', workspaceIsolation: 'passed',
-    notificationPipeline: 'passed', badgeConsistency: 'passed', idempotency: 'passed',
+    notificationPipeline: 'passed', webPushDelivery: 'passed', badgeConsistency: 'passed', idempotency: 'passed',
     softDelete: 'passed', apiRoleDirectTableAccess: 'denied'
   }));
 } finally {

@@ -345,7 +345,8 @@
               : null;
             if (!currentPushSubscription) currentPushClientMode = null;
             const detectedMode = window.shiftPwaContext?.mode?.() === 'pwa' ? 'pwa' : 'browser';
-            if (currentPushSubscription && detectedMode === 'pwa' && currentPushClientMode !== 'pwa') {
+            if (currentPushSubscription && detectedMode === 'pwa'
+              && (activePushSubscriptionCount === 0 || currentPushClientMode !== 'pwa')) {
               try {
                 await cloud.registerPushSubscription(subscriptionInput(currentPushSubscription));
                 currentPushClientMode = 'pwa';

@@ -5,6 +5,7 @@ const DEFAULT_BATCH_SIZE = 10;
 const MAX_PAYLOAD_BYTES = 3_072;
 const VAPID_PUBLIC_KEY_PATTERN = /^[A-Za-z0-9_-]{80,120}$/;
 const VAPID_PRIVATE_KEY_PATTERN = /^[A-Za-z0-9_-]{40,64}$/;
+const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 
 function required(value, name) {
   const normalized = String(value || '').trim();
@@ -69,6 +70,22 @@ function validDelivery(value) {
     && !Array.isArray(value.payload);
 }
 
+function normalizedPayload(payload) {
+  if (payload.type !== 'announcement_created') return payload;
+  const announcementId = String(payload.resourceId || '');
+  if (!UUID_PATTERN.test(announcementId)
+    || payload.url !== `/announcements/${announcementId}`) {
+    const error = new Error('Announcement push payload is invalid.');
+    error.code = 'PUSH_PAYLOAD_INVALID';
+    throw error;
+  }
+  return {
+    ...payload,
+    eventType: 'ANNOUNCEMENT_CREATED',
+    announcementId
+  };
+}
+
 export function createWebPushDispatcher({
   pool,
   config,
@@ -100,7 +117,21 @@ export function createWebPushDispatcher({
   }
 
   async function deliver(item) {
-    const serialized = JSON.stringify(item.payload);
+    let serialized;
+    try {
+      serialized = JSON.stringify(normalizedPayload(item.payload));
+    } catch {
+      await complete(item.id, 'dead', null, 'PUSH_PAYLOAD_INVALID');
+      logger.warn(JSON.stringify({
+        level: 'warn',
+        event: 'web_push_delivery',
+        deliveryId: item.id,
+        outcome: 'dead',
+        statusCode: null,
+        errorCode: 'PUSH_PAYLOAD_INVALID'
+      }));
+      return;
+    }
     if (Buffer.byteLength(serialized, 'utf8') > MAX_PAYLOAD_BYTES) {
       await complete(item.id, 'dead', null, 'PAYLOAD_TOO_LARGE');
       return;
