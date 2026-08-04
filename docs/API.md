@@ -1,5 +1,12 @@
 # API 文件（現況與目標）
 
+## Sprint 33B operational contract
+
+- `GET /v1/health` and `GET /v1/readiness` return non-sensitive `environment` and immutable `buildSha` in addition to `ok`; readiness still performs the PostgreSQL connectivity probe.
+- Authenticated session/read/command traffic uses separate bounded per-Session minute limits. A rejected request returns HTTP 429, code `RATE_LIMITED`, a bounded `Retry-After`, and no identity data.
+- Every completed request emits a structured `api_request_complete` record containing request ID, normalized route, status, duration, environment, and build SHA only. Tokens, cookies, Session IDs, payloads, Workspace data, and personal data are excluded.
+- These controls complement live JWT, Session, Membership, Workspace, RLS, idempotency, and Origin validation. They do not make CORS or rate limiting an authorization boundary.
+
 ## Sprint 32 Announcement Center API
 
 Migration `0022_announcement_center` is active only on Neon Staging. All routes require the existing verified bearer identity, live Bankeban Session, `X-Workspace-Id`, active Membership, allowed Origin, and request limits.

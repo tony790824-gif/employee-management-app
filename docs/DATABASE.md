@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Sprint 33B read-only Production schema inspection
+
+`pnpm db:status:readonly` is the only status command approved for pre-authorization Production inspection. It requires a distinct `DATABASE_READONLY_URL`, exact approved host, TLS, explicit `neondb`, and credentials different from Migrator/API/Push roles. It executes `SET default_transaction_read_only = on` and `SELECT` only; it never creates the ledger, takes a Migration lock, applies DDL/DML, or changes checksums.
+
+The expected manifest is derived only from Git-tracked Migration pairs and excludes the intentionally untracked/unapproved `0010`. Actual Production status and schema alignment remain **PENDING EXTERNAL APPROVAL**; Sprint 33B did not connect to or modify Production.
+
 ## Migration 0022 — Announcement Center (Staging only, 2026-08-03)
 
 Migration `0022_announcement_center` adds:

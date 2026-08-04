@@ -37,6 +37,7 @@ export const deployFiles = Object.freeze([
   'time-off-ui.js',
   'notification-center.js',
   'announcement-center.js',
+  '_headers',
   '_redirects'
 ]);
 

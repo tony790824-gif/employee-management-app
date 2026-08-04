@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { deployFiles } from './project-files.mjs';
 
 const failures = [];
@@ -6,11 +6,14 @@ const fail = message => failures.push(message);
 const expectedFiles = [...deployFiles].sort();
 const generatedBuildFiles = new Set([
   'environment-config.js',
+  '_headers',
   'index.html',
   'manifest.webmanifest',
   'service-worker.js'
 ]);
 let actualFiles = [];
+const MAX_FRONTEND_BYTES = 2_000_000;
+const MAX_SINGLE_ASSET_BYTES = 500_000;
 
 try {
   actualFiles = (await readdir('dist', { withFileTypes: true }))
@@ -24,6 +27,14 @@ try {
 if (JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)) {
   fail(`dist/ 檔案與發布白名單不一致；預期 ${expectedFiles.length} 個，實際 ${actualFiles.length} 個。`);
 }
+
+let totalFrontendBytes = 0;
+for (const file of actualFiles) {
+  const size = (await stat(`dist/${file}`)).size;
+  totalFrontendBytes += size;
+  if (size > MAX_SINGLE_ASSET_BYTES) fail(`發布資產超過 500 KB 預算：${file}`);
+}
+if (totalFrontendBytes > MAX_FRONTEND_BYTES) fail('Production frontend 超過 2 MB 總資產預算。');
 
 for (const file of expectedFiles) {
   try {
@@ -39,6 +50,22 @@ if (!productionEnvironment.includes('"name": "production"')) fail('Production bu
 if (productionEnvironment.includes('banke:staging:') || productionEnvironment.includes('STAGING')) fail('Production build 混入 Staging 設定。');
 const productionManifest = JSON.parse(await readFile('dist/manifest.webmanifest', 'utf8'));
 if (productionManifest.id !== './?app=banke-production') fail('Production PWA manifest id 不正確。');
+const productionHeaders = await readFile('dist/_headers', 'utf8');
+for (const requiredHeader of [
+  'Content-Security-Policy:',
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  'Strict-Transport-Security:',
+  'X-Content-Type-Options: nosniff',
+  'X-Frame-Options: DENY',
+  'Referrer-Policy: no-referrer',
+  'Permissions-Policy:'
+]) {
+  if (!productionHeaders.includes(requiredHeader)) fail(`Production build 缺少安全標頭：${requiredHeader}`);
+}
+if (productionHeaders.includes('bankeban-staging-node-api') || productionHeaders.includes('.auth0.com')) {
+  fail('Production security headers 不得允許 Staging API 或 Auth0 Staging。');
+}
 
 const sensitivePatterns = [
   'SHIFT_APP_CREDENTIAL_PEPPER',
@@ -77,5 +104,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`本機發布閘門通過：${actualFiles.length} 個白名單資產與後端維運文件均已驗證。`);
+console.log(`本機發布閘門通過：${actualFiles.length} 個白名單資產、${totalFrontendBytes} bytes 與後端維運文件均已驗證。`);
 console.log('正式發布前仍必須在 Apps Script 執行 createOperationalBackup() 與 runReleaseReadinessCheck()。');

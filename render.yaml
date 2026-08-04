@@ -19,6 +19,14 @@ services:
         value: require
       - key: DATABASE_POOL_MAX
         value: 5
+      - key: BANK_RATE_LIMIT_ENABLED
+        value: true
+      - key: BANK_RATE_LIMIT_SESSION_PER_MINUTE
+        value: 20
+      - key: BANK_RATE_LIMIT_READ_PER_MINUTE
+        value: 180
+      - key: BANK_RATE_LIMIT_COMMAND_PER_MINUTE
+        value: 60
       - key: BANK_OIDC_AUDIENCE
         value: https://bankeban-staging-api
       - key: BANK_OIDC_SESSION_CLAIM

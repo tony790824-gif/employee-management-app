@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 33B Production Security & Operations Gate (2026-08-04)
+
+- Repository/Staging-safe controls now include environment-derived Netlify security headers, authenticated bounded API rate limits, build identity and structured request telemetry, strictly read-only schema status inspection, public Auth0 Production discovery/JWKS validation, VAPID parity, bounded Staging capacity smoke, sensitive scan, and a non-deploying GitHub quality workflow.
+- Product completion remains **98%**. Production readiness is reassessed at **70%**; release remains **NOT READY** because Production services/schema/Auth0 event delivery/recovery/device evidence require separately authorized external execution.
+- `pnpm release:check` now includes the Production repository gate and tracked-file sensitive scan. See [Production Operations Runbook](docs/PRODUCTION_OPERATIONS_RUNBOOK.md) and [ADR 0020](docs/adr/0020-production-security-operations-gate.md).
+- This Sprint does not deploy Production, apply a Migration, connect/write Production data, or modify Production Auth0, Google Sheets, or Apps Script.
+
 ## Sprint 32 Announcement Center (2026-08-03)
 
 - Announcement Center extends the existing PostgreSQL Notification Center; it does not create a second notification store, badge, push queue, or Service Worker.

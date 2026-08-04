@@ -1,10 +1,18 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 33B repository-gate update — 2026-08-04
+
+- Product completion remains **98%**. Evidence-weighted Production readiness increases from **62% to 70%** after repository-enforceable security and operations controls.
+- Added environment-specific CSP/security headers, authenticated bounded rate limiting, immutable build identity, structured request telemetry, a strictly read-only schema inspector, read-only Auth0 discovery/JWKS validator, VAPID parity, bounded Staging capacity probe, sensitive scan, CI quality gate, ADR, and Production Operations Runbook.
+- Release decision remains **NOT READY FOR PRODUCTION**. B-01 through B-05 require external Production or physical-device evidence and were not falsely closed by local automation.
+- H-01 is closed at repository level. H-02, H-03, H-04, H-05, H-07, H-08 and M-04/M-05 are materially reduced but retain external acceptance work documented in `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`.
+- Sprint 33B performed no Production deployment, database connection/write, Migration, Auth0 mutation, Google Sheets/Apps Script change, or cloud-resource creation.
+
 Date: 2026-08-04
 
 Baseline: `bae183e10399e476910508aee1677133e5fd179d`
 
-Scope: evidence-only Production readiness audit plus documentation-only low-risk corrections.
+Scope: repository-enforceable Production security/operations controls and Staging-safe validation; external Production evidence remains separately authorized.
 
 Production operations performed: **none**.
 
@@ -13,7 +21,7 @@ Production operations performed: **none**.
 **Release decision: NOT READY FOR PRODUCTION.**
 
 - Product engineering completion remains **98%**. This measures implemented product scope and Staging acceptance; it is not Production approval.
-- Evidence-weighted Production readiness is **62%**. Security and database foundations are strong, but the current Production runtime is intentionally still the Google Sheets path and does not run the latest PostgreSQL/Auth0/notification/announcement stack.
+- Evidence-weighted Production readiness is **70%**. Repository controls are stronger, but the current Production runtime is intentionally still the Google Sheets path and does not run the latest PostgreSQL/Auth0/notification/announcement stack.
 - Staging evidence is healthy: the public Node API `/v1/health` and `/v1/readiness` returned HTTP 200, and the isolated `STAGING POSTGRES` Draft returned HTTP 200 during this audit.
 - No Production deployment, database connection/write, Migration, Auth0 change, Google Sheets change, Apps Script change, or cloud-resource creation occurred.
 
@@ -77,14 +85,14 @@ Production operations performed: **none**.
 
 | ID | Finding | Required remediation |
 |---|---|---|
-| H-01 | The frontend has no deploy-time CSP/security-header policy. | Add and test a Netlify `_headers` policy for CSP, frame protection, `nosniff`, Referrer Policy, Permissions Policy and HSTS. This requires a dedicated Staging compatibility Sprint because Auth0, Apps Script and PWA resources must be allowlisted without weakening the policy. |
-| H-02 | The Node API has no general abuse-rate limit or upstream WAF/API gateway. | Keep the existing `push.test` limit, then add bounded per-principal/IP protection for login/session/read/command routes and alerting. Do not rely on CORS as an authorization control. |
-| H-03 | No repository CI workflow enforces Build, Check, tests, Release Gate, audit and environment isolation before merge/deploy. | Add protected-branch CI and an approval-gated, immutable Production artifact promotion flow; retain manual Production approval. |
-| H-04 | Production observability is not ready. | Structured logs and readiness exist, but there is no accepted centralized error-rate/latency metric, SLO, uptime alert, queue-depth/dead-delivery alarm, database saturation alert or incident escalation runbook. |
-| H-05 | Capacity and load behavior are unproven. | Active clients check revision every 2 seconds, and the revision endpoint still derives its value through controlled role-visible reads. Run realistic concurrency/load tests and establish a capacity budget before choosing Production compute/database plans. |
+| H-01 | Closed at repository level in Sprint 33B: deploy-time CSP/security headers were missing. | Environment-derived CSP, frame/object protection, `nosniff`, Referrer Policy, Permissions Policy and HSTS now fail the Release Gate if absent or cross-environment. Removing transitional inline allowances remains a future Medium hardening item. |
+| H-02 | Reduced in Sprint 33B: general abuse protection was missing. | Bounded authenticated Session/read/Command limits now fail closed and cannot be disabled outside Local. Upstream edge/WAF protection and alerts remain externally required; CORS is not authorization. |
+| H-03 | Reduced in Sprint 33B: CI did not enforce the quality gate. | A read-only, non-deploying GitHub workflow runs frozen install, Release Gate and Production dependency audit. Pin third-party Actions to reviewed immutable commit SHAs and enable required branch protection before Production approval. |
+| H-04 | Reduced in Sprint 33B: Production observability is not connected. | Build identity and privacy-minimized request status/duration logs now exist, with alert thresholds/runbook defined. Centralized metrics, uptime, queue/database alerts and escalation still require external configuration. |
+| H-05 | Reduced in Sprint 33B: capacity and load behavior remain unproven. | A bounded Staging-only readiness probe and frontend size budgets now exist. Representative authenticated revision/bootstrap load evidence is still required before Production sizing. |
 | H-06 | Current Render Free Staging behavior is unsuitable evidence for Production availability. | Cold starts and a single web process that also runs the Push dispatcher can delay API and delivery. Select paid Production sizing, isolate failure domains where justified, and prove graceful shutdown/recovery. |
-| H-07 | VAPID configuration promotion is manual and has already drifted once. | Add a release check that compares the frontend public-key fingerprint with the server-authoritative public key, documents rotation, invalidates/recreates old subscriptions and blocks mismatched artifacts. Never expose the private key. |
-| H-08 | Production backup protection is below an accepted business RPO/RTO. | Provider history alone and Staging restore evidence are insufficient. Define retention, independent backup, encryption, restore ownership and a timed Production-safe restore rehearsal before launch. |
+| H-07 | Reduced in Sprint 33B: VAPID configuration promotion is manual and drifted once. | `vapid:parity` now compares the built public key with the authoritative server public key and reports a fingerprint only. The external artifact-promotion pipeline and subscription-rotation exercise remain pending. |
+| H-08 | Reduced in Sprint 33B: Production backup protection is below accepted RPO/RTO. | The runbook defines RPO 15 minutes, RTO 60 minutes, independent encrypted backup, isolated restore and stop conditions. Provider plan/retention and a timed exercise remain external blockers. |
 
 ### Medium
 
@@ -93,10 +101,10 @@ Production operations performed: **none**.
 | M-01 | Service Worker cache revision is manually advanced. | Generate or validate the cache revision from the immutable release artifact so a missed manual bump cannot retain stale assets. |
 | M-02 | Offline business data is stored in browser local storage. | It is owner-scoped, bounded and cleared on logout, but remains readable at rest on a compromised/shared browser profile. Add shared-device policy, retention expiry and privacy acceptance. |
 | M-03 | API security headers are narrower than the eventual public frontend policy. | The JSON API has CSP, `no-store`, `nosniff` and no-referrer; verify platform HSTS and add an explicit Production proxy/header contract. |
-| M-04 | Migration `status` is not a strictly read-only command. | The generic runner initializes the ledger and takes an advisory lock, and Production configuration requires the Migration confirmation switch even for status. Add a separately reviewed read-only inspection command before operational handoff. |
-| M-05 | Deployment identity is not exposed through readiness. | Operators must inspect Render/Netlify dashboards to identify a commit. Return a non-sensitive build SHA/version from readiness or an immutable deployment manifest. |
+| M-04 | Closed in Sprint 33B: generic Migration `status` was not strictly read-only. | `db:status:readonly` requires distinct credentials, read-only transaction mode, approved host/TLS/database and executes only `SET default_transaction_read_only` plus `SELECT`. |
+| M-05 | Closed in Sprint 33B: deployment identity was absent from readiness. | Health/readiness and operational request logs now expose a validated non-sensitive build SHA or `unknown`; release acceptance requires a real immutable SHA. |
 | M-06 | Data-retention operations are not complete. | Define bounded retention/cleanup for audit, outbox, notification, delivery and soft-deleted announcement records with compliance-safe evidence preservation. |
-| M-07 | Performance budgets are not automated. | Record compressed/uncompressed frontend budgets, bootstrap response limits, API latency targets and regression thresholds in CI. |
+| M-07 | Partially closed in Sprint 33B: frontend budgets are automated. | Release Gate rejects more than 2 MB total or 500 KB per asset. Bootstrap response and accepted API latency budgets still need representative Staging evidence. |
 
 ### Low
 
@@ -109,14 +117,26 @@ Production operations performed: **none**.
 
 | Category | Readiness | Summary |
 |---|---:|---|
-| Security | 68% | Strong identity, Session, tenant and least-privilege foundations; blocked by missing provider-event delivery, frontend headers, general abuse controls and key-promotion automation. |
-| Infrastructure | 45% | Healthy isolated Staging, but Production services, CI promotion, sizing and rollback are not instantiated or accepted. |
-| Database | 72% | Strong schema/Migration/RLS tests; current Production feature parity and recovery rehearsal remain incomplete. |
-| Performance | 60% | Efficient revision/render behavior, but no load evidence or production capacity budget for 2-second active polling. |
+| Security | 76% | Headers, authenticated rate limits and VAPID parity strengthen the existing identity/tenant controls; provider-event delivery and upstream abuse protection remain external. |
+| Infrastructure | 55% | CI and operational gates exist, but Production services, protected promotion, sizing and rollback are not instantiated or accepted. |
+| Database | 78% | Strong schema/Migration/RLS tests and a strictly read-only inspector; Production feature parity and recovery rehearsal remain incomplete. |
+| Performance | 68% | Efficient revision/render behavior, frontend budgets and bounded probe exist; representative authenticated load evidence remains pending. |
 | PWA | 82% | Install/update/offline/push/click foundations are broad; final device and VAPID re-subscription gates remain. |
-| Monitoring | 35% | Structured logs and readiness exist; metrics, alerts, SLOs and incident operations do not. |
+| Monitoring | 50% | Build-aware structured request logs, thresholds and runbook exist; centralized metrics, alerts and incident acceptance are not connected. |
 
 ## Verification
+
+Sprint 33B repository-gate verification completed with these results:
+
+- `git diff --check`: PASS
+- `pnpm run build`: PASS — 40 Production-profile assets built locally; nothing deployed
+- `pnpm run check`: PASS — 25 frontend scripts, one Apps Script and 40 release assets
+- `pnpm test`: PASS — complete repository test command
+- `pnpm run release:check`: PASS — Release Gate, Production repository gate and sensitive-information scan
+- Production repository gate: PASS — 21 tracked Migration pairs through `0022`; no Production mutation
+- sensitive-information scan: PASS — 285 repository files; zero detected credentials
+
+No Production, Auth0, database, Migration, Google Sheets, Apps Script or cloud-resource operation was performed during Sprint 33B.
 
 Sprint 33A verification completed with these results:
 

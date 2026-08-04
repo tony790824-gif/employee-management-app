@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-04 handoff — Sprint 33B Production Security & Operations Gate
+
+- Repository implementation is complete, but Sprint status is **PARTIAL / EXTERNAL EVIDENCE REQUIRED**. Product completion 98%; Production readiness 70%; release NOT READY.
+- Added profile-derived Netlify headers, authenticated rate limiting, build SHA/request telemetry, read-only schema/Auth0 validation, VAPID parity, bounded Staging capacity smoke, sensitive scan, CI gate, ADR 0020, and the Production Operations Runbook.
+- Production was not connected, migrated, configured, or deployed. Auth0, Google Sheets, Apps Script, Neon Production, Render Production, and Netlify Production were not changed.
+- Do not claim B-01 through B-05 closed until actual Production schema/service, Auth0 event, recovery RPO/RTO, monitoring/capacity, and physical-device evidence is recorded.
+- Next action requires explicit owner authority. Start with the separate read-only Production schema inspection; stop on any host/database/role/checksum mismatch.
+
 ## 2026-08-03 handoff — Sprint 32 Announcement Center
 
 - Status: implementation, Neon Staging Migration rehearsal, real-engine synthetic E2E, and automated gates complete; physical-device acceptance remains **PENDING USER VERIFICATION**. Overall completion: **98%**.

@@ -407,10 +407,13 @@ published = [first.jwk, second.jwk];
 assert.equal((await verifier(token(second, validClaims))).subject, identity.subject, 'unknown kid triggers one safe refresh for rotation');
 await assert.rejects(() => verifier(token(unknown, validClaims)), error => error.code === 'TOKEN_KEY_UNKNOWN');
 
+const consumedRateCategories = [];
 const api = createApiServer({
   pool: { query: async () => ({ rows: [{ '?column?': 1 }] }) },
   allowedOrigins: ['https://staging.example'],
   verifyAccessToken: async () => identity,
+  buildSha: 'abcdef1234567890',
+  rateLimiter: { consume: (_identity, category) => consumedRateCategories.push(category) },
   commandService: {
     establishSession: async () => ({ ok: true }), logout: async () => ({ ok: true }),
     execute: async ({ input }) => ({ ok: true, data: input }), listEmployees: async () => ({ ok: true, data: [] }),
@@ -431,6 +434,12 @@ try {
   const commonHeaders = {
     Origin: 'https://staging.example', Authorization: 'Bearer a.b.c', 'X-Workspace-Id': workspaceId
   };
+  const healthResponse = await fetch(`${base}/v1/health`);
+  assert.equal(healthResponse.status, 200);
+  assert.deepEqual(await healthResponse.json(), { ok: true, environment: 'local', buildSha: 'abcdef1234567890' });
+  const readinessResponse = await fetch(`${base}/v1/readiness`);
+  assert.equal(readinessResponse.status, 200);
+  assert.deepEqual(await readinessResponse.json(), { ok: true, environment: 'local', buildSha: 'abcdef1234567890' });
   const sessionResponse = await fetch(`${base}/v1/auth/session`, { method: 'POST', headers: commonHeaders });
   assert.equal(sessionResponse.status, 201);
   const bootstrapResponse = await fetch(`${base}/v1/bootstrap`, { headers: commonHeaders });
@@ -483,6 +492,9 @@ try {
   });
   assert.equal(rejected.status, 413);
   assert.equal((await rejected.json()).code, 'REQUEST_PAYLOAD_TOO_LARGE');
+  assert.ok(consumedRateCategories.includes('session'));
+  assert.ok(consumedRateCategories.includes('read'));
+  assert.ok(consumedRateCategories.includes('command'));
 } finally {
   api.close();
   await once(api, 'close');

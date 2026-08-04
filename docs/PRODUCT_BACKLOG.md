@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Sprint 33B status — Production Security & Operations Gate (2026-08-04)
+
+- **Status:** repository implementation complete; external Production evidence remains blocked pending explicit approval. Product completion **98%**, Production readiness **70%**, release decision **NOT READY**.
+- **Completed safely:** environment-derived security headers, bounded authenticated rate limits, build identity/request telemetry, read-only schema status, read-only Auth0 public validation, VAPID parity, bounded Staging capacity probe, sensitive scan, CI quality gate, ADR, and operations runbook.
+- **Remaining blockers:** actual Production service/cutover creation, Production schema alignment/apply, Production Auth0/EventBridge security-event acceptance, RPO/RTO restore drill, and outstanding physical-device release evidence.
+- **Next gate:** external Production evidence may begin only with explicit authorization and the stop conditions in `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`; no feature Sprint should bypass it.
+
 ## Sprint 33A status — Production Readiness Audit (2026-08-04)
 
 - **Status:** complete as an evidence-based audit; no feature, infrastructure, database, environment, or Production mutation was performed.

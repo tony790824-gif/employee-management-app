@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { deployFiles } from './project-files.mjs';
 import { getEnvironmentProfile } from '../config/environments.mjs';
+import { createSecurityHeaders } from '../config/security-headers.mjs';
 
 const requestedEnvironment = process.argv.find(value => value.startsWith('--environment='))?.split('=')[1]
   || process.env.BANKE_BUILD_ENV
@@ -80,6 +81,10 @@ const runtimeConfig = `(() => {
 })();
 `;
 await writeFile(`${outputDirectory}/environment-config.js`, runtimeConfig, 'utf8');
+await writeFile(`${outputDirectory}/_headers`, createSecurityHeaders({
+  profile: effectiveProfile,
+  auth0SdkUrl: profile.name === 'staging' ? auth0SdkUrl : ''
+}), 'utf8');
 
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
 manifest.id = effectiveProfile.manifest.id;

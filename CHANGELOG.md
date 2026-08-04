@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-04 — Sprint 33B Production Security & Operations Gate
+
+- Added environment-derived frontend security headers, bounded authenticated API rate limits, build identity, and privacy-minimized request telemetry.
+- Added strictly read-only Production schema inspection, public Auth0 Production validation, VAPID parity, bounded Staging capacity smoke, tracked-file sensitive scan, and a non-deploying GitHub quality gate.
+- Added ADR 0020 and a Production Operations Runbook with RPO/RTO, monitoring, release, rollback, and explicit external stop conditions.
+- Production readiness increased from 62% to 70%, but release remains NOT READY pending separately authorized Production schema/service, Auth0 event, recovery, monitoring/capacity, and physical-device evidence. Production was not operated.
+
 ## 2026-08-04 — Sprint 33A Production Readiness Audit
 
 - Added an evidence-based Production readiness report covering security, infrastructure, database, performance, PWA, monitoring, rollback, and release gates.

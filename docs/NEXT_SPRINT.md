@@ -1,4 +1,17 @@
-# Next unique Sprint — Sprint 33B Production Security & Operations Gate
+# Next external gate — Production evidence and authorization
+
+Sprint 33B repository work is complete. Do not begin a feature Sprint or Production mutation automatically.
+
+1. Obtain explicit owner approval for a read-only Production schema inspection using a separate read-only credential; record `neondb`, role, ledger checksums, and pending versions without writes.
+2. Obtain explicit Auth0 Production access and validate the dedicated tenant/API/Application/Action plus security-event delivery without changing Staging.
+3. Approve a backup plan meeting RPO 15 minutes and an isolated restore drill targeting RTO 60 minutes; never rehearse destructive restore against active Production.
+4. Connect monitoring/alerts and run the bounded Staging capacity acceptance; record thresholds and responders.
+5. Close Windows/Android/iPhone/iPad physical-device release evidence.
+6. Only after all evidence passes, authorize a separate reversible Production schema/service/cutover operation.
+
+Use `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. Stop on any host/role/checksum/backup/Auth0/VAPID/device/alert mismatch.
+
+# Historical plan — Sprint 33B Production Security & Operations Gate
 
 Goal: close the highest-risk operational controls identified by `docs/PRODUCTION_READINESS_REPORT.md`, using Staging-only implementation and rehearsal before any separate Production authorization.
 

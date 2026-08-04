@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-08-04 current state — Sprint 33B
+
+- Repository-side Production Security & Operations Gate is implemented; product completion remains 98%, Production readiness is 70%, and release remains NOT READY.
+- Security headers are generated per frontend profile. Production permits only its Google Sheets transport; PostgreSQL Staging permits only its Render/Auth0 origins.
+- The Node API has bounded authenticated per-Session limits, non-sensitive build identity, and normalized request telemetry. Existing JWT/Session/Membership/Workspace/RLS boundaries are unchanged.
+- `db:status:readonly`, `auth:readiness:production`, `capacity:smoke:staging`, `vapid:parity`, `security:scan`, and `production:gate` are fail-closed operator gates. None authorizes a mutation.
+- GitHub quality CI has read-only contents permission and no deploy/database secret path.
+- External blockers remain: Production services/schema apply, Production Auth0 security-event delivery, RPO/RTO recovery proof, monitoring/capacity acceptance, and physical-device gates. Follow `docs/PRODUCTION_OPERATIONS_RUNBOOK.md` and request explicit authority one gate at a time.
+
 ## 2026-08-03 current state — Sprint 32 Announcement Center
 
 - Announcement Center is implemented only on the PostgreSQL path and reuses the existing transactional outbox, Notification Center, Web Push delivery, badge, bootstrap revision, and Service Worker navigation.

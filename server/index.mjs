@@ -10,6 +10,7 @@ import {
 import { createOidcVerifier } from './jwt-verifier.mjs';
 import { createTenantContextSigner } from './tenant-context.mjs';
 import { createWebPushDispatcher, webPushConfig } from './web-push.mjs';
+import { createRateLimiter, rateLimitConfig } from './rate-limit.mjs';
 
 function required(name) {
   const value = String(process.env[name] || '').trim();
@@ -32,7 +33,17 @@ const tenantContextSigner = createTenantContextSigner({
 });
 const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => value.trim()).filter(Boolean);
 const commandService = createCommandService({ pool, tenantContextSigner });
-const server = createApiServer({ commandService, verifyAccessToken, pool, allowedOrigins, environment });
+const configuredBuildSha = String(process.env.BANK_BUILD_SHA || process.env.RENDER_GIT_COMMIT || '').trim().toLowerCase();
+const buildSha = /^[a-f0-9]{7,64}$/.test(configuredBuildSha) ? configuredBuildSha : 'unknown';
+const server = createApiServer({
+  commandService,
+  verifyAccessToken,
+  pool,
+  allowedOrigins,
+  environment,
+  rateLimiter: createRateLimiter(rateLimitConfig()),
+  buildSha
+});
 const pushConfig = webPushConfig();
 const pushPool = pushConfig.enabled ? createPushPool() : null;
 const pushDispatcher = pushPool
@@ -57,6 +68,7 @@ async function start() {
       environment,
       port,
       bindHost,
+      buildSha,
       webPush: pushDispatcher ? 'enabled' : 'disabled'
     }));
   });

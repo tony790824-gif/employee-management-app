@@ -9,6 +9,7 @@ const backendSourceFiles = [
   'database/apply-security-event-role-grants.mjs',
   'database/verify-role-grants.mjs',
   'database/import-snapshot.mjs',
+  'database/inspect-migration-status.mjs',
   'database/migrate.mjs',
   'database/snapshot-mapper.mjs',
   'database/staging-backup-restore.mjs',
@@ -19,6 +20,7 @@ const backendSourceFiles = [
   'server/index.mjs',
   'server/jwt-verifier.mjs',
   'server/oidc-readiness.mjs',
+  'server/rate-limit.mjs',
   'server/tenant-context.mjs',
   'server/validation.mjs',
   'security-events/auth0-event.mjs',
@@ -28,12 +30,18 @@ const backendSourceFiles = [
   'scripts/oidc-readiness.mjs',
   'scripts/staging-acceptance.mjs',
   'scripts/configure-production-api-secret.mjs',
+  'scripts/auth0-production-readiness.mjs',
+  'scripts/capacity-smoke.mjs',
+  'scripts/production-readiness-gate.mjs',
+  'scripts/sensitive-scan.mjs',
+  'scripts/vapid-parity.mjs',
   'tests/oidc-readiness.test.mjs',
   'tests/staging-auth-initiation.test.mjs',
   'tests/lambda-artifact-packaging.test.mjs',
   'tests/staging-node-hosting.test.mjs',
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'
+  , 'tests/production-operations-gate.test.mjs'
 ];
 
 for (const file of deployFiles) {

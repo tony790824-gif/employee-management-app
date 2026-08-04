@@ -60,6 +60,23 @@ function originAllowed(origin, allowedOrigins) {
   return !origin || allowedOrigins.has(origin);
 }
 
+function operationalRoute(pathname) {
+  const exact = new Set([
+    '/v1/health', '/v1/readiness', '/v1/auth/session', '/v1/auth/logout', '/v1/employees',
+    '/v1/bootstrap', '/v1/bootstrap/revision', '/v1/time-off-requests', '/v1/notifications',
+    '/v1/announcements', '/v1/push/status'
+  ]);
+  if (exact.has(pathname)) return pathname;
+  if (/^\/v1\/announcements\/[a-f0-9-]{36}(?:\/read)?$/i.test(pathname)) return '/v1/announcements/:id';
+  if (/^\/v1\/commands\/[a-z.-]+$/.test(pathname)) return '/v1/commands/:command';
+  return '/unmatched';
+}
+
+function requestCategory(method, pathname) {
+  if (pathname.startsWith('/v1/auth/')) return 'session';
+  return method === 'GET' ? 'read' : 'command';
+}
+
 const STAGING_AUTHORIZATION_CODES = new Set([
   'IDENTITY_ACCESS_DENIED',
   'WORKSPACE_ACCESS_DENIED',
@@ -95,7 +112,9 @@ export function createRequestHandler({
   verifyAccessToken,
   pool,
   allowedOrigins = [],
-  environment = 'local'
+  environment = 'local',
+  rateLimiter = null,
+  buildSha = 'unknown'
 }) {
   const origins = new Set(allowedOrigins);
   return async (request, response) => {
@@ -103,6 +122,20 @@ export function createRequestHandler({
       ? String(request.headers['x-request-id']) : randomUUID();
     let route = '';
     let commandName = '';
+    const startedAt = performance.now();
+    response.once('finish', () => {
+      console.log(JSON.stringify({
+        level: 'info',
+        event: 'api_request_complete',
+        requestId,
+        method: request.method,
+        route: operationalRoute(route || '/'),
+        status: response.statusCode,
+        durationMs: Math.max(0, Math.round(performance.now() - startedAt)),
+        environment,
+        buildSha
+      }));
+    });
     try {
       const url = new URL(request.url || '/', 'http://localhost');
       route = url.pathname;
@@ -124,16 +157,17 @@ export function createRequestHandler({
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/health') {
-        json(response, 200, { ok: true }, requestId);
+        json(response, 200, { ok: true, environment, buildSha }, requestId);
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/readiness') {
         await pool.query('SELECT 1');
-        json(response, 200, { ok: true }, requestId);
+        json(response, 200, { ok: true, environment, buildSha }, requestId);
         return;
       }
       const identity = await verifyAccessToken(bearerToken(request.headers));
       const workspaceId = requestedWorkspace(request.headers);
+      rateLimiter?.consume(identity, requestCategory(request.method, url.pathname));
       if (request.method === 'POST' && url.pathname === '/v1/auth/session') {
         json(response, 201, await commandService.establishSession({ identity, workspaceId }), requestId);
         return;
@@ -243,6 +277,9 @@ export function createRequestHandler({
       stagingCommandDiagnostic({ environment, requestId, status, code, commandName });
       if (!(error instanceof ApiError) && !commandName) {
         console.error(JSON.stringify({ level: 'error', requestId, code, message: error.message }));
+      }
+      if (code === 'RATE_LIMITED' && Number.isSafeInteger(error.details?.retryAfterSeconds)) {
+        response.setHeader('Retry-After', String(error.details.retryAfterSeconds));
       }
       json(response, status, { ok: false, error: message, code, requestId, ...(error.details ? { details: error.details } : {}) }, requestId);
     }

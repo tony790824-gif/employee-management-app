@@ -1,5 +1,9 @@
 # 班客邦營運 Runbook（Google Sheets 過渡期）
 
+## Production security and operations gate
+
+The current Production path remains Google Sheets. Repository safeguards and the separately authorized Production evidence sequence are defined in `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. Do not use the generic Migration status command for Production preflight; use `pnpm db:status:readonly` with a distinct protected read-only credential. No runbook step is authority to deploy, migrate, change Auth0, or restore active Production.
+
 ## Sprint 31 real-event notification Staging operations
 
 0. Manage the final duplicate-delivery metadata only with `pnpm db:push-subscription-priority:staging status|up`. The runner requires `BANK_ENV=staging`, separate Migrator/API roles, required Migration `0019`, an advisory lock, checksum ledger consistency, controlled-function execution, and zero API direct table access. Never use it against Production.

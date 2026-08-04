@@ -1,5 +1,21 @@
 # 班客邦 Release Checklist
 
+## Sprint 33B Production Security & Operations Gate
+
+- [x] Environment-specific frontend CSP/HSTS/frame/object/referrer/permissions headers are generated and Production contains no Staging API/Auth0 origin.
+- [x] Authenticated Session/read/Command rate limits are bounded, principal-hashed, return 429 safely, and do not replace authorization.
+- [x] Health/readiness expose non-sensitive environment/build identity; request telemetry excludes identity, Session, token, cookie, payload, endpoint, and personal data.
+- [x] `db:status:readonly` requires a separate read-only role, approved host, TLS, `neondb`, and issues no schema/ledger/lock/write operation.
+- [x] Auth0 Production public discovery/JWKS validator rejects development/Staging tenant and non-RS256 configuration.
+- [x] VAPID parity reports a fingerprint only; capacity smoke is bounded and Staging-only; sensitive scan covers tracked files.
+- [x] Release Gate enforces a 2 MB total frontend budget and a 500 KB per-asset budget.
+- [x] GitHub quality workflow has read-only contents permission, frozen install, Release Gate, and dependency audit, with no deploy or database credential.
+- [ ] Read-only Production schema evidence is owner-authorized and recorded — PENDING EXTERNAL APPROVAL.
+- [ ] Production Auth0 Application/API/Action/security-event delivery is owner-validated — PENDING EXTERNAL APPROVAL.
+- [ ] Production backup/isolated restore meets RPO 15 minutes and RTO 60 minutes — PENDING EXTERNAL APPROVAL.
+- [ ] Monitoring alerts, capacity thresholds, and physical-device gates are accepted — PENDING EXTERNAL APPROVAL.
+- [x] No Production deployment, database connection/write, Migration, Auth0 mutation, Google Sheets/Apps Script change, or cloud-resource creation occurred in Sprint 33B.
+
 ## Sprint 32 Announcement Center gate (Staging only)
 
 - [x] `0022_announcement_center` apply/rollback/reapply and checksum `e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3` verified on Neon Staging.

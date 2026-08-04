@@ -1,0 +1,151 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createSecurityHeaders } from '../config/security-headers.mjs';
+import { inspectMigrationStatus, readOnlyDatabaseConfig } from '../database/inspect-migration-status.mjs';
+import { createRateLimiter, rateLimitConfig } from '../server/rate-limit.mjs';
+import { auth0ProductionConfig, verifyAuth0Production } from '../scripts/auth0-production-readiness.mjs';
+import { capacityConfig, runCapacitySmoke } from '../scripts/capacity-smoke.mjs';
+import { embeddedVapidPublicKey, vapidFingerprint } from '../scripts/vapid-parity.mjs';
+
+const productionHeaders = createSecurityHeaders({
+  profile: {
+    dataBackend: 'google_sheets',
+    backendUrl: 'https://script.google.com/macros/s/production/exec',
+    postgresApiUrl: ''
+  }
+});
+assert.match(productionHeaders, /Content-Security-Policy:/);
+assert.match(productionHeaders, /Strict-Transport-Security:/);
+assert.match(productionHeaders, /connect-src 'self' https:\/\/script\.google\.com/);
+assert.doesNotMatch(productionHeaders, /auth0|bankeban-staging-node-api/);
+
+const stagingHeaders = createSecurityHeaders({
+  profile: {
+    dataBackend: 'postgres', backendUrl: '', postgresApiUrl: 'https://api.staging.example/v1',
+    auth: { domain: 'dev-synthetic.us.auth0.com' }
+  },
+  auth0SdkUrl: 'https://cdn.auth0.com/js/auth0-spa-js/2.11/auth0-spa-js.production.js'
+});
+assert.match(stagingHeaders, /https:\/\/api\.staging\.example/);
+assert.match(stagingHeaders, /https:\/\/dev-synthetic\.us\.auth0\.com/);
+assert.doesNotMatch(stagingHeaders, /script\.google\.com/);
+
+let now = 0;
+const limiter = createRateLimiter({ enabled: true, limits: { session: 1, read: 2, command: 1 }, now: () => now });
+const identity = { issuer: 'https://issuer.example/', subject: 'auth0|synthetic', sessionId: 'synthetic-session' };
+limiter.consume(identity, 'read');
+limiter.consume(identity, 'read');
+assert.throws(() => limiter.consume(identity, 'read'), error =>
+  error.status === 429 && error.code === 'RATE_LIMITED' && error.details.retryAfterSeconds === 60);
+limiter.consume(identity, 'command');
+assert.throws(() => limiter.consume(identity, 'command'), error => error.code === 'RATE_LIMITED');
+now = 60_001;
+limiter.consume(identity, 'read');
+assert.equal(limiter.size() <= 2, true);
+assert.equal(rateLimitConfig({ BANK_ENV: 'local' }).enabled, false);
+assert.equal(rateLimitConfig({ BANK_ENV: 'production' }).enabled, true);
+assert.throws(() => rateLimitConfig({ BANK_ENV: 'staging', BANK_RATE_LIMIT_ENABLED: 'false' }), /cannot be disabled/);
+
+assert.throws(() => readOnlyDatabaseConfig({ BANK_ENV: 'production' }), /DATABASE_READONLY_URL/);
+assert.throws(() => readOnlyDatabaseConfig({
+  BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://reader@prod.example/other',
+  BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
+}), /neondb/);
+assert.throws(() => readOnlyDatabaseConfig({
+  BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://owner@prod.example/neondb',
+  DATABASE_MIGRATOR_URL: 'postgres://owner@prod.example/neondb',
+  BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
+}), /must not reuse/);
+const readOnlyConfig = readOnlyDatabaseConfig({
+  BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://reader@prod.example/neondb',
+  DATABASE_MIGRATOR_URL: 'postgres://owner@prod.example/neondb',
+  BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
+});
+assert.equal(readOnlyConfig.environment, 'production');
+const expectedMigrations = [
+  { version: '0001', name: 'core', checksum: 'a'.repeat(64) },
+  { version: '0002', name: 'business', checksum: 'b'.repeat(64) }
+];
+const sql = [];
+const inspected = await inspectMigrationStatus({
+  async query(statement) {
+    sql.push(statement);
+    if (statement.startsWith('SET ')) return { rows: [] };
+    if (statement.includes('current_database')) return { rows: [{
+      database_name: 'neondb', role_name: 'banke_readonly', transaction_read_only: 'on', ledger_exists: true
+    }] };
+    return { rows: [{ version: '0001', name: 'core', checksum: 'a'.repeat(64) }] };
+  }
+}, expectedMigrations);
+assert.deepEqual(inspected.applied, ['0001']);
+assert.deepEqual(inspected.pending, ['0002']);
+assert.equal(sql.every(statement => /^(?:SET default_transaction_read_only|SELECT)/.test(statement.trim())), true);
+
+const authConfig = auth0ProductionConfig({
+  BANK_ENV: 'production', BANK_OIDC_ISSUER: 'https://bankeban.us.auth0.com/',
+  BANK_OIDC_JWKS_URL: 'https://bankeban.us.auth0.com/.well-known/jwks.json',
+  BANK_OIDC_AUDIENCE: 'https://bankeban-api', BANK_OIDC_SESSION_CLAIM: 'https://banke.tw/session_id'
+});
+assert.throws(() => auth0ProductionConfig({
+  BANK_ENV: 'production', BANK_OIDC_ISSUER: 'https://dev-test.us.auth0.com/',
+  BANK_OIDC_JWKS_URL: 'https://dev-test.us.auth0.com/.well-known/jwks.json',
+  BANK_OIDC_AUDIENCE: 'https://bankeban-staging-api', BANK_OIDC_SESSION_CLAIM: 'https://banke.tw/session_id'
+}), /non-development|Staging/);
+let authFetches = 0;
+const authResult = await verifyAuth0Production(authConfig, async url => {
+  authFetches += 1;
+  return {
+    ok: true,
+    async json() {
+      return String(url).includes('openid-configuration')
+        ? { issuer: authConfig.issuer, jwks_uri: authConfig.jwks }
+        : { keys: [{ kty: 'RSA', use: 'sig', alg: 'RS256', kid: 'production-key' }] };
+    }
+  };
+});
+assert.equal(authFetches, 2);
+assert.equal(authResult.rs256SigningKeys, 1);
+
+assert.throws(() => capacityConfig({
+  BANK_ENV: 'production', BANK_CAPACITY_TARGET_URL: 'https://api.production.example',
+  BANK_CAPACITY_STAGING_HOST: 'api.production.example'
+}), /staging/);
+const capacity = capacityConfig({
+  BANK_ENV: 'staging', BANK_CAPACITY_TARGET_URL: 'https://api.staging.example',
+  BANK_CAPACITY_STAGING_HOST: 'api.staging.example', BANK_CAPACITY_REQUESTS: '5',
+  BANK_CAPACITY_CONCURRENCY: '2'
+});
+let capacityCalls = 0;
+const capacityResult = await runCapacitySmoke(capacity, async () => {
+  capacityCalls += 1;
+  return { ok: true };
+});
+assert.equal(capacityCalls, 5);
+assert.equal(capacityResult.failures, 0);
+assert.throws(() => capacityConfig({
+  BANK_ENV: 'staging', BANK_CAPACITY_TARGET_URL: 'https://api.staging.example',
+  BANK_CAPACITY_STAGING_HOST: 'api.staging.example', BANK_CAPACITY_ROUTE: '/v1/bootstrap/revision'
+}), /protected token/);
+const authenticatedCapacity = capacityConfig({
+  BANK_ENV: 'staging', BANK_CAPACITY_TARGET_URL: 'https://api.staging.example',
+  BANK_CAPACITY_STAGING_HOST: 'api.staging.example', BANK_CAPACITY_ROUTE: '/v1/bootstrap/revision',
+  BANK_CAPACITY_ACCESS_TOKEN: 'synthetic-token', BANK_CAPACITY_WORKSPACE_ID: `ws_${'a'.repeat(32)}`,
+  BANK_CAPACITY_REQUESTS: '1'
+});
+await runCapacitySmoke(authenticatedCapacity, async (_url, options) => {
+  assert.equal(options.headers.Authorization, 'Bearer synthetic-token');
+  assert.equal(options.headers['X-Workspace-Id'], `ws_${'a'.repeat(32)}`);
+  return { ok: true };
+});
+
+const syntheticVapid = `B${'a'.repeat(86)}`;
+assert.equal(embeddedVapidPublicKey(`{"webPushPublicKey":"${syntheticVapid}"}`), syntheticVapid);
+assert.match(vapidFingerprint(syntheticVapid), /^[a-f0-9]{16}$/);
+assert.throws(() => embeddedVapidPublicKey('{"webPushPublicKey":"short"}'), /does not contain/);
+
+const workflow = await readFile('.github/workflows/production-quality-gate.yml', 'utf8');
+assert.match(workflow, /contents: read/);
+assert.match(workflow, /pnpm run release:check/);
+assert.doesNotMatch(workflow, /DATABASE_(?:API|MIGRATOR|PUSH)_URL|netlify[^\n]*--prod/);
+
+console.log('Production security and operations repository gates passed.');

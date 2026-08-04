@@ -42,8 +42,13 @@ assert.ok(stagingText.includes(environmentProfiles.staging.backendUrl), 'Staging
 assert.ok(!stagingText.includes(environmentProfiles.production.backendUrl), 'Staging build 不得包含 Production backend');
 
 const stagingEnvironment = await readFile('dist-staging/environment-config.js', 'utf8');
+const stagingHeaders = await readFile('dist-staging/_headers', 'utf8');
 assert.match(stagingEnvironment, /"label": "STAGING"/);
 assert.match(stagingEnvironment, /"storagePrefix": "banke:staging:"/);
+assert.match(stagingHeaders, /Content-Security-Policy:/);
+assert.match(stagingHeaders, /https:\/\/script\.google\.com/);
+assert.match(stagingHeaders, /https:\/\/dev-nkduawjn5itjlhx4\.us\.auth0\.com/);
+assert.doesNotMatch(stagingHeaders, /bankeban-staging-node-api/);
 
 const entryHtml = await readFile('index.html', 'utf8');
 assert.match(entryHtml, /LOCAL_PREVIEW = window\.shiftEnvironment\?\.name === 'local'/);
@@ -78,6 +83,7 @@ assert.doesNotMatch(stagingWorker, /caches\.match\(/);
 assert.doesNotMatch(stagingWorker, /banke-production-/);
 
 const rehearsalEnvironment = await readFile('dist-staging-postgres/environment-config.js', 'utf8');
+const rehearsalHeaders = await readFile('dist-staging-postgres/_headers', 'utf8');
 assert.match(rehearsalEnvironment, /"dataBackend": "postgres"/);
 assert.match(rehearsalEnvironment, /https:\/\/api\.staging\.example\/v1/);
 assert.match(rehearsalEnvironment, /"storagePrefix": "banke:staging-postgres:"/);
@@ -86,6 +92,9 @@ assert.match(rehearsalEnvironment, /"backendUrl": ""/,
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.staging.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
   'PostgreSQL rehearsal must not load the Google Sheets Staging iframe');
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+assert.match(rehearsalHeaders, /https:\/\/api\.staging\.example/);
+assert.match(rehearsalHeaders, /https:\/\/dev-nkduawjn5itjlhx4\.us\.auth0\.com/);
+assert.doesNotMatch(rehearsalHeaders, /script\.google\.com|AKfycbw/);
 const rehearsalWorker = await readFile('dist-staging-postgres/service-worker.js', 'utf8');
 const rehearsalNavigation = await readFile('dist-staging-postgres/notification-navigation.js', 'utf8');
 const rehearsalIndex = await readFile('dist-staging-postgres/index.html', 'utf8');
