@@ -1,5 +1,11 @@
 # 班客邦
 
+## Sprint 33C Production Platform Validation (2026-08-04)
+
+- Added a fail-closed Production platform validator (`pnpm production:platform:validate`) with explicit Production/read-only confirmation, JSON/Markdown evidence, bounded GET/HEAD checks, SELECT-only schema metadata, and sensitive-output redaction.
+- Repository scope is complete; Production readiness remains **70%** and release remains **NOT READY**. Netlify, Render, Neon, Auth0, DNS/TLS, monitoring and recovery evidence is `BLOCKED` or `NOT_CONFIGURED` until separately authorized access/configuration exists.
+- No Production deployment, database operation, Migration, Auth0/platform change, or real notification occurred. See [Production Platform Validation Report](docs/PRODUCTION_PLATFORM_VALIDATION_REPORT.md).
+
 ## Sprint 33B Production Security & Operations Gate (2026-08-04)
 
 - Repository/Staging-safe controls now include environment-derived Netlify security headers, authenticated bounded API rate limits, build identity and structured request telemetry, strictly read-only schema status inspection, public Auth0 Production discovery/JWKS validation, VAPID parity, bounded Staging capacity smoke, sensitive scan, and a non-deploying GitHub quality workflow.

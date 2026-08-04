@@ -49,6 +49,21 @@ export async function runProductionRepositoryGate() {
   await existsAndContains('docs/adr/0020-production-security-operations-gate.md', [
     'Accepted', 'Staging', 'Production'
   ], failures);
+  await existsAndContains('scripts/production-platform-validator.mjs', [
+    '--production', '--read-only', 'BLOCKED', 'NOT_CONFIGURED', 'DATABASE_READONLY_URL'
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_PLATFORM_VALIDATION_REPORT.md', [
+    'Repository scope: **COMPLETE**', 'Production readiness: **70%', 'NOT_CONFIGURED', 'BLOCKED'
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_RELEASE_CHECKLIST.md', [
+    'Netlify', 'Render', 'Neon', 'Auth0', 'RPO 15 minutes', 'RTO 60 minutes'
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_OPERATIONS.md', [
+    'read-only', 'BLOCKED', 'NOT_CONFIGURED', 'Stop conditions'
+  ], failures);
+  await existsAndContains('docs/adr/0021-production-platform-validation.md', [
+    'Accepted', 'fail-closed', 'GET', 'SELECT-only'
+  ], failures);
 
   const trackedEnv = execFileSync('git', ['ls-files', '--', '.env', '.env.production', '.env.staging'], {
     encoding: 'utf8'

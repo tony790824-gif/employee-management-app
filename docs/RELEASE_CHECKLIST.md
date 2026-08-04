@@ -1,5 +1,12 @@
 # 班客邦 Release Checklist
 
+## Sprint 33C Production platform gate
+
+- [x] Repository validator enforces explicit Production/read-only mode, safe methods, timeouts, response bounds, no-write SQL and secret redaction.
+- [x] Missing Production configuration/access is reported as BLOCKED/NOT_CONFIGURED rather than PASS.
+- [ ] Complete every external item in `docs/PRODUCTION_RELEASE_CHECKLIST.md`; current release remains NOT READY.
+- [x] No Production deploy, database/Migration, Auth0/platform mutation, traffic change or real notification occurred in Sprint 33C.
+
 ## Sprint 33B Production Security & Operations Gate
 
 - [x] Environment-specific frontend CSP/HSTS/frame/object/referrer/permissions headers are generated and Production contains no Staging API/Auth0 origin.

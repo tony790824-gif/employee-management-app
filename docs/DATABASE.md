@@ -1,5 +1,9 @@
 # Database 文件（現況與目標）
 
+## Sprint 33C schema metadata validation
+
+The read-only inspector now reports only schema metadata: database/role/read-only state, role attributes, tables/RLS, indexes, constraints, functions, triggers, policies and connection-capacity counts. Every query is `SELECT`; no business rows are read and no DDL/DML is executed. Sprint 33C did not connect because a distinct `DATABASE_READONLY_URL` was not configured; Owner, Migrator, API and Push credentials were not reused.
+
 ## Sprint 33B read-only Production schema inspection
 
 `pnpm db:status:readonly` is the only status command approved for pre-authorization Production inspection. It requires a distinct `DATABASE_READONLY_URL`, exact approved host, TLS, explicit `neondb`, and credentials different from Migrator/API/Push roles. It executes `SET default_transaction_read_only = on` and `SELECT` only; it never creates the ledger, takes a Migration lock, applies DDL/DML, or changes checksums.

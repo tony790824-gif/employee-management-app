@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-04 — Sprint 33C Production Platform Validation
+
+- Added a fail-closed read-only Production platform validator covering public frontend/API/Auth0/DNS/TLS evidence and SELECT-only PostgreSQL schema metadata.
+- Added JSON/Markdown evidence statuses, timeouts, response bounds, environment isolation, secure-header/cookie checks and sensitive-output redaction with no-write tests.
+- Added ADR 0021, Production Platform Validation Report, Production Release Checklist and operations evidence guide.
+- Production readiness remains 70% and release remains NOT READY because external platform, monitoring and recovery evidence is blocked/not configured. Production was not operated.
+
 ## 2026-08-04 — Sprint 33B Production Security & Operations Gate
 
 - Added environment-derived frontend security headers, bounded authenticated API rate limits, build identity, and privacy-minimized request telemetry.

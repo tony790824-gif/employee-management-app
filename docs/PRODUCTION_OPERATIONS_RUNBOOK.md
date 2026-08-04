@@ -2,6 +2,8 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+Sprint 33C adds `pnpm production:platform:validate` as the common fail-closed evidence command. It requires explicit Production/read-only mode; public checks are GET/HEAD-only and database checks require a separate SELECT-only credential. Follow `docs/PRODUCTION_OPERATIONS.md` and `docs/PRODUCTION_RELEASE_CHECKLIST.md`; a `BLOCKED` or `NOT_CONFIGURED` result is not approval to mutate the platform.
+
 This runbook defines the evidence required before Bankeban may leave the current Production Google Sheets path. It does not authorize Production deployment, Migration, Auth0 mutation, database writes, or a destructive restore.
 
 ## Release objectives

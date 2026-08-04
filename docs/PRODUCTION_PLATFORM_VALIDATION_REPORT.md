@@ -1,0 +1,51 @@
+# Production Platform Validation Report - Sprint 33C
+
+Date: 2026-08-04
+
+Baseline: `43425ee5c56aea8e7905c4321ed72b4b2c058a76`
+
+Mode: read-only / dry-run
+
+Sprint status: **PARTIAL - EXTERNAL PLATFORM EVIDENCE BLOCKED**
+
+Repository scope: **COMPLETE**
+
+Production readiness: **70% - NOT READY**
+
+## Executive result
+
+The repository now has a fail-closed Production platform validator, machine-readable JSON output, a Markdown report renderer, strict secret redaction, bounded timeouts, and tests proving that the validator issues only public `GET`/`HEAD` requests and database `SELECT` metadata queries. Missing platform access or protected configuration is reported as `BLOCKED` or `NOT_CONFIGURED`, never as `PASS`.
+
+No Production deployment, database write, Migration, Auth0 change, platform configuration change, user creation, real notification, Google Sheets change, or Apps Script change occurred. The validator did not use the available Owner, Migrator, API, or Push credentials as a substitute for a distinct read-only Production database role.
+
+## Evidence matrix
+
+| Scope | Status | Verified evidence | Remaining evidence / action |
+|---|---|---|---|
+| Repository validation | PASS | Environment isolation, security-header source, CI no-deploy policy, ignored real environment files, validator no-write and redaction tests | None |
+| Production Frontend / Netlify | NOT_CONFIGURED | Repository Production cache namespace and security-header policy | Approved Production site URL plus read-only Netlify evidence for site/domain/deploy context/rollback alias |
+| Production API / Render | NOT_CONFIGURED | Staging-only Render blueprint and repository health/readiness contract | Approved Production API URL plus read-only Render evidence for service/build/runtime/autodeploy/protected variables |
+| Production Database / Neon | BLOCKED | Git-tracked Migration manifest and a SELECT-only schema metadata inspector | Distinct `DATABASE_READONLY_URL`; verify host/database/role, ledger/checksums, tables/indexes/constraints/functions/triggers/policies/RLS/capacity |
+| Auth0 Production | NOT_CONFIGURED / BLOCKED | Public OIDC/JWKS validator is implemented and GET-only | Approved non-development issuer/JWKS/audience and human read-only dashboard evidence for application/API/connections/actions/rotation/protections/log stream |
+| DNS / TLS / domains | BLOCKED | Validator enforces HTTPS, TLS 1.2+, certificate authorization and minimum remaining lifetime | Approved Production frontend/API origins and DNS/TLS evidence |
+| Monitoring / operations | BLOCKED | Structured telemetry and runbooks exist | External uptime/error/alert/on-call/database monitoring evidence |
+| Backup / restore / RPO / RTO | BLOCKED | RPO 15 minutes and RTO 60 minutes are documented | Independent encrypted backup and timed isolated restore evidence |
+| Environment isolation | BLOCKED externally | Repository isolation passes; committed Render remains Staging-only | Exact Production origins/Auth0 evidence and platform screenshots/exports without secrets |
+
+## Validator safety contract
+
+- Execution requires `BANK_ENV=production` plus explicit `--production --read-only`.
+- Public validation permits only `GET` and `HEAD`, uses bounded response sizes and timeouts, and rejects Local, Staging, Draft and example hosts.
+- Database validation requires a separate `DATABASE_READONLY_URL`, enables transaction read-only mode, and queries only schema/migration metadata with `SELECT`.
+- Reports never include IP addresses, row data, tokens, cookies, database URLs, private keys, Authorization headers or full environment values.
+- `PASS` means direct evidence was verified. Missing configuration is `NOT_CONFIGURED`; missing access or human/platform proof is `BLOCKED`; observed non-conformance is `FAIL`.
+
+## Required human actions
+
+1. Supply approved credential-free Production frontend and API origins in the protected operator environment.
+2. Create a distinct SELECT-only Production database role and store its connection only as `DATABASE_READONLY_URL`; do not reuse Owner, Migrator, API, Push, or Staging credentials.
+3. Supply approved public Auth0 Production issuer/JWKS/audience/session-claim names and collect dashboard-only evidence without changing settings.
+4. Collect read-only Netlify, Render, Neon, DNS/TLS and monitoring evidence using `docs/PRODUCTION_RELEASE_CHECKLIST.md`.
+5. Perform an independent backup and isolated timed restore against the documented RPO/RTO targets under separate authorization.
+
+No external evidence gate above is authorized by this report.

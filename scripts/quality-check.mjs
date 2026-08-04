@@ -33,6 +33,7 @@ const backendSourceFiles = [
   'scripts/auth0-production-readiness.mjs',
   'scripts/capacity-smoke.mjs',
   'scripts/production-readiness-gate.mjs',
+  'scripts/production-platform-validator.mjs',
   'scripts/sensitive-scan.mjs',
   'scripts/vapid-parity.mjs',
   'tests/oidc-readiness.test.mjs',
@@ -42,6 +43,7 @@ const backendSourceFiles = [
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'
   , 'tests/production-operations-gate.test.mjs'
+  , 'tests/production-platform-validator.test.mjs'
 ];
 
 for (const file of deployFiles) {

@@ -1,5 +1,11 @@
 # API 文件（現況與目標）
 
+## Sprint 33C public Production validation contract
+
+- Only credential-free Production origins are accepted. Public validation uses GET/HEAD with bounded timeouts/responses; it never calls authenticated business or mutation routes.
+- `/v1/health` and `/v1/readiness` must return HTTP 200, `environment=production`, an immutable non-unknown build SHA, exact Production CORS, secure cookies if emitted, and no secrets/stack traces.
+- Missing approved origins is `NOT_CONFIGURED`; an observed mismatch is `FAIL`. No API deployment or configuration change is authorized by this contract.
+
 ## Sprint 33B operational contract
 
 - `GET /v1/health` and `GET /v1/readiness` return non-sensitive `environment` and immutable `buildSha` in addition to `ok`; readiness still performs the PostgreSQL connectivity probe.

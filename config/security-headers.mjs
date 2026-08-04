@@ -47,5 +47,6 @@ export function createSecurityHeaders({ profile, auth0SdkUrl = '' }) {
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cross-Origin-Resource-Policy: same-origin
+  Cache-Control: no-cache, must-revalidate
 `;
 }

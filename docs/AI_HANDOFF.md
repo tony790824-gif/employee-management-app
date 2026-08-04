@@ -1,5 +1,12 @@
 # AI Handoff
 
+## 2026-08-04 handoff — Sprint 33C Production Platform Validation
+
+- Status: **PARTIAL / EXTERNAL PLATFORM EVIDENCE BLOCKED**. Repository scope COMPLETE; product completion 98%; Production readiness 70%; release NOT READY.
+- The validator requires `BANK_ENV=production` and explicit read-only confirmation, uses bounded GET/HEAD plus SELECT-only metadata, and reports PASS/FAIL/BLOCKED/NOT_CONFIGURED with secret redaction.
+- Local protected configuration lacks approved Production frontend/API origins, Production Auth0 public settings and a separate SELECT-only DB credential. Do not reuse Owner, Migrator, API, Push or Staging credentials.
+- Production and all external platforms were untouched. Continue only with Sprint 33D and explicit read-only platform authority; stop before any mutation.
+
 ## 2026-08-04 handoff — Sprint 33B Production Security & Operations Gate
 
 - Repository implementation is complete, but Sprint status is **PARTIAL / EXTERNAL EVIDENCE REQUIRED**. Product completion 98%; Production readiness 70%; release NOT READY.

@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-04 current state — Sprint 33C
+
+- Repository Production platform validation is complete; Sprint status is PARTIAL because external evidence is blocked/not configured. Product completion remains 98%, Production readiness 70%, release NOT READY.
+- `production:platform:validate` is fail-closed, explicit Production/read-only, GET/HEAD-only for public endpoints, and SELECT-only for a distinct read-only PostgreSQL role. It emits sanitized JSON or Markdown and never converts missing evidence into PASS.
+- Current protected local configuration has no approved Production frontend/API public origins, no Production Auth0 public set, and no distinct `DATABASE_READONLY_URL`; Owner/Migrator/API credentials must not be substituted.
+- Production, Database, Migration, Auth0, Netlify/Render/Neon settings, traffic, Google Sheets, Apps Script and real notifications were not changed.
+- Next unique work is Sprint 33D Authorized Production Evidence Closure under explicit read-only access only.
+
 ## 2026-08-04 current state — Sprint 33B
 
 - Repository-side Production Security & Operations Gate is implemented; product completion remains 98%, Production readiness is 70%, and release remains NOT READY.

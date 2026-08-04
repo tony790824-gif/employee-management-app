@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Sprint 33C status — Production Platform Validation (2026-08-04)
+
+- **Status:** PARTIAL / external platform evidence blocked. Repository scope COMPLETE; product completion 98%; Production readiness remains 70%; release NOT READY.
+- **Completed:** fail-closed Production validator, public frontend/API/Auth0/DNS/TLS checks, SELECT-only PostgreSQL schema metadata inspection, JSON/Markdown reporting, no-write/environment-isolation/redaction tests, Production platform report/checklist/operations guide and ADR 0021.
+- **External gaps:** approved Production frontend/API origins, distinct read-only DB credential, Production Auth0 public/dashboard evidence, Netlify/Render/Neon dashboard evidence, monitoring/alert connections, and isolated restore proof.
+- **Next unique Sprint:** Sprint 33D — Authorized Production Evidence Closure (read-only). It must not deploy, migrate, mutate Auth0/platform settings, change traffic, or write data.
+
 ## Sprint 33B status — Production Security & Operations Gate (2026-08-04)
 
 - **Status:** repository implementation complete; external Production evidence remains blocked pending explicit approval. Product completion **98%**, Production readiness **70%**, release decision **NOT READY**.

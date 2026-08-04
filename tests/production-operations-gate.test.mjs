@@ -148,4 +148,14 @@ assert.match(workflow, /contents: read/);
 assert.match(workflow, /pnpm run release:check/);
 assert.doesNotMatch(workflow, /DATABASE_(?:API|MIGRATOR|PUSH)_URL|netlify[^\n]*--prod/);
 
+const platformReport = await readFile('docs/PRODUCTION_PLATFORM_VALIDATION_REPORT.md', 'utf8');
+assert.match(platformReport, /PARTIAL - EXTERNAL PLATFORM EVIDENCE BLOCKED/);
+assert.match(platformReport, /Production readiness: \*\*70% - NOT READY\*\*/);
+assert.match(platformReport, /No Production deployment/);
+const productionChecklist = await readFile('docs/PRODUCTION_RELEASE_CHECKLIST.md', 'utf8');
+assert.match(productionChecklist, /Netlify/);
+assert.match(productionChecklist, /Render/);
+assert.match(productionChecklist, /Neon/);
+assert.match(productionChecklist, /Auth0/);
+
 console.log('Production security and operations repository gates passed.');

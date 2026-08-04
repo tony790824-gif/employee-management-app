@@ -1,5 +1,17 @@
 # Next external gate — Production evidence and authorization
 
+## Sprint 33D — Authorized Production Evidence Closure
+
+Goal: collect the missing Production evidence using only approved read-only access. Do not deploy, migrate, write data, alter Auth0/platform settings, change traffic, perform a restore against active Production, or send real notifications.
+
+1. Configure approved credential-free Production frontend/API origins and run the fail-closed platform validator.
+2. Create/provide a distinct SELECT-only Production database credential and verify schema/ledger/role metadata.
+3. Collect read-only Netlify, Render, Neon, Auth0, DNS/TLS and monitoring evidence using `docs/PRODUCTION_RELEASE_CHECKLIST.md`.
+4. Under separate recovery-drill approval, create an independent backup and restore only into an isolated non-Production target, then measure RPO/RTO.
+5. Close every `BLOCKED`/`NOT_CONFIGURED` item before proposing any Production release operation.
+
+## Historical gate after Sprint 33B
+
 Sprint 33B repository work is complete. Do not begin a feature Sprint or Production mutation automatically.
 
 1. Obtain explicit owner approval for a read-only Production schema inspection using a separate read-only credential; record `neondb`, role, ledger checksums, and pending versions without writes.
