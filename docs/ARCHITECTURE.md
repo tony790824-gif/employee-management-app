@@ -1,6 +1,12 @@
 # 班客邦 Current Architecture
 
-## PostgreSQL frontend integration status — 2026-07-20
+## Production readiness audit correction — 2026-08-04
+
+The isolated `STAGING POSTGRES` path is now active and accepted through `Netlify Draft -> Render Staging Node API -> Auth0 Staging -> Neon Staging PostgreSQL`, including controlled Commands, forced RLS, Notification Center, Web Push, offline queueing, and revision synchronization. The statements below dated 2026-07-20 are retained as historical migration context and must not be read as the current Staging state.
+
+Production has not been cut over or deployed. Its frontend remains on the Google Sheets path, while Production PostgreSQL, Auth0 event delivery, monitoring/alerting, recovery objectives, capacity evidence, and physical-device release gates remain separate Production readiness work. See `docs/PRODUCTION_READINESS_REPORT.md`.
+
+## Historical PostgreSQL frontend integration status — 2026-07-20
 
 The active product path remains `PWA -> Apps Script -> Google Sheets`. A browser transport factory for the formal `Node API -> Auth0 -> PostgreSQL controlled functions` path is now packaged and tested, but is deliberately inert: `dataBackend` remains `local_preview` or `google_sheets`, and `postgresApiUrl` is empty in every committed environment profile.
 
@@ -44,4 +50,3 @@ Activation remains blocked until an isolated Staging Node API is deployed, the c
 - 不讓 runtime API role 直接讀寫業務表。
 - Local、Staging、Production 的設定、storage、session、PWA cache 與 credentials 必須隔離。
 - 未完成真實 Staging／跨裝置／營運閘門前，不得把本機測試標示為 Production 驗收。
-

@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Sprint 33A status — Production Readiness Audit (2026-08-04)
+
+- **Status:** complete as an evidence-based audit; no feature, infrastructure, database, environment, or Production mutation was performed.
+- **Product completion:** **98%**. **Production readiness:** **62%**, with release decision **NOT READY FOR PRODUCTION**.
+- **Audit result:** 5 Blockers, 8 High, 7 Medium, and 2 Low documentation findings. Full evidence and acceptance criteria are recorded in `docs/PRODUCTION_READINESS_REPORT.md`.
+- **Next unique Sprint:** **Sprint 33B — Production Security & Operations Gate**, executed and rehearsed on Staging only before any Production authorization.
+
 ## Sprint 32 status — Announcement Center (2026-08-03)
 
 - **Engineering/Staging status:** complete; physical PWA acceptance is **PENDING USER VERIFICATION**. Overall completion is **98%**.

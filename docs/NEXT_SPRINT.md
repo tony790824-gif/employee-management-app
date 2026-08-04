@@ -1,4 +1,17 @@
-# Next unique gate — Sprint 32 Announcement Center physical-device acceptance
+# Next unique Sprint — Sprint 33B Production Security & Operations Gate
+
+Goal: close the highest-risk operational controls identified by `docs/PRODUCTION_READINESS_REPORT.md`, using Staging-only implementation and rehearsal before any separate Production authorization.
+
+1. Enforce and verify frontend CSP and security headers on an isolated Draft without weakening Auth0 or PWA behavior.
+2. Add bounded general API abuse protection and prove authorized Session, Workspace, Command, and Push flows remain functional.
+3. Add build-identity/readiness evidence and a safe VAPID public-key parity gate without exposing key material.
+4. Establish CI quality/security gates and controlled artifact promotion; no Production deploy is part of this Sprint.
+5. Add centralized Staging metrics/alerts for readiness failures, API error rates/latency, push queue depth/dead delivery, and database saturation.
+6. Run representative Staging capacity tests for revision polling/bootstrap and document initial SLO, alert thresholds, RPO/RTO, and rollback acceptance.
+
+Stop after Staging evidence and documentation. Production, Production Database/Migration/Auth0, Google Sheets, Apps Script, and Production deployment require separate authorization and remain out of scope.
+
+# Historical gate — Sprint 32 Announcement Center physical-device acceptance
 
 Status: **PENDING USER VERIFICATION**. Automation and synthetic Neon Staging E2E cannot replace physical PWA evidence.
 
