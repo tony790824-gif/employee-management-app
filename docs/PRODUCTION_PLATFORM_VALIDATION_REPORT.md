@@ -1,5 +1,9 @@
 # Production Platform Validation Report - Sprint 33C
 
+## Sprint 33D evidence-collection result
+
+The protected operator environment still lacks approved Production public origins, a distinct database reader and platform read authorization. The new evidence collector records Repository PASS, external `BLOCKED`/`NOT AUTHORIZED` states and a SHA-256 manifest in `docs/PRODUCTION_EVIDENCE_REPORT.md`. Production readiness remains 70%; Production was not operated.
+
 Date: 2026-08-04
 
 Baseline: `43425ee5c56aea8e7905c4321ed72b4b2c058a76`

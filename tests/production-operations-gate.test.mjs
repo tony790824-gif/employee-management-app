@@ -157,5 +157,12 @@ assert.match(productionChecklist, /Netlify/);
 assert.match(productionChecklist, /Render/);
 assert.match(productionChecklist, /Neon/);
 assert.match(productionChecklist, /Auth0/);
+const evidenceReport = await readFile('docs/PRODUCTION_EVIDENCE_REPORT.md', 'utf8');
+assert.match(evidenceReport, /Sprint 33D/);
+assert.match(evidenceReport, /NOT AUTHORIZED/);
+assert.match(evidenceReport, /Production mutation: \*\*none\*\*/);
+const evidenceHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
+assert.equal(evidenceHashes.algorithm, 'SHA-256');
+assert.equal(evidenceHashes.entries.length, 13);
 
 console.log('Production security and operations repository gates passed.');

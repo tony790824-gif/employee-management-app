@@ -1,5 +1,11 @@
 # 班客邦
 
+## Sprint 33D Authorized Production Evidence Closure (2026-08-04)
+
+- Added a GET-only Production evidence collector for Netlify, Render and Auth0 Management metadata, reusing the existing SELECT-only Neon and public platform validator boundaries.
+- Every sanitized evidence record has a SHA-256 hash and the complete manifest is independently verifiable. Actual status is Repository PASS and external BLOCKED; Production readiness remains **70%** and release remains **NOT READY**.
+- No Production system, database, Migration, Auth0, environment variable, resource, traffic or notification was modified. See [Production Evidence Report](docs/PRODUCTION_EVIDENCE_REPORT.md).
+
 ## Sprint 33C Production Platform Validation (2026-08-04)
 
 - Added a fail-closed Production platform validator (`pnpm production:platform:validate`) with explicit Production/read-only confirmation, JSON/Markdown evidence, bounded GET/HEAD checks, SELECT-only schema metadata, and sensitive-output redaction.

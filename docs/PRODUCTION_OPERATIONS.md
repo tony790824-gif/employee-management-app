@@ -8,7 +8,7 @@ The detailed procedure remains `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. This gui
 
 1. Use an approved operator workstation and protected environment variables. Never paste values into chat, logs, reports, tests, source files, or Git.
 2. Configure only credential-free public origins and public Auth0 metadata plus a distinct SELECT-only `DATABASE_READONLY_URL`.
-3. Run `pnpm production:platform:validate`. The command requires explicit Production/read-only flags internally and emits sanitized JSON.
+3. Run `pnpm production:platform:validate` for public/schema validation, then `pnpm production:evidence:collect` for platform evidence and SHA-256 records. Both require explicit Production/read-only flags internally and emit sanitized JSON.
 4. Record the candidate Commit, evidence timestamp, status and non-sensitive counts. Store platform screenshots/exports in the approved evidence system, not the repository when they contain identifiers.
 5. Treat `BLOCKED` and `NOT_CONFIGURED` as open gates. Never reinterpret them as PASS.
 

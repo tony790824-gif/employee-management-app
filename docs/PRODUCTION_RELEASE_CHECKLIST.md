@@ -9,6 +9,7 @@ This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md
 - [ ] Exact candidate Commit recorded; `main` and `origin/main` are 0/0.
 - [ ] Build, Check, full tests, Release Gate, Production Repository Gate, sensitive scan, dependency audit, and `git diff --check` pass.
 - [ ] `pnpm production:platform:validate` reports no `FAIL`; every `BLOCKED`/`NOT_CONFIGURED` item is resolved with evidence.
+- [ ] `pnpm production:evidence:collect` reports PASS for authorized Netlify, Render, Neon and Auth0 evidence; verify the committed SHA-256 manifest.
 - [ ] No real `.env`, secret, token, cookie, database URL, private key, test password, or personal data is tracked.
 
 ## Frontend / Netlify

@@ -1,5 +1,12 @@
 # Codex Context
 
+## 2026-08-04 current state — Sprint 33D
+
+- Repository evidence collection is complete; Sprint remains PARTIAL because external Production evidence is BLOCKED. Product completion 98%, Production readiness 70%, release NOT READY.
+- `production:evidence:collect` only uses GET against exact Netlify/Render/Auth0 Management hosts and reuses the existing public validator/SELECT-only Neon boundary. It stores no secret values or raw resource IDs.
+- Actual safe run created 13 SHA-256 evidence records and manifest `f1a48ff74795c58f2120cc323598b905caf20c89b3503c1828b5124030b179a1` without any Production network/database operation.
+- Next unique work is Sprint 34 read-only access provisioning and evidence re-run under separate authorization; never substitute privileged credentials.
+
 ## 2026-08-04 current state — Sprint 33C
 
 - Repository Production platform validation is complete; Sprint status is PARTIAL because external evidence is blocked/not configured. Product completion remains 98%, Production readiness 70%, release NOT READY.

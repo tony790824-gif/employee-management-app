@@ -64,6 +64,15 @@ export async function runProductionRepositoryGate() {
   await existsAndContains('docs/adr/0021-production-platform-validation.md', [
     'Accepted', 'fail-closed', 'GET', 'SELECT-only'
   ], failures);
+  await existsAndContains('scripts/production-evidence-collector.mjs', [
+    '--production', '--read-only', 'NOT AUTHORIZED', 'SHA-256', 'method: \'GET\''
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_EVIDENCE_REPORT.md', [
+    'Sprint 33D', 'BLOCKED', 'NOT AUTHORIZED', 'Manifest SHA-256', 'Production mutation: **none**'
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_EVIDENCE_HASHES.json', [
+    'SHA-256', 'public.repository.gate', 'netlify.production', 'render.production', 'auth0.production.management'
+  ], failures);
 
   const trackedEnv = execFileSync('git', ['ls-files', '--', '.env', '.env.production', '.env.staging'], {
     encoding: 'utf8'

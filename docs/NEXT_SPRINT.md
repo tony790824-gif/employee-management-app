@@ -1,6 +1,16 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 33D — Authorized Production Evidence Closure
+## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
+
+Goal: provision only the missing protected read-only access and rerun Sprint 33D evidence collection. This requires explicit owner/platform authorization and must not deploy, migrate, change traffic, restore active Production, or modify application/platform settings.
+
+1. Create distinct read-only Netlify, Render and Auth0 Management credentials/scopes plus approved resource identifiers in the protected operator environment; never send values through chat or Git.
+2. Create a distinct SELECT-only Neon Production role; prove it is not Owner, Migrator, API, Push or Staging and has no dangerous attributes or DDL access.
+3. Configure credential-free approved Production frontend/API origins and public Auth0 metadata.
+4. Run `pnpm production:evidence:collect`; require direct PASS evidence or retain the exact BLOCKED/NOT AUTHORIZED status.
+5. Stop before any Production mutation or release operation.
+
+## Historical Sprint 33D — Authorized Production Evidence Closure
 
 Goal: collect the missing Production evidence using only approved read-only access. Do not deploy, migrate, write data, alter Auth0/platform settings, change traffic, perform a restore against active Production, or send real notifications.
 

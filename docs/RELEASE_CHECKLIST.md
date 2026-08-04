@@ -1,5 +1,12 @@
 # 班客邦 Release Checklist
 
+## Sprint 33D Production evidence gate
+
+- [x] Evidence collector enforces Production/read-only flags, GET-only management requests, SELECT-only database inspection, bounded responses and secret-safe output.
+- [x] All 13 sanitized evidence records and the hash manifest use SHA-256 and are covered by automated integrity tests.
+- [ ] External Netlify/Render/Auth0 access, Production origins, Neon reader, DNS/monitoring/recovery remain BLOCKED pending approved read-only configuration.
+- [x] No Production deploy, connection/write, Migration, environment/Auth0/platform/resource change, restore, traffic change or real notification occurred.
+
 ## Sprint 33C Production platform gate
 
 - [x] Repository validator enforces explicit Production/read-only mode, safe methods, timeouts, response bounds, no-write SQL and secret redaction.

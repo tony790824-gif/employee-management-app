@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
+
+- **Status:** PARTIAL / external evidence BLOCKED. Repository scope COMPLETE; product completion 98%; Production readiness remains 70%; release NOT READY.
+- **Completed:** GET-only platform evidence collection, SELECT-only database reuse, protected-token non-export guarantees, canonical SHA-256 records, complete hash manifest, reports and automated tests.
+- **Actual evidence:** Repository PASS; frontend/API/Auth0 public/Neon/DNS/monitoring/recovery and Netlify/Render/Auth0 Management BLOCKED because approved configuration or protected read-only access is absent.
+- **Next highest priority:** Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run. It requires separately authorized read-only platform credentials/resource IDs and a distinct SELECT-only Neon role; no values may enter chat or Git.
+
 ## Sprint 33C status — Production Platform Validation (2026-08-04)
 
 - **Status:** PARTIAL / external platform evidence blocked. Repository scope COMPLETE; product completion 98%; Production readiness remains 70%; release NOT READY.

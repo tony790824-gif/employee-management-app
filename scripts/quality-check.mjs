@@ -34,6 +34,7 @@ const backendSourceFiles = [
   'scripts/capacity-smoke.mjs',
   'scripts/production-readiness-gate.mjs',
   'scripts/production-platform-validator.mjs',
+  'scripts/production-evidence-collector.mjs',
   'scripts/sensitive-scan.mjs',
   'scripts/vapid-parity.mjs',
   'tests/oidc-readiness.test.mjs',
@@ -44,6 +45,7 @@ const backendSourceFiles = [
   'tests/postgres-staging-integration.test.mjs'
   , 'tests/production-operations-gate.test.mjs'
   , 'tests/production-platform-validator.test.mjs'
+  , 'tests/production-evidence-collector.test.mjs'
 ];
 
 for (const file of deployFiles) {

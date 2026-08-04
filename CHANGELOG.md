@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-04 — Sprint 33D Authorized Production Evidence Closure
+
+- Added GET-only Netlify, Render and Auth0 Management evidence adapters while reusing the public platform validator and SELECT-only Neon inspection boundary.
+- Added canonical sanitized evidence records, a 13-entry SHA-256 manifest, integrity/redaction/no-write tests and the Production Evidence Report.
+- Actual external evidence remains BLOCKED because approved Production origins, a distinct DB reader and protected platform read access are not configured. Production readiness remains 70% and release remains NOT READY.
+- No Production system, database, Migration, Auth0, environment variable, resource, traffic, restore or notification was modified.
+
 ## 2026-08-04 — Sprint 33C Production Platform Validation
 
 - Added a fail-closed read-only Production platform validator covering public frontend/API/Auth0/DNS/TLS evidence and SELECT-only PostgreSQL schema metadata.

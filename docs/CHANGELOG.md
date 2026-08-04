@@ -1,6 +1,13 @@
 # Documentation Changelog
 
-The complete project changelog remains `../CHANGELOG.md`. This file records the documentation-facing Sprint 33C change requested by the Production validation gate.
+The complete project changelog remains `../CHANGELOG.md`.
+
+## 2026-08-04 - Sprint 33D Authorized Production Evidence Closure
+
+- Added GET-only provider evidence collection, SELECT-only Neon reuse, protected-value redaction and a complete SHA-256 evidence manifest.
+- Actual status remains external BLOCKED; readiness remains 70%. Production was not operated.
+
+This file also retains the documentation-facing Sprint 33C change requested by the Production validation gate.
 
 ## 2026-08-04 - Sprint 33C Production Platform Validation
 
