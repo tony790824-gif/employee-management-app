@@ -1,11 +1,18 @@
 # AI Handoff
 
+## 2026-08-08 handoff - Sprint 34 Neon compatibility fix
+
+- Status: **PARTIAL / HUMAN RE-RUN REQUIRED**. The Production provisioning attempt is BLOCKED and Neon evidence is not PASS; Production readiness remains 70% and release NOT READY.
+- The SQL-created `banke_production_readonly` role exists. The first script version failed at its first mutation because PostgreSQL/Neon forbids a non-superuser from issuing `ALTER ROLE ... NOSUPERUSER`, even when the target already has `rolsuper=false`.
+- With `ON_ERROR_STOP`, no later role defaults, grants, revokes or default privileges executed. Only catalog preflight reads occurred; no business data, schema or Migration changed.
+- The corrected script verifies all five dangerous attributes, memberships, ownership and operator `ADMIN OPTION` before mutation, then alters only `NOINHERIT`, connection limit and role defaults. Wait for the user to rerun it; do not mark Neon evidence PASS beforehand.
+
 ## 2026-08-08 handoff - Sprint 34 Production Read-only Access Provisioning
 
 - Status: **PARTIAL / EXTERNAL PROVISIONING BLOCKED**. Repository scope COMPLETE; product completion 98%; Production readiness 70%; release NOT READY.
 - The evidence database role is deliberately metadata-only: catalog inspection plus `schema_migrations`, with zero business-table reads/writes, sequence writes, function execution, memberships, ownership or dangerous attributes.
 - Evidence commands no longer auto-load `.env.production`. Netlify and Render require an explicit proven read-only identity; Auth0 requires exactly five read scopes. Missing or excessive authority fails closed before network access.
-- The protected environment has none of the required read-only credentials, so the Sprint 33D timestamp and manifest remain the last actual evidence. Continue only with the human provisioning steps in `docs/PRODUCTION_READONLY_ACCESS.md`; never substitute Owner, Migrator, API, Push or Staging credentials.
+- A SQL-created Neon role exists, but its first provisioning attempt failed before mutation and its protected evidence connection is not yet validated. The Sprint 33D timestamp and manifest remain the last actual evidence. Continue only with the corrected human provisioning steps in `docs/PRODUCTION_READONLY_ACCESS.md`.
 
 ## 2026-08-04 handoff — Sprint 33D Authorized Production Evidence Closure
 

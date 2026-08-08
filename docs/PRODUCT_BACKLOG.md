@@ -2,9 +2,9 @@
 
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
-- **Status:** PARTIAL / EXTERNAL PROVISIONING BLOCKED. Repository provisioning controls are COMPLETE; product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Status:** PARTIAL / NEON HUMAN RE-RUN AND EXTERNAL PROVISIONING BLOCKED. Repository correction is COMPLETE; product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
-- **Not performed:** no authorized Production reader or platform read-only credential is present, so no external request, database connection, evidence re-run, new timestamp, or new hash manifest occurred.
+- **Neon attempt:** the SQL-created role exists, but the first authorized TLS run stopped at its first mutation because `ALTER ROLE ... NOSUPERUSER` is incompatible with Neon's non-superuser model. No later grants/revokes or business/schema changes occurred; the fixed script awaits human re-run.
 - **Next highest priority:** continue Sprint 34 only after platform owners provision the exact read-only access in `docs/PRODUCTION_READONLY_ACCESS.md`; rerun evidence and retain every unresolved item as `BLOCKED` or `NOT AUTHORIZED`.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)

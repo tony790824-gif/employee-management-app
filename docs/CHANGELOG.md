@@ -4,6 +4,7 @@ The complete project changelog remains `../CHANGELOG.md`.
 
 ## 2026-08-08 - Sprint 34 Production Read-only Access Provisioning
 
+- Corrected the Neon non-superuser `ALTER ROLE` compatibility defect and recorded the failed first attempt without promoting Neon evidence to PASS.
 - Added strict repository controls and an operator runbook for distinct Neon, Netlify, Render and Auth0 Production read-only evidence access.
 - External provisioning and the evidence re-run remain `BLOCKED`; Production readiness stays at 70%, release stays NOT READY, and Production was not operated.
 

@@ -2,6 +2,8 @@
 
 ## 2026-08-08 - Sprint 34 Production Read-only Access Provisioning
 
+- Fixed Neon compatibility by replacing forbidden dangerous-attribute ALTER clauses with pre-mutation catalog checks; a dangerous pre-existing role now fails closed and safe roles continue with only permitted properties.
+- Recorded the authorized Production attempt as BLOCKED / SCRIPT COMPATIBILITY DEFECT. `ON_ERROR_STOP` stopped at the first mutation, so no grants, revokes, business data, schema or Migration changed.
 - Added manual, confirmation-gated Neon Production reader provision/verify/disable SQL and strict role/privilege validation.
 - Removed automatic `.env.production` loading from all read-only evidence commands and added exact read-only authority gates for Netlify, Render and Auth0.
 - Added the Production read-only access runbook and fail-closed tests. External credentials are absent, so evidence re-run remains BLOCKED; Production readiness remains 70% and release remains NOT READY.

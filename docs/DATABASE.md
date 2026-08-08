@@ -2,7 +2,7 @@
 
 ## Sprint 34 Production evidence reader
 
-Use only the manual scripts in `database/operator/` and the procedure in `docs/PRODUCTION_READONLY_ACCESS.md`. The evidence role is SQL-created, `LOGIN NOINHERIT`, connection-limited, read-only by default, and may select only `public.schema_migrations` plus PostgreSQL catalogs. It has no business-table read/write, sequence write, application-function execute, membership, ownership, or administrative attributes. Current provisioning and connection are **BLOCKED**; Sprint 34 did not connect to Production.
+Use only the manual scripts in `database/operator/` and the procedure in `docs/PRODUCTION_READONLY_ACCESS.md`. The evidence role is SQL-created and must be `LOGIN NOINHERIT`, connection-limited, read-only by default, and able to select only `public.schema_migrations` plus PostgreSQL catalogs. The first authorized Production run stopped at the first mutation because Neon rejected `ALTER ROLE ... NOSUPERUSER`; no later statements or data/schema changes occurred. The corrected script verifies dangerous attributes without mutating them and is **BLOCKED / PENDING HUMAN RE-RUN**.
 
 ## Sprint 33C schema metadata validation
 

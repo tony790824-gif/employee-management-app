@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 Neon compatibility update - 2026-08-08
+
+- Production connection: **AUTHORIZED READ-ONLY PREFLIGHT ATTEMPT**
+- Provisioning result: **BLOCKED / SCRIPT COMPATIBILITY DEFECT**
+- Failure: the first mutating statement attempted `ALTER ROLE ... NOSUPERUSER`, which Neon cannot authorize without a true PostgreSQL superuser.
+- Subsequent grants/revokes/default privileges: **NOT EXECUTED** because `ON_ERROR_STOP` stopped at the first mutation.
+- Business data, schema, Migration and evidence status: **UNCHANGED**
+- Corrected script: **AUTOMATED TESTS PASS / PENDING HUMAN RE-RUN**
+- Neon Production evidence: **BLOCKED / NOT PASS**
+
+This attempt is operational evidence of a compatibility defect, not Neon schema evidence. It does not replace or regenerate the Sprint 33D evidence timestamp or hash manifest.
+
 ## Sprint 34 provisioning preflight - 2026-08-08
 
 - Repository least-privilege provisioning controls: **PASS**

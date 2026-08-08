@@ -8,7 +8,11 @@ const disable = await readFile('database/operator/production-readonly-role.disab
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
 
 assert.match(provision, /PROVISION_BANKE_PRODUCTION_READONLY/);
-assert.match(provision, /NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS/);
+assert.match(provision, /role\.rolsuper[\s\S]*role\.rolcreatedb[\s\S]*role\.rolcreaterole[\s\S]*role\.rolreplication[\s\S]*role\.rolbypassrls/);
+assert.match(provision, /AS dangerous_attributes_are_false[\s\S]*\\if :dangerous_attributes_are_false[\s\S]*\\quit[\s\S]*\\endif/);
+assert.match(provision, /membership\.admin_option[\s\S]*AS operator_has_admin_option[\s\S]*\\if :operator_has_admin_option/);
+assert.match(provision, /ALTER ROLE :"readonly_role" NOINHERIT CONNECTION LIMIT 3;/);
+assert.doesNotMatch(provision, /ALTER ROLE[\s\S]{0,180}\b(?:NOSUPERUSER|NOCREATEDB|NOCREATEROLE|NOREPLICATION|NOBYPASSRLS)\b/);
 assert.match(provision, /default_transaction_read_only = on/);
 assert.match(provision, /statement_timeout = '10s'/);
 assert.match(provision, /idle_in_transaction_session_timeout = '10s'/);
@@ -18,6 +22,28 @@ assert.match(provision, /GRANT SELECT ON TABLE public\.schema_migrations/);
 assert.match(provision, /REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, app_private/);
 assert.match(provision, /ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner"/);
 assert.doesNotMatch(provision, /PASSWORD\s+|postgres(?:ql)?:\/\/|BEGIN (?:RSA |EC )?PRIVATE KEY/);
+
+const firstMutation = provision.search(/^(?:ALTER|GRANT|REVOKE)\b/m);
+const dangerousGuard = provision.indexOf('AS dangerous_attributes_are_false');
+const membershipGuard = provision.indexOf('AS has_no_memberships');
+const ownershipGuard = provision.indexOf('AS owns_no_objects');
+assert.equal(provision.includes('\\set ON_ERROR_STOP on'), true);
+assert.equal(dangerousGuard > 0 && dangerousGuard < firstMutation, true);
+assert.equal(membershipGuard > 0 && membershipGuard < firstMutation, true);
+assert.equal(ownershipGuard > 0 && ownershipGuard < firstMutation, true);
+
+const dangerousAttributesAreFalse = role => !(
+  role.rolsuper || role.rolcreatedb || role.rolcreaterole || role.rolreplication || role.rolbypassrls
+);
+assert.equal(dangerousAttributesAreFalse({
+  rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolreplication: false, rolbypassrls: false
+}), true, 'A safe SQL-created Neon role may proceed to provisioning.');
+for (const dangerous of ['rolsuper', 'rolcreatedb', 'rolcreaterole', 'rolreplication', 'rolbypassrls']) {
+  assert.equal(dangerousAttributesAreFalse({
+    rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolreplication: false, rolbypassrls: false,
+    [dangerous]: true
+  }), false, `A pre-existing ${dangerous} attribute must fail closed.`);
+}
 
 assert.match(verify, /SET default_transaction_read_only = on/);
 assert.match(verify, /business_table_select_count/);

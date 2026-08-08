@@ -1,11 +1,17 @@
 # Codex Context
 
+## 2026-08-08 Sprint 34 Neon compatibility incident
+
+- The first authorized Production provisioning attempt connected with TLS and stopped at the first mutation: Neon cannot authorize `ALTER ROLE ... NOSUPERUSER` without a true PostgreSQL superuser.
+- No later grants/revokes/default privileges and no business data/schema/Migration changes occurred. The corrected script uses catalog fail-closed checks instead of dangerous-attribute mutation.
+- Neon evidence remains BLOCKED and the corrected script is pending human re-run. Production readiness remains 70%; release NOT READY.
+
 ## 2026-08-08 current state - Sprint 34
 
 - Repository support for least-privilege Production evidence access is complete; external provisioning and evidence re-run are BLOCKED. Product completion remains 98%, Production readiness 70%, release NOT READY.
 - The evidence role may read only PostgreSQL catalogs and `public.schema_migrations`; direct business-data reads, all writes, sequence writes, application-function execution, ownership, inheritance and privileged attributes are denied.
 - Evidence commands use process-only secrets and do not auto-load `.env.production`. Netlify/Render access requires proven read-only authority and Auth0 requires the exact approved read scopes.
-- No Production request, database connection, deployment, Migration, Auth0/platform change or new evidence hash occurred. Continue the same Sprint only after authorized provisioning according to `docs/PRODUCTION_READONLY_ACCESS.md`.
+- One authorized Production TLS connection performed catalog preflight reads and failed before its first mutation. No deployment, database write, Migration, Auth0/platform change or new evidence hash occurred. Continue the same Sprint with the corrected human re-run in `docs/PRODUCTION_READONLY_ACCESS.md`.
 
 ## 2026-08-04 current state — Sprint 33D
 

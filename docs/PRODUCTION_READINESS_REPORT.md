@@ -1,11 +1,18 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 34 Neon compatibility correction - 2026-08-08
+
+- The authorized Production provisioning attempt is **BLOCKED / SCRIPT COMPATIBILITY DEFECT**. It stopped at the first mutation, `ALTER ROLE ... NOSUPERUSER`, because Neon exposes `neon_superuser` compatibility rather than a true PostgreSQL superuser.
+- `ON_ERROR_STOP` prevented all later grants, revokes, role defaults and default privileges. Only catalog preflight reads occurred; no business data, schema or Migration changed.
+- The corrected script fail-closes on any dangerous role attribute and no longer attempts to mutate `SUPERUSER`, `CREATEDB`, `CREATEROLE`, `REPLICATION` or `BYPASSRLS`. Full verification remains mandatory.
+- Neon evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY** pending a human re-run and verified evidence.
+
 ## Sprint 34 read-only-access update - 2026-08-08
 
-- Repository provisioning and validation controls are **COMPLETE**, but externally authorized Neon, Netlify, Render and Auth0 read-only identities are absent. The evidence re-run is therefore **BLOCKED / NOT PERFORMED**.
+- Repository provisioning and validation controls are **COMPLETE**. A SQL-created Neon role now exists, but provisioning/evidence remains blocked pending the corrected-script human re-run; Netlify, Render and Auth0 read-only identities remain absent.
 - The Neon evidence role is constrained to catalogs and `public.schema_migrations`; business reads, all writes, sequence writes, function execution, ownership, inheritance and privileged attributes are denied.
 - Production readiness remains **70%** and release remains **NOT READY**. No new timestamp or hash was created because no authorized external evidence was collected.
-- No Production request, database connection/write, Migration, deploy, environment/Auth0/platform change, restore, traffic change or real notification occurred.
+- No Production write, Migration, deploy, environment/Auth0/platform change, restore, traffic change or real notification occurred. One authorized TLS database connection executed catalog preflight reads and failed before its first mutation.
 
 ## Sprint 33D authorized-evidence update — 2026-08-04
 

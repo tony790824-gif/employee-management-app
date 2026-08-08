@@ -40,6 +40,41 @@ SELECT EXISTS (
   \quit
 \endif
 
+-- PostgreSQL does not permit a non-superuser to change the SUPERUSER attribute,
+-- even when the requested value is NOSUPERUSER. Neon intentionally provides no
+-- true PostgreSQL superuser. Prove every dangerous attribute is already false
+-- and fail closed instead of attempting to mutate those attributes.
+SELECT NOT (
+         role.rolsuper
+      OR role.rolcreatedb
+      OR role.rolcreaterole
+      OR role.rolreplication
+      OR role.rolbypassrls
+       ) AS dangerous_attributes_are_false
+  FROM pg_catalog.pg_roles AS role
+ WHERE role.rolname = :'readonly_role'
+\gset
+\if :dangerous_attributes_are_false
+\else
+  \echo 'The read-only role has a dangerous attribute; no privilege change was attempted.'
+  \quit
+\endif
+
+-- PostgreSQL 18 requires a non-superuser CREATEROLE operator to hold ADMIN
+-- OPTION on the non-superuser, non-replication target role before ALTER ROLE.
+SELECT EXISTS (
+  SELECT 1
+    FROM pg_catalog.pg_auth_members AS membership
+   WHERE membership.roleid = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = :'readonly_role')
+     AND membership.member = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = session_user)
+     AND membership.admin_option
+) AS operator_has_admin_option \gset
+\if :operator_has_admin_option
+\else
+  \echo 'The current operator lacks ADMIN OPTION on the read-only role; no privilege change was attempted.'
+  \quit
+\endif
+
 SELECT NOT EXISTS (
   SELECT 1 FROM pg_catalog.pg_auth_members AS membership
    WHERE membership.member = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = :'readonly_role')
@@ -63,9 +98,9 @@ SELECT NOT EXISTS (
   \quit
 \endif
 
-ALTER ROLE :"readonly_role"
-  LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS
-  CONNECTION LIMIT 3;
+-- Dangerous attributes were already proved false above. Do not repeat
+-- NOSUPERUSER/NOREPLICATION/NOBYPASSRLS mutations that Neon cannot authorize.
+ALTER ROLE :"readonly_role" NOINHERIT CONNECTION LIMIT 3;
 ALTER ROLE :"readonly_role" SET default_transaction_read_only = on;
 ALTER ROLE :"readonly_role" SET statement_timeout = '10s';
 ALTER ROLE :"readonly_role" SET lock_timeout = '2s';

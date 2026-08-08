@@ -2,6 +2,7 @@
 
 ## Sprint 34 Production Read-only Access Provisioning (2026-08-08)
 
+- Neon compatibility fix: the first authorized Production run stopped at its first mutation because a non-superuser cannot issue `ALTER ROLE ... NOSUPERUSER`. The corrected script fail-closes on dangerous attributes and mutates only Neon-compatible role properties; human re-run is pending and Neon evidence remains BLOCKED.
 - Added fail-closed, least-privilege Production evidence provisioning controls and manual Neon role provision/verify/disable procedures. The database reader can inspect catalogs and `schema_migrations` only; it cannot read business tables, write, own objects, inherit roles, or execute application functions.
 - Netlify, Render and Auth0 evidence now requires separately proven read-only authority before any request. The protected operator environment does not currently contain those credentials or `DATABASE_READONLY_URL`, so the evidence re-run is **BLOCKED / NOT PERFORMED**.
 - Production readiness remains **70%** and release remains **NOT READY**. No Production platform, database, Migration, Auth0 setting, environment variable or traffic was changed. See [Production Read-only Access Provisioning](docs/PRODUCTION_READONLY_ACCESS.md).

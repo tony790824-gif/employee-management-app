@@ -6,12 +6,22 @@ Date: 2026-08-08
 
 This runbook prepares Sprint 34 evidence access without changing Production. Missing access remains `BLOCKED`; Owner, Migrator, API, Push, Staging, or other privileged credentials must never be substituted.
 
+## Neon compatibility incident
+
+Status: **BLOCKED / SCRIPT COMPATIBILITY DEFECT FIXED / HUMAN RE-RUN REQUIRED**
+
+The first authorized Production attempt connected to `neondb` with TLS and passed the read-only catalog preflight, then stopped on the first mutating statement because it included `ALTER ROLE ... NOSUPERUSER`. PostgreSQL 18 permits only a true PostgreSQL superuser to change the `SUPERUSER` attribute, including changing it to `NOSUPERUSER`. Neon does not provide access to that true superuser. Because `ON_ERROR_STOP` was active and this was the first mutating statement, no later `ALTER ROLE ... SET`, `GRANT`, `REVOKE`, or `ALTER DEFAULT PRIVILEGES` statement executed. No business data or schema object was modified.
+
+The corrected script now reads `pg_roles` first and exits unless `rolsuper`, `rolcreatedb`, `rolcreaterole`, `rolreplication`, and `rolbypassrls` are all false. It also exits on target-role membership, object ownership, or missing operator `ADMIN OPTION`. It never attempts to change those dangerous attributes. Only `NOINHERIT`, `CONNECTION LIMIT`, role-level read-only/timeouts, and explicit least-privilege grants/revokes remain. PostgreSQL 18 allows those role changes to a non-superuser `CREATEROLE` operator that has `ADMIN OPTION` on a non-superuser, non-replication target role.
+
+Official basis: [Neon Postgres compatibility](https://neon.com/docs/reference/compatibility) and [PostgreSQL 18 ALTER ROLE](https://www.postgresql.org/docs/18/sql-alterrole.html).
+
 ## Neon Production
 
 1. Use only the approved Production direct endpoint and the `neondb` database.
 2. Create the evidence role with SQL, not the Neon Console, CLI, or API. Neon documents that roles created through those platform surfaces receive `neon_superuser`; the evidence role must not receive it.
 3. Create a unique password interactively with `psql` `\password`. Never place the password in a command line, chat, repository file, report, or log.
-4. Run `database/operator/production-readonly-role.provision.sql` manually as the approved object owner. Supply only the role name and current object-owner name through interactive `psql` variables and type the confirmation value when prompted.
+4. Ensure the approved object owner that created the SQL role retains `ADMIN OPTION` on it. Run `database/operator/production-readonly-role.provision.sql` manually as that operator. Supply only the role name and current object-owner name through interactive `psql` variables and type the confirmation value when prompted.
 5. Run `database/operator/production-readonly-role.verify.sql`. The role must have `LOGIN`, `NOINHERIT`, no administrative attributes, no memberships, no object ownership, role-level read-only/timeouts, and `SELECT` only on `public.schema_migrations`. Business-table reads, writes, sequence writes, and function execution must all remain zero.
 6. Store the connection only in the approved operator secret store. Expose it to one evidence process as `DATABASE_READONLY_URL`; also set `BANK_ENV=production`, `BANK_PRODUCTION_DATABASE_HOST`, `BANK_PRODUCTION_READONLY_ROLE`, and `DATABASE_SSL=verify-full`.
 7. Run `pnpm db:status:readonly`. Do not continue if host, database, role, TLS, ledger, or privilege checks fail.
@@ -69,7 +79,10 @@ Every item must remain `PASS`, `FAIL`, `BLOCKED`, or `NOT AUTHORIZED` according 
 ## Current Sprint 34 result
 
 - Repository provisioning controls: **PASS**
-- Neon read-only credential: **BLOCKED**
+- Neon SQL-created role: **EXISTS / NOT YET PROVISIONED**
+- Neon provisioning attempt: **BLOCKED / SCRIPT COMPATIBILITY DEFECT**
+- Corrected provisioning script: **PASS / PENDING HUMAN RE-RUN**
+- Neon evidence: **BLOCKED**
 - Netlify read-only evidence identity: **BLOCKED**
 - Render read-only evidence identity: **BLOCKED**
 - Auth0 read-only M2M token: **BLOCKED**
