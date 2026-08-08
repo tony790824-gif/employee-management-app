@@ -1,5 +1,11 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 34 diagnostic identity correction
+
+- The first manual Function-owner diagnostic failed before returning metadata because the operator used the intended `_FUNCTION_OWNER` confirmation while the script enforced the stale `_FUNCTION_ACL` literal.
+- This was not caused by a proven Neon `current_user`/`session_user` difference. The corrected script now requires both identities to equal the exact read-only login and emits a distinct fail-closed reason for every target condition.
+- Production evidence remains BLOCKED, readiness 70%, release NOT READY. Next action is only the corrected read-only diagnostic command in `docs/PRODUCTION_READONLY_ACCESS.md`.
+
 ## 2026-08-09 handoff - Sprint 34 Function owner diagnostic
 
 - Status: **PARTIAL / MANUAL READ-ONLY DIAGNOSTIC REQUIRED**. Production evidence remains BLOCKED, readiness remains 70%, and release remains NOT READY.

@@ -2,7 +2,7 @@
 
 ## Current stop condition - continue Sprint 34, do not start a new Sprint
 
-The exact-role provisioning re-run stopped fail-closed before its transaction because a PUBLIC-executable Function has an owner other than `neondb_owner`. Production evidence remains BLOCKED. The only next action is for an authorized human to run `database/operator/production-function-owner.diagnostic.sql` with its exact confirmation and roles, then return the safe catalog output for review. Do not rerun provisioning, manually revoke PUBLIC, ignore an Extension owner, begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before this diagnostic gate is resolved. Any later verification must still require effective reader Function execution to be zero and preserve exactly four explicit runtime entry points.
+The first Function-owner diagnostic returned no metadata because its confirmation literal was inconsistent; the repository correction is complete, but Production evidence remains BLOCKED. The only next action is for an authorized human to run the corrected full command in `docs/PRODUCTION_READONLY_ACCESS.md` using the distinct read-only login, then return the safe catalog output. Do not rerun provisioning, manually revoke PUBLIC, begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before the Function owner is identified. Any later verification must still require effective reader Function execution to be zero and preserve exactly four explicit runtime entry points.
 
 ## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
 

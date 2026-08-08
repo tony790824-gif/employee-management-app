@@ -6,6 +6,23 @@ Date: 2026-08-08
 
 This runbook prepares Sprint 34 evidence access without changing Production. Missing access remains `BLOCKED`; Owner, Migrator, API, Push, Staging, or other privileged credentials must never be substituted.
 
+## Diagnostic confirmation-token incident
+
+Status: **BLOCKED / SCRIPT FIXED / MANUAL DIAGNOSTIC RE-RUN REQUIRED**
+
+The first manual Function-owner diagnostic used the intended confirmation `DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER`, but the script incorrectly compared it with `DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL`. That exact false condition caused the combined target check to fail; it was not evidence of a Neon role/session identity difference. No metadata was returned and no Production statement changed state.
+
+The corrected diagnostic requires all of these conditions independently and reports a specific safe stop reason: database `neondb`; exact confirmation and role names; all three roles present in `pg_roles`; and both `current_user` and `session_user` equal to `banke_production_readonly`. PostgreSQL uses `session_user` for the authenticated login and `current_user` for the effective permission identity. They are normally equal on a direct login; `SET ROLE` can change only the latter. Requiring both prevents an Owner, Migrator, API role, inherited role, or role-switched session from running the evidence diagnostic.
+
+From PowerShell at the Repository root, with the protected read-only URL already present only in the process environment, run exactly:
+
+```powershell
+$env:PGSSLMODE = 'require'
+psql --no-psqlrc --dbname="$env:DATABASE_READONLY_URL" -v ON_ERROR_STOP=1 -v confirmation=DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER -v readonly_role=banke_production_readonly -v object_owner=neondb_owner -v runtime_role=banke_api_production -f database/operator/production-function-owner.diagnostic.sql
+```
+
+Do not replace `DATABASE_READONLY_URL` with an Owner, Migrator, runtime, Staging, or Production API credential. Do not paste the URL into chat or a tracked file.
+
 ## Function owner fail-closed blocker
 
 Status: **BLOCKED / MANUAL READ-ONLY DIAGNOSTIC REQUIRED**

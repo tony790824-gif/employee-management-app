@@ -5,9 +5,9 @@
 - **Status:** PARTIAL / FUNCTION OWNER DIAGNOSTIC AND EXTERNAL EVIDENCE BLOCKED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
 - **Neon evidence:** the Neon-compatible provisioning completed and the reader passed database/role/default/ledger/table/write/sequence checks. Verification remains BLOCKED because 37 Functions are effectively executable through PostgreSQL's default `PUBLIC EXECUTE`; no Function was invoked and no business data was changed.
-- **Latest blocker:** the exact-role human rerun stopped before its transaction because a PUBLIC-executable Function in `public` or `app_private` is not owned by `neondb_owner`. The repository defines 11 expected Bankeban Functions and four runtime entry points; `pgcrypto` ownership is plausible but not yet confirmed.
-- **Repository correction:** add a fail-safe manual catalog diagnostic that identifies the exact signature, owner, Extension and effective/direct ACL metadata without reading Function bodies or business data. The zero Function execution requirement is unchanged.
-- **Next highest priority:** an authorized human runs only `database/operator/production-function-owner.diagnostic.sql` and returns its safe output for review. Do not manually revoke PUBLIC or rerun provisioning until the owner mismatch is understood.
+- **Latest blocker:** the Function-owner diagnostic returned no metadata because its intended `_FUNCTION_OWNER` confirmation did not match the stale `_FUNCTION_ACL` literal. The underlying different-owner Function remains unidentified.
+- **Repository correction:** align the confirmation token and independently require database, exact roles, role existence, `current_user`, and `session_user`; retain a pg_catalog-only read-only transaction and the zero Function execution requirement.
+- **Next highest priority:** an authorized human runs the corrected full command in `docs/PRODUCTION_READONLY_ACCESS.md` and returns its safe output. Do not manually revoke PUBLIC or rerun provisioning until the owner mismatch is understood.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
 

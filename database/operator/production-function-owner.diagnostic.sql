@@ -3,7 +3,7 @@
 -- MANUAL READ-ONLY DIAGNOSTIC ONLY. This file is not a Migration.
 -- It reads pg_catalog metadata and never reads business rows or Function bodies.
 -- Required psql variables:
---   confirmation=DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL
+--   confirmation=DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER
 --   readonly_role=banke_production_readonly
 --   object_owner=neondb_owner
 --   runtime_role=banke_api_production
@@ -29,19 +29,65 @@
   \quit
 \endif
 
-SELECT :'confirmation' = 'DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL'
-       AND current_database() = 'neondb'
-       AND :'readonly_role' = 'banke_production_readonly'
-       AND :'object_owner' = 'neondb_owner'
-       AND :'runtime_role' = 'banke_api_production'
-       AND EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'readonly_role')
-       AND EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'object_owner')
-       AND EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'runtime_role')
-       AS approved_target
+SELECT :'confirmation' = 'DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER' AS confirmation_ok,
+       current_database() = 'neondb' AS database_ok,
+       current_user = :'readonly_role' AS current_user_ok,
+       session_user = :'readonly_role' AS session_user_ok,
+       :'readonly_role' = 'banke_production_readonly' AS readonly_role_name_ok,
+       :'object_owner' = 'neondb_owner' AS object_owner_name_ok,
+       :'runtime_role' = 'banke_api_production' AS runtime_role_name_ok,
+       EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'readonly_role') AS readonly_role_exists,
+       EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'object_owner') AS object_owner_exists,
+       EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = :'runtime_role') AS runtime_role_exists
 \gset
-\if :approved_target
+\if :confirmation_ok
 \else
-  \echo 'Target database or role identity mismatch; no metadata was returned.'
+  \echo 'Confirmation mismatch; no metadata was returned.'
+  \quit
+\endif
+\if :database_ok
+\else
+  \echo 'Target database mismatch; no metadata was returned.'
+  \quit
+\endif
+\if :current_user_ok
+\else
+  \echo 'current_user is not the approved read-only role; no metadata was returned.'
+  \quit
+\endif
+\if :session_user_ok
+\else
+  \echo 'session_user is not the approved read-only login role; no metadata was returned.'
+  \quit
+\endif
+\if :readonly_role_name_ok
+\else
+  \echo 'readonly_role name mismatch; no metadata was returned.'
+  \quit
+\endif
+\if :object_owner_name_ok
+\else
+  \echo 'object_owner name mismatch; no metadata was returned.'
+  \quit
+\endif
+\if :runtime_role_name_ok
+\else
+  \echo 'runtime_role name mismatch; no metadata was returned.'
+  \quit
+\endif
+\if :readonly_role_exists
+\else
+  \echo 'readonly_role does not exist; no metadata was returned.'
+  \quit
+\endif
+\if :object_owner_exists
+\else
+  \echo 'object_owner does not exist; no metadata was returned.'
+  \quit
+\endif
+\if :runtime_role_exists
+\else
+  \echo 'runtime_role does not exist; no metadata was returned.'
   \quit
 \endif
 

@@ -1,5 +1,11 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 34 diagnostic identity blocker - 2026-08-09
+
+- The manual diagnostic returned no metadata because its intended confirmation token did not match the script's enforced literal. This is a repository compatibility defect, not evidence that Neon rewrote the SQL role identity.
+- The corrected gate now independently requires `current_database() = neondb`, exact role variables, role existence, and both `current_user` and `session_user` equal to `banke_production_readonly`.
+- No Production write, Provision, Migration, or verification occurred. Production evidence remains **BLOCKED**, readiness remains **70%**, and release remains **NOT READY** pending the corrected manual diagnostic.
+
 ## Sprint 34 Function owner blocker - 2026-08-09
 
 - The exact-role human re-run stopped fail-closed before its transaction because a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`.

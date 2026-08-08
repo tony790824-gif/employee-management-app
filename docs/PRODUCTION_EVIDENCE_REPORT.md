@@ -1,5 +1,16 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 diagnostic identity update - 2026-08-09
+
+- Manual diagnostic result: **BLOCKED / CONFIRMATION TOKEN MISMATCH**
+- Database/login/TLS supplied by operator: `neondb` / `banke_production_readonly` / required
+- Metadata returned: **none**
+- Provisioning or Production mutation: **not performed**
+- Repository fix: confirmation token aligned and `current_user` plus `session_user` now independently fail closed against the exact reader login
+- Production evidence: **BLOCKED / NOT PASS**
+
+The failed condition was the script's old `DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL` literal versus the operator's intended `DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER`; no Neon session-identity difference is established by this run. A new manual diagnostic is required before the Function owner blocker can be classified.
+
 ## Sprint 34 Function owner diagnostic update - 2026-08-09
 
 - Human provision re-run: **BLOCKED / FAIL-CLOSED BEFORE TRANSACTION**

@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-09 Sprint 34 diagnostic identity correction
+
+- The no-metadata diagnostic stop was caused by `_FUNCTION_OWNER` versus stale `_FUNCTION_ACL` confirmation literals, not established Neon role rewriting.
+- The fail-closed target gate now separately verifies `neondb`, exact role variables and existence, plus `current_user = session_user = banke_production_readonly`. A role-switched or privileged session is rejected.
+- No Production state was changed. Evidence remains BLOCKED, readiness 70%, release NOT READY pending the corrected manual diagnostic.
+
 ## 2026-08-09 Sprint 34 Function owner blocker
 
 - The exact-role human provision re-run stopped fail-closed before `BEGIN`: a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`. Verification and manual ACL changes were not performed.

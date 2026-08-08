@@ -96,8 +96,14 @@ assert.match(disable, /REVOKE CONNECT ON DATABASE neondb/);
 assert.doesNotMatch(disable, /DROP ROLE|DROP OWNED|PASSWORD\s+|postgres(?:ql)?:\/\//);
 
 assert.match(functionOwnerDiagnostic, /MANUAL READ-ONLY DIAGNOSTIC ONLY/);
-assert.match(functionOwnerDiagnostic, /DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL/);
+assert.equal((functionOwnerDiagnostic.match(/DIAGNOSE_BANKE_PRODUCTION_FUNCTION_OWNER/g) || []).length, 2,
+  'The documented and enforced confirmation token must remain identical.');
+assert.doesNotMatch(functionOwnerDiagnostic, /DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL/);
 assert.match(functionOwnerDiagnostic, /current_database\(\) = 'neondb'/);
+assert.match(functionOwnerDiagnostic, /current_user = :'readonly_role' AS current_user_ok/);
+assert.match(functionOwnerDiagnostic, /session_user = :'readonly_role' AS session_user_ok/);
+assert.match(functionOwnerDiagnostic, /current_user is not the approved read-only role/);
+assert.match(functionOwnerDiagnostic, /session_user is not the approved read-only login role/);
 assert.match(functionOwnerDiagnostic, /SET default_transaction_read_only = on/);
 assert.match(functionOwnerDiagnostic, /BEGIN TRANSACTION READ ONLY/);
 assert.match(functionOwnerDiagnostic, /pg_get_function_identity_arguments/);
