@@ -5,6 +5,7 @@ import { inspectSchemaMetadata, readOnlyDatabaseConfig } from '../database/inspe
 const provision = await readFile('database/operator/production-readonly-role.provision.sql', 'utf8');
 const verify = await readFile('database/operator/production-readonly-role.verify.sql', 'utf8');
 const disable = await readFile('database/operator/production-readonly-role.disable.sql', 'utf8');
+const functionOwnerDiagnostic = await readFile('database/operator/production-function-owner.diagnostic.sql', 'utf8');
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
 
 assert.match(provision, /PROVISION_BANKE_PRODUCTION_READONLY/);
@@ -93,6 +94,45 @@ assert.match(disable, /DISABLE_BANKE_PRODUCTION_READONLY/);
 assert.match(disable, /ALTER ROLE :"readonly_role" NOLOGIN/);
 assert.match(disable, /REVOKE CONNECT ON DATABASE neondb/);
 assert.doesNotMatch(disable, /DROP ROLE|DROP OWNED|PASSWORD\s+|postgres(?:ql)?:\/\//);
+
+assert.match(functionOwnerDiagnostic, /MANUAL READ-ONLY DIAGNOSTIC ONLY/);
+assert.match(functionOwnerDiagnostic, /DIAGNOSE_BANKE_PRODUCTION_FUNCTION_ACL/);
+assert.match(functionOwnerDiagnostic, /current_database\(\) = 'neondb'/);
+assert.match(functionOwnerDiagnostic, /SET default_transaction_read_only = on/);
+assert.match(functionOwnerDiagnostic, /BEGIN TRANSACTION READ ONLY/);
+assert.match(functionOwnerDiagnostic, /pg_get_function_identity_arguments/);
+assert.match(functionOwnerDiagnostic, /pg_get_userbyid/);
+assert.match(functionOwnerDiagnostic, /AS routine_kind/);
+assert.match(functionOwnerDiagnostic, /public_execute/);
+assert.match(functionOwnerDiagnostic, /runtime_execute/);
+assert.match(functionOwnerDiagnostic, /runtime_explicit_execute/);
+assert.match(functionOwnerDiagnostic, /owner_matches_object_owner/);
+assert.match(functionOwnerDiagnostic, /pg_catalog\.pg_extension/);
+assert.doesNotMatch(functionOwnerDiagnostic, /pg_get_functiondef|\bprosrc\b|PASSWORD\s+|postgres(?:ql)?:\/\/|BEGIN (?:RSA |EC )?PRIVATE KEY/);
+assert.doesNotMatch(
+  functionOwnerDiagnostic,
+  /\b(?:INSERT|UPDATE|DELETE|TRUNCATE|ALTER|DROP|CREATE|GRANT|REVOKE)\s+(?:INTO|TABLE|SCHEMA|DATABASE|ROLE|ON|FROM|TO)\b/i
+);
+
+const expectedProductionFunctions = [
+  'app_private.current_workspace_id()',
+  'app_private.current_user_id()',
+  'app_private.current_role()',
+  'app_private.touch_updated_at()',
+  'app_private.base64url_decode(text)',
+  'app_private.raise_auth_error(text)',
+  'app_private.verify_tenant_context(text,text,text,text,boolean)',
+  'app_private.api_establish_session(text,text,text)',
+  'app_private.api_logout_session(text,text,text)',
+  'app_private.api_list_employees(text,text,text)',
+  'app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'
+];
+for (const signature of expectedProductionFunctions) {
+  assert.equal(functionOwnerDiagnostic.includes(`'${signature}'`), true,
+    `The read-only diagnostic must classify ${signature}.`);
+}
+assert.equal((functionOwnerDiagnostic.match(/, true\)/g) || []).length, 4,
+  'Exactly four Production API entry points must be classified for explicit runtime EXECUTE.');
 
 for (const script of ['db:status:readonly', 'auth:readiness:production', 'production:platform:validate', 'production:evidence:collect']) {
   assert.doesNotMatch(packageJson.scripts[script], /--env-file(?:-if-exists)?=\.env\.production/);

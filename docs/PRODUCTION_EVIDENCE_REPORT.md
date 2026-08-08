@@ -1,5 +1,19 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 Function owner diagnostic update - 2026-08-09
+
+- Human provision re-run: **BLOCKED / FAIL-CLOSED BEFORE TRANSACTION**
+- Exact roles: `banke_production_readonly`, `neondb_owner`, and `banke_api_production`
+- Blocker: at least one PUBLIC-executable Function in `public` or `app_private` is not owned by `neondb_owner`
+- PUBLIC ACL mutation, corrected provisioning, and verification: **NOT PERFORMED**
+- Business data, schema, Migration, and application runtime: **NOT MODIFIED BY THIS ATTEMPT**
+- Repository response: **MANUAL READ-ONLY CATALOG DIAGNOSTIC ADDED**
+- Neon Production evidence: **BLOCKED / NOT PASS**
+
+Migrations 0001-0008 define 11 Bankeban Functions expected to be owned by `neondb_owner`; exactly four are approved runtime entry points. Migration 0001 also requests `pgcrypto`, so a Neon/platform-owned Extension Function is a plausible cause, but it is not treated as confirmed Production evidence. The manual diagnostic reads only `pg_catalog` metadata and must identify the exact schema, signature, owner, Extension relationship, PUBLIC/runtime/reader EXECUTE state before any revised provisioning is considered.
+
+The evidence requirement remains unchanged: `function_execute_privilege_count = 0`. No missing or different owner is ignored, no manual `REVOKE PUBLIC` is requested, and no Production status is promoted without a successful human diagnostic and subsequent separately approved verification.
+
 ## Sprint 34 Function ACL verification update - 2026-08-08
 
 - Production connection: **AUTHORIZED READ-ONLY VERIFY / TLS PASS**

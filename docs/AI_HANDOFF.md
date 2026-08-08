@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 34 Function owner diagnostic
+
+- Status: **PARTIAL / MANUAL READ-ONLY DIAGNOSTIC REQUIRED**. Production evidence remains BLOCKED, readiness remains 70%, and release remains NOT READY.
+- The exact-role human provisioning re-run stopped before its transaction because at least one PUBLIC-executable Function in `public` or `app_private` is not owned by `neondb_owner`. No manual ACL statement or verification followed.
+- Repository Migrations define 11 expected Bankeban Functions and four explicit `banke_api_production` entry points. `pgcrypto` Extension ownership is plausible but unconfirmed; do not infer the Production object without catalog evidence.
+- Next action is only the confirmation-gated `database/operator/production-function-owner.diagnostic.sql`. Review its safe metadata before proposing another provision run; never manually revoke PUBLIC, ignore the mismatched owner, or substitute a privileged credential.
+- This repository work did not connect to or modify Production, execute a Migration, deploy, or alter Auth0/platform configuration.
+
 ## 2026-08-08 handoff - Sprint 34 Function ACL fix
 
 - Status: **PARTIAL / HUMAN RE-PROVISION AND VERIFY REQUIRED**. Production evidence remains BLOCKED; readiness remains 70%; release NOT READY.

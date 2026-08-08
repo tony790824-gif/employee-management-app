@@ -1,5 +1,12 @@
 # Codex Context
 
+## 2026-08-09 Sprint 34 Function owner blocker
+
+- The exact-role human provision re-run stopped fail-closed before `BEGIN`: a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`. Verification and manual ACL changes were not performed.
+- Migrations 0001-0008 define 11 expected Bankeban Functions; the only four runtime entry points are `api_establish_session`, `api_logout_session`, `api_list_employees`, and `api_execute_command`. Their expected owner is `neondb_owner`.
+- Migration 0001 requests `pgcrypto`; Neon/platform/Extension ownership is a possible cause but remains unconfirmed. Use the read-only catalog diagnostic and do not relax `function_execute_privilege_count = 0`.
+- Production evidence remains BLOCKED, Production readiness 70%, release NOT READY. No Production connection or mutation was made by this repository update.
+
 ## 2026-08-08 Sprint 34 Function ACL incident
 
 - The Neon-compatible provisioning completed, and the reader passed TLS/database/role/default/ledger/table/write/sequence checks but reported 37 effective Function `EXECUTE` privileges inherited from PostgreSQL's default `PUBLIC` ACL.

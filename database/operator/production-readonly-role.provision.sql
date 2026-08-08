@@ -225,7 +225,7 @@ SELECT NOT EXISTS (
 \gset
 \if :public_functions_are_owned_by_object_owner
 \else
-  \echo 'A PUBLIC-executable Function has a different owner; PUBLIC EXECUTE was not changed.'
+  \echo 'A PUBLIC-executable Function has a different owner; PUBLIC EXECUTE was not changed. Run production-function-owner.diagnostic.sql read-only and stop.'
   \quit
 \endif
 

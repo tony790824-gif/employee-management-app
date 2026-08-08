@@ -1,10 +1,38 @@
 # Production Read-only Access Provisioning
 
-Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED / NEON FUNCTION ACL RE-RUN REQUIRED**
+Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED / FUNCTION OWNER DIAGNOSTIC REQUIRED**
 
 Date: 2026-08-08
 
 This runbook prepares Sprint 34 evidence access without changing Production. Missing access remains `BLOCKED`; Owner, Migrator, API, Push, Staging, or other privileged credentials must never be substituted.
+
+## Function owner fail-closed blocker
+
+Status: **BLOCKED / MANUAL READ-ONLY DIAGNOSTIC REQUIRED**
+
+The human re-run used `banke_production_readonly`, `neondb_owner`, and `banke_api_production`. It stopped before `BEGIN` with `A PUBLIC-executable Function has a different owner`; no verification or manual ACL statement followed. The owner guard intentionally examines every PUBLIC-executable Function in `public` and `app_private`, not only Bankeban Functions. Migration 0001 runs `CREATE EXTENSION IF NOT EXISTS pgcrypto`, so Neon/platform-owned or previously installed pgcrypto Functions in `public` are a plausible source of the mismatch. This is not confirmed until the catalog diagnostic identifies the exact rows.
+
+Run `database/operator/production-function-owner.diagnostic.sql` manually with the four exact confirmation/role variables documented in that file. It sets read-only transaction mode and returns only schema, routine name, identity arguments/signature, owner, extension name, PUBLIC EXECUTE, runtime effective/direct EXECUTE, reader EXECUTE, expected source and owner-match metadata. It never reads a Function body or business row and executes no DDL/DML. Do not run `provision.sql` again until this output has been reviewed.
+
+### Expected 0001-0008 Bankeban Functions
+
+All Functions below are created by the tracked Migrations and are expected to retain the Migration object owner, `neondb_owner`. `CREATE OR REPLACE FUNCTION` preserves the existing owner.
+
+| Signature | Source | Runtime EXECUTE |
+|---|---|---|
+| `app_private.current_workspace_id()` | 0001 | no |
+| `app_private.current_user_id()` | 0001 | no |
+| `app_private.current_role()` | 0001 | no |
+| `app_private.touch_updated_at()` | 0001 | no |
+| `app_private.base64url_decode(text)` | 0004 | no |
+| `app_private.raise_auth_error(text)` | 0004 | no |
+| `app_private.verify_tenant_context(text,text,text,text,boolean)` | 0004/0005 | no |
+| `app_private.api_establish_session(text,text,text)` | 0004/0006/0008 | **yes** |
+| `app_private.api_logout_session(text,text,text)` | 0004 | **yes** |
+| `app_private.api_list_employees(text,text,text)` | 0004 | **yes** |
+| `app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)` | 0004/0007 | **yes** |
+
+Migration 0001 also requests `pgcrypto`; its exact Function inventory and owner depend on the installed PostgreSQL/Neon extension state and are not asserted from repository SQL. PostgreSQL built-ins in `pg_catalog` are outside the current `public`/`app_private` verifier scope. A different Bankeban owner, an Extension owner, or an unclassified Function must remain BLOCKED until its metadata is reviewed; do not ignore it or revoke it manually.
 
 ## Neon Function ACL incident
 

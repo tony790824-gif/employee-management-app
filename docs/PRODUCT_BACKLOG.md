@@ -2,11 +2,12 @@
 
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
-- **Status:** PARTIAL / NEON FUNCTION ACL HUMAN RE-RUN AND EXTERNAL EVIDENCE BLOCKED. Repository correction is COMPLETE; product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Status:** PARTIAL / FUNCTION OWNER DIAGNOSTIC AND EXTERNAL EVIDENCE BLOCKED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
 - **Neon evidence:** the Neon-compatible provisioning completed and the reader passed database/role/default/ledger/table/write/sequence checks. Verification remains BLOCKED because 37 Functions are effectively executable through PostgreSQL's default `PUBLIC EXECUTE`; no Function was invoked and no business data was changed.
-- **Repository correction:** require the safe Production runtime's exact four explicit 0001-0008 Function grants and object ownership of every PUBLIC-executable Function, transactionally remove current/future PUBLIC Function execution, and roll back unless PUBLIC/reader zero and runtime four postconditions pass.
-- **Next highest priority:** human re-provision and verify exactly as documented in `docs/PRODUCTION_READONLY_ACCESS.md`; retain Neon and all other unresolved evidence as `BLOCKED` or `NOT AUTHORIZED` until direct evidence passes.
+- **Latest blocker:** the exact-role human rerun stopped before its transaction because a PUBLIC-executable Function in `public` or `app_private` is not owned by `neondb_owner`. The repository defines 11 expected Bankeban Functions and four runtime entry points; `pgcrypto` ownership is plausible but not yet confirmed.
+- **Repository correction:** add a fail-safe manual catalog diagnostic that identifies the exact signature, owner, Extension and effective/direct ACL metadata without reading Function bodies or business data. The zero Function execution requirement is unchanged.
+- **Next highest priority:** an authorized human runs only `database/operator/production-function-owner.diagnostic.sql` and returns its safe output for review. Do not manually revoke PUBLIC or rerun provisioning until the owner mismatch is understood.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
 

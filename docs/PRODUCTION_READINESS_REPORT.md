@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 34 Function owner blocker - 2026-08-09
+
+- The exact-role human re-run stopped fail-closed before its transaction because a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`.
+- Repository Migrations 0001-0008 account for 11 Bankeban Functions, all expected to retain `neondb_owner`; exactly four are approved for direct `banke_api_production` execution. Migration 0001 also requests `pgcrypto`, making Extension ownership a plausible but unconfirmed explanation.
+- A manual read-only catalog diagnostic now reports safe ownership/ACL/Extension metadata without Function bodies or business rows. It does not modify Production and does not authorize an ACL change.
+- The zero effective Function execution requirement is unchanged. Production evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY**.
+
 ## Sprint 34 Function ACL correction - 2026-08-08
 
 - The Neon-compatible role provisioning completed and the distinct reader verified TLS, `neondb`, read-only mode, safe role attributes/defaults, ledger 0001-0008, zero business SELECT, zero writes and zero sequence writes.
