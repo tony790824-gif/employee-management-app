@@ -21,16 +21,36 @@ assert.match(provision, /GRANT USAGE ON SCHEMA public, app_private/);
 assert.match(provision, /GRANT SELECT ON TABLE public\.schema_migrations/);
 assert.match(provision, /REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, app_private/);
 assert.match(provision, /ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner"/);
+assert.match(provision, /runtime_role=<existing Bankeban Production API login role>/);
+assert.match(provision, /AS runtime_role_is_safe[\s\S]*\\if :runtime_role_is_safe[\s\S]*\\quit/);
+assert.match(provision, /:'runtime_role' = 'banke_api_production'[\s\S]*role\.rolname = current_user[\s\S]*AS approved_roles_are_exact/);
+assert.match(provision, /AS runtime_has_explicit_allowlist[\s\S]*\\if :runtime_has_explicit_allowlist[\s\S]*PUBLIC EXECUTE was not changed/);
+assert.match(provision, /AS runtime_has_no_unapproved_function_grant[\s\S]*\\if :runtime_has_no_unapproved_function_grant/);
+assert.match(provision, /AS public_functions_are_owned_by_object_owner[\s\S]*\\if :public_functions_are_owned_by_object_owner[\s\S]*PUBLIC EXECUTE was not changed/);
+assert.match(provision, /'REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC'[\s\S]*has_function_privilege\('public', procedure\.oid, 'EXECUTE'\)[\s\S]*\\gexec/);
+assert.match(provision, /ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner"\s+REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC/);
+assert.doesNotMatch(provision, /ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner" IN SCHEMA [^\n]+\s+REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC/);
+assert.match(provision, /AS readonly_function_execute_is_zero[\s\S]*rolling back all provisioning changes/);
+assert.match(provision, /AS runtime_function_allowlist_preserved[\s\S]*rolling back all provisioning changes/);
+assert.match(provision, /BEGIN;[\s\S]*'REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC'[\s\S]*COMMIT;/);
 assert.doesNotMatch(provision, /PASSWORD\s+|postgres(?:ql)?:\/\/|BEGIN (?:RSA |EC )?PRIVATE KEY/);
 
 const firstMutation = provision.search(/^(?:ALTER|GRANT|REVOKE)\b/m);
 const dangerousGuard = provision.indexOf('AS dangerous_attributes_are_false');
 const membershipGuard = provision.indexOf('AS has_no_memberships');
 const ownershipGuard = provision.indexOf('AS owns_no_objects');
+const runtimeGuard = provision.indexOf('AS runtime_has_explicit_allowlist');
+const exactRoleGuard = provision.indexOf('AS approved_roles_are_exact');
+const publicOwnerGuard = provision.indexOf('AS public_functions_are_owned_by_object_owner');
+const publicRevoke = provision.indexOf("'REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC'");
 assert.equal(provision.includes('\\set ON_ERROR_STOP on'), true);
 assert.equal(dangerousGuard > 0 && dangerousGuard < firstMutation, true);
 assert.equal(membershipGuard > 0 && membershipGuard < firstMutation, true);
 assert.equal(ownershipGuard > 0 && ownershipGuard < firstMutation, true);
+assert.equal(runtimeGuard > ownershipGuard && runtimeGuard < firstMutation, true);
+assert.equal(exactRoleGuard > ownershipGuard && exactRoleGuard < runtimeGuard, true);
+assert.equal(publicOwnerGuard > runtimeGuard && publicOwnerGuard < firstMutation, true);
+assert.equal(publicRevoke > firstMutation, true);
 
 const dangerousAttributesAreFalse = role => !(
   role.rolsuper || role.rolcreatedb || role.rolcreaterole || role.rolreplication || role.rolbypassrls
@@ -45,11 +65,28 @@ for (const dangerous of ['rolsuper', 'rolcreatedb', 'rolcreaterole', 'rolreplica
   }), false, `A pre-existing ${dangerous} attribute must fail closed.`);
 }
 
+// PostgreSQL ACLs are additive: a direct REVOKE cannot negate EXECUTE granted
+// through PUBLIC. The safe equivalent removes PUBLIC and retains the runtime's
+// already-reviewed explicit allowlist.
+const canExecute = ({ direct = false, viaPublic = false, viaMembership = false }) => (
+  direct || viaPublic || viaMembership
+);
+assert.equal(canExecute({ direct: false, viaPublic: true }), true,
+  'A direct read-only-role REVOKE must still reproduce PUBLIC EXECUTE inheritance.');
+assert.equal(canExecute({ direct: false, viaPublic: false }), false,
+  'The evidence role reaches zero only after PUBLIC EXECUTE is removed.');
+assert.equal(canExecute({ direct: true, viaPublic: false }), true,
+  'The Production runtime explicit allowlist must survive PUBLIC revocation.');
+assert.equal(canExecute({ direct: false, viaPublic: false, viaMembership: false }), false,
+  'A membership-free evidence role must have no equivalent EXECUTE path.');
+
 assert.match(verify, /SET default_transaction_read_only = on/);
 assert.match(verify, /business_table_select_count/);
 assert.match(verify, /table_write_privilege_count/);
 assert.match(verify, /sequence_write_privilege_count/);
 assert.match(verify, /function_execute_privilege_count/);
+assert.match(verify, /public_function_execute_privilege_count/);
+assert.match(verify, /direct_function_execute_grant_count/);
 assert.doesNotMatch(verify, /\b(?:INSERT|UPDATE|DELETE|TRUNCATE|ALTER|DROP|CREATE|GRANT|REVOKE)\s+(?:INTO|TABLE|SCHEMA|DATABASE|ROLE|ON|FROM|TO)\b/i);
 
 assert.match(disable, /DISABLE_BANKE_PRODUCTION_READONLY/);

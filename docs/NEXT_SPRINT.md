@@ -2,7 +2,7 @@
 
 ## Current stop condition - continue Sprint 34, do not start a new Sprint
 
-Repository preparation is complete, but Neon, Netlify, Render and Auth0 read-only evidence access has not been externally provisioned. Follow `docs/PRODUCTION_READONLY_ACCESS.md`, keep every missing item `BLOCKED`, then rerun the existing validators. Do not begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before this evidence gate is closed.
+The Neon reader passed every checked boundary except Function execution: 37 Functions remain executable through PostgreSQL's default `PUBLIC EXECUTE`. Repository correction is complete, but Production evidence remains BLOCKED. Follow `docs/PRODUCTION_READONLY_ACCESS.md`: rerun the confirmation-gated script with the independently verified evidence role, object owner and `banke_api_production`; stop unless the runtime has exactly four explicit 0001-0008 Function grants; then rerun verification and require effective reader, PUBLIC and direct reader Function counts to be zero. Netlify, Render and Auth0 read-only evidence access also remains externally blocked. Do not begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before this evidence gate is closed.
 
 ## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
 

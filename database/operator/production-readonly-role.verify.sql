@@ -51,7 +51,21 @@ SELECT count(*) FILTER (
 
 SELECT count(*) FILTER (
          WHERE has_function_privilege(current_user, procedure.oid, 'EXECUTE')
-       )::integer AS function_execute_privilege_count
+       )::integer AS function_execute_privilege_count,
+       count(*) FILTER (
+         WHERE has_function_privilege('public', procedure.oid, 'EXECUTE')
+       )::integer AS public_function_execute_privilege_count,
+       count(*) FILTER (
+         WHERE EXISTS (
+           SELECT 1
+             FROM pg_catalog.aclexplode(COALESCE(
+               procedure.proacl,
+               pg_catalog.acldefault('f', procedure.proowner)
+             )) AS acl
+            WHERE acl.grantee = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = current_user)
+              AND acl.privilege_type = 'EXECUTE'
+         )
+       )::integer AS direct_function_execute_grant_count
   FROM pg_catalog.pg_proc AS procedure
   JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
  WHERE namespace.nspname IN ('public', 'app_private');

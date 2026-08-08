@@ -1,6 +1,13 @@
 # AI Handoff
 
-## 2026-08-08 handoff - Sprint 34 Neon compatibility fix
+## 2026-08-08 handoff - Sprint 34 Function ACL fix
+
+- Status: **PARTIAL / HUMAN RE-PROVISION AND VERIFY REQUIRED**. Production evidence remains BLOCKED; readiness remains 70%; release NOT READY.
+- The corrected role-attribute script completed on Production. The reader verified every least-privilege boundary except Function execution: 37 Functions remain executable only because PostgreSQL grants Function `EXECUTE` to `PUBLIC` by default and direct revokes cannot override additive PUBLIC privileges.
+- The manual script now requires the safe `banke_api_production` runtime role and its exact four explicit 0001-0008 Function grants, plus object ownership of every currently PUBLIC-executable Function, before any mutation. It transactionally removes existing and future PUBLIC Function execution while owner capability remains inherent, and rolls back unless PUBLIC/reader reach zero while the runtime stays at exactly four.
+- No Production operation was performed by this repository correction. Wait for the owner to rerun `production-readonly-role.provision.sql`, then `production-readonly-role.verify.sql`; all effective/PUBLIC/direct reader Function counts must be zero before evidence collection.
+
+## 2026-08-08 handoff - Sprint 34 Neon role-attribute compatibility fix
 
 - Status: **PARTIAL / HUMAN RE-RUN REQUIRED**. The Production provisioning attempt is BLOCKED and Neon evidence is not PASS; Production readiness remains 70% and release NOT READY.
 - The SQL-created `banke_production_readonly` role exists. The first script version failed at its first mutation because PostgreSQL/Neon forbids a non-superuser from issuing `ALTER ROLE ... NOSUPERUSER`, even when the target already has `rolsuper=false`.

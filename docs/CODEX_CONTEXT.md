@@ -1,6 +1,12 @@
 # Codex Context
 
-## 2026-08-08 Sprint 34 Neon compatibility incident
+## 2026-08-08 Sprint 34 Function ACL incident
+
+- The Neon-compatible provisioning completed, and the reader passed TLS/database/role/default/ledger/table/write/sequence checks but reported 37 effective Function `EXECUTE` privileges inherited from PostgreSQL's default `PUBLIC` ACL.
+- A direct role revoke cannot negate `PUBLIC`. The repository correction requires `banke_api_production` to retain exactly four explicit 0001-0008 entry-point grants, then transactionally removes current/future PUBLIC Function execution and verifies reader zero/runtime four before commit.
+- No Production action occurred during this correction. Neon evidence remains BLOCKED, Production readiness remains 70%, and release remains NOT READY pending human re-provision and verification.
+
+## 2026-08-08 Sprint 34 Neon role-attribute compatibility incident
 
 - The first authorized Production provisioning attempt connected with TLS and stopped at the first mutation: Neon cannot authorize `ALTER ROLE ... NOSUPERUSER` without a true PostgreSQL superuser.
 - No later grants/revokes/default privileges and no business data/schema/Migration changes occurred. The corrected script uses catalog fail-closed checks instead of dangerous-attribute mutation.

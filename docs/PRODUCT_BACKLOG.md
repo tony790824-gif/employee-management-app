@@ -2,10 +2,11 @@
 
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
-- **Status:** PARTIAL / NEON HUMAN RE-RUN AND EXTERNAL PROVISIONING BLOCKED. Repository correction is COMPLETE; product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Status:** PARTIAL / NEON FUNCTION ACL HUMAN RE-RUN AND EXTERNAL EVIDENCE BLOCKED. Repository correction is COMPLETE; product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
-- **Neon attempt:** the SQL-created role exists, but the first authorized TLS run stopped at its first mutation because `ALTER ROLE ... NOSUPERUSER` is incompatible with Neon's non-superuser model. No later grants/revokes or business/schema changes occurred; the fixed script awaits human re-run.
-- **Next highest priority:** continue Sprint 34 only after platform owners provision the exact read-only access in `docs/PRODUCTION_READONLY_ACCESS.md`; rerun evidence and retain every unresolved item as `BLOCKED` or `NOT AUTHORIZED`.
+- **Neon evidence:** the Neon-compatible provisioning completed and the reader passed database/role/default/ledger/table/write/sequence checks. Verification remains BLOCKED because 37 Functions are effectively executable through PostgreSQL's default `PUBLIC EXECUTE`; no Function was invoked and no business data was changed.
+- **Repository correction:** require the safe Production runtime's exact four explicit 0001-0008 Function grants and object ownership of every PUBLIC-executable Function, transactionally remove current/future PUBLIC Function execution, and roll back unless PUBLIC/reader zero and runtime four postconditions pass.
+- **Next highest priority:** human re-provision and verify exactly as documented in `docs/PRODUCTION_READONLY_ACCESS.md`; retain Neon and all other unresolved evidence as `BLOCKED` or `NOT AUTHORIZED` until direct evidence passes.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
 

@@ -1,6 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
-## Sprint 34 Neon compatibility correction - 2026-08-08
+## Sprint 34 Function ACL correction - 2026-08-08
+
+- The Neon-compatible role provisioning completed and the distinct reader verified TLS, `neondb`, read-only mode, safe role attributes/defaults, ledger 0001-0008, zero business SELECT, zero writes and zero sequence writes.
+- Production evidence remains **BLOCKED** because `function_execute_privilege_count = 37`. The effective grants come from PostgreSQL's default `PUBLIC EXECUTE`, not a direct evidence-role ACL; a direct revoke cannot override `PUBLIC`.
+- The repository fix fail-closes unless `banke_api_production` has explicit grants on exactly the four reviewed 0001-0008 API Functions and every currently PUBLIC-executable Function is owned by the approved object owner. It then transactionally removes existing `PUBLIC EXECUTE` and the object owner's global future-Function PUBLIC default; owner capability remains inherent, and the transaction rolls back unless PUBLIC/reader execution is zero and the runtime allowlist is unchanged.
+- This repository change did not connect to or mutate Production. A human must re-provision and re-run the reader verification before Neon evidence can become PASS.
+- Production readiness remains **70%** and release remains **NOT READY**.
+
+## Sprint 34 Neon role-attribute compatibility correction - 2026-08-08
 
 - The authorized Production provisioning attempt is **BLOCKED / SCRIPT COMPATIBILITY DEFECT**. It stopped at the first mutation, `ALTER ROLE ... NOSUPERUSER`, because Neon exposes `neon_superuser` compatibility rather than a true PostgreSQL superuser.
 - `ON_ERROR_STOP` prevented all later grants, revokes, role defaults and default privileges. Only catalog preflight reads occurred; no business data, schema or Migration changed.

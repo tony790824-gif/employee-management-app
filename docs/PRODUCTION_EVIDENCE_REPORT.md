@@ -1,5 +1,20 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 Function ACL verification update - 2026-08-08
+
+- Production connection: **AUTHORIZED READ-ONLY VERIFY / TLS PASS**
+- Database and role: **PASS** — `neondb` / `banke_production_readonly`
+- Read-only role attributes, role defaults, CONNECT/schema boundaries and Migration ledger: **PASS**
+- Business-table SELECT, table writes and sequence writes: **PASS / ZERO**
+- Function execution: **BLOCKED** — 37 effective `EXECUTE` privileges remain through PostgreSQL's default `PUBLIC` Function ACL
+- Migration ledger: **READABLE / 0001 THROUGH 0008**
+- Business data, schema, Migration and application runtime: **NOT MODIFIED**
+- Neon Production evidence: **BLOCKED / NOT PASS**
+
+The direct evidence-role Function revoke completed, but PostgreSQL adds direct, membership and `PUBLIC` grants; a role-specific revoke is not a deny. Repository tests reproduce that ACL behavior. The corrected manual script now requires and preserves the existing runtime's exact four-function direct allowlist, and requires the approved object owner to own every currently PUBLIC-executable Function, before transactionally removing current/future `PUBLIC EXECUTE`. It rolls back unless PUBLIC and the reader reach zero and the runtime allowlist remains unchanged. No corrected script was run against Production during this repository update.
+
+The Sprint 33D evidence timestamp and hash manifest below remain unchanged. This real verification result is not promoted to PASS and does not fabricate a new evidence hash.
+
 ## Sprint 34 Neon compatibility update - 2026-08-08
 
 - Production connection: **AUTHORIZED READ-ONLY PREFLIGHT ATTEMPT**
@@ -88,6 +103,6 @@ The hashes cover canonical sanitized evidence records. They do not hash, store, 
 ## Required authorization to continue
 
 1. Provision protected read-only Netlify, Render and Auth0 Management access plus the approved Production resource identifiers. Do not send values through chat or commit them.
-2. Provision a distinct SELECT-only Neon Production role and store its connection only as `DATABASE_READONLY_URL`; do not reuse any existing privileged credential.
+2. Re-run the corrected Function-ACL-aware provisioning script with the independently verified evidence, object-owner and `banke_api_production` role names. Then rerun the reader verification and require all three Function counts (effective reader, `PUBLIC`, direct reader) to be zero before storing the connection as `DATABASE_READONLY_URL`.
 3. Configure the approved credential-free Production frontend/API origins and public Auth0 metadata in the protected operator environment.
 4. Re-run `pnpm production:evidence:collect`; retain `BLOCKED` until access is supplied and the evidence is directly verified. A supplied credential rejected with 401/403 must be recorded as `NOT AUTHORIZED`.
