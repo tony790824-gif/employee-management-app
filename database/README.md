@@ -1,5 +1,9 @@
 # PostgreSQL migration and snapshot import
 
+## Production evidence reader (manual only)
+
+`database/operator/production-readonly-role.provision.sql`, `.verify.sql`, and `.disable.sql` are confirmation-gated operator procedures, not Migrations and not application startup scripts. Follow `docs/PRODUCTION_READONLY_ACCESS.md`. The role can read catalogs and `public.schema_migrations` only; it must never receive business-table access or replace Owner, Migrator, API, Push, or Staging credentials. Sprint 34 did not execute these scripts or connect to Production.
+
 ## Real-event notification migration
 
 `0019_real_event_notifications` is a Staging-only additive extension of the existing Notification Center/outbox/Web Push path. Use `pnpm db:real-event-notifications:staging status|up`; rollback requires the dedicated Staging confirmation documented in `docs/RUNBOOK.md`. Approved checksum: `34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6`. Production, `0009`, and `0010` are not part of this operation.

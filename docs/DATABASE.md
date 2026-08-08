@@ -1,5 +1,9 @@
 # Database 文件（現況與目標）
 
+## Sprint 34 Production evidence reader
+
+Use only the manual scripts in `database/operator/` and the procedure in `docs/PRODUCTION_READONLY_ACCESS.md`. The evidence role is SQL-created, `LOGIN NOINHERIT`, connection-limited, read-only by default, and may select only `public.schema_migrations` plus PostgreSQL catalogs. It has no business-table read/write, sequence write, application-function execute, membership, ownership, or administrative attributes. Current provisioning and connection are **BLOCKED**; Sprint 34 did not connect to Production.
+
 ## Sprint 33C schema metadata validation
 
 The read-only inspector now reports only schema metadata: database/role/read-only state, role attributes, tables/RLS, indexes, constraints, functions, triggers, policies and connection-capacity counts. Every query is `SELECT`; no business rows are read and no DDL/DML is executed. Sprint 33C did not connect because a distinct `DATABASE_READONLY_URL` was not configured; Owner, Migrator, API and Push credentials were not reused.

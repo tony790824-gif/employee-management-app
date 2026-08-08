@@ -1,8 +1,10 @@
 # Production Operations Evidence Guide
 
-Status: **PENDING EXTERNAL APPROVAL**
+Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED**
 
 The detailed procedure remains `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. This guide defines how Sprint 33C evidence is collected without changing Production.
+
+Sprint 34 least-privilege provisioning, verification and revocation steps are in `docs/PRODUCTION_READONLY_ACCESS.md`. Do not run the evidence commands until every credential is separately authorized and proven read-only.
 
 ## Read-only validation
 

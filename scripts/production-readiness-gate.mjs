@@ -61,6 +61,22 @@ export async function runProductionRepositoryGate() {
   await existsAndContains('docs/PRODUCTION_OPERATIONS.md', [
     'read-only', 'BLOCKED', 'NOT_CONFIGURED', 'Stop conditions'
   ], failures);
+  await existsAndContains('docs/PRODUCTION_READONLY_ACCESS.md', [
+    'REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED',
+    'DATABASE_READONLY_URL', 'CONFIRMED_READ_ONLY',
+    'read:attack_protection', 'Evidence re-run: **NOT PERFORMED**'
+  ], failures);
+  await existsAndContains('database/operator/production-readonly-role.provision.sql', [
+    'PROVISION_BANKE_PRODUCTION_READONLY', 'NOINHERIT', 'default_transaction_read_only',
+    'REVOKE ALL PRIVILEGES', 'GRANT SELECT ON TABLE public.schema_migrations'
+  ], failures);
+  await existsAndContains('database/operator/production-readonly-role.verify.sql', [
+    'default_transaction_read_only', 'schema_migrations', 'has_table_privilege',
+    'has_function_privilege'
+  ], failures);
+  await existsAndContains('database/operator/production-readonly-role.disable.sql', [
+    'DISABLE_BANKE_PRODUCTION_READONLY', 'NOLOGIN', 'REVOKE CONNECT'
+  ], failures);
   await existsAndContains('docs/adr/0021-production-platform-validation.md', [
     'Accepted', 'fail-closed', 'GET', 'SELECT-only'
   ], failures);
@@ -68,7 +84,8 @@ export async function runProductionRepositoryGate() {
     '--production', '--read-only', 'NOT AUTHORIZED', 'SHA-256', 'method: \'GET\''
   ], failures);
   await existsAndContains('docs/PRODUCTION_EVIDENCE_REPORT.md', [
-    'Sprint 33D', 'BLOCKED', 'NOT AUTHORIZED', 'Manifest SHA-256', 'Production mutation: **none**'
+    'Sprint 33D', 'Sprint 34 provisioning preflight', 'BLOCKED', 'NOT AUTHORIZED',
+    'Evidence re-run: **NOT PERFORMED**', 'Manifest SHA-256', 'Production mutation: **none**'
   ], failures);
   await existsAndContains('docs/PRODUCTION_EVIDENCE_HASHES.json', [
     'SHA-256', 'public.repository.gate', 'netlify.production', 'render.production', 'auth0.production.management'

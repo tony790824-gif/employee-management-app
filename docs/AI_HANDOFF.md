@@ -1,5 +1,12 @@
 # AI Handoff
 
+## 2026-08-08 handoff - Sprint 34 Production Read-only Access Provisioning
+
+- Status: **PARTIAL / EXTERNAL PROVISIONING BLOCKED**. Repository scope COMPLETE; product completion 98%; Production readiness 70%; release NOT READY.
+- The evidence database role is deliberately metadata-only: catalog inspection plus `schema_migrations`, with zero business-table reads/writes, sequence writes, function execution, memberships, ownership or dangerous attributes.
+- Evidence commands no longer auto-load `.env.production`. Netlify and Render require an explicit proven read-only identity; Auth0 requires exactly five read scopes. Missing or excessive authority fails closed before network access.
+- The protected environment has none of the required read-only credentials, so the Sprint 33D timestamp and manifest remain the last actual evidence. Continue only with the human provisioning steps in `docs/PRODUCTION_READONLY_ACCESS.md`; never substitute Owner, Migrator, API, Push or Staging credentials.
+
 ## 2026-08-04 handoff — Sprint 33D Authorized Production Evidence Closure
 
 - Status: **PARTIAL / EXTERNAL EVIDENCE BLOCKED**. Repository scope COMPLETE; product completion 98%; Production readiness 70%; release NOT READY.

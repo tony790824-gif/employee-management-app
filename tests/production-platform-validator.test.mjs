@@ -40,7 +40,9 @@ const metadata = await inspectSchemaMetadata({
       server_version_num: 180000, can_create_public_schema: false, can_create_private_schema: false
     }] };
     if (statement.includes('pg_catalog.pg_roles')) return { rows: [{
-      rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolreplication: false, rolbypassrls: false
+      rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolreplication: false, rolbypassrls: false,
+      rolcanlogin: true, rolinherit: false, rolconnlimit: 3,
+      role_config: ['default_transaction_read_only=on', 'statement_timeout=10s', 'idle_in_transaction_session_timeout=10s']
     }] };
     if (statement.includes('pg_catalog.pg_class')) return { rows: [{
       schema_name: 'public', object_name: 'workspaces', rls_enabled: true, rls_forced: true
@@ -51,20 +53,26 @@ const metadata = await inspectSchemaMetadata({
     if (statement.includes('pg_catalog.pg_constraint')) return { rows: [{
       schema_name: 'public', table_name: 'workspaces', object_name: 'workspaces_pkey', constraint_type: 'p'
     }] };
-    if (statement.includes('information_schema.routines')) return { rows: [{
+    if (statement.includes('pg_catalog.pg_proc AS procedure') && statement.includes('ORDER BY')) return { rows: [{
       schema_name: 'app_private', object_name: 'bootstrap'
     }] };
-    if (statement.includes('information_schema.triggers')) return { rows: [] };
+    if (statement.includes('pg_catalog.pg_trigger')) return { rows: [] };
     if (statement.includes('pg_catalog.pg_policies')) return { rows: [{
       schema_name: 'public', table_name: 'workspaces', object_name: 'workspace_isolation'
     }] };
     if (statement.includes('pg_catalog.pg_stat_activity')) return { rows: [{ max_connections: 100, observed_connections: 3 }] };
+    if (statement.includes('can_read_migration_ledger')) return { rows: [{
+      can_read_migration_ledger: true, business_table_select_count: 0, table_write_privilege_count: 0,
+      sequence_write_privilege_count: 0, function_execute_privilege_count: 0
+    }] };
     throw new Error('Unexpected metadata SQL.');
   }
 });
 assert.equal(metadata.transactionReadOnly, true);
 assert.equal(metadata.roleAttributes.superuser, false);
+assert.equal(metadata.roleAttributes.defaultTransactionReadOnly, true);
 assert.equal(metadata.tables[0].rlsForced, true);
+assert.equal(metadata.privileges.businessTableSelectCount, 0);
 assert.equal(metadata.capacity.maxConnections, 100);
 assert.equal(metadataSql.every(statement => statement.startsWith('SELECT')), true);
 assert.equal(metadataSql.some(statement => /^(?:INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|GRANT|REVOKE)\b/i.test(statement)), false);

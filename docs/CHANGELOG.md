@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-08 - Sprint 34 Production Read-only Access Provisioning
+
+- Added strict repository controls and an operator runbook for distinct Neon, Netlify, Render and Auth0 Production read-only evidence access.
+- External provisioning and the evidence re-run remain `BLOCKED`; Production readiness stays at 70%, release stays NOT READY, and Production was not operated.
+
 ## 2026-08-04 - Sprint 33D Authorized Production Evidence Closure
 
 - Added GET-only provider evidence collection, SELECT-only Neon reuse, protected-value redaction and a complete SHA-256 evidence manifest.

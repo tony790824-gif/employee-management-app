@@ -1,5 +1,11 @@
 # 班客邦
 
+## Sprint 34 Production Read-only Access Provisioning (2026-08-08)
+
+- Added fail-closed, least-privilege Production evidence provisioning controls and manual Neon role provision/verify/disable procedures. The database reader can inspect catalogs and `schema_migrations` only; it cannot read business tables, write, own objects, inherit roles, or execute application functions.
+- Netlify, Render and Auth0 evidence now requires separately proven read-only authority before any request. The protected operator environment does not currently contain those credentials or `DATABASE_READONLY_URL`, so the evidence re-run is **BLOCKED / NOT PERFORMED**.
+- Production readiness remains **70%** and release remains **NOT READY**. No Production platform, database, Migration, Auth0 setting, environment variable or traffic was changed. See [Production Read-only Access Provisioning](docs/PRODUCTION_READONLY_ACCESS.md).
+
 ## Sprint 33D Authorized Production Evidence Closure (2026-08-04)
 
 - Added a GET-only Production evidence collector for Netlify, Render and Auth0 Management metadata, reusing the existing SELECT-only Neon and public platform validator boundaries.

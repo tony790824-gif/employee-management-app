@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 provisioning preflight - 2026-08-08
+
+- Repository least-privilege provisioning controls: **PASS**
+- Neon Production read-only credential: **BLOCKED**
+- Netlify dedicated read-only evidence identity: **BLOCKED**
+- Render dedicated read-only evidence identity: **BLOCKED**
+- Auth0 exact-scope read-only M2M token: **BLOCKED**
+- Evidence re-run: **NOT PERFORMED**
+- Production request, connection, mutation or secret export: **none**
+
+The protected operator environment did not contain the required access. No external provider or database request was made. The evidence timestamp below and manifest SHA-256 `f1a48ff74795c58f2120cc323598b905caf20c89b3503c1828b5124030b179a1` remain the last actual Sprint 33D collection and were not regenerated or reclassified.
+
 Date: 2026-08-04
 
 Baseline: `80b4bd6d8e53c72e5101cd66b363a10dc5b20cb4`

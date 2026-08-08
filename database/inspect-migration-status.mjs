@@ -11,6 +11,12 @@ function databaseName(value) {
   return decodeURIComponent(new URL(value).pathname.replace(/^\//, '')).trim();
 }
 
+function databaseUser(value) {
+  return decodeURIComponent(new URL(value).username).trim();
+}
+
+const FORBIDDEN_READONLY_ROLE_NAME = /(?:^|[_-])(?:owner|admin|superuser|migrator|migration|api|runtime|push|staging)(?:$|[_-])/i;
+
 export function readOnlyDatabaseConfig(env = process.env) {
   const environment = String(env.BANK_ENV || '').trim().toLowerCase();
   if (!['staging', 'production'].includes(environment)) {
@@ -18,10 +24,22 @@ export function readOnlyDatabaseConfig(env = process.env) {
   }
   const readOnlyUrl = String(env.DATABASE_READONLY_URL || '').trim();
   if (!readOnlyUrl) throw new Error('Missing DATABASE_READONLY_URL; no database connection was attempted.');
-  const readOnlyUser = new URL(readOnlyUrl).username;
+  const readOnlyUser = databaseUser(readOnlyUrl);
+  if (environment === 'production') {
+    const expectedRole = String(env.BANK_PRODUCTION_READONLY_ROLE || '').trim();
+    if (!expectedRole) {
+      throw new Error('Production inspection requires BANK_PRODUCTION_READONLY_ROLE; no database connection was attempted.');
+    }
+    if (FORBIDDEN_READONLY_ROLE_NAME.test(expectedRole) || FORBIDDEN_READONLY_ROLE_NAME.test(readOnlyUser)) {
+      throw new Error('Production read-only inspection rejects privileged or environment-reused role names.');
+    }
+    if (readOnlyUser !== expectedRole) {
+      throw new Error('DATABASE_READONLY_URL user must match BANK_PRODUCTION_READONLY_ROLE.');
+    }
+  }
   for (const name of ['DATABASE_MIGRATOR_URL', 'DATABASE_API_URL', 'DATABASE_PUSH_URL']) {
     const value = String(env[name] || '').trim();
-    if (value && new URL(value).username === readOnlyUser) {
+    if (value && databaseUser(value) === readOnlyUser) {
       throw new Error(`DATABASE_READONLY_URL must not reuse ${name} credentials.`);
     }
   }
@@ -89,7 +107,9 @@ export async function inspectSchemaMetadata(client) {
               AS can_create_private_schema`
   );
   const role = await client.query(
-    `SELECT rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
+    `SELECT rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls,
+            rolcanlogin, rolinherit, rolconnlimit,
+            COALESCE(rolconfig, ARRAY[]::text[]) AS role_config
        FROM pg_catalog.pg_roles
       WHERE rolname = current_user`
   );
@@ -122,18 +142,22 @@ export async function inspectSchemaMetadata(client) {
       ORDER BY namespace.nspname, relation.relname, constraint_record.conname`
   );
   const functions = await client.query(
-    `SELECT routine_schema AS schema_name, routine_name AS object_name
-       FROM information_schema.routines
-      WHERE routine_schema IN ('public', 'app_private')
-      ORDER BY routine_schema, routine_name`
+    `SELECT namespace.nspname AS schema_name, procedure.proname AS object_name
+       FROM pg_catalog.pg_proc AS procedure
+       JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+      WHERE namespace.nspname IN ('public', 'app_private')
+      ORDER BY namespace.nspname, procedure.proname`
   );
   const triggers = await client.query(
-    `SELECT trigger_schema AS schema_name,
-            event_object_table AS table_name,
-            trigger_name AS object_name
-       FROM information_schema.triggers
-      WHERE trigger_schema IN ('public', 'app_private')
-      ORDER BY trigger_schema, event_object_table, trigger_name`
+    `SELECT namespace.nspname AS schema_name,
+            relation.relname AS table_name,
+            trigger_record.tgname AS object_name
+       FROM pg_catalog.pg_trigger AS trigger_record
+       JOIN pg_catalog.pg_class AS relation ON relation.oid = trigger_record.tgrelid
+       JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+      WHERE namespace.nspname IN ('public', 'app_private')
+        AND NOT trigger_record.tgisinternal
+      ORDER BY namespace.nspname, relation.relname, trigger_record.tgname`
   );
   const policies = await client.query(
     `SELECT schemaname AS schema_name, tablename AS table_name, policyname AS object_name
@@ -146,9 +170,43 @@ export async function inspectSchemaMetadata(client) {
             count(*)::integer AS observed_connections
        FROM pg_catalog.pg_stat_activity`
   );
+  const privileges = await client.query(
+    `SELECT
+       CASE WHEN to_regclass('public.schema_migrations') IS NULL THEN false
+            ELSE has_table_privilege(current_user, to_regclass('public.schema_migrations'), 'SELECT') END
+         AS can_read_migration_ledger,
+       (SELECT count(*)::integer
+          FROM pg_catalog.pg_class AS relation
+          JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+         WHERE namespace.nspname IN ('public', 'app_private')
+           AND relation.relkind IN ('r', 'p', 'v', 'm')
+           AND NOT (namespace.nspname = 'public' AND relation.relname = 'schema_migrations')
+           AND has_table_privilege(current_user, relation.oid, 'SELECT')) AS business_table_select_count,
+       (SELECT count(*)::integer
+          FROM pg_catalog.pg_class AS relation
+          JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+         WHERE namespace.nspname IN ('public', 'app_private')
+           AND relation.relkind IN ('r', 'p', 'v', 'm')
+           AND has_table_privilege(current_user, relation.oid, 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'))
+         AS table_write_privilege_count,
+       (SELECT count(*)::integer
+          FROM pg_catalog.pg_class AS relation
+          JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+         WHERE namespace.nspname IN ('public', 'app_private')
+           AND relation.relkind = 'S'
+           AND has_sequence_privilege(current_user, relation.oid, 'USAGE,UPDATE')) AS sequence_write_privilege_count,
+       (SELECT count(*)::integer
+          FROM pg_catalog.pg_proc AS procedure
+          JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+         WHERE namespace.nspname IN ('public', 'app_private')
+           AND has_function_privilege(current_user, procedure.oid, 'EXECUTE')) AS function_execute_privilege_count`
+  );
 
   const database = identity.rows[0] || {};
   const roleAttributes = role.rows[0] || {};
+  const roleConfig = Array.isArray(roleAttributes.role_config) ? roleAttributes.role_config : [];
+  const roleSetting = name => roleConfig.find(item => String(item).toLowerCase().startsWith(`${name}=`)) || '';
+  const privilegeSummary = privileges.rows[0] || {};
   const mapObjects = rows => rows.map(row => Object.freeze({
     schema: row.schema_name,
     name: row.object_name,
@@ -166,6 +224,13 @@ export async function inspectSchemaMetadata(client) {
       createRole: Boolean(roleAttributes.rolcreaterole),
       replication: Boolean(roleAttributes.rolreplication),
       bypassRls: Boolean(roleAttributes.rolbypassrls),
+      login: Boolean(roleAttributes.rolcanlogin),
+      inherit: Boolean(roleAttributes.rolinherit),
+      connectionLimit: Number(roleAttributes.rolconnlimit ?? -1),
+      defaultTransactionReadOnly: roleSetting('default_transaction_read_only').toLowerCase() === 'default_transaction_read_only=on',
+      statementTimeoutConfigured: Boolean(roleSetting('statement_timeout')) && !/=(?:0|0ms|0s)$/i.test(roleSetting('statement_timeout')),
+      idleTransactionTimeoutConfigured: Boolean(roleSetting('idle_in_transaction_session_timeout'))
+        && !/=(?:0|0ms|0s)$/i.test(roleSetting('idle_in_transaction_session_timeout')),
       createPublicSchema: Boolean(database.can_create_public_schema),
       createPrivateSchema: Boolean(database.can_create_private_schema)
     }),
@@ -183,6 +248,13 @@ export async function inspectSchemaMetadata(client) {
     capacity: Object.freeze({
       maxConnections: Number(capacity.rows[0]?.max_connections || 0),
       observedConnections: Number(capacity.rows[0]?.observed_connections || 0)
+    }),
+    privileges: Object.freeze({
+      migrationLedgerSelect: Boolean(privilegeSummary.can_read_migration_ledger),
+      businessTableSelectCount: Number(privilegeSummary.business_table_select_count || 0),
+      tableWritePrivilegeCount: Number(privilegeSummary.table_write_privilege_count || 0),
+      sequenceWritePrivilegeCount: Number(privilegeSummary.sequence_write_privilege_count || 0),
+      functionExecutePrivilegeCount: Number(privilegeSummary.function_execute_privilege_count || 0)
     })
   });
 }

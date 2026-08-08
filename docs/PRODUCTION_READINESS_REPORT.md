@@ -1,9 +1,16 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 34 read-only-access update - 2026-08-08
+
+- Repository provisioning and validation controls are **COMPLETE**, but externally authorized Neon, Netlify, Render and Auth0 read-only identities are absent. The evidence re-run is therefore **BLOCKED / NOT PERFORMED**.
+- The Neon evidence role is constrained to catalogs and `public.schema_migrations`; business reads, all writes, sequence writes, function execution, ownership, inheritance and privileged attributes are denied.
+- Production readiness remains **70%** and release remains **NOT READY**. No new timestamp or hash was created because no authorized external evidence was collected.
+- No Production request, database connection/write, Migration, deploy, environment/Auth0/platform change, restore, traffic change or real notification occurred.
+
 ## Sprint 33D authorized-evidence update — 2026-08-04
 
 - Repository evidence collection is implemented and verified, including GET-only management API adapters, the existing SELECT-only Neon boundary, sanitized evidence records and a complete SHA-256 manifest.
-- Actual collection result: Repository PASS; Production public endpoints/Neon/DNS/monitoring/recovery BLOCKED; Netlify/Render/Auth0 Management NOT AUTHORIZED. No unavailable evidence was promoted to PASS.
+- Actual collection result: Repository PASS; Production public endpoints/Neon/DNS/monitoring/recovery and Netlify/Render/Auth0 Management BLOCKED because authorized read access was absent. No unavailable evidence was promoted to PASS.
 - Production readiness remains **70%** and release remains **NOT READY** because no approved Production origins, distinct database reader or protected platform read authorization is configured.
 - No Production deployment, database connection/write, Migration, Auth0/environment/platform mutation, traffic change, restore, user creation or real notification occurred. See `docs/PRODUCTION_EVIDENCE_REPORT.md`.
 

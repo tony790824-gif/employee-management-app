@@ -1,5 +1,13 @@
 # 班客邦 Release Checklist
 
+## Sprint 34 Production read-only access gate
+
+- [x] Repository includes manual Neon provision/verify/disable SQL, exact role checks, process-only secret handling and fail-closed automated tests.
+- [x] Evidence commands no longer auto-load `.env.production` or reuse privileged application credentials.
+- [ ] External Neon, Netlify, Render and Auth0 read-only access is provisioned and independently authorized.
+- [ ] Evidence is rerun and newly hashed; current Sprint 33D manifest remains historical until then.
+- [x] No Production request, database connection/write, Migration, deployment or platform/Auth0 setting change occurred.
+
 ## Sprint 33D Production evidence gate
 
 - [x] Evidence collector enforces Production/read-only flags, GET-only management requests, SELECT-only database inspection, bounded responses and secret-safe output.

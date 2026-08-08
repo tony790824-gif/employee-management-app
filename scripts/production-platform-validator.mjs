@@ -313,14 +313,34 @@ export async function validateProductionDatabase(env, dependencies = {}) {
     await client.connect();
     const migrationStatus = await inspectMigrationStatus(client, migrations);
     const metadata = await inspectSchemaMetadata(client);
-    const dangerousRole = Object.values(metadata.roleAttributes).some(Boolean);
+    const dangerousRole = [
+      metadata.roleAttributes.superuser,
+      metadata.roleAttributes.createDatabase,
+      metadata.roleAttributes.createRole,
+      metadata.roleAttributes.replication,
+      metadata.roleAttributes.bypassRls,
+      metadata.roleAttributes.inherit,
+      metadata.roleAttributes.createPublicSchema,
+      metadata.roleAttributes.createPrivateSchema
+    ].some(Boolean);
+    const boundedRole = metadata.roleAttributes.login
+      && metadata.roleAttributes.connectionLimit > 0
+      && metadata.roleAttributes.connectionLimit <= 5
+      && metadata.roleAttributes.defaultTransactionReadOnly
+      && metadata.roleAttributes.statementTimeoutConfigured
+      && metadata.roleAttributes.idleTransactionTimeoutConfigured;
+    const leastPrivilege = metadata.privileges.migrationLedgerSelect
+      && metadata.privileges.businessTableSelectCount === 0
+      && metadata.privileges.tableWritePrivilegeCount === 0
+      && metadata.privileges.sequenceWritePrivilegeCount === 0
+      && metadata.privileges.functionExecutePrivilegeCount === 0;
     const policyTables = new Set(metadata.policies.map(item => `${item.schema}.${item.table}`));
     const unprotectedTables = metadata.tables.filter(item => policyTables.has(`${item.schema}.${item.name}`)
       && (!item.rlsEnabled || !item.rlsForced));
     const passed = migrationStatus.transactionReadOnly && metadata.transactionReadOnly
       && migrationStatus.ledgerExists && migrationStatus.pending.length === 0
       && metadata.database === 'neondb' && metadata.serverVersionNumber >= 140000
-      && !dangerousRole && unprotectedTables.length === 0
+      && !dangerousRole && boundedRole && leastPrivilege && unprotectedTables.length === 0
       && metadata.indexes.length > 0 && metadata.constraints.length > 0 && metadata.functions.length > 0;
     return result('database.schema', 'Production Database / Neon', passed ? VALIDATION_STATUS.PASS : VALIDATION_STATUS.FAIL,
       passed ? 'Read-only ledger, schema metadata, FORCE RLS, least-privilege role, and capacity metadata passed.'
@@ -336,6 +356,10 @@ export async function validateProductionDatabase(env, dependencies = {}) {
           triggerCount: metadata.triggers.length,
           policyCount: metadata.policies.length,
           unprotectedTableCount: unprotectedTables.length,
+          businessTableSelectCount: metadata.privileges.businessTableSelectCount,
+          tableWritePrivilegeCount: metadata.privileges.tableWritePrivilegeCount,
+          sequenceWritePrivilegeCount: metadata.privileges.sequenceWritePrivilegeCount,
+          functionExecutePrivilegeCount: metadata.privileges.functionExecutePrivilegeCount,
           serverVersionNumber: metadata.serverVersionNumber,
           maxConnections: metadata.capacity.maxConnections,
           observedConnections: metadata.capacity.observedConnections

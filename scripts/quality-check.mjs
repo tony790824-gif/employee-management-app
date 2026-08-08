@@ -46,6 +46,7 @@ const backendSourceFiles = [
   , 'tests/production-operations-gate.test.mjs'
   , 'tests/production-platform-validator.test.mjs'
   , 'tests/production-evidence-collector.test.mjs'
+  , 'tests/production-readonly-provisioning.test.mjs'
 ];
 
 for (const file of deployFiles) {

@@ -1,5 +1,9 @@
 # Next external gate — Production evidence and authorization
 
+## Current stop condition - continue Sprint 34, do not start a new Sprint
+
+Repository preparation is complete, but Neon, Netlify, Render and Auth0 read-only evidence access has not been externally provisioned. Follow `docs/PRODUCTION_READONLY_ACCESS.md`, keep every missing item `BLOCKED`, then rerun the existing validators. Do not begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before this evidence gate is closed.
+
 ## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
 
 Goal: provision only the missing protected read-only access and rerun Sprint 33D evidence collection. This requires explicit owner/platform authorization and must not deploy, migrate, change traffic, restore active Production, or modify application/platform settings.

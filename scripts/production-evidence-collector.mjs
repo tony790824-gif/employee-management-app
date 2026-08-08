@@ -29,6 +29,14 @@ const REQUIRED_RENDER_VARIABLES = Object.freeze([
   'BANK_PRODUCTION_DATABASE_HOST',
   'DATABASE_API_URL'
 ]);
+const READONLY_CONFIRMATION = 'CONFIRMED_READ_ONLY';
+const REQUIRED_AUTH0_SCOPES = Object.freeze([
+  'read:attack_protection',
+  'read:clients',
+  'read:connections',
+  'read:log_streams',
+  'read:resource_servers'
+]);
 
 function canonicalize(value) {
   if (Array.isArray(value)) return value.map(canonicalize);
@@ -57,6 +65,17 @@ function safeOrigin(value, name) {
   return url.origin;
 }
 
+function jwtScopes(token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 3) return [];
+  try {
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+    return String(payload.scope || '').trim().split(/\s+/).filter(Boolean).sort();
+  } catch {
+    return [];
+  }
+}
+
 export function productionEvidenceConfig(env = process.env) {
   if (String(env.BANK_ENV || '').trim().toLowerCase() !== 'production') {
     throw new Error('Production evidence collection requires BANK_ENV=production.');
@@ -68,12 +87,15 @@ export function productionEvidenceConfig(env = process.env) {
     apiOrigin: safeOrigin(env.BANK_PRODUCTION_API_URL, 'BANK_PRODUCTION_API_URL'),
     netlifySiteId: String(env.BANK_PRODUCTION_NETLIFY_SITE_ID || '').trim(),
     netlifyToken: String(env.NETLIFY_AUTH_TOKEN || '').trim(),
+    netlifyReadOnlyConfirmed: String(env.BANK_PRODUCTION_NETLIFY_READONLY_CONFIRM || '').trim() === READONLY_CONFIRMATION,
     renderServiceId: String(env.BANK_PRODUCTION_RENDER_SERVICE_ID || '').trim(),
     renderToken: String(env.RENDER_API_KEY || '').trim(),
+    renderReadOnlyConfirmed: String(env.BANK_PRODUCTION_RENDER_READONLY_CONFIRM || '').trim() === READONLY_CONFIRMATION,
     auth0IssuerOrigin: issuerOrigin,
     auth0ClientId: String(env.BANK_PRODUCTION_AUTH0_CLIENT_ID || '').trim(),
     auth0Audience: String(env.BANK_OIDC_AUDIENCE || '').trim(),
     auth0ManagementToken: String(env.AUTH0_MANAGEMENT_TOKEN || '').trim(),
+    auth0ManagementScopes: Object.freeze(jwtScopes(env.AUTH0_MANAGEMENT_TOKEN)),
     databaseReadOnlyConfigured: Boolean(String(env.DATABASE_READONLY_URL || '').trim())
   });
 }
@@ -131,6 +153,10 @@ export async function collectNetlifyEvidence(config, fetcher = fetch) {
     return providerEvidence('netlify.production', 'Netlify Production', EVIDENCE_STATUS.BLOCKED,
       'No protected Netlify read-only authorization is available.');
   }
+  if (!config.netlifyReadOnlyConfirmed) {
+    return providerEvidence('netlify.production', 'Netlify Production', EVIDENCE_STATUS.BLOCKED,
+      'Netlify credential least-privilege status is not independently confirmed; no request was sent.');
+  }
   if (!config.netlifySiteId || !config.frontendOrigin) {
     return providerEvidence('netlify.production', 'Netlify Production', EVIDENCE_STATUS.BLOCKED,
       'Approved Production Site ID and frontend origin are required.');
@@ -183,6 +209,10 @@ export async function collectRenderEvidence(config, fetcher = fetch) {
   if (!config.renderToken) {
     return providerEvidence('render.production', 'Render Production', EVIDENCE_STATUS.BLOCKED,
       'No protected Render read-only authorization is available.');
+  }
+  if (!config.renderReadOnlyConfirmed) {
+    return providerEvidence('render.production', 'Render Production', EVIDENCE_STATUS.BLOCKED,
+      'Render credential least-privilege status is not independently confirmed; no request was sent.');
   }
   if (!config.renderServiceId || !config.apiOrigin) {
     return providerEvidence('render.production', 'Render Production', EVIDENCE_STATUS.BLOCKED,
@@ -242,35 +272,69 @@ export async function collectAuth0ManagementEvidence(config, fetcher = fetch) {
     return providerEvidence('auth0.production.management', 'Auth0 Production', EVIDENCE_STATUS.BLOCKED,
       'No protected Auth0 Management read-only authorization is available.');
   }
+  const missingScopes = REQUIRED_AUTH0_SCOPES.filter(scope => !config.auth0ManagementScopes.includes(scope));
+  const excessScopes = config.auth0ManagementScopes.filter(scope => !REQUIRED_AUTH0_SCOPES.includes(scope));
+  if (missingScopes.length || excessScopes.length) {
+    return providerEvidence('auth0.production.management', 'Auth0 Production', EVIDENCE_STATUS.BLOCKED,
+      'Auth0 Management token is not the exact approved read-only scope set; no request was sent.', {
+        requiredScopeCount: REQUIRED_AUTH0_SCOPES.length,
+        missingScopeCount: missingScopes.length,
+        excessScopeCount: excessScopes.length
+      });
+  }
   if (!config.auth0IssuerOrigin || !config.auth0ClientId || !config.auth0Audience || !config.frontendOrigin) {
     return providerEvidence('auth0.production.management', 'Auth0 Production', EVIDENCE_STATUS.BLOCKED,
       'Approved Production issuer, SPA Client ID, audience and frontend origin are required.');
   }
   try {
-    const fields = 'name,callbacks,allowed_logout_urls,web_origins,allowed_origins,oidc_conformant,token_endpoint_auth_method';
+    const fields = 'name,callbacks,allowed_logout_urls,web_origins,allowed_origins,oidc_conformant,token_endpoint_auth_method,refresh_token';
     const clientUrl = `${config.auth0IssuerOrigin}/api/v2/clients/${encodeURIComponent(config.auth0ClientId)}?fields=${fields}&include_fields=true`;
     const resourceUrl = `${config.auth0IssuerOrigin}/api/v2/resource-servers?identifier=${encodeURIComponent(config.auth0Audience)}&fields=id,identifier,signing_alg&include_fields=true`;
-    const [clientResponse, resourceResponse] = await Promise.all([
+    const connectionUrl = `${config.auth0IssuerOrigin}/api/v2/connections?fields=id,name,strategy,enabled_clients&include_fields=true&per_page=100`;
+    const bruteForceUrl = `${config.auth0IssuerOrigin}/api/v2/attack-protection/brute-force-protection`;
+    const breachedPasswordUrl = `${config.auth0IssuerOrigin}/api/v2/attack-protection/breached-password-detection`;
+    const suspiciousIpUrl = `${config.auth0IssuerOrigin}/api/v2/attack-protection/suspicious-ip-throttling`;
+    const logStreamsUrl = `${config.auth0IssuerOrigin}/api/v2/log-streams`;
+    const responses = await Promise.all([
       readJson(fetcher, clientUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
-      readJson(fetcher, resourceUrl, config.auth0ManagementToken, config.auth0IssuerOrigin)
+      readJson(fetcher, resourceUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
+      readJson(fetcher, connectionUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
+      readJson(fetcher, bruteForceUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
+      readJson(fetcher, breachedPasswordUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
+      readJson(fetcher, suspiciousIpUrl, config.auth0ManagementToken, config.auth0IssuerOrigin),
+      readJson(fetcher, logStreamsUrl, config.auth0ManagementToken, config.auth0IssuerOrigin)
     ]);
-    if (!clientResponse.ok || !resourceResponse.ok) {
-      const unauthorized = [clientResponse.status, resourceResponse.status].some(status => status === 401 || status === 403);
+    const [clientResponse, resourceResponse, connectionResponse, bruteForceResponse,
+      breachedPasswordResponse, suspiciousIpResponse, logStreamsResponse] = responses;
+    if (responses.some(response => !response.ok)) {
+      const unauthorized = responses.some(response => response.status === 401 || response.status === 403);
       return providerEvidence('auth0.production.management', 'Auth0 Production', unauthorized ? EVIDENCE_STATUS.NOT_AUTHORIZED : EVIDENCE_STATUS.FAIL,
         'Auth0 Management read-only metadata request failed.', {
-          clientHttpStatus: clientResponse.status, apiHttpStatus: resourceResponse.status
+          clientHttpStatus: clientResponse.status,
+          apiHttpStatus: resourceResponse.status,
+          connectionHttpStatus: connectionResponse.status,
+          attackProtectionHttpStatuses: [bruteForceResponse.status, breachedPasswordResponse.status, suspiciousIpResponse.status],
+          logStreamsHttpStatus: logStreamsResponse.status
         });
     }
     const client = clientResponse.data || {};
     const api = Array.isArray(resourceResponse.data)
       ? resourceResponse.data.find(item => item.identifier === config.auth0Audience)
       : null;
+    const connections = Array.isArray(connectionResponse.data) ? connectionResponse.data : [];
+    const logStreams = Array.isArray(logStreamsResponse.data) ? logStreamsResponse.data : [];
+    const attackProtectionConfigured = [bruteForceResponse, breachedPasswordResponse, suspiciousIpResponse]
+      .every(response => response.data && typeof response.data === 'object');
+    const refreshRotation = client.refresh_token?.rotation_type === 'rotating';
+    const activeSecurityEventStream = logStreams.some(item => item.status === 'active'
+      && ['eventbridge', 'http'].includes(item.type));
     const callbackPass = productionOnlyList(client.callbacks, config.frontendOrigin);
     const logoutPass = productionOnlyList(client.allowed_logout_urls, config.frontendOrigin);
     const webOriginsPass = productionOnlyList(client.web_origins, config.frontendOrigin);
     const corsPass = !client.allowed_origins?.length || productionOnlyList(client.allowed_origins, config.frontendOrigin);
     const passed = callbackPass && logoutPass && webOriginsPass && corsPass
-      && client.oidc_conformant === true && api?.signing_alg === 'RS256';
+      && client.oidc_conformant === true && api?.signing_alg === 'RS256'
+      && refreshRotation && connections.length > 0 && attackProtectionConfigured && activeSecurityEventStream;
     return providerEvidence('auth0.production.management', 'Auth0 Production', passed ? EVIDENCE_STATUS.PASS : EVIDENCE_STATUS.FAIL,
       passed ? 'Production SPA allowlists and RS256 API metadata are verified.'
         : 'Auth0 Production metadata does not match the approved profile.', {
@@ -281,6 +345,11 @@ export async function collectAuth0ManagementEvidence(config, fetcher = fetch) {
         corsOriginCount: Array.isArray(client.allowed_origins) ? client.allowed_origins.length : 0,
         allowlistsProductionOnly: callbackPass && logoutPass && webOriginsPass && corsPass,
         oidcConformant: client.oidc_conformant === true,
+        refreshTokenRotation: refreshRotation,
+        connectionCount: connections.length,
+        attackProtectionChecks: attackProtectionConfigured ? 3 : 0,
+        logStreamCount: logStreams.length,
+        activeSecurityEventStream,
         apiSigningAlgorithm: api?.signing_alg || null,
         callbackAllowlistSha256: evidenceSha256((client.callbacks || []).slice().sort()),
         logoutAllowlistSha256: evidenceSha256((client.allowed_logout_urls || []).slice().sort()),

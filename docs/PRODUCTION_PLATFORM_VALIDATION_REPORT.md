@@ -1,5 +1,9 @@
 # Production Platform Validation Report - Sprint 33C
 
+## Sprint 34 read-only-access preflight
+
+Repository support is ready, including exact Production role identity, catalog-only privilege verification, process-only secrets, platform authority confirmation and exact Auth0 read scopes. The protected environment lacks the required credentials, so no external validation was rerun. All affected items remain `BLOCKED`; Production readiness remains 70% and Production was not operated.
+
 ## Sprint 33D evidence-collection result
 
 The protected operator environment still lacks approved Production public origins, a distinct database reader and platform read authorization. The new evidence collector records Repository PASS, external `BLOCKED`/`NOT AUTHORIZED` states and a SHA-256 manifest in `docs/PRODUCTION_EVIDENCE_REPORT.md`. Production readiness remains 70%; Production was not operated.

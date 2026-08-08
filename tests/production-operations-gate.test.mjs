@@ -49,15 +49,18 @@ assert.throws(() => rateLimitConfig({ BANK_ENV: 'staging', BANK_RATE_LIMIT_ENABL
 assert.throws(() => readOnlyDatabaseConfig({ BANK_ENV: 'production' }), /DATABASE_READONLY_URL/);
 assert.throws(() => readOnlyDatabaseConfig({
   BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://reader@prod.example/other',
+  BANK_PRODUCTION_READONLY_ROLE: 'reader',
   BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
 }), /neondb/);
 assert.throws(() => readOnlyDatabaseConfig({
   BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://owner@prod.example/neondb',
+  BANK_PRODUCTION_READONLY_ROLE: 'owner',
   DATABASE_MIGRATOR_URL: 'postgres://owner@prod.example/neondb',
   BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
-}), /must not reuse/);
+}), /rejects privileged/);
 const readOnlyConfig = readOnlyDatabaseConfig({
   BANK_ENV: 'production', DATABASE_READONLY_URL: 'postgres://reader@prod.example/neondb',
+  BANK_PRODUCTION_READONLY_ROLE: 'reader',
   DATABASE_MIGRATOR_URL: 'postgres://owner@prod.example/neondb',
   BANK_PRODUCTION_DATABASE_HOST: 'prod.example', DATABASE_SSL: 'require'
 });
@@ -164,5 +167,18 @@ assert.match(evidenceReport, /Production mutation: \*\*none\*\*/);
 const evidenceHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(evidenceHashes.algorithm, 'SHA-256');
 assert.equal(evidenceHashes.entries.length, 13);
+const readonlyAccess = await readFile('docs/PRODUCTION_READONLY_ACCESS.md', 'utf8');
+assert.match(readonlyAccess, /REPOSITORY READY \/ EXTERNAL PROVISIONING BLOCKED/);
+assert.match(readonlyAccess, /DATABASE_READONLY_URL/);
+assert.match(readonlyAccess, /CONFIRMED_READ_ONLY/);
+assert.match(readonlyAccess, /Evidence re-run: \*\*NOT PERFORMED\*\*/);
+for (const file of [
+  'database/operator/production-readonly-role.provision.sql',
+  'database/operator/production-readonly-role.verify.sql',
+  'database/operator/production-readonly-role.disable.sql'
+]) {
+  const sql = await readFile(file, 'utf8');
+  assert.doesNotMatch(sql, /(?:postgres(?:ql)?:\/\/|password\s*=|BEGIN (?:RSA|PRIVATE))/i);
+}
 
 console.log('Production security and operations repository gates passed.');

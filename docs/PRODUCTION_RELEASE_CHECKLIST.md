@@ -6,6 +6,10 @@ This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md
 
 ## Candidate and repository
 
+- [x] Repository contains confirmation-gated Neon reader provision/verify/disable procedures and fail-closed platform credential validation.
+- [ ] Distinct Neon reader is SQL-created, exact-role verified, metadata-only, and stored in the approved secret manager.
+- [ ] Netlify and Render access is proven read-only for the exact Production resources; otherwise automated evidence remains BLOCKED.
+- [ ] Auth0 M2M token contains exactly the five approved read scopes and no mutation scope.
 - [ ] Exact candidate Commit recorded; `main` and `origin/main` are 0/0.
 - [ ] Build, Check, full tests, Release Gate, Production Repository Gate, sensitive scan, dependency audit, and `git diff --check` pass.
 - [ ] `pnpm production:platform:validate` reports no `FAIL`; every `BLOCKED`/`NOT_CONFIGURED` item is resolved with evidence.

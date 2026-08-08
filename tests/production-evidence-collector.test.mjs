@@ -30,24 +30,43 @@ assert.equal((await collectNetlifyEvidence(blockedConfig)).status, EVIDENCE_STAT
 assert.equal((await collectRenderEvidence(blockedConfig)).status, EVIDENCE_STATUS.BLOCKED);
 assert.equal((await collectAuth0ManagementEvidence(blockedConfig)).status, EVIDENCE_STATUS.BLOCKED);
 
+const jwtPart = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+const auth0ReadScopes = [
+  'read:attack_protection', 'read:clients', 'read:connections', 'read:log_streams', 'read:resource_servers'
+];
+const auth0ReadToken = `${jwtPart({ alg: 'RS256', typ: 'JWT' })}.${jwtPart({ scope: auth0ReadScopes.join(' ') })}.synthetic-signature`;
+
 const env = {
   BANK_ENV: 'production',
   BANK_PRODUCTION_FRONTEND_URL: 'https://app.banke.tw',
   BANK_PRODUCTION_API_URL: 'https://api.banke.tw',
   BANK_PRODUCTION_NETLIFY_SITE_ID: 'site-production-synthetic',
   NETLIFY_AUTH_TOKEN: 'netlify-sensitive-token',
+  BANK_PRODUCTION_NETLIFY_READONLY_CONFIRM: 'CONFIRMED_READ_ONLY',
   BANK_PRODUCTION_RENDER_SERVICE_ID: 'srv-production-synthetic',
   RENDER_API_KEY: 'render-sensitive-token',
+  BANK_PRODUCTION_RENDER_READONLY_CONFIRM: 'CONFIRMED_READ_ONLY',
   BANK_OIDC_ISSUER: 'https://bankeban.us.auth0.com/',
   BANK_OIDC_JWKS_URL: 'https://bankeban.us.auth0.com/.well-known/jwks.json',
   BANK_OIDC_AUDIENCE: 'https://bankeban-api',
   BANK_OIDC_SESSION_CLAIM: 'https://banke.tw/session_id',
   BANK_PRODUCTION_AUTH0_CLIENT_ID: 'production-client-synthetic',
-  AUTH0_MANAGEMENT_TOKEN: 'auth0-sensitive-token'
+  AUTH0_MANAGEMENT_TOKEN: auth0ReadToken
 };
 const config = productionEvidenceConfig(env);
+assert.deepEqual(config.auth0ManagementScopes, auth0ReadScopes);
 const unauthorizedNetlify = await collectNetlifyEvidence(config, async () => new Response('{}', { status: 403 }));
 assert.equal(unauthorizedNetlify.status, EVIDENCE_STATUS.NOT_AUTHORIZED);
+let unconfirmedCalls = 0;
+const unconfirmed = productionEvidenceConfig({ ...env, BANK_PRODUCTION_NETLIFY_READONLY_CONFIRM: '' });
+assert.equal((await collectNetlifyEvidence(unconfirmed, async () => { unconfirmedCalls += 1; })).status, EVIDENCE_STATUS.BLOCKED);
+assert.equal(unconfirmedCalls, 0);
+const writeScoped = productionEvidenceConfig({
+  ...env,
+  AUTH0_MANAGEMENT_TOKEN: `${jwtPart({ alg: 'RS256' })}.${jwtPart({ scope: `${auth0ReadScopes.join(' ')} update:clients` })}.synthetic`
+});
+assert.equal((await collectAuth0ManagementEvidence(writeScoped, async () => { unconfirmedCalls += 1; })).status, EVIDENCE_STATUS.BLOCKED);
+assert.equal(unconfirmedCalls, 0);
 const calls = [];
 const jsonResponse = value => new Response(JSON.stringify(value), {
   status: 200, headers: { 'Content-Type': 'application/json' }
@@ -82,11 +101,21 @@ const fetcher = async (target, options) => {
       web_origins: ['https://app.banke.tw'],
       allowed_origins: ['https://app.banke.tw'],
       oidc_conformant: true,
-      token_endpoint_auth_method: 'none'
+      token_endpoint_auth_method: 'none',
+      refresh_token: { rotation_type: 'rotating', expiration_type: 'expiring' }
     });
   }
   if (url.pathname.includes('/api/v2/resource-servers')) {
     return jsonResponse([{ id: 'api-sensitive-id', identifier: 'https://bankeban-api', signing_alg: 'RS256' }]);
+  }
+  if (url.pathname.includes('/api/v2/connections')) {
+    return jsonResponse([{ id: 'connection-sensitive-id', name: 'production-connection', strategy: 'auth0', enabled_clients: ['production-client-synthetic'] }]);
+  }
+  if (url.pathname.includes('/api/v2/attack-protection/')) {
+    return jsonResponse({ enabled: true, mode: 'block' });
+  }
+  if (url.pathname.includes('/api/v2/log-streams')) {
+    return jsonResponse([{ id: 'stream-sensitive-id', type: 'eventbridge', status: 'active', sink: { awsAccountId: 'sensitive-account' } }]);
   }
   throw new Error('Unexpected evidence URL.');
 };
@@ -114,7 +143,7 @@ assert.equal(report.secretsEmitted, false);
 assert.match(report.hashManifest.sha256, /^[a-f0-9]{64}$/);
 assert.equal(report.hashManifest.entries.length, report.records.length);
 const serialized = JSON.stringify(report);
-assert.doesNotMatch(serialized, /netlify-sensitive-token|render-sensitive-token|auth0-sensitive-token|secret-BANK_ENV|site-sensitive-id|render-sensitive-id/);
+assert.doesNotMatch(serialized, /netlify-sensitive-token|render-sensitive-token|synthetic-signature|secret-BANK_ENV|site-sensitive-id|render-sensitive-id|connection-sensitive-id|stream-sensitive-id|sensitive-account/);
 const markdown = renderEvidenceMarkdown(report);
 assert.match(markdown, /Production Evidence Report/);
 assert.match(markdown, /SHA-256/);
