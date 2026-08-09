@@ -2,6 +2,10 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-09 - Sprint 34 Neon read-only evidence closure
+
+- Recorded the authorized human Provision/Verify PASS, the sanitized SHA-256 Neon evidence record, Sprint 34 COMPLETE status, and unchanged 70% / NOT READY Production decision. Codex did not connect to Production.
+
 ## 2026-08-08 - Sprint 34 Production Read-only Access Provisioning
 
 - Corrected the Neon non-superuser `ALTER ROLE` compatibility defect and recorded the failed first attempt without promoting Neon evidence to PASS.

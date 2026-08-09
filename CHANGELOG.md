@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 34 Neon read-only evidence closure
+
+- Recorded the authorized human Production Provision/Verify PASS against Commit `e58932032a788d6928c00457e3ffa661684ca580`; Codex did not connect to Production.
+- Closed the Neon reader and application Function ACL evidence blockers while retaining 37 `public.pgcrypto` / `cloud_admin` Functions as truthful `ACCEPTED_PLATFORM_INFORMATION`.
+- Appended a sanitized, SHA-256-hashed manual Neon evidence record without storing credentials, connection strings, business data or Function bodies.
+- Sprint 34 is complete, but Production readiness remains 70% / NOT READY because current feature parity, Netlify/Render/Auth0, monitoring, recovery and other external evidence remain open.
+
 ## 2026-08-08 - Sprint 34 Production Read-only Access Provisioning
 
 - Fixed Neon compatibility by replacing forbidden dangerous-attribute ALTER clauses with pre-mutation catalog checks; a dangerous pre-existing role now fails closed and safe roles continue with only permitted properties.

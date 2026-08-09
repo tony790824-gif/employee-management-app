@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 34 COMPLETE / Neon evidence PASS
+
+- An authorized human ran Provision and Verify against Commit `e58932032a788d6928c00457e3ffa661684ca580`; both completed with `COMMIT`. Codex did not connect to Production.
+- `banke_production_readonly` passes the dangerous-attribute, read-only transaction, timeout, schema-create, business-read/write, sequence-write, ledger and application Function ACL gates.
+- Eleven Bankeban Functions are strict PASS; the 37 `public.pgcrypto` / `cloud_admin` Functions remain truthful `ACCEPTED_PLATFORM_INFORMATION` and were not modified.
+- Neon read-only evidence is PASS; Production database evidence is PARTIAL because only foundation ledger `0001`-`0008` is deployed and current feature parity/recovery are not proven.
+- Sprint 34 is COMPLETE. Production readiness remains 70% and release remains NOT READY due to external Netlify/Render/Auth0, monitoring/recovery, current-stack cutover and device evidence. Do not start Sprint 35 automatically.
+
 ## 2026-08-09 handoff - Sprint 34 classified Function ACL
 
 - Production read-only metadata confirms the 11 Bankeban Functions are safe: owner `neondb_owner`, PUBLIC/reader zero, and exactly four explicit `banke_api_production` entry points.

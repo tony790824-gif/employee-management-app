@@ -1,5 +1,12 @@
 # Codex Context
 
+## 2026-08-09 Sprint 34 final state
+
+- Sprint 34 is **COMPLETE**. An authorized human ran the corrected Production Neon Provision and Verify at Commit `e58932032a788d6928c00457e3ffa661684ca580`; both committed successfully. Codex did not connect to Production.
+- Neon read-only evidence is **PASS**. Production database evidence is **PARTIAL**: the safe reader, ACLs and Production ledger `0001`-`0008` are proven, while current feature-schema parity and recovery remain open.
+- Bankeban application Function ACLs pass strictly; 37 `public.pgcrypto` / `cloud_admin` Functions remain `ACCEPTED_PLATFORM_INFORMATION`, not a fabricated global-zero result.
+- Production readiness remains **70% / NOT READY**. Remaining external platform, monitoring, recovery, cutover and device evidence must be closed separately. Do not start Sprint 35 automatically.
+
 ## 2026-08-09 Sprint 34 classified Production Function evidence
 
 - Actual catalog evidence: 11 `app_private` Bankeban Functions owned by `neondb_owner`, application PUBLIC/reader zero, exactly four explicit runtime grants; 37 remaining effective reader Functions are only `public.pgcrypto` Extension members owned by `cloud_admin` through PUBLIC.

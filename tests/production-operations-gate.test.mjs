@@ -166,12 +166,14 @@ assert.match(evidenceReport, /NOT AUTHORIZED/);
 assert.match(evidenceReport, /Production mutation: \*\*none\*\*/);
 const evidenceHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(evidenceHashes.algorithm, 'SHA-256');
-assert.equal(evidenceHashes.entries.length, 13);
+assert.equal(evidenceHashes.entries.length, 14);
+assert.equal(evidenceHashes.manualEvidence.status, 'PASS');
+assert.equal(evidenceHashes.manualEvidence.codexProductionConnection, false);
 const readonlyAccess = await readFile('docs/PRODUCTION_READONLY_ACCESS.md', 'utf8');
-assert.match(readonlyAccess, /REPOSITORY READY \/ EXTERNAL PROVISIONING BLOCKED/);
+assert.match(readonlyAccess, /NEON PROVISION AND VERIFY PASS/);
 assert.match(readonlyAccess, /DATABASE_READONLY_URL/);
 assert.match(readonlyAccess, /CONFIRMED_READ_ONLY/);
-assert.match(readonlyAccess, /Evidence re-run: \*\*NOT PERFORMED\*\*/);
+assert.match(readonlyAccess, /Neon evidence re-run: \*\*PERFORMED BY HUMAN \/ PASS \/ HASHED\*\*/);
 for (const file of [
   'database/operator/production-readonly-role.provision.sql',
   'database/operator/production-readonly-role.verify.sql',

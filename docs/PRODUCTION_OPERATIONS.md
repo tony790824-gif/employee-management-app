@@ -1,10 +1,10 @@
 # Production Operations Evidence Guide
 
-Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED**
+Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
 The detailed procedure remains `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. This guide defines how Sprint 33C evidence is collected without changing Production.
 
-Sprint 34 least-privilege provisioning, verification and revocation steps are in `docs/PRODUCTION_READONLY_ACCESS.md`. Do not run the evidence commands until every credential is separately authorized and proven read-only.
+Sprint 34 Neon least-privilege Provision/Verify passed through an authorized human operator. The remaining evidence commands still require separately authorized, proven read-only Netlify, Render and Auth0 access.
 
 ## Read-only validation
 

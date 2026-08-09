@@ -1,6 +1,10 @@
 # Production Platform Validation Report - Sprint 33C
 
-## Sprint 34 read-only-access preflight
+## Sprint 34 final Neon addendum - 2026-08-09
+
+Authorized human Provision/Verify passed at Commit `e58932032a788d6928c00457e3ffa661684ca580`. Neon read-only role/ACL/ledger evidence is now PASS; Codex did not connect to Production. The broader Production Database evidence remains PARTIAL because the ledger is still the foundation `0001`-`0008` set and current application-schema parity, capacity and recovery are not proven. Other platform rows below remain historical Sprint 33C status and are still BLOCKED/NOT_CONFIGURED unless separately evidenced. Overall readiness remains 70% / NOT READY.
+
+## Sprint 34 read-only-access preflight (historical)
 
 Repository support is ready, including exact Production role identity, catalog-only privilege verification, process-only secrets, platform authority confirmation and exact Auth0 read scopes. The protected environment lacks the required credentials, so no external validation was rerun. All affected items remain `BLOCKED`; Production readiness remains 70% and Production was not operated.
 

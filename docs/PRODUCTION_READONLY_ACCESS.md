@@ -1,6 +1,6 @@
 # Production Read-only Access Provisioning
 
-Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED / PGCRYPTO CLASSIFIED**
+Status: **NEON PROVISION AND VERIFY PASS / EXTERNAL PLATFORM EVIDENCE PARTIAL**
 
 Date: 2026-08-09
 
@@ -8,7 +8,9 @@ This runbook prepares Sprint 34 evidence access without changing Production. Mis
 
 ## Verified Production Function classification
 
-Status: **APPLICATION ACL PASS / PLATFORM EXTENSION INFORMATION ACCEPTED / HUMAN RE-PROVISION AND VERIFY REQUIRED**
+Status: **APPLICATION ACL PASS / PLATFORM EXTENSION INFORMATION ACCEPTED / HUMAN PROVISION AND VERIFY PASS**
+
+The authorized human operator successfully ran the corrected scripts at Commit `e58932032a788d6928c00457e3ffa661684ca580`: Provision ended in `COMMIT`, then the distinct reader Verify ended in `COMMIT`. Codex did not connect to Production or execute either script.
 
 The authorized read-only catalog diagnostic proved that all 11 Bankeban application-managed Functions are in `app_private`, owned by `neondb_owner`, unavailable to `PUBLIC` and `banke_production_readonly`, and unavailable to `banke_api_production` except for the four explicitly granted API entry points. The only 37 Functions inherited by the reader through `PUBLIC` are `public.pgcrypto` Extension members owned by Neon role `cloud_admin`; the runtime has no direct grant on them.
 
@@ -65,9 +67,9 @@ All Functions below are created by the tracked Migrations and are expected to re
 
 Migration 0001 requests `pgcrypto`. Production currently exposes 37 `public.pgcrypto` Functions owned by `cloud_admin`; these are Extension-managed platform information. PostgreSQL built-ins in `pg_catalog` remain outside the `public`/`app_private` verifier scope. A different Bankeban owner, extra non-Extension Function, or unreviewed Extension tuple remains BLOCKED.
 
-## Neon Function ACL incident
+## Neon Function ACL incident (historical, resolved)
 
-Status: **BLOCKED / CLASSIFIED VERIFIER READY / HUMAN RE-PROVISION AND VERIFY REQUIRED**
+Status: **RESOLVED / CLASSIFIED PROVISION AND VERIFY PASS**
 
 The Neon-compatible provisioning script previously completed on Production, and the reader verified `neondb`, TLS, read-only mode, safe role attributes/defaults, database/schema boundaries, ledger access, zero business-table reads, zero writes, and zero sequence writes. The former global count of 37 has now been proven to contain only platform-managed pgcrypto Functions; no Function was called and no business data was read or changed.
 
@@ -77,9 +79,9 @@ The corrected script exits unless the runtime is safe and has exactly four expli
 
 Do not manually revoke, alter, re-own, or drop pgcrypto objects. Do not substitute another runtime role or remove the classified fail-closed checks.
 
-## Neon role-attribute compatibility incident
+## Neon role-attribute compatibility incident (historical, resolved)
 
-Status: **BLOCKED / SCRIPT COMPATIBILITY DEFECT FIXED / HUMAN RE-RUN REQUIRED**
+Status: **RESOLVED / SCRIPT COMPATIBILITY FIX VERIFIED BY HUMAN RUN**
 
 The first authorized Production attempt connected to `neondb` with TLS and passed the read-only catalog preflight, then stopped on the first mutating statement because it included `ALTER ROLE ... NOSUPERUSER`. PostgreSQL 18 permits only a true PostgreSQL superuser to change the `SUPERUSER` attribute, including changing it to `NOSUPERUSER`. Neon does not provide access to that true superuser. Because `ON_ERROR_STOP` was active and this was the first mutating statement, no later `ALTER ROLE ... SET`, `GRANT`, `REVOKE`, or `ALTER DEFAULT PRIVILEGES` statement executed. No business data or schema object was modified.
 
@@ -150,14 +152,16 @@ Every item must remain `PASS`, `FAIL`, `BLOCKED`, or `NOT AUTHORIZED` according 
 ## Current Sprint 34 result
 
 - Repository provisioning controls: **PASS**
-- Neon SQL-created role: **EXISTS / ROLE SETTINGS AND LEDGER ACCESS VERIFIED**
+- Neon SQL-created role: **PASS / ROLE SETTINGS AND LEDGER ACCESS VERIFIED**
 - Neon first provisioning attempt: **BLOCKED / ROLE-ATTRIBUTE SCRIPT COMPATIBILITY DEFECT FIXED**
 - Neon Function diagnostic: **PASS / 11 APPLICATION FUNCTIONS SAFE / 37 PGCRYPTO FUNCTIONS CLASSIFIED**
-- Classified Function ACL correction: **REPOSITORY PASS / PENDING HUMAN RE-PROVISION AND VERIFY**
-- Neon evidence: **BLOCKED**
+- Classified Function ACL correction: **PASS / HUMAN PROVISION AND VERIFY COMMITTED**
+- Neon read-only evidence: **PASS**
+- Production database evidence: **PARTIAL / FOUNDATION LEDGER 0001-0008 VERIFIED; CURRENT FEATURE PARITY AND RECOVERY EVIDENCE OPEN**
 - Netlify read-only evidence identity: **BLOCKED**
 - Render read-only evidence identity: **BLOCKED**
 - Auth0 read-only M2M token: **BLOCKED**
-- Evidence re-run: **NOT PERFORMED**
+- Neon evidence re-run: **PERFORMED BY HUMAN / PASS / HASHED**
+- Full multi-platform evidence re-run: **NOT PERFORMED / BLOCKED**
 - Production readiness: **70% - NOT READY**
-- Production changes by this repository correction: **none** (the prior authorized human provisioning changed only evidence-role configuration/ACL; it did not modify business data, schema or Migration)
+- Production changes by Codex: **none**. The authorized human Provision changed only the dedicated evidence-role configuration/ACL; it did not modify business data, application schema, Migration, pgcrypto or deployment state.

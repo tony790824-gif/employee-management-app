@@ -1,26 +1,35 @@
 # Production Readiness Report — Sprint 33A
 
-## Sprint 34 classified Function ACL update - 2026-08-09
+## Sprint 34 final Neon evidence decision - 2026-08-09
+
+- Sprint 34: **COMPLETE** for Production read-only access provisioning and Neon evidence verification.
+- Neon Production read-only evidence: **PASS** based on a human-run Provision/Verify against Commit `e58932032a788d6928c00457e3ffa661684ca580`; Codex did not connect to Production.
+- Production database evidence: **PARTIAL**. Role safety, read-only enforcement, application Function ACLs and ledger `0001`-`0008` pass, but current feature-schema parity, backup/PITR and isolated restore evidence remain open.
+- Production readiness remains **70%** under the existing scoring model. The new evidence closes the missing-Neon-reader and Function-ACL evidence blocker, but does not close B-01 through B-05 or justify changing any category score.
+- Release decision remains **NOT READY**. Netlify, Render, Auth0, DNS/TLS, monitoring, capacity/recovery and current-stack cutover evidence remain separately blocked or pending.
+- The human Provision changed only the dedicated evidence-role configuration/ACL necessary for verification. It did not deploy, migrate, change business data or alter pgcrypto. This Repository closure performed no Production operation.
+
+## Sprint 34 classified Function ACL update - 2026-08-09 (historical pre-final state)
 
 - Production diagnostic evidence proves all 11 Bankeban Functions have owner `neondb_owner`, PUBLIC/reader execution zero, and exactly four explicit runtime grants.
 - The 37 remaining effective reader grants are only `public.pgcrypto` Extension members owned by Neon `cloud_admin` and inherited from PUBLIC. They are now reported as accepted platform information rather than falsely reported as global zero.
 - Repository Provision/Verify now targets only the exact application set, proves pgcrypto ACLs remain unchanged, and fails on every unreviewed application or Extension Function.
 - Production evidence remains **BLOCKED** until a human reruns corrected Provision/Verify. Production readiness remains **70%** and release remains **NOT READY**.
 
-## Sprint 34 diagnostic identity blocker - 2026-08-09
+## Sprint 34 diagnostic identity blocker - 2026-08-09 (historical)
 
 - The manual diagnostic returned no metadata because its intended confirmation token did not match the script's enforced literal. This is a repository compatibility defect, not evidence that Neon rewrote the SQL role identity.
 - The corrected gate now independently requires `current_database() = neondb`, exact role variables, role existence, and both `current_user` and `session_user` equal to `banke_production_readonly`.
 - No Production write, Provision, Migration, or verification occurred. Production evidence remains **BLOCKED**, readiness remains **70%**, and release remains **NOT READY** pending the corrected manual diagnostic.
 
-## Sprint 34 Function owner blocker - 2026-08-09
+## Sprint 34 Function owner blocker - 2026-08-09 (historical)
 
 - The exact-role human re-run stopped fail-closed before its transaction because a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`.
 - Repository Migrations 0001-0008 account for 11 Bankeban Functions, all expected to retain `neondb_owner`; exactly four are approved for direct `banke_api_production` execution. Migration 0001 also requests `pgcrypto`, making Extension ownership a plausible but unconfirmed explanation.
 - A manual read-only catalog diagnostic now reports safe ownership/ACL/Extension metadata without Function bodies or business rows. It does not modify Production and does not authorize an ACL change.
 - Historical requirement at this stage was global zero effective Function execution. The completed catalog diagnostic later replaced that over-broad metric with an equivalent classified gate: zero Bankeban application PUBLIC/reader execution, exactly four explicit runtime entry points, and a reviewed, unchanged platform Extension set. Production evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY**.
 
-## Sprint 34 Function ACL correction - 2026-08-08
+## Sprint 34 Function ACL correction - 2026-08-08 (historical pre-final state)
 
 - The Neon-compatible role provisioning completed and the distinct reader verified TLS, `neondb`, read-only mode, safe role attributes/defaults, ledger 0001-0008, zero business SELECT, zero writes and zero sequence writes.
 - Historical blocker: the former global count was 37 because effective privileges included PostgreSQL `PUBLIC EXECUTE`. The later catalog diagnostic classified all 37 as reviewed `public.pgcrypto` Extension Functions rather than Bankeban application Functions; a direct role revoke cannot negate PUBLIC inheritance.
@@ -28,14 +37,14 @@
 - This repository change did not connect to or mutate Production. A human must re-provision and re-run the reader verification before Neon evidence can become PASS.
 - Production readiness remains **70%** and release remains **NOT READY**.
 
-## Sprint 34 Neon role-attribute compatibility correction - 2026-08-08
+## Sprint 34 Neon role-attribute compatibility correction - 2026-08-08 (historical)
 
 - The authorized Production provisioning attempt is **BLOCKED / SCRIPT COMPATIBILITY DEFECT**. It stopped at the first mutation, `ALTER ROLE ... NOSUPERUSER`, because Neon exposes `neon_superuser` compatibility rather than a true PostgreSQL superuser.
 - `ON_ERROR_STOP` prevented all later grants, revokes, role defaults and default privileges. Only catalog preflight reads occurred; no business data, schema or Migration changed.
 - The corrected script fail-closes on any dangerous role attribute and no longer attempts to mutate `SUPERUSER`, `CREATEDB`, `CREATEROLE`, `REPLICATION` or `BYPASSRLS`. Full verification remains mandatory.
 - Neon evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY** pending a human re-run and verified evidence.
 
-## Sprint 34 read-only-access update - 2026-08-08
+## Sprint 34 read-only-access update - 2026-08-08 (historical pre-final state)
 
 - Repository provisioning and validation controls are **COMPLETE**. A SQL-created Neon role now exists, but provisioning/evidence remains blocked pending the corrected-script human re-run; Netlify, Render and Auth0 read-only identities remain absent.
 - The Neon evidence role is constrained to catalogs and `public.schema_migrations`; business reads, all writes, sequence writes, function execution, ownership, inheritance and privileged attributes are denied.

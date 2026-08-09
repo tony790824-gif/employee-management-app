@@ -7,7 +7,7 @@ This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md
 ## Candidate and repository
 
 - [x] Repository contains confirmation-gated Neon reader provision/verify/disable procedures and fail-closed platform credential validation.
-- [ ] Distinct Neon reader is SQL-created, exact-role verified, metadata-only, and stored in the approved secret manager.
+- [x] Distinct Neon reader is SQL-created, exact-role verified and metadata-only; credential value was not exposed or committed.
 - [ ] Netlify and Render access is proven read-only for the exact Production resources; otherwise automated evidence remains BLOCKED.
 - [ ] Auth0 M2M token contains exactly the five approved read scopes and no mutation scope.
 - [ ] Exact candidate Commit recorded; `main` and `origin/main` are 0/0.
@@ -34,9 +34,9 @@ This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md
 
 ## Database / Neon
 
-- [ ] Read-only role is distinct from Owner, Migrator, API, Push and Staging roles; no dangerous role attributes or DDL privileges exist.
-- [ ] Classified Function ACL evidence passes: all 11 Bankeban Functions are owned by `neondb_owner`, application PUBLIC/reader EXECUTE counts are zero, and `banke_api_production` has exactly four explicit approved grants.
-- [ ] Platform Function evidence reports the reviewed `public.pgcrypto` / `cloud_admin` Extension counts separately; no pgcrypto ACL, owner, or Extension object is mutated, and any other Extension tuple blocks release.
+- [x] Read-only role is distinct from Owner, Migrator, API, Push and Staging roles; no dangerous role attributes or DDL privileges exist.
+- [x] Classified Function ACL evidence passes: all 11 Bankeban Functions are owned by `neondb_owner`, application PUBLIC/reader EXECUTE counts are zero, and `banke_api_production` has exactly four explicit approved grants.
+- [x] Platform Function evidence reports the 37 reviewed `public.pgcrypto` / `cloud_admin` Extension Functions separately as `ACCEPTED_PLATFORM_INFORMATION`; no pgcrypto ACL, owner, or Extension object was mutated.
 - [ ] `neondb`, direct approved host, TLS, server version and connection capacity are verified.
 - [ ] Migration ledger/order/checksums and repository manifest align; `0010` is not included.
 - [ ] Tables, indexes, constraints, functions, triggers, policies, RLS and FORCE RLS match the reviewed schema.

@@ -1,5 +1,22 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 final human Neon evidence - 2026-08-09
+
+- Executed by: **authorized human operator** against Commit `e58932032a788d6928c00457e3ffa661684ca580`
+- Codex Production connection: **none**
+- Provision: **PASS / COMMIT**
+- Verify: **PASS / COMMIT**
+- Neon Production read-only evidence: **PASS**
+- Production database evidence: **PARTIAL** — the least-privilege reader, TLS transaction boundary, ACL classification and ledger `0001`-`0008` are proven; current application-schema parity through later Staging-only features, capacity, backup and restore are not proven.
+- Overall Production evidence: **BLOCKED** by remaining Netlify, Render, Auth0, DNS/TLS, monitoring and recovery evidence.
+- Production readiness: **70% / NOT READY**
+
+The human operator confirmed `neondb`, `banke_production_readonly`, `transaction_read_only=on`, no dangerous role attributes, `NOINHERIT`, connection limit 3, bounded role timeouts, CONNECT/USAGE without CREATE, ledger SELECT, zero business-table SELECT, zero table writes and zero sequence writes. The ledger contains exactly the eight applied Production foundation Migrations `0001` through `0008`; no Migration was executed during this evidence closure.
+
+Application Function evidence is **PASS**: all 11 expected Functions exist, all are owned by `neondb_owner`, application PUBLIC/reader EXECUTE is zero, and `banke_api_production` has exactly the four explicit approved entry points with no unapproved Function. The 37 `public.pgcrypto` Functions owned by `cloud_admin` remain `ACCEPTED_PLATFORM_INFORMATION`: their PUBLIC/reader effective EXECUTE is reported truthfully, but they are not Bankeban grants and were not revoked, altered, re-owned or dropped.
+
+The sanitized human attestation is appended to `PRODUCTION_EVIDENCE_HASHES.json` as `manual.neon.production.readonly`; its record SHA-256 is `c5e59bded74a96d0829bf56087a49ef0f790d82f5e20b1f4c9f9a62ec85afb61` and the updated 14-entry manifest SHA-256 is `54d9a2f9a65461b1e7c6c20c050ff45007df9a6c543386aeef6045447f9ca8b1`. The original 13 Sprint 33D hashes and timestamp remain unchanged.
+
 ## Sprint 34 classified Function ACL evidence - 2026-08-09
 
 - Read-only catalog diagnostic: **PASS / SAFE METADATA COLLECTED**
@@ -64,7 +81,7 @@ The Sprint 33D evidence timestamp and hash manifest below remain unchanged. This
 
 This attempt is operational evidence of a compatibility defect, not Neon schema evidence. It does not replace or regenerate the Sprint 33D evidence timestamp or hash manifest.
 
-## Sprint 34 provisioning preflight - 2026-08-08
+## Sprint 34 provisioning preflight - 2026-08-08 (historical)
 
 - Repository least-privilege provisioning controls: **PASS**
 - Neon Production read-only credential: **BLOCKED**
@@ -92,7 +109,7 @@ Production mutation: **none**
 
 ## Result
 
-The repository evidence collector and its security tests pass. No approved Production frontend/API origin, distinct `DATABASE_READONLY_URL`, or protected read-only Netlify/Render/Auth0 Management authorization is available in the operator environment. The unavailable evidence is therefore recorded as `BLOCKED`; it is not treated as `PASS`. `NOT AUTHORIZED` is reserved for a supplied read-only credential that the provider explicitly rejects with HTTP 401/403.
+The repository evidence collector and its security tests pass. The Sprint 33D baseline lacked approved Production frontend/API origins, a distinct database reader and protected Netlify/Render/Auth0 Management authorization. Sprint 34 has since closed only the Neon reader item through human evidence; the other unavailable evidence remains `BLOCKED`. `NOT AUTHORIZED` is reserved for a supplied read-only credential that the provider explicitly rejects with HTTP 401/403.
 
 No Production deploy, Migration, database connection/write, Auth0 change, environment-variable change, platform-resource change, traffic change, restore, user creation, or real notification occurred.
 
@@ -105,7 +122,8 @@ No Production deploy, Migration, database connection/write, Auth0 change, enviro
 | Netlify Production management | BLOCKED | No protected read-only authorization is available. No Netlify Management API request was sent. |
 | Render Production public endpoint | BLOCKED | No approved Production API origin is configured. Health/readiness and runtime metadata were not guessed. |
 | Render Production management | BLOCKED | No protected read-only authorization is available. No Render Management API request was sent. |
-| Neon Production | BLOCKED | No distinct SELECT-only `DATABASE_READONLY_URL`; Owner, Migrator, API and Push credentials were not used. No database connection was attempted. |
+| Neon Production read-only access | PASS | Human Provision/Verify proved the dedicated reader, read-only boundary, ledger `0001`-`0008`, zero business reads/writes and strict application Function ACLs. Codex did not connect. |
+| Production database feature parity / recovery | PARTIAL | Foundation metadata is proven, but current feature-schema parity, capacity, backup/PITR and isolated restore evidence remain open. |
 | Auth0 Production public metadata | BLOCKED | Approved Production issuer/JWKS/audience are not configured. |
 | Auth0 Production management | BLOCKED | No protected Management read-only authorization is available. Callback/logout/web-origin allowlists were not inferred from Staging. |
 | DNS / TLS | BLOCKED | Approved Production frontend/API origins are required before DNS/TLS evidence can be collected. |
@@ -132,14 +150,15 @@ Algorithm: **SHA-256**
 | `netlify.production` | `090cd819a4348d3b8ae64d5083677e066692c0c1af31e02c943ac5b5460c042c` |
 | `render.production` | `5f6f5821d2e2e48c1203787e9dc891227c62b7fd253116b83adf468d3ef3c38e` |
 | `auth0.production.management` | `30ae04418039235a87c6569dfacad0269f84f9c466c3eb1ad7026d095747132c` |
+| `manual.neon.production.readonly` | `c5e59bded74a96d0829bf56087a49ef0f790d82f5e20b1f4c9f9a62ec85afb61` |
 
-Manifest SHA-256: `f1a48ff74795c58f2120cc323598b905caf20c89b3503c1828b5124030b179a1`
+Manifest SHA-256: `54d9a2f9a65461b1e7c6c20c050ff45007df9a6c543386aeef6045447f9ca8b1`
 
 The hashes cover canonical sanitized evidence records. They do not hash, store, export, or reveal access tokens, cookies, database URLs, private keys, raw resource IDs, environment values, or personal data.
 
 ## Required authorization to continue
 
 1. Provision protected read-only Netlify, Render and Auth0 Management access plus the approved Production resource identifiers. Do not send values through chat or commit them.
-2. Re-run the corrected Function-ACL-aware provisioning script with the independently verified evidence, object-owner and `banke_api_production` role names. Then rerun the reader verification and require all three Function counts (effective reader, `PUBLIC`, direct reader) to be zero before storing the connection as `DATABASE_READONLY_URL`.
+2. Preserve the verified Neon reader and classified Function ACL boundary. Do not rerun provisioning or alter pgcrypto unless a separately reviewed database change requires new evidence.
 3. Configure the approved credential-free Production frontend/API origins and public Auth0 metadata in the protected operator environment.
 4. Re-run `pnpm production:evidence:collect`; retain `BLOCKED` until access is supplied and the evidence is directly verified. A supplied credential rejected with 401/403 must be recorded as `NOT AUTHORIZED`.

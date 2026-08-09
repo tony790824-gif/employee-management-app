@@ -151,7 +151,18 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 13);
+assert.equal(committedHashes.entries.length, 14);
+assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
+assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
+assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);
+assert.equal(committedHashes.manualEvidence.applicationFunctions.readonlyExecute, 0);
+assert.equal(committedHashes.manualEvidence.applicationFunctions.runtimeExplicitExecute, 4);
+assert.equal(committedHashes.manualEvidence.platformExtension.classification, 'ACCEPTED_PLATFORM_INFORMATION');
+assert.equal(committedHashes.manualEvidence.platformExtension.count, 37);
+assert.equal(
+  committedHashes.entries.find(item => item.id === 'manual.neon.production.readonly')?.sha256,
+  evidenceSha256(committedHashes.manualEvidence)
+);
 assert.equal(evidenceSha256(committedHashes.entries), committedHashes.sha256);
 assert.equal(new Set(committedHashes.entries.map(item => item.id)).size, committedHashes.entries.length);
 assert.equal(committedHashes.entries.every(item => /^[a-f0-9]{64}$/.test(item.sha256)), true);

@@ -62,9 +62,9 @@ export async function runProductionRepositoryGate() {
     'read-only', 'BLOCKED', 'NOT_CONFIGURED', 'Stop conditions'
   ], failures);
   await existsAndContains('docs/PRODUCTION_READONLY_ACCESS.md', [
-    'REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED',
+    'NEON PROVISION AND VERIFY PASS',
     'DATABASE_READONLY_URL', 'CONFIRMED_READ_ONLY',
-    'read:attack_protection', 'Evidence re-run: **NOT PERFORMED**'
+    'read:attack_protection', 'Neon evidence re-run: **PERFORMED BY HUMAN / PASS / HASHED**'
   ], failures);
   await existsAndContains('database/operator/production-readonly-role.provision.sql', [
     'PROVISION_BANKE_PRODUCTION_READONLY', 'NOINHERIT', 'default_transaction_read_only',
@@ -88,11 +88,12 @@ export async function runProductionRepositoryGate() {
     '--production', '--read-only', 'NOT AUTHORIZED', 'SHA-256', 'method: \'GET\''
   ], failures);
   await existsAndContains('docs/PRODUCTION_EVIDENCE_REPORT.md', [
-    'Sprint 33D', 'Sprint 34 provisioning preflight', 'BLOCKED', 'NOT AUTHORIZED',
-    'Evidence re-run: **NOT PERFORMED**', 'Manifest SHA-256', 'Production mutation: **none**'
+    'Sprint 33D', 'Sprint 34 final human Neon evidence', 'BLOCKED', 'NOT AUTHORIZED',
+    'Neon Production read-only evidence: **PASS**', 'Manifest SHA-256', 'Production mutation: **none**'
   ], failures);
   await existsAndContains('docs/PRODUCTION_EVIDENCE_HASHES.json', [
-    'SHA-256', 'public.repository.gate', 'netlify.production', 'render.production', 'auth0.production.management'
+    'SHA-256', 'public.repository.gate', 'netlify.production', 'render.production',
+    'auth0.production.management', 'manual.neon.production.readonly'
   ], failures);
 
   const trackedEnv = execFileSync('git', ['ls-files', '--', '.env', '.env.production', '.env.staging'], {

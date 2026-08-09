@@ -2,12 +2,12 @@
 
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
-- **Status:** PARTIAL / CLASSIFIED FUNCTION ACL RE-PROVISION AND EXTERNAL EVIDENCE BLOCKED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Status:** COMPLETE for Neon read-only provisioning/verification. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
-- **Neon evidence:** the Neon-compatible provisioning completed and the reader passed database/role/default/ledger/table/write/sequence checks. Verification remains BLOCKED because 37 Functions are effectively executable through PostgreSQL's default `PUBLIC EXECUTE`; no Function was invoked and no business data was changed.
+- **Neon evidence:** PASS. An authorized human ran the corrected Provision/Verify at Commit `e58932032a788d6928c00457e3ffa661684ca580`; both committed. The reader passed database/role/default/ledger/table/write/sequence and classified Function ACL checks. Codex did not connect to Production.
 - **Latest evidence:** all 11 Bankeban Functions pass owner/PUBLIC/reader/runtime checks. The 37 remaining effective reader Functions are exclusively `public.pgcrypto` Extension members owned by `cloud_admin` and inherited via PUBLIC.
 - **Repository correction:** enforce zero application PUBLIC/reader execution and exactly four explicit runtime grants; report reviewed pgcrypto counts as platform information, preserve their ACLs unchanged, and fail on any unreviewed Function or Extension tuple.
-- **Next highest priority:** authorized human re-runs corrected Provision/Verify. Production evidence remains BLOCKED until that result passes; do not start Sprint 35 or manually alter pgcrypto.
+- **Next highest priority:** Sprint 35 Remaining Production External Evidence Closure (read-only): Netlify, Render, Auth0, DNS/TLS, monitoring and recovery evidence. Do not start it automatically or alter pgcrypto, deploy, migrate or change traffic.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
 

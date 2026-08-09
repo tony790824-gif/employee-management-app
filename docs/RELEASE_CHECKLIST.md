@@ -4,15 +4,16 @@
 
 - [x] Repository includes manual Neon provision/verify/disable SQL, exact role checks, process-only secret handling and fail-closed automated tests.
 - [x] Evidence commands no longer auto-load `.env.production` or reuse privileged application credentials.
-- [ ] External Neon, Netlify, Render and Auth0 read-only access is provisioned and independently authorized.
-- [ ] Evidence is rerun and newly hashed; current Sprint 33D manifest remains historical until then.
-- [x] No Production request, database connection/write, Migration, deployment or platform/Auth0 setting change occurred.
+- [x] Distinct Neon read-only access was provisioned and independently verified by the authorized human operator.
+- [ ] Netlify, Render and Auth0 read-only access is provisioned and independently authorized.
+- [x] Human Neon Provision/Verify evidence is rerun and appended as a sanitized SHA-256 record; the original Sprint 33D hashes remain historical and unchanged.
+- [x] Codex made no Production request or change. The human Provision changed only the dedicated evidence role/ACL; no business-data write, Migration, deployment or platform/Auth0 change occurred.
 
 ## Sprint 33D Production evidence gate
 
 - [x] Evidence collector enforces Production/read-only flags, GET-only management requests, SELECT-only database inspection, bounded responses and secret-safe output.
-- [x] All 13 sanitized evidence records and the hash manifest use SHA-256 and are covered by automated integrity tests.
-- [ ] External Netlify/Render/Auth0 access, Production origins, Neon reader, DNS/monitoring/recovery remain BLOCKED pending approved read-only configuration.
+- [x] The original 13 sanitized records plus one human Neon record and the 14-entry manifest use SHA-256 and are covered by automated integrity tests.
+- [ ] External Netlify/Render/Auth0 access, Production origins and DNS/monitoring/recovery remain BLOCKED pending approved read-only configuration.
 - [x] No Production deploy, connection/write, Migration, environment/Auth0/platform/resource change, restore, traffic change or real notification occurred.
 
 ## Sprint 33C Production platform gate

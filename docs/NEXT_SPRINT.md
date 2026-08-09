@@ -1,8 +1,10 @@
 # Next external gate — Production evidence and authorization
 
-## Current stop condition - continue Sprint 34, do not start a new Sprint
+## Current stop condition - Sprint 34 complete, do not start Sprint 35 automatically
 
-Production catalog evidence has classified the Function set: the 11 Bankeban Functions are safe, while the 37 remaining reader-executable Functions are reviewed `public.pgcrypto` / `cloud_admin` Extension members inherited through PUBLIC. Repository Provision/Verify now enforces application PUBLIC/reader zero, exact owner and four explicit runtime grants while reporting—but never mutating—the platform Extension set. Production evidence remains BLOCKED. The only next action is an authorized human re-run of corrected Provision/Verify; do not start Sprint 35, manually alter pgcrypto, deploy, migrate, change traffic, or substitute credentials.
+The authorized human Provision/Verify run passed at Commit `e58932032a788d6928c00457e3ffa661684ca580`; Neon read-only evidence is PASS and Sprint 34 is complete. Production remains NOT READY at 70% because Netlify, Render, Auth0, DNS/TLS, monitoring, recovery, current-schema/application cutover and remaining physical-device evidence are not closed.
+
+The recommended next Sprint is **Sprint 35 — Remaining Production External Evidence Closure (read-only)**: collect separately authorized Netlify/Render/Auth0/DNS/monitoring evidence and recovery proof without deployment, Migration, traffic change or business-data mutation. Do not start it without a new user instruction and the required read-only authority.
 
 ## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
 
