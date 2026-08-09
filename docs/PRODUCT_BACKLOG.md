@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 37 status - Production Provisioning Preflight (2026-08-09)
+
+- **Status:** COMPLETE as read-only Preflight / blocker consolidation; Production authorization remains NO-GO.
+- **Delivered:** Sprint 36 consistency audit, platform preflight, consolidated blocker/classification matrix, verified dependency order, safely automatable boundary and explicit GO/NO-GO criteria.
+- **Readiness:** product 98%; Production readiness 70% / NOT READY. No score changed because no new external PASS evidence was collected.
+- **No external action:** no resource, billing, credential, database, Migration, deploy, DNS, Auth0, deletion or traffic operation occurred.
+- **Next unique action:** read-only Auth0 Team plan/Tenant-capacity review. The owner must report current non-secret entitlement/quote and approve or reject a future Gate A proposal; do not purchase or create anything.
+
 ## Sprint 36 status - Production Resource Provisioning Plan (2026-08-09)
 
 - **Status:** COMPLETE as a safe plan; provisioning is not authorized. Product completion remains 98%; Production readiness remains 70%; release NOT READY.

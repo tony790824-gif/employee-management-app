@@ -2,6 +2,10 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 37 preflight stop
+
+Production provisioning is **NO-GO**. The only current manual step is to inspect Auth0 Team plan/Tenant capacity and return non-secret entitlement and quoted-cost information. Do not purchase, upgrade, create, delete or modify a resource. Gate A execution still requires a later explicit action approval.
+
 ## Sprint 36 provisioning sequence
 
 Future Production resource work must follow `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` and stop separately at Gates A-G. Before each action, the owner must receive the action, reason, platform, possible cost, Staging impact, Production impact, rollback and exact manual steps. An approval is valid for one gate only.

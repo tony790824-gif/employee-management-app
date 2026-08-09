@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 37 Production Provisioning Preflight (2026-08-09)
+
+- Consolidated every Production blocker and classified it as safely automatable, user action, external limit, possible billing, approval required and/or missing evidence.
+- Revalidated ADR 0022's one-gate provisioning order and established an explicit **NO-GO** authorization gate.
+- No Production resource, configuration, database, Migration, deploy, DNS, Secret, purchase or traffic was operated. Product completion remains 98%; Production readiness remains 70% / NOT READY.
+- The next single human step is read-only Auth0 plan/Tenant-capacity review; it does not authorize purchase or resource creation.
+
 ## Sprint 36 Production Resource Provisioning Plan (2026-08-09)
 
 - Added a fail-closed, one-gate-at-a-time Production provisioning plan covering dedicated Auth0, Neon recovery/capacity, Render API/Push worker, Netlify frontend, DNS/TLS, Migration and traffic approval boundaries.

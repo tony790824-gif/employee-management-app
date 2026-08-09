@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Next unique action after Sprint 36 - Human Gate A
+## Next unique action after Sprint 37 - Auth0 capacity evidence and decision
+
+Production provisioning remains **NO-GO** and readiness remains **70% / NOT READY**.
+
+The only next user action is read-only:
+
+1. Open the Auth0 Team billing/subscription and Tenant-capacity views.
+2. Confirm the current Tenant entitlement, whether a second dedicated Production Tenant is supported, and the current quoted cost/plan impact.
+3. Do not upgrade, purchase, delete, create or modify any Tenant/Application/API.
+4. Return only non-secret plan/capacity/cost information and either `Gate A proposal approved` or `Gate A proposal rejected`.
+
+Approval of the proposal still does not authorize resource creation. A later action request must repeat platform, cost, Production/Staging impact, rollback and exact steps before Gate A is executed. Gates B-G remain forbidden.
+
+## Historical next action after Sprint 36 - Human Gate A
 
 Sprint 36 completed the plan only. Production readiness remains **70% / NOT READY** and no Production resource exists because of this Sprint.
 

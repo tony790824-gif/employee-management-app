@@ -1,5 +1,12 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 37 Production Provisioning Preflight
+
+- Status: **COMPLETE AS READ-ONLY PREFLIGHT / NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- `docs/PRODUCTION_PROVISIONING_PREFLIGHT_REPORT.md` is the current blocker/classification and authorization-gate authority. ADR 0022 and the Sprint 36 plan remain valid.
+- The preflight confirms Auth0 Production is blocked/not configured, Neon is partial, Render/Netlify Production are not configured, and DNS/TLS, monitoring, Secrets and rollback evidence remain open.
+- No Production or billing action occurred. The next operator may only ask the owner to inspect Auth0 Team plan/Tenant capacity and return non-secret entitlement/quote information plus approve/reject intent. Do not buy, create or delete anything.
+
 ## 2026-08-09 handoff - Sprint 36 Production Resource Provisioning Plan
 
 - Status: **COMPLETE AS PLAN / PROVISIONING NOT AUTHORIZED**; product 98%, Production readiness 70%, release NOT READY.

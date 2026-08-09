@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-09 Sprint 37 current state
+
+- Sprint 37 is **COMPLETE AS READ-ONLY PREFLIGHT / NO-GO**. Product completion remains 98%; Production readiness remains 70% / NOT READY.
+- The consolidated blocker inventory and labels (`AUTOMATABLE`, `USER_ACTION`, `EXTERNAL_LIMIT`, `BILLING_REQUIRED`, `APPROVAL_REQUIRED`, `EVIDENCE_MISSING`) are in `docs/PRODUCTION_PROVISIONING_PREFLIGHT_REPORT.md`.
+- Sprint 36, ADR 0022, Evidence, Readiness, Operations, Release Checklist and Backlog are consistent. No external PASS was inferred.
+- No Production resource, configuration, database, Migration, deploy, DNS, Secret, deletion, purchase or traffic operation occurred.
+- The only next human action is a read-only Auth0 plan/Tenant-capacity inspection and approve/reject decision for a future Gate A proposal. Do not create a Tenant/SPA/API yet.
+
 ## 2026-08-09 Sprint 36 current state
 
 - Sprint 36 is **COMPLETE AS PLAN / PROVISIONING NOT AUTHORIZED**. Product completion remains 98%; Production readiness remains 70% / NOT READY.

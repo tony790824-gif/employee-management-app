@@ -2,6 +2,13 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 37 NO-GO operating state
+
+- `docs/PRODUCTION_PROVISIONING_PREFLIGHT_REPORT.md` consolidates every current blocker and confirms Production provisioning is NO-GO.
+- No automated check may cross from validation into resource creation, billing, configuration, deploy, Migration, DNS, Secret or traffic operations.
+- The only current human task is to view Auth0 Team plan/Tenant-capacity information and report non-secret entitlement/quote data. Do not purchase, create, delete or modify anything.
+- A future Gate A request must still stop and restate cost, Staging/Production impact, rollback and exact human steps. Approval cannot carry to Gates B-G.
+
 ## Sprint 36 gated provisioning boundary
 
 - Use `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` as the only approved order for future resource work.

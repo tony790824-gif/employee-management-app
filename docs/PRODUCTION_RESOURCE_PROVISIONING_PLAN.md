@@ -9,6 +9,12 @@ Production readiness: **70% / NOT READY**
 
 This document is a fail-closed execution plan. It does not authorize a resource creation, configuration change, deploy, Migration, restore, DNS change, traffic switch, or Secret access. A human must approve one gate at a time. Staging evidence never substitutes for Production evidence.
 
+## Sprint 37 preflight decision
+
+Sprint 37 revalidated this plan against current repository and external evidence. The order and one-gate authority remain accepted, but the current authorization decision is **NO-GO**. See `docs/PRODUCTION_PROVISIONING_PREFLIGHT_REPORT.md` for the consolidated blocker and classification matrix.
+
+No resource, billing, credential, database, Migration, deployment, DNS, deletion or traffic action occurred. The only next human task is a read-only Auth0 Team plan/Tenant-capacity review; it does not authorize purchase or creation.
+
 ## 1. Production resource inventory
 
 | Platform / control | Current evidence | Status | Provisioning implication |

@@ -16,6 +16,7 @@ Staging and Production use independent identity, service, database-role, origin,
 ## Consequences
 
 - Sprint 36 may complete with no Production mutation and without increasing the 70% readiness score.
+- Sprint 37 read-only preflight confirmed the order and recorded a NO-GO decision. Blocker classification does not authorize or provision a resource.
 - Missing resources remain `NOT_CONFIGURED`; missing authority/evidence remains `BLOCKED` or `UNKNOWN`.
 - A future operator must stop before Gates A–G and present impact, cost, rollback and exact human steps.
 - No plan, checklist, repository test or Staging result may be represented as Production PASS.

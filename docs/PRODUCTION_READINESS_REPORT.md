@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 37 provisioning-preflight decision - 2026-08-09
+
+- Sprint 36 handoff artifacts are consistent. The current consolidated authorization decision is **NO-GO**.
+- Auth0 Production remains BLOCKED/NOT_CONFIGURED; Neon remains PARTIAL; Render and Netlify Production remain NOT_CONFIGURED; DNS/TLS, monitoring/alerting, Secrets and practical rollback evidence remain open.
+- Blockers now have explicit automation/user/external-limit/billing/approval/evidence classifications, but classification is not closure.
+- Production readiness remains **70% / NOT READY**. No external resource, evidence PASS or score change was fabricated.
+- No Production resource/configuration/database/Migration/deploy/DNS/Secret/purchase/traffic operation occurred.
+
 ## Sprint 36 provisioning-plan decision - 2026-08-09
 
 - Sprint 36 completed the resource inventory, target architecture, dependency order, human Gates A-G, Secret boundary, isolation matrix, evidence contract and rollback plan.

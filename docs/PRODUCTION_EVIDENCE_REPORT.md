@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 37 preflight evidence record - 2026-08-09
+
+| Evidence gate | Status | Decision |
+| --- | --- | --- |
+| Sprint 36 artifact consistency | PASS (repository evidence only) | Plan, ADR, Readiness, Evidence, Operations, Checklist, Backlog and handoff agree. |
+| Consolidated blocker inventory | PASS (classification only) | Every open platform/operations gate has an owner/action/evidence classification. |
+| Production provisioning authorization | NO-GO | Required external resources, evidence and approvals are absent. |
+| New external Production evidence | NONE | No platform request, database query, resource or configuration operation occurred. |
+| Production readiness | 70% / NOT READY | No score change is permitted for planning or classification. |
+
+No SHA-256 evidence entry was added because Sprint 37 collected no new external evidence. The existing sanitized manifest remains unchanged and authoritative.
+
 ## Sprint 36 planning record - 2026-08-09
 
 | Evidence gate | Status | Decision |

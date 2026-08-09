@@ -16,6 +16,17 @@ Auth0 evidence update: only one Development Tenant and the Staging SPA exist. Pr
 
 This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md`. Checking an item requires direct evidence; repository implementation or Staging proof alone is insufficient.
 
+## Sprint 37 authorization gate
+
+- [x] Sprint 36 plan/ADR/Readiness/Evidence/Operations/Checklist/Backlog consistency reviewed.
+- [x] Every current blocker classified by automation, human action, external limit, possible billing, approval and missing evidence.
+- [x] Current Production provisioning decision recorded as **NO-GO**.
+- [ ] Auth0 Team capacity and current plan/cost evidence reviewed without purchase or mutation.
+- [ ] Gate A proposal explicitly approved; this checkbox alone must not create resources.
+- [ ] Every Gate A-G prerequisite is direct-evidence PASS before its own action.
+
+The checked repository-preflight items do not satisfy a Production platform gate or raise readiness.
+
 ## Sprint 36 pre-provisioning gates
 
 - [ ] Gate A: dedicated Auth0 Production Tenant/SPA/API explicitly approved and evidenced.
