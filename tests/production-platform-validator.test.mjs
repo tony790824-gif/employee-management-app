@@ -39,6 +39,21 @@ const metadata = await inspectSchemaMetadata({
       database_name: 'neondb', role_name: 'banke_readonly', transaction_read_only: 'on',
       server_version_num: 180000, can_create_public_schema: false, can_create_private_schema: false
     }] };
+    if (statement.includes('application_function_execute_count')) return { rows: [{
+      application_function_execute_count: 0,
+      application_public_execute_count: 0,
+      application_readonly_execute_count: 0,
+      application_missing_function_count: 0,
+      application_owner_mismatch_count: 0,
+      application_runtime_execute_count: 4,
+      application_runtime_explicit_execute_count: 4,
+      application_runtime_unapproved_execute_count: 0,
+      extension_function_execute_count: 37,
+      extension_public_execute_count: 37,
+      extension_readonly_execute_count: 37,
+      unexpected_application_function_count: 0,
+      unexpected_extension_function_count: 0
+    }] };
     if (statement.includes('pg_catalog.pg_roles')) return { rows: [{
       rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolreplication: false, rolbypassrls: false,
       rolcanlogin: true, rolinherit: false, rolconnlimit: 3,
@@ -63,7 +78,7 @@ const metadata = await inspectSchemaMetadata({
     if (statement.includes('pg_catalog.pg_stat_activity')) return { rows: [{ max_connections: 100, observed_connections: 3 }] };
     if (statement.includes('can_read_migration_ledger')) return { rows: [{
       can_read_migration_ledger: true, business_table_select_count: 0, table_write_privilege_count: 0,
-      sequence_write_privilege_count: 0, function_execute_privilege_count: 0
+      sequence_write_privilege_count: 0
     }] };
     throw new Error('Unexpected metadata SQL.');
   }
@@ -73,8 +88,11 @@ assert.equal(metadata.roleAttributes.superuser, false);
 assert.equal(metadata.roleAttributes.defaultTransactionReadOnly, true);
 assert.equal(metadata.tables[0].rlsForced, true);
 assert.equal(metadata.privileges.businessTableSelectCount, 0);
+assert.equal(metadata.privileges.applicationFunctionExecuteCount, 0);
+assert.equal(metadata.privileges.applicationRuntimeExecuteCount, 4);
+assert.equal(metadata.privileges.extensionReadonlyExecuteCount, 37);
 assert.equal(metadata.capacity.maxConnections, 100);
-assert.equal(metadataSql.every(statement => statement.startsWith('SELECT')), true);
+assert.equal(metadataSql.every(statement => /^(?:SELECT|WITH)\b/.test(statement)), true);
 assert.equal(metadataSql.some(statement => /^(?:INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|GRANT|REVOKE)\b/i.test(statement)), false);
 
 const blockedDatabase = await validateProductionDatabase({ BANK_ENV: 'production' });

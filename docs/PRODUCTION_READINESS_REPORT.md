@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 34 classified Function ACL update - 2026-08-09
+
+- Production diagnostic evidence proves all 11 Bankeban Functions have owner `neondb_owner`, PUBLIC/reader execution zero, and exactly four explicit runtime grants.
+- The 37 remaining effective reader grants are only `public.pgcrypto` Extension members owned by Neon `cloud_admin` and inherited from PUBLIC. They are now reported as accepted platform information rather than falsely reported as global zero.
+- Repository Provision/Verify now targets only the exact application set, proves pgcrypto ACLs remain unchanged, and fails on every unreviewed application or Extension Function.
+- Production evidence remains **BLOCKED** until a human reruns corrected Provision/Verify. Production readiness remains **70%** and release remains **NOT READY**.
+
 ## Sprint 34 diagnostic identity blocker - 2026-08-09
 
 - The manual diagnostic returned no metadata because its intended confirmation token did not match the script's enforced literal. This is a repository compatibility defect, not evidence that Neon rewrote the SQL role identity.
@@ -11,12 +18,12 @@
 - The exact-role human re-run stopped fail-closed before its transaction because a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`.
 - Repository Migrations 0001-0008 account for 11 Bankeban Functions, all expected to retain `neondb_owner`; exactly four are approved for direct `banke_api_production` execution. Migration 0001 also requests `pgcrypto`, making Extension ownership a plausible but unconfirmed explanation.
 - A manual read-only catalog diagnostic now reports safe ownership/ACL/Extension metadata without Function bodies or business rows. It does not modify Production and does not authorize an ACL change.
-- The zero effective Function execution requirement is unchanged. Production evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY**.
+- Historical requirement at this stage was global zero effective Function execution. The completed catalog diagnostic later replaced that over-broad metric with an equivalent classified gate: zero Bankeban application PUBLIC/reader execution, exactly four explicit runtime entry points, and a reviewed, unchanged platform Extension set. Production evidence remains **BLOCKED**, Production readiness remains **70%**, and release remains **NOT READY**.
 
 ## Sprint 34 Function ACL correction - 2026-08-08
 
 - The Neon-compatible role provisioning completed and the distinct reader verified TLS, `neondb`, read-only mode, safe role attributes/defaults, ledger 0001-0008, zero business SELECT, zero writes and zero sequence writes.
-- Production evidence remains **BLOCKED** because `function_execute_privilege_count = 37`. The effective grants come from PostgreSQL's default `PUBLIC EXECUTE`, not a direct evidence-role ACL; a direct revoke cannot override `PUBLIC`.
+- Historical blocker: the former global count was 37 because effective privileges included PostgreSQL `PUBLIC EXECUTE`. The later catalog diagnostic classified all 37 as reviewed `public.pgcrypto` Extension Functions rather than Bankeban application Functions; a direct role revoke cannot negate PUBLIC inheritance.
 - The repository fix fail-closes unless `banke_api_production` has explicit grants on exactly the four reviewed 0001-0008 API Functions and every currently PUBLIC-executable Function is owned by the approved object owner. It then transactionally removes existing `PUBLIC EXECUTE` and the object owner's global future-Function PUBLIC default; owner capability remains inherent, and the transaction rolls back unless PUBLIC/reader execution is zero and the runtime allowlist is unchanged.
 - This repository change did not connect to or mutate Production. A human must re-provision and re-run the reader verification before Neon evidence can become PASS.
 - Production readiness remains **70%** and release remains **NOT READY**.

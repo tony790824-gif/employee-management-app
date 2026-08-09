@@ -211,23 +211,117 @@ SELECT NOT EXISTS (
   \quit
 \endif
 
--- Only a Function owner can reliably revoke the owner's PUBLIC grant. If any
--- currently PUBLIC-executable Function is owned elsewhere, the operator needs
--- separate review/authority; do not partially harden the schemas.
-SELECT NOT EXISTS (
-  SELECT 1
-    FROM pg_catalog.pg_proc AS procedure
-    JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
-   WHERE namespace.nspname IN ('public', 'app_private')
-     AND pg_catalog.has_function_privilege('public', procedure.oid, 'EXECUTE')
-     AND procedure.proowner <> (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = :'object_owner')
-) AS public_functions_are_owned_by_object_owner
+-- Application-managed routines are an exact reviewed set. Every one must
+-- exist, remain owned by the approved object owner, and have no PUBLIC grant.
+-- Extension members are classified separately through pg_depend/pg_extension;
+-- they are never mutated by this script.
+WITH expected(signature) AS (
+  VALUES
+    ('app_private.current_workspace_id()'),
+    ('app_private.current_user_id()'),
+    ('app_private.current_role()'),
+    ('app_private.touch_updated_at()'),
+    ('app_private.base64url_decode(text)'),
+    ('app_private.raise_auth_error(text)'),
+    ('app_private.verify_tenant_context(text,text,text,text,boolean)'),
+    ('app_private.api_establish_session(text,text,text)'),
+    ('app_private.api_logout_session(text,text,text)'),
+    ('app_private.api_list_employees(text,text,text)'),
+    ('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)')
+), resolved AS (
+  SELECT signature, pg_catalog.to_regprocedure(signature) AS procedure_oid
+    FROM expected
+)
+SELECT count(*) = 11
+       AND bool_and(procedure_oid IS NOT NULL)
+       AND bool_and(
+         procedure_oid IS NOT NULL
+         AND (SELECT procedure.proowner = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = :'object_owner')
+                FROM pg_catalog.pg_proc AS procedure
+               WHERE procedure.oid = resolved.procedure_oid)
+       ) AS application_functions_match_reviewed_owner
+  FROM resolved
 \gset
-\if :public_functions_are_owned_by_object_owner
+\if :application_functions_match_reviewed_owner
 \else
-  \echo 'A PUBLIC-executable Function has a different owner; PUBLIC EXECUTE was not changed. Run production-function-owner.diagnostic.sql read-only and stop.'
+  \echo 'A reviewed Bankeban Function is missing or has a different owner; no privilege change was attempted.'
   \quit
 \endif
+
+WITH expected(procedure_oid) AS (
+  VALUES
+    (pg_catalog.to_regprocedure('app_private.current_workspace_id()')),
+    (pg_catalog.to_regprocedure('app_private.current_user_id()')),
+    (pg_catalog.to_regprocedure('app_private.current_role()')),
+    (pg_catalog.to_regprocedure('app_private.touch_updated_at()')),
+    (pg_catalog.to_regprocedure('app_private.base64url_decode(text)')),
+    (pg_catalog.to_regprocedure('app_private.raise_auth_error(text)')),
+    (pg_catalog.to_regprocedure('app_private.verify_tenant_context(text,text,text,text,boolean)')),
+    (pg_catalog.to_regprocedure('app_private.api_establish_session(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_logout_session(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_list_employees(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'))
+), classified AS (
+  SELECT procedure.oid,
+         namespace.nspname AS schema_name,
+         pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name,
+         extension.extname AS extension_name
+    FROM pg_catalog.pg_proc AS procedure
+    JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+    LEFT JOIN pg_catalog.pg_depend AS dependency
+      ON dependency.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass
+     AND dependency.objid = procedure.oid
+     AND dependency.deptype = 'e'
+    LEFT JOIN pg_catalog.pg_extension AS extension ON extension.oid = dependency.refobjid
+   WHERE namespace.nspname IN ('public', 'app_private')
+)
+SELECT NOT EXISTS (
+         SELECT 1 FROM classified
+          WHERE extension_name IS NULL
+            AND oid NOT IN (SELECT procedure_oid FROM expected)
+       ) AS no_unreviewed_application_function,
+       EXISTS (
+         SELECT 1 FROM classified
+          WHERE schema_name = 'public'
+            AND extension_name = 'pgcrypto'
+            AND owner_name = 'cloud_admin'
+       )
+       AND NOT EXISTS (
+         SELECT 1 FROM classified
+          WHERE extension_name IS NOT NULL
+            AND NOT (
+              schema_name = 'public'
+              AND extension_name = 'pgcrypto'
+              AND owner_name = 'cloud_admin'
+            )
+       ) AS extension_functions_match_reviewed_platform_set
+\gset
+\if :no_unreviewed_application_function
+\else
+  \echo 'An unreviewed non-extension Function exists; no privilege change was attempted.'
+  \quit
+\endif
+\if :extension_functions_match_reviewed_platform_set
+\else
+  \echo 'The extension-managed Function set differs from the reviewed public.pgcrypto/cloud_admin set; no privilege change was attempted.'
+  \quit
+\endif
+
+SELECT count(*)::integer AS extension_function_count_before,
+       count(*) FILTER (WHERE pg_catalog.has_function_privilege('public', procedure.oid, 'EXECUTE'))::integer AS extension_public_execute_count_before,
+       count(*) FILTER (WHERE pg_catalog.has_function_privilege(:'readonly_role', procedure.oid, 'EXECUTE'))::integer AS extension_readonly_execute_count_before,
+       count(*) FILTER (WHERE pg_catalog.has_function_privilege(:'runtime_role', procedure.oid, 'EXECUTE'))::integer AS extension_runtime_execute_count_before
+  FROM pg_catalog.pg_proc AS procedure
+  JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+  JOIN pg_catalog.pg_depend AS dependency
+    ON dependency.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass
+   AND dependency.objid = procedure.oid
+   AND dependency.deptype = 'e'
+  JOIN pg_catalog.pg_extension AS extension ON extension.oid = dependency.refobjid
+ WHERE namespace.nspname = 'public'
+   AND extension.extname = 'pgcrypto'
+   AND pg_catalog.pg_get_userbyid(procedure.proowner) = 'cloud_admin'
+\gset
 
 -- Dangerous attributes were already proved false above. Do not repeat
 -- NOSUPERUSER/NOREPLICATION/NOBYPASSRLS mutations that Neon cannot authorize.
@@ -247,20 +341,56 @@ GRANT USAGE ON SCHEMA public, app_private TO :"readonly_role";
 
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public, app_private FROM :"readonly_role";
 REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public, app_private FROM :"readonly_role";
-REVOKE ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public, app_private FROM :"readonly_role";
 GRANT SELECT ON TABLE public.schema_migrations TO :"readonly_role";
 
+-- Revoke only the exact application-managed Function set. Never mutate a
+-- pgcrypto/cloud_admin Extension member or its platform-managed ACL.
+WITH application(signature) AS (
+  VALUES
+    ('app_private.current_workspace_id()'),
+    ('app_private.current_user_id()'),
+    ('app_private.current_role()'),
+    ('app_private.touch_updated_at()'),
+    ('app_private.base64url_decode(text)'),
+    ('app_private.raise_auth_error(text)'),
+    ('app_private.verify_tenant_context(text,text,text,text,boolean)'),
+    ('app_private.api_establish_session(text,text,text)'),
+    ('app_private.api_logout_session(text,text,text)'),
+    ('app_private.api_list_employees(text,text,text)'),
+    ('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)')
+)
+SELECT pg_catalog.format(
+         'REVOKE ALL PRIVILEGES ON FUNCTION %s FROM %I',
+         pg_catalog.to_regprocedure(signature),
+         :'readonly_role'
+       )
+  FROM application
+ ORDER BY signature
+\gexec
+
 -- The object owner retains its inherent owner privileges. The Production API
--- role retains only the explicit allowlist proved above.
+-- role retains only the explicit application allowlist proved above.
+WITH application(signature) AS (
+  VALUES
+    ('app_private.current_workspace_id()'),
+    ('app_private.current_user_id()'),
+    ('app_private.current_role()'),
+    ('app_private.touch_updated_at()'),
+    ('app_private.base64url_decode(text)'),
+    ('app_private.raise_auth_error(text)'),
+    ('app_private.verify_tenant_context(text,text,text,text,boolean)'),
+    ('app_private.api_establish_session(text,text,text)'),
+    ('app_private.api_logout_session(text,text,text)'),
+    ('app_private.api_list_employees(text,text,text)'),
+    ('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)')
+)
 SELECT pg_catalog.format(
          'REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC',
-         procedure.oid::pg_catalog.regprocedure
+         pg_catalog.to_regprocedure(signature)
        )
-  FROM pg_catalog.pg_proc AS procedure
-  JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
- WHERE namespace.nspname IN ('public', 'app_private')
-   AND pg_catalog.has_function_privilege('public', procedure.oid, 'EXECUTE')
- ORDER BY procedure.oid::pg_catalog.regprocedure::text
+  FROM application
+ WHERE pg_catalog.has_function_privilege('public', pg_catalog.to_regprocedure(signature), 'EXECUTE')
+ ORDER BY signature
 \gexec
 
 ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner" IN SCHEMA public
@@ -281,19 +411,29 @@ ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner" IN SCHEMA app_private
 ALTER DEFAULT PRIVILEGES FOR ROLE :"object_owner"
   REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 
+WITH application(procedure_oid) AS (
+  VALUES
+    (pg_catalog.to_regprocedure('app_private.current_workspace_id()')),
+    (pg_catalog.to_regprocedure('app_private.current_user_id()')),
+    (pg_catalog.to_regprocedure('app_private.current_role()')),
+    (pg_catalog.to_regprocedure('app_private.touch_updated_at()')),
+    (pg_catalog.to_regprocedure('app_private.base64url_decode(text)')),
+    (pg_catalog.to_regprocedure('app_private.raise_auth_error(text)')),
+    (pg_catalog.to_regprocedure('app_private.verify_tenant_context(text,text,text,text,boolean)')),
+    (pg_catalog.to_regprocedure('app_private.api_establish_session(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_logout_session(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_list_employees(text,text,text)')),
+    (pg_catalog.to_regprocedure('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'))
+)
 SELECT NOT EXISTS (
-  SELECT 1
-    FROM pg_catalog.pg_proc AS procedure
-    JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
-   WHERE namespace.nspname IN ('public', 'app_private')
-     AND (
-       pg_catalog.has_function_privilege(:'readonly_role', procedure.oid, 'EXECUTE')
-       OR pg_catalog.has_function_privilege('public', procedure.oid, 'EXECUTE')
-     )
-) AS readonly_function_execute_is_zero \gset
-\if :readonly_function_execute_is_zero
+         SELECT 1 FROM application
+          WHERE pg_catalog.has_function_privilege(:'readonly_role', procedure_oid, 'EXECUTE')
+             OR pg_catalog.has_function_privilege('public', procedure_oid, 'EXECUTE')
+       ) AS application_function_acl_is_safe
+\gset
+\if :application_function_acl_is_safe
 \else
-  \echo 'Read-only Function EXECUTE postcondition failed; rolling back all provisioning changes.'
+  \echo 'Bankeban application Function ACL postcondition failed; rolling back all provisioning changes.'
   ROLLBACK;
   \quit
 \endif
@@ -306,19 +446,53 @@ WITH approved(procedure_oid) AS (
     (pg_catalog.to_regprocedure('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'))
 )
 SELECT count(*) FILTER (
-         WHERE pg_catalog.has_function_privilege(:'runtime_role', procedure.oid, 'EXECUTE')
+         WHERE pg_catalog.has_function_privilege(:'runtime_role', application.procedure_oid, 'EXECUTE')
        ) = 4
        AND count(*) FILTER (
-         WHERE pg_catalog.has_function_privilege(:'runtime_role', procedure.oid, 'EXECUTE')
-           AND procedure.oid NOT IN (SELECT procedure_oid FROM approved)
+         WHERE pg_catalog.has_function_privilege(:'runtime_role', application.procedure_oid, 'EXECUTE')
+           AND application.procedure_oid NOT IN (SELECT procedure_oid FROM approved)
        ) = 0 AS runtime_function_allowlist_preserved
-  FROM pg_catalog.pg_proc AS procedure
-  JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
- WHERE namespace.nspname IN ('public', 'app_private')
+  FROM (
+    VALUES
+      (pg_catalog.to_regprocedure('app_private.current_workspace_id()')),
+      (pg_catalog.to_regprocedure('app_private.current_user_id()')),
+      (pg_catalog.to_regprocedure('app_private.current_role()')),
+      (pg_catalog.to_regprocedure('app_private.touch_updated_at()')),
+      (pg_catalog.to_regprocedure('app_private.base64url_decode(text)')),
+      (pg_catalog.to_regprocedure('app_private.raise_auth_error(text)')),
+      (pg_catalog.to_regprocedure('app_private.verify_tenant_context(text,text,text,text,boolean)')),
+      (pg_catalog.to_regprocedure('app_private.api_establish_session(text,text,text)')),
+      (pg_catalog.to_regprocedure('app_private.api_logout_session(text,text,text)')),
+      (pg_catalog.to_regprocedure('app_private.api_list_employees(text,text,text)')),
+      (pg_catalog.to_regprocedure('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)'))
+  ) AS application(procedure_oid)
 \gset
 \if :runtime_function_allowlist_preserved
 \else
   \echo 'Production runtime Function allowlist postcondition failed; rolling back all provisioning changes.'
+  ROLLBACK;
+  \quit
+\endif
+
+SELECT count(*)::integer = :extension_function_count_before
+       AND count(*) FILTER (WHERE pg_catalog.has_function_privilege('public', procedure.oid, 'EXECUTE'))::integer = :extension_public_execute_count_before
+       AND count(*) FILTER (WHERE pg_catalog.has_function_privilege(:'readonly_role', procedure.oid, 'EXECUTE'))::integer = :extension_readonly_execute_count_before
+       AND count(*) FILTER (WHERE pg_catalog.has_function_privilege(:'runtime_role', procedure.oid, 'EXECUTE'))::integer = :extension_runtime_execute_count_before
+       AS extension_acl_unchanged
+  FROM pg_catalog.pg_proc AS procedure
+  JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+  JOIN pg_catalog.pg_depend AS dependency
+    ON dependency.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass
+   AND dependency.objid = procedure.oid
+   AND dependency.deptype = 'e'
+  JOIN pg_catalog.pg_extension AS extension ON extension.oid = dependency.refobjid
+ WHERE namespace.nspname = 'public'
+   AND extension.extname = 'pgcrypto'
+   AND pg_catalog.pg_get_userbyid(procedure.proowner) = 'cloud_admin'
+\gset
+\if :extension_acl_unchanged
+\else
+  \echo 'Platform pgcrypto Function ACL changed unexpectedly; rolling back all provisioning changes.'
   ROLLBACK;
   \quit
 \endif

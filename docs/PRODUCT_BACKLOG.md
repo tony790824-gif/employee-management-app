@@ -2,12 +2,12 @@
 
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
-- **Status:** PARTIAL / FUNCTION OWNER DIAGNOSTIC AND EXTERNAL EVIDENCE BLOCKED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Status:** PARTIAL / CLASSIFIED FUNCTION ACL RE-PROVISION AND EXTERNAL EVIDENCE BLOCKED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
 - **Completed:** distinct Neon reader provision/verify/disable SQL, exact role and privilege validation, process-only secret handling, removal of automatic `.env.production` loading, Netlify/Render read-only confirmation gates, exact Auth0 read scopes, and automated fail-closed tests.
 - **Neon evidence:** the Neon-compatible provisioning completed and the reader passed database/role/default/ledger/table/write/sequence checks. Verification remains BLOCKED because 37 Functions are effectively executable through PostgreSQL's default `PUBLIC EXECUTE`; no Function was invoked and no business data was changed.
-- **Latest blocker:** the Function-owner diagnostic returned no metadata because its intended `_FUNCTION_OWNER` confirmation did not match the stale `_FUNCTION_ACL` literal. The underlying different-owner Function remains unidentified.
-- **Repository correction:** align the confirmation token and independently require database, exact roles, role existence, `current_user`, and `session_user`; retain a pg_catalog-only read-only transaction and the zero Function execution requirement.
-- **Next highest priority:** an authorized human runs the corrected full command in `docs/PRODUCTION_READONLY_ACCESS.md` and returns its safe output. Do not manually revoke PUBLIC or rerun provisioning until the owner mismatch is understood.
+- **Latest evidence:** all 11 Bankeban Functions pass owner/PUBLIC/reader/runtime checks. The 37 remaining effective reader Functions are exclusively `public.pgcrypto` Extension members owned by `cloud_admin` and inherited via PUBLIC.
+- **Repository correction:** enforce zero application PUBLIC/reader execution and exactly four explicit runtime grants; report reviewed pgcrypto counts as platform information, preserve their ACLs unchanged, and fail on any unreviewed Function or Extension tuple.
+- **Next highest priority:** authorized human re-runs corrected Provision/Verify. Production evidence remains BLOCKED until that result passes; do not start Sprint 35 or manually alter pgcrypto.
 
 ## Sprint 33D status — Authorized Production Evidence Closure (2026-08-04)
 

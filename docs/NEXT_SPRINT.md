@@ -2,7 +2,7 @@
 
 ## Current stop condition - continue Sprint 34, do not start a new Sprint
 
-The first Function-owner diagnostic returned no metadata because its confirmation literal was inconsistent; the repository correction is complete, but Production evidence remains BLOCKED. The only next action is for an authorized human to run the corrected full command in `docs/PRODUCTION_READONLY_ACCESS.md` using the distinct read-only login, then return the safe catalog output. Do not rerun provisioning, manually revoke PUBLIC, begin another Sprint, deploy, migrate, change traffic, or substitute privileged credentials before the Function owner is identified. Any later verification must still require effective reader Function execution to be zero and preserve exactly four explicit runtime entry points.
+Production catalog evidence has classified the Function set: the 11 Bankeban Functions are safe, while the 37 remaining reader-executable Functions are reviewed `public.pgcrypto` / `cloud_admin` Extension members inherited through PUBLIC. Repository Provision/Verify now enforces application PUBLIC/reader zero, exact owner and four explicit runtime grants while reporting—but never mutating—the platform Extension set. Production evidence remains BLOCKED. The only next action is an authorized human re-run of corrected Provision/Verify; do not start Sprint 35, manually alter pgcrypto, deploy, migrate, change traffic, or substitute credentials.
 
 ## Sprint 34 — Production Read-only Access Provisioning & Evidence Re-run
 

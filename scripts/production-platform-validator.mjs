@@ -333,7 +333,19 @@ export async function validateProductionDatabase(env, dependencies = {}) {
       && metadata.privileges.businessTableSelectCount === 0
       && metadata.privileges.tableWritePrivilegeCount === 0
       && metadata.privileges.sequenceWritePrivilegeCount === 0
-      && metadata.privileges.functionExecutePrivilegeCount === 0;
+      && metadata.privileges.applicationFunctionExecuteCount === 0
+      && metadata.privileges.applicationPublicExecuteCount === 0
+      && metadata.privileges.applicationReadonlyExecuteCount === 0
+      && metadata.privileges.applicationMissingFunctionCount === 0
+      && metadata.privileges.applicationOwnerMismatchCount === 0
+      && metadata.privileges.applicationRuntimeExecuteCount === 4
+      && metadata.privileges.applicationRuntimeExplicitExecuteCount === 4
+      && metadata.privileges.applicationRuntimeUnapprovedExecuteCount === 0
+      && metadata.privileges.unexpectedApplicationFunctionCount === 0
+      && metadata.privileges.unexpectedExtensionFunctionCount === 0
+      && metadata.privileges.extensionFunctionExecuteCount === 37
+      && metadata.privileges.extensionPublicExecuteCount === 37
+      && metadata.privileges.extensionReadonlyExecuteCount === 37;
     const policyTables = new Set(metadata.policies.map(item => `${item.schema}.${item.table}`));
     const unprotectedTables = metadata.tables.filter(item => policyTables.has(`${item.schema}.${item.name}`)
       && (!item.rlsEnabled || !item.rlsForced));
@@ -343,7 +355,7 @@ export async function validateProductionDatabase(env, dependencies = {}) {
       && !dangerousRole && boundedRole && leastPrivilege && unprotectedTables.length === 0
       && metadata.indexes.length > 0 && metadata.constraints.length > 0 && metadata.functions.length > 0;
     return result('database.schema', 'Production Database / Neon', passed ? VALIDATION_STATUS.PASS : VALIDATION_STATUS.FAIL,
-      passed ? 'Read-only ledger, schema metadata, FORCE RLS, least-privilege role, and capacity metadata passed.'
+      passed ? 'Read-only ledger, schema metadata, FORCE RLS, classified Function ACLs, least-privilege role, and capacity metadata passed.'
         : 'Production database metadata does not match the repository release policy.', {
         externalEvidence: true,
         details: {
@@ -359,7 +371,18 @@ export async function validateProductionDatabase(env, dependencies = {}) {
           businessTableSelectCount: metadata.privileges.businessTableSelectCount,
           tableWritePrivilegeCount: metadata.privileges.tableWritePrivilegeCount,
           sequenceWritePrivilegeCount: metadata.privileges.sequenceWritePrivilegeCount,
-          functionExecutePrivilegeCount: metadata.privileges.functionExecutePrivilegeCount,
+          applicationFunctionExecuteCount: metadata.privileges.applicationFunctionExecuteCount,
+          applicationPublicExecuteCount: metadata.privileges.applicationPublicExecuteCount,
+          applicationReadonlyExecuteCount: metadata.privileges.applicationReadonlyExecuteCount,
+          applicationRuntimeExecuteCount: metadata.privileges.applicationRuntimeExecuteCount,
+          applicationRuntimeExplicitExecuteCount: metadata.privileges.applicationRuntimeExplicitExecuteCount,
+          applicationRuntimeUnapprovedExecuteCount: metadata.privileges.applicationRuntimeUnapprovedExecuteCount,
+          extensionFunctionExecuteCount: metadata.privileges.extensionFunctionExecuteCount,
+          extensionPublicExecuteCount: metadata.privileges.extensionPublicExecuteCount,
+          extensionReadonlyExecuteCount: metadata.privileges.extensionReadonlyExecuteCount,
+          extensionAclStatus: metadata.privileges.unexpectedExtensionFunctionCount === 0
+            ? 'ACCEPTED_PLATFORM_INFORMATION'
+            : 'FAIL_UNREVIEWED_EXTENSION',
           serverVersionNumber: metadata.serverVersionNumber,
           maxConnections: metadata.capacity.maxConnections,
           observedConnections: metadata.capacity.observedConnections

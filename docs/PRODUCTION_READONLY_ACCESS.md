@@ -1,10 +1,24 @@
 # Production Read-only Access Provisioning
 
-Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED / FUNCTION OWNER DIAGNOSTIC REQUIRED**
+Status: **REPOSITORY READY / EXTERNAL PROVISIONING BLOCKED / PGCRYPTO CLASSIFIED**
 
-Date: 2026-08-08
+Date: 2026-08-09
 
 This runbook prepares Sprint 34 evidence access without changing Production. Missing access remains `BLOCKED`; Owner, Migrator, API, Push, Staging, or other privileged credentials must never be substituted.
+
+## Verified Production Function classification
+
+Status: **APPLICATION ACL PASS / PLATFORM EXTENSION INFORMATION ACCEPTED / HUMAN RE-PROVISION AND VERIFY REQUIRED**
+
+The authorized read-only catalog diagnostic proved that all 11 Bankeban application-managed Functions are in `app_private`, owned by `neondb_owner`, unavailable to `PUBLIC` and `banke_production_readonly`, and unavailable to `banke_api_production` except for the four explicitly granted API entry points. The only 37 Functions inherited by the reader through `PUBLIC` are `public.pgcrypto` Extension members owned by Neon role `cloud_admin`; the runtime has no direct grant on them.
+
+The safe acceptance model is therefore classified, not global:
+
+- **Application-managed:** exact 11-signature allowlist; owner must be `neondb_owner`; PUBLIC and reader effective EXECUTE must be zero; runtime effective/direct EXECUTE must be exactly the four approved API entry points. Any missing, extra non-Extension, owner-mismatched, PUBLIC-readable, reader-readable, or unapproved runtime Function fails closed.
+- **Platform-managed:** only Extension members identified by `pg_depend`/`pg_extension` as `public.pgcrypto`, owned by `cloud_admin`, are accepted as platform information. Their PUBLIC/reader effective EXECUTE counts are reported truthfully and are not represented as zero.
+- **Unexpected Extension:** any Extension name, schema, or owner outside the reviewed `public` / `pgcrypto` / `cloud_admin` tuple fails closed pending a new review.
+
+Provisioning never targets a pgcrypto Function, owner, or ACL. It revokes only the exact Bankeban Function signatures and confirms the pgcrypto counts/ACL state did not change inside the transaction. PostgreSQL tracks Extension members as one managed package, so individual Extension objects must not be treated as loose application objects. Official basis: [PostgreSQL 18 Extension packaging](https://www.postgresql.org/docs/18/extend-extensions.html), [`pg_extension`](https://www.postgresql.org/docs/18/catalog-pg-extension.html), and [default privileges](https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html).
 
 ## Diagnostic confirmation-token incident
 
@@ -25,11 +39,11 @@ Do not replace `DATABASE_READONLY_URL` with an Owner, Migrator, runtime, Staging
 
 ## Function owner fail-closed blocker
 
-Status: **BLOCKED / MANUAL READ-ONLY DIAGNOSTIC REQUIRED**
+Status: **RESOLVED BY READ-ONLY CLASSIFICATION / HISTORICAL STOP**
 
-The human re-run used `banke_production_readonly`, `neondb_owner`, and `banke_api_production`. It stopped before `BEGIN` with `A PUBLIC-executable Function has a different owner`; no verification or manual ACL statement followed. The owner guard intentionally examines every PUBLIC-executable Function in `public` and `app_private`, not only Bankeban Functions. Migration 0001 runs `CREATE EXTENSION IF NOT EXISTS pgcrypto`, so Neon/platform-owned or previously installed pgcrypto Functions in `public` are a plausible source of the mismatch. This is not confirmed until the catalog diagnostic identifies the exact rows.
+The human re-run used `banke_production_readonly`, `neondb_owner`, and `banke_api_production`. It stopped before `BEGIN` with `A PUBLIC-executable Function has a different owner`; no verification or manual ACL statement followed. The later catalog diagnostic confirmed that this broad owner guard was matching only the 37 Neon-managed `public.pgcrypto` Extension Functions owned by `cloud_admin`, not a Bankeban Function.
 
-Run `database/operator/production-function-owner.diagnostic.sql` manually with the four exact confirmation/role variables documented in that file. It sets read-only transaction mode and returns only schema, routine name, identity arguments/signature, owner, extension name, PUBLIC EXECUTE, runtime effective/direct EXECUTE, reader EXECUTE, expected source and owner-match metadata. It never reads a Function body or business row and executes no DDL/DML. Do not run `provision.sql` again until this output has been reviewed.
+The diagnostic output is now the reviewed classification baseline. It read only schema, routine name, identity arguments/signature, owner, Extension name and ACL metadata; it did not read a Function body or business row and executed no DDL/DML.
 
 ### Expected 0001-0008 Bankeban Functions
 
@@ -49,19 +63,19 @@ All Functions below are created by the tracked Migrations and are expected to re
 | `app_private.api_list_employees(text,text,text)` | 0004 | **yes** |
 | `app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)` | 0004/0007 | **yes** |
 
-Migration 0001 also requests `pgcrypto`; its exact Function inventory and owner depend on the installed PostgreSQL/Neon extension state and are not asserted from repository SQL. PostgreSQL built-ins in `pg_catalog` are outside the current `public`/`app_private` verifier scope. A different Bankeban owner, an Extension owner, or an unclassified Function must remain BLOCKED until its metadata is reviewed; do not ignore it or revoke it manually.
+Migration 0001 requests `pgcrypto`. Production currently exposes 37 `public.pgcrypto` Functions owned by `cloud_admin`; these are Extension-managed platform information. PostgreSQL built-ins in `pg_catalog` remain outside the `public`/`app_private` verifier scope. A different Bankeban owner, extra non-Extension Function, or unreviewed Extension tuple remains BLOCKED.
 
 ## Neon Function ACL incident
 
-Status: **BLOCKED / PUBLIC EXECUTE DEFECT FIXED / HUMAN RE-PROVISION AND VERIFY REQUIRED**
+Status: **BLOCKED / CLASSIFIED VERIFIER READY / HUMAN RE-PROVISION AND VERIFY REQUIRED**
 
-The corrected Neon-compatible provisioning script completed on Production, and the reader then verified `neondb`, TLS, read-only transaction mode, safe role attributes, role defaults, database/schema boundaries, ledger access, zero business-table reads, zero writes, and zero sequence writes. The remaining blocker was `function_execute_privilege_count = 37`. No Function was called and no business data was read or changed.
+The Neon-compatible provisioning script previously completed on Production, and the reader verified `neondb`, TLS, read-only mode, safe role attributes/defaults, database/schema boundaries, ledger access, zero business-table reads, zero writes, and zero sequence writes. The former global count of 37 has now been proven to contain only platform-managed pgcrypto Functions; no Function was called and no business data was read or changed.
 
-PostgreSQL grants `EXECUTE` on newly-created Functions to `PUBLIC` by default. Effective privileges are additive, so `REVOKE ... FROM banke_production_readonly` cannot override an `EXECUTE` grant inherited from `PUBLIC`; PostgreSQL has no per-role negative ACL. The evidence role therefore cannot reach effective zero without removing `PUBLIC EXECUTE` from the existing Bankeban Functions. Official basis: [PostgreSQL 18 CREATE FUNCTION](https://www.postgresql.org/docs/18/sql-createfunction.html), [PostgreSQL 18 REVOKE](https://www.postgresql.org/docs/18/sql-revoke.html), and [PostgreSQL 18 ALTER DEFAULT PRIVILEGES](https://www.postgresql.org/docs/18/sql-alterdefaultprivileges.html).
+PostgreSQL grants `EXECUTE` on newly-created Functions to `PUBLIC` by default, and privileges are additive. The reader cannot express a negative ACL against the platform's pgcrypto PUBLIC grant. The safe evidence boundary is zero execution of every Bankeban application Function plus truthful reporting of the reviewed pgcrypto limitation—not a false global zero and not a platform ACL mutation.
 
-The repository correction does not weaken the zero-Function requirement. Before changing `PUBLIC`, the manual script now exits unless the Production runtime role is a safe login with no memberships or ownership and has explicit `EXECUTE` grants on exactly the four reviewed 0001-0008 API entry points. It also exits unless every currently PUBLIC-executable Function in `public` and `app_private` is owned by the approved object owner, which retains its inherent owner capability. It then revokes current `PUBLIC EXECUTE` and the object owner's global future-Function PUBLIC default. Transactional postconditions require the evidence role and PUBLIC to have zero effective Function execution and the runtime role to retain exactly its four-function allowlist; otherwise every change rolls back.
+The corrected script exits unless the runtime is safe and has exactly four explicit application grants, all 11 Bankeban Functions exist with the reviewed owner, no extra non-Extension Function exists, and every Extension member matches the reviewed pgcrypto platform tuple. It revokes ACLs only from the 11 application signatures and changes only the object owner's future defaults. Transactional postconditions require application PUBLIC/reader zero, runtime four, and unchanged pgcrypto counts/ACLs; otherwise every change rolls back.
 
-This is a global Function ACL hardening required by PostgreSQL's additive privilege model, not a role-specific deny. Do not run it until the object owner and `banke_api_production` names are independently verified. Do not substitute another runtime role or remove the fail-closed checks.
+Do not manually revoke, alter, re-own, or drop pgcrypto objects. Do not substitute another runtime role or remove the classified fail-closed checks.
 
 ## Neon role-attribute compatibility incident
 
@@ -79,7 +93,7 @@ Official basis: [Neon Postgres compatibility](https://neon.com/docs/reference/co
 2. Create the evidence role with SQL, not the Neon Console, CLI, or API. Neon documents that roles created through those platform surfaces receive `neon_superuser`; the evidence role must not receive it.
 3. Create a unique password interactively with `psql` `\password`. Never place the password in a command line, chat, repository file, report, or log.
 4. Ensure the approved object owner that created the SQL role retains `ADMIN OPTION` on it. Independently confirm the existing runtime is `banke_api_production` and still has explicit grants on exactly the four reviewed 0001-0008 API Functions. Run `database/operator/production-readonly-role.provision.sql` manually as that operator. Supply only the evidence role, object-owner role and runtime role names through interactive `psql` variables and type the confirmation value when prompted. Any missing/unapproved runtime grant must stop before mutation.
-5. Run `database/operator/production-readonly-role.verify.sql`. The role must have `LOGIN`, `NOINHERIT`, no administrative attributes, no memberships, no object ownership, role-level read-only/timeouts, and `SELECT` only on `public.schema_migrations`. Business-table reads, writes, sequence writes, and function execution must all remain zero.
+5. Run `database/operator/production-readonly-role.verify.sql`. The role must have `LOGIN`, `NOINHERIT`, no administrative attributes, no memberships, no object ownership, role-level read-only/timeouts, and `SELECT` only on `public.schema_migrations`. Business-table reads, writes, sequence writes, and all Bankeban application Function execution must remain zero. The separately labelled pgcrypto Extension counts are platform information and must match only the reviewed tuple.
 6. Store the connection only in the approved operator secret store. Expose it to one evidence process as `DATABASE_READONLY_URL`; also set `BANK_ENV=production`, `BANK_PRODUCTION_DATABASE_HOST`, `BANK_PRODUCTION_READONLY_ROLE`, and `DATABASE_SSL=verify-full`.
 7. Run `pnpm db:status:readonly`. Do not continue if host, database, role, TLS, ledger, or privilege checks fail.
 8. After evidence collection, run `database/operator/production-readonly-role.disable.sql` to revoke access and set `NOLOGIN`. It intentionally does not drop the role or alter application data.
@@ -138,8 +152,8 @@ Every item must remain `PASS`, `FAIL`, `BLOCKED`, or `NOT AUTHORIZED` according 
 - Repository provisioning controls: **PASS**
 - Neon SQL-created role: **EXISTS / ROLE SETTINGS AND LEDGER ACCESS VERIFIED**
 - Neon first provisioning attempt: **BLOCKED / ROLE-ATTRIBUTE SCRIPT COMPATIBILITY DEFECT FIXED**
-- Neon second verification: **BLOCKED / 37 EFFECTIVE FUNCTION EXECUTE PRIVILEGES THROUGH PUBLIC**
-- PUBLIC Function ACL correction: **REPOSITORY PASS / PENDING HUMAN RE-PROVISION AND VERIFY**
+- Neon Function diagnostic: **PASS / 11 APPLICATION FUNCTIONS SAFE / 37 PGCRYPTO FUNCTIONS CLASSIFIED**
+- Classified Function ACL correction: **REPOSITORY PASS / PENDING HUMAN RE-PROVISION AND VERIFY**
 - Neon evidence: **BLOCKED**
 - Netlify read-only evidence identity: **BLOCKED**
 - Render read-only evidence identity: **BLOCKED**

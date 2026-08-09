@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 34 classified Function ACL evidence - 2026-08-09
+
+- Read-only catalog diagnostic: **PASS / SAFE METADATA COLLECTED**
+- Bankeban application set: **11 / owner `neondb_owner` / PUBLIC 0 / reader 0**
+- Runtime application allowlist: **4 effective and 4 explicit / no unapproved application Function**
+- Platform Extension set: **37 `public.pgcrypto` Functions / owner `cloud_admin` / inherited through PUBLIC**
+- pgcrypto mutation: **NOT AUTHORIZED / NOT PERFORMED**
+- Corrected Provision/Verify: **REPOSITORY PASS PENDING FULL GATES / HUMAN RE-RUN REQUIRED**
+- Production evidence: **BLOCKED / NOT PASS**
+
+The former global `function_execute_privilege_count = 37` is not represented as zero. It is now split into strict application metrics and truthful platform Extension information. Application PUBLIC or reader EXECUTE above zero, an owner mismatch, a missing/extra application Function, a non-approved runtime grant, or an unreviewed Extension tuple remains a hard failure. The reviewed pgcrypto PUBLIC ACL alone is an accepted managed-platform limitation because it provides no Bankeban Function or business-table access path.
+
 ## Sprint 34 diagnostic identity update - 2026-08-09
 
 - Manual diagnostic result: **BLOCKED / CONFIRMATION TOKEN MISMATCH**
@@ -23,7 +35,7 @@ The failed condition was the script's old `DIAGNOSE_BANKE_PRODUCTION_FUNCTION_AC
 
 Migrations 0001-0008 define 11 Bankeban Functions expected to be owned by `neondb_owner`; exactly four are approved runtime entry points. Migration 0001 also requests `pgcrypto`, so a Neon/platform-owned Extension Function is a plausible cause, but it is not treated as confirmed Production evidence. The manual diagnostic reads only `pg_catalog` metadata and must identify the exact schema, signature, owner, Extension relationship, PUBLIC/runtime/reader EXECUTE state before any revised provisioning is considered.
 
-The evidence requirement remains unchanged: `function_execute_privilege_count = 0`. No missing or different owner is ignored, no manual `REVOKE PUBLIC` is requested, and no Production status is promoted without a successful human diagnostic and subsequent separately approved verification.
+Historical requirement at that point was a global `function_execute_privilege_count = 0`. The completed catalog diagnostic later proved that metric mixed Bankeban Functions with the managed `public.pgcrypto` Extension. The current equivalent security gate requires Bankeban application PUBLIC/reader EXECUTE to be zero, runtime execution to be exactly the four explicit entry points, and the reviewed pgcrypto tuple to remain informational and unmodified. No Production status is promoted without the pending corrected human Provision/Verify run.
 
 ## Sprint 34 Function ACL verification update - 2026-08-08
 

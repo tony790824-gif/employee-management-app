@@ -194,12 +194,97 @@ export async function inspectSchemaMetadata(client) {
           JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
          WHERE namespace.nspname IN ('public', 'app_private')
            AND relation.relkind = 'S'
-           AND has_sequence_privilege(current_user, relation.oid, 'USAGE,UPDATE')) AS sequence_write_privilege_count,
-       (SELECT count(*)::integer
-          FROM pg_catalog.pg_proc AS procedure
-          JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
-         WHERE namespace.nspname IN ('public', 'app_private')
-           AND has_function_privilege(current_user, procedure.oid, 'EXECUTE')) AS function_execute_privilege_count`
+           AND has_sequence_privilege(current_user, relation.oid, 'USAGE,UPDATE')) AS sequence_write_privilege_count`
+  );
+  const functionPrivileges = await client.query(
+    `WITH expected(signature, runtime_entrypoint) AS (
+       VALUES
+         ('app_private.current_workspace_id()', false),
+         ('app_private.current_user_id()', false),
+         ('app_private.current_role()', false),
+         ('app_private.touch_updated_at()', false),
+         ('app_private.base64url_decode(text)', false),
+         ('app_private.raise_auth_error(text)', false),
+         ('app_private.verify_tenant_context(text,text,text,text,boolean)', false),
+         ('app_private.api_establish_session(text,text,text)', true),
+         ('app_private.api_logout_session(text,text,text)', true),
+         ('app_private.api_list_employees(text,text,text)', true),
+         ('app_private.api_execute_command(text,text,text,text,jsonb,text,text,text)', true)
+     ), application AS (
+       SELECT expected.*,
+              pg_catalog.to_regprocedure(expected.signature) AS procedure_oid
+         FROM expected
+     ), classified AS (
+       SELECT procedure.oid,
+              namespace.nspname AS schema_name,
+              pg_catalog.pg_get_userbyid(procedure.proowner) AS owner_name,
+              extension.extname AS extension_name
+         FROM pg_catalog.pg_proc AS procedure
+         JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = procedure.pronamespace
+         LEFT JOIN pg_catalog.pg_depend AS dependency
+           ON dependency.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass
+          AND dependency.objid = procedure.oid
+          AND dependency.deptype = 'e'
+         LEFT JOIN pg_catalog.pg_extension AS extension ON extension.oid = dependency.refobjid
+        WHERE namespace.nspname IN ('public', 'app_private')
+     )
+     SELECT
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND has_function_privilege(current_user, procedure_oid, 'EXECUTE')) AS application_function_execute_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND has_function_privilege('public', procedure_oid, 'EXECUTE')) AS application_public_execute_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND has_function_privilege('banke_production_readonly', procedure_oid, 'EXECUTE')) AS application_readonly_execute_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NULL) AS application_missing_function_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND (SELECT pg_catalog.pg_get_userbyid(procedure.proowner)
+                  FROM pg_catalog.pg_proc AS procedure
+                 WHERE procedure.oid = application.procedure_oid) <> 'neondb_owner') AS application_owner_mismatch_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND has_function_privilege('banke_api_production', procedure_oid, 'EXECUTE')) AS application_runtime_execute_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND runtime_entrypoint
+           AND EXISTS (
+             SELECT 1
+               FROM pg_catalog.pg_proc AS procedure
+               CROSS JOIN LATERAL pg_catalog.aclexplode(COALESCE(
+                 procedure.proacl,
+                 pg_catalog.acldefault('f', procedure.proowner)
+               )) AS acl
+              WHERE procedure.oid = application.procedure_oid
+                AND acl.grantee = (SELECT oid FROM pg_catalog.pg_roles WHERE rolname = 'banke_api_production')
+                AND acl.privilege_type = 'EXECUTE'
+           )) AS application_runtime_explicit_execute_count,
+       (SELECT count(*)::integer FROM application
+         WHERE procedure_oid IS NOT NULL
+           AND NOT runtime_entrypoint
+           AND has_function_privilege('banke_api_production', procedure_oid, 'EXECUTE')) AS application_runtime_unapproved_execute_count,
+       (SELECT count(*)::integer FROM classified
+         WHERE extension_name IS NOT NULL
+           AND has_function_privilege(current_user, oid, 'EXECUTE')) AS extension_function_execute_count,
+       (SELECT count(*)::integer FROM classified
+         WHERE extension_name IS NOT NULL
+           AND has_function_privilege('public', oid, 'EXECUTE')) AS extension_public_execute_count,
+       (SELECT count(*)::integer FROM classified
+         WHERE extension_name IS NOT NULL
+           AND has_function_privilege('banke_production_readonly', oid, 'EXECUTE')) AS extension_readonly_execute_count,
+       (SELECT count(*)::integer FROM classified
+         WHERE extension_name IS NULL
+           AND oid NOT IN (SELECT procedure_oid FROM application WHERE procedure_oid IS NOT NULL)) AS unexpected_application_function_count,
+       (SELECT count(*)::integer FROM classified
+         WHERE extension_name IS NOT NULL
+           AND NOT (
+             schema_name = 'public'
+             AND extension_name = 'pgcrypto'
+             AND owner_name = 'cloud_admin'
+           )) AS unexpected_extension_function_count`
   );
 
   const database = identity.rows[0] || {};
@@ -207,6 +292,7 @@ export async function inspectSchemaMetadata(client) {
   const roleConfig = Array.isArray(roleAttributes.role_config) ? roleAttributes.role_config : [];
   const roleSetting = name => roleConfig.find(item => String(item).toLowerCase().startsWith(`${name}=`)) || '';
   const privilegeSummary = privileges.rows[0] || {};
+  const functionPrivilegeSummary = functionPrivileges.rows[0] || {};
   const mapObjects = rows => rows.map(row => Object.freeze({
     schema: row.schema_name,
     name: row.object_name,
@@ -254,7 +340,19 @@ export async function inspectSchemaMetadata(client) {
       businessTableSelectCount: Number(privilegeSummary.business_table_select_count || 0),
       tableWritePrivilegeCount: Number(privilegeSummary.table_write_privilege_count || 0),
       sequenceWritePrivilegeCount: Number(privilegeSummary.sequence_write_privilege_count || 0),
-      functionExecutePrivilegeCount: Number(privilegeSummary.function_execute_privilege_count || 0)
+      applicationFunctionExecuteCount: Number(functionPrivilegeSummary.application_function_execute_count || 0),
+      applicationPublicExecuteCount: Number(functionPrivilegeSummary.application_public_execute_count || 0),
+      applicationReadonlyExecuteCount: Number(functionPrivilegeSummary.application_readonly_execute_count || 0),
+      applicationMissingFunctionCount: Number(functionPrivilegeSummary.application_missing_function_count || 0),
+      applicationOwnerMismatchCount: Number(functionPrivilegeSummary.application_owner_mismatch_count || 0),
+      applicationRuntimeExecuteCount: Number(functionPrivilegeSummary.application_runtime_execute_count || 0),
+      applicationRuntimeExplicitExecuteCount: Number(functionPrivilegeSummary.application_runtime_explicit_execute_count || 0),
+      applicationRuntimeUnapprovedExecuteCount: Number(functionPrivilegeSummary.application_runtime_unapproved_execute_count || 0),
+      extensionFunctionExecuteCount: Number(functionPrivilegeSummary.extension_function_execute_count || 0),
+      extensionPublicExecuteCount: Number(functionPrivilegeSummary.extension_public_execute_count || 0),
+      extensionReadonlyExecuteCount: Number(functionPrivilegeSummary.extension_readonly_execute_count || 0),
+      unexpectedApplicationFunctionCount: Number(functionPrivilegeSummary.unexpected_application_function_count || 0),
+      unexpectedExtensionFunctionCount: Number(functionPrivilegeSummary.unexpected_extension_function_count || 0)
     })
   });
 }

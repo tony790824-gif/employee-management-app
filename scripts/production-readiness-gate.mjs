@@ -68,11 +68,15 @@ export async function runProductionRepositoryGate() {
   ], failures);
   await existsAndContains('database/operator/production-readonly-role.provision.sql', [
     'PROVISION_BANKE_PRODUCTION_READONLY', 'NOINHERIT', 'default_transaction_read_only',
-    'REVOKE ALL PRIVILEGES', 'GRANT SELECT ON TABLE public.schema_migrations'
+    'REVOKE ALL PRIVILEGES', 'GRANT SELECT ON TABLE public.schema_migrations',
+    'application_functions_match_reviewed_owner', 'extension_functions_match_reviewed_platform_set',
+    'extension_acl_unchanged'
   ], failures);
   await existsAndContains('database/operator/production-readonly-role.verify.sql', [
     'default_transaction_read_only', 'schema_migrations', 'has_table_privilege',
-    'has_function_privilege'
+    'has_function_privilege', 'application_function_acl_pass',
+    'application_readonly_execute_count', 'extension_readonly_execute_count',
+    'ACCEPTED_PLATFORM_INFORMATION'
   ], failures);
   await existsAndContains('database/operator/production-readonly-role.disable.sql', [
     'DISABLE_BANKE_PRODUCTION_READONLY', 'NOLOGIN', 'REVOKE CONNECT'

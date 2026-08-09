@@ -1,5 +1,12 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 34 classified Function ACL
+
+- Production read-only metadata confirms the 11 Bankeban Functions are safe: owner `neondb_owner`, PUBLIC/reader zero, and exactly four explicit `banke_api_production` entry points.
+- All 37 remaining reader-executable Functions are `public.pgcrypto` members owned by Neon `cloud_admin`, inherited via PUBLIC, with no direct runtime grant. This is now accepted platform information, not a hidden application PASS and not a global-zero claim.
+- Provision/Verify classifies exact application signatures separately from Extension members, never targets pgcrypto, and fails closed on any application ACL regression or unreviewed Extension tuple.
+- Production evidence remains BLOCKED, readiness 70%, release NOT READY pending human Provision/Verify. Do not start Sprint 35.
+
 ## 2026-08-09 handoff - Sprint 34 diagnostic identity correction
 
 - The first manual Function-owner diagnostic failed before returning metadata because the operator used the intended `_FUNCTION_OWNER` confirmation while the script enforced the stale `_FUNCTION_ACL` literal.

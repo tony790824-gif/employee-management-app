@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-09 Sprint 34 classified Production Function evidence
+
+- Actual catalog evidence: 11 `app_private` Bankeban Functions owned by `neondb_owner`, application PUBLIC/reader zero, exactly four explicit runtime grants; 37 remaining effective reader Functions are only `public.pgcrypto` Extension members owned by `cloud_admin` through PUBLIC.
+- Current security model is classified: application ACLs are strict release blockers; the reviewed pgcrypto tuple is reported as platform information and is never modified. Any other Function/Extension classification fails closed.
+- Repository correction is pending human Provision/Verify. Production evidence remains BLOCKED, readiness 70%, release NOT READY; no Production mutation occurred in this repository work.
+
 ## 2026-08-09 Sprint 34 diagnostic identity correction
 
 - The no-metadata diagnostic stop was caused by `_FUNCTION_OWNER` versus stale `_FUNCTION_ACL` confirmation literals, not established Neon role rewriting.
@@ -10,7 +16,7 @@
 
 - The exact-role human provision re-run stopped fail-closed before `BEGIN`: a PUBLIC-executable Function in `public` or `app_private` has an owner other than `neondb_owner`. Verification and manual ACL changes were not performed.
 - Migrations 0001-0008 define 11 expected Bankeban Functions; the only four runtime entry points are `api_establish_session`, `api_logout_session`, `api_list_employees`, and `api_execute_command`. Their expected owner is `neondb_owner`.
-- Migration 0001 requests `pgcrypto`; Neon/platform/Extension ownership is a possible cause but remains unconfirmed. Use the read-only catalog diagnostic and do not relax `function_execute_privilege_count = 0`.
+- Historical note: Migration 0001 requested `pgcrypto`; the later read-only catalog diagnostic confirmed the owner mismatch was the reviewed `public.pgcrypto` Extension set owned by `cloud_admin`. The current gate therefore requires application PUBLIC/reader EXECUTE to remain zero, exactly four explicit runtime application grants, and the Extension tuple to match the reviewed platform set without mutation.
 - Production evidence remains BLOCKED, Production readiness 70%, release NOT READY. No Production connection or mutation was made by this repository update.
 
 ## 2026-08-08 Sprint 34 Function ACL incident
