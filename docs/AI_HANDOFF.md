@@ -1,5 +1,26 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 36 Production Resource Provisioning Plan
+
+- Status: **COMPLETE AS PLAN / PROVISIONING NOT AUTHORIZED**; product 98%, Production readiness 70%, release NOT READY.
+- Added the authoritative provisioning plan and ADR 0022. The plan orders Auth0, Neon recovery/capacity, Render, Netlify, DNS/TLS, monitoring, Migration evidence and traffic with independent human approval Gates A-G.
+- Preserve all Sprint 34/35 evidence. Do not reinterpret the Staging Render service, Netlify Deploy Previews or Development Auth0 Tenant as Production resources.
+- No Production action occurred. The next operator must stop at Gate A and obtain explicit owner approval for Auth0 tenant-capacity/cost and dedicated Production identity provisioning. That approval cannot authorize another gate.
+
+## 2026-08-09 handoff - Sprint 35 external evidence inventory
+
+- Status: **PARTIAL / HUMAN PLATFORM EVIDENCE REQUIRED**. Production readiness remains 70%; release remains NOT READY.
+- Human Neon Backup & Restore evidence is now recorded: PITR is available, history retention is six hours, scheduled snapshots are disabled, no snapshot exists, and no Restore/Preview/branch/snapshot/configuration action occurred. Backup/Restore/DR remains PARTIAL; isolated restore remains BLOCKED.
+- Human Neon Monitoring evidence is recorded: primary compute is idle with 0.25-2 CU autoscaling and 5-minute autosuspend; all required compute/database/pooler monitoring categories are available over the last-day view. Exact utilization/headroom was not inferred, so capacity remains PARTIAL.
+- Human Netlify evidence proves the Project exists and has Deploy Preview history, but the console explicitly reports it has not yet been deployed. Production Deploy/branch/metadata are NOT_CONFIGURED, rollback is BLOCKED, and Production domain/DNS/TLS are UNKNOWN. Previews were not promoted to Production evidence.
+- Human Render evidence proves the Project and Production-named Environment exist, but the single deployed Node/Singapore Service is explicitly the Staging API. No independent Production API exists; Production runtime/deploy metadata are NOT_CONFIGURED and health/readiness/log evidence is BLOCKED.
+- Human Auth0 evidence proves only the Development Tenant/Staging SPA exists. Production Tenant/SPA/API/issuer/audience/allowlists are NOT_CONFIGURED; the Team Tenant limit is reached. No Development resource was reclassified as Production.
+- `main` baseline `75fd5f0e445c00cc301a1115f7493c52b18ea856` was synchronized 0/0 before documentation work.
+- Fail-closed validation returned Repository PASS, six BLOCKED and three NOT_CONFIGURED. The management evidence collector stopped Netlify, Render and Auth0 before network access because dedicated read-only authorization is absent.
+- Sprint 34 Neon reader/application ACL evidence remains PASS. Database evidence remains PARTIAL because only ledger `0001`-`0008` is proven; later schema parity, capacity, backup/PITR and isolated restore are open.
+- Safe external inventory is exhausted. The next and only human step is to review and explicitly approve or reject a separate Production Resource Provisioning Plan Sprint. Approval of planning alone must not authorize resource creation, deployment, Migration, traffic change or secret handling.
+- No Production, Migration, database, deploy, DNS, Auth0, environment or traffic operation occurred. Do not proceed to Netlify, Render or Auth0 until the Neon evidence step is recorded.
+
 ## 2026-08-09 handoff - Sprint 34 COMPLETE / Neon evidence PASS
 
 - An authorized human ran Provision and Verify against Commit `e58932032a788d6928c00457e3ffa661684ca580`; both completed with `COMMIT`. Codex did not connect to Production.

@@ -1,5 +1,33 @@
 # Next external gate — Production evidence and authorization
 
+## Next unique action after Sprint 36 - Human Gate A
+
+Sprint 36 completed the plan only. Production readiness remains **70% / NOT READY** and no Production resource exists because of this Sprint.
+
+The next single action is an owner **approve/reject** decision for **Gate A — Auth0 Production tenant capacity and dedicated identity provisioning**:
+
+1. Confirm whether the Auth0 plan/team may be changed to add a dedicated Production Tenant; this may incur platform cost.
+2. Confirm the dedicated Production Tenant, SPA and API must be isolated from the existing Development/Staging Tenant.
+3. If approved, the operator must return with the current quoted cost/plan impact, intended public resource names and exact rollback/disable steps before creating anything.
+4. If not approved, mark Gate A BLOCKED and stop. Do not reuse the Staging Tenant.
+
+This decision does **not** authorize creating resources, changing Auth0, handling Secrets, or starting Gates B-G. Follow `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md`.
+
+## Sprint 35 current stop - owner provisioning-plan decision required
+
+Repository inventory is complete and the fail-closed validators did not contact Production management APIs or the database. Sprint 35 remains **PARTIAL**; Production readiness is 70% and release is NOT READY.
+
+Neon safe evidence is recorded. Netlify has no Production Deploy. Render has no independent Production API. Auth0 has only a Development Tenant/Staging SPA, and the Team Tenant limit is reached. Remaining closure requires resource/configuration/deploy or recovery actions and is outside Sprint 35 read-only authority.
+
+The only next action is an authorized human read-only view in Neon Console:
+
+1. Review the Sprint 35 evidence matrix.
+2. Explicitly approve or reject preparation of a separate **Production Resource Provisioning Plan** Sprint.
+3. If approved, planning must cover Auth0 Tenant capacity/dedicated identity, independent Render Production API, Netlify Production deploy/domain, DNS/TLS, monitoring/alerts, backup policy and isolated restore.
+4. Planning approval alone does not authorize creation, deployment, Migration, restore, traffic change or secret handling.
+
+Stop after the decision. Every eventual mutation requires its own explicit approval and rollback conditions.
+
 ## Current stop condition - Sprint 34 complete, do not start Sprint 35 automatically
 
 The authorized human Provision/Verify run passed at Commit `e58932032a788d6928c00457e3ffa661684ca580`; Neon read-only evidence is PASS and Sprint 34 is complete. Production remains NOT READY at 70% because Netlify, Render, Auth0, DNS/TLS, monitoring, recovery, current-schema/application cutover and remaining physical-device evidence are not closed.

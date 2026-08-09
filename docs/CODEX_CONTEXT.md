@@ -1,5 +1,27 @@
 # Codex Context
 
+## 2026-08-09 Sprint 36 current state
+
+- Sprint 36 is **COMPLETE AS PLAN / PROVISIONING NOT AUTHORIZED**. Product completion remains 98%; Production readiness remains 70% / NOT READY.
+- `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` is the authoritative Gate A-G order, isolation matrix, Secret boundary, evidence contract and rollback plan. ADR 0022 records the decision.
+- Current external truth is unchanged: Auth0 Production identity, Render Production API and Netlify Production deploy are NOT_CONFIGURED; Neon schema/recovery/capacity evidence remains PARTIAL; DNS/TLS and practical rollback evidence remain open.
+- No Production resource, environment variable, database, Migration, deploy, DNS, traffic, Auth0 setting or Secret was accessed or changed.
+- The only next action is a human approve/reject decision for Gate A: resolve Auth0 tenant capacity and authorize a dedicated Production Tenant/SPA/API. Do not start Gate B or any other gate in parallel.
+
+## 2026-08-09 Sprint 35 current state
+
+- Sprint 35 is **PARTIAL / HUMAN PLATFORM EVIDENCE REQUIRED**. Repository and configuration inventory is complete; no external platform request was made with unproven authority.
+- Production readiness remains **70% / NOT READY**. Product completion remains 98%.
+- Sprint 34 Neon reader and Bankeban Function ACL evidence remains PASS. Production database evidence remains PARTIAL: ledger `0001`-`0008` and PITR availability are proven, but later schema parity, capacity, independent/scheduled backup and isolated restore are not.
+- Sprint 35 human Backup & Restore inspection proves PITR availability and a six-hour history window. Scheduled snapshots are disabled, no snapshot exists, and no restore was run; the composite recovery gate therefore remains PARTIAL and the restore drill remains BLOCKED.
+- Sprint 35 human Monitoring inspection proves 0.25-2 CU autoscaling, 5-minute autosuspend and availability of RAM/CPU/rows/deadlock/cache/working-set/PostgreSQL/pooler/database-size metrics over the last day. Exact utilization and headroom were not inferred; capacity acceptance remains PARTIAL.
+- Sprint 35 human Netlify inspection proves the Project and non-Production Deploy Preview history exist. The Project has never had a Production Deploy, so Production frontend/deploy/branch are NOT_CONFIGURED, rollback is BLOCKED and domain/DNS/TLS are UNKNOWN.
+- Sprint 35 human Render inspection proves the Project and Production-named Environment exist, but its only Service is explicitly Staging. Independent Production API/service/runtime/deploy metadata are NOT_CONFIGURED; health/readiness/log evidence is BLOCKED.
+- Sprint 35 human Auth0 inspection proves only the Development Tenant/Staging SPA exists. Production Tenant/SPA/API/issuer/audience/allowlists are NOT_CONFIGURED, isolation is PARTIAL, and the Team Tenant limit blocks provisioning.
+- Netlify Production site/domain and Render Production API are NOT_CONFIGURED; Auth0 Production public metadata is NOT_CONFIGURED. Their management evidence, DNS/TLS, monitoring and recovery remain BLOCKED; capacity/rollback are UNKNOWN.
+- Current protected process environment has no approved Production public origins, platform viewer credentials/resource IDs or `DATABASE_READONLY_URL`. Never substitute Owner, Migrator, API, Push or Staging credentials.
+- No additional safe read-only platform inventory is currently available. The next single human action is an explicit approve/reject decision for a separate Production Resource Provisioning Plan Sprint; it does not authorize any resource, deploy, Migration, traffic or secret change.
+
 ## 2026-08-09 Sprint 34 final state
 
 - Sprint 34 is **COMPLETE**. An authorized human ran the corrected Production Neon Provision and Verify at Commit `e58932032a788d6928c00457e3ffa661684ca580`; both committed successfully. Codex did not connect to Production.

@@ -151,7 +151,7 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 14);
+assert.equal(committedHashes.entries.length, 19);
 assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
 assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
 assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);

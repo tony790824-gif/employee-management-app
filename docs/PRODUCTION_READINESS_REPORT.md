@@ -1,5 +1,25 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 36 provisioning-plan decision - 2026-08-09
+
+- Sprint 36 completed the resource inventory, target architecture, dependency order, human Gates A-G, Secret boundary, isolation matrix, evidence contract and rollback plan.
+- Documentation and planning do not satisfy an external Production gate. Readiness therefore remains **70% / NOT READY**.
+- Auth0 Production identity, Render Production API and Netlify Production deploy remain NOT_CONFIGURED. Neon schema/recovery/capacity remains PARTIAL; DNS/TLS, monitoring/alert acceptance and practical rollback remain open.
+- No Production resource, setting, data, Migration, deploy, DNS, traffic or Secret was operated. The next single gate is an owner Gate A Auth0 tenant-capacity/provisioning decision.
+
+## Sprint 35 external evidence status - 2026-08-09
+
+- Sprint 35 is **PARTIAL / HUMAN PLATFORM EVIDENCE REQUIRED**. Repository inventory and fail-closed evidence execution are complete; no Production platform was queried with unproven authority.
+- Production readiness remains **70%** under the existing scoring model and the release decision remains **NOT READY**. No score was increased for documentation, missing access, Staging evidence or unverified platform state.
+- New PASS: none beyond the already accepted Repository and Sprint 34 Neon reader/application-ACL evidence.
+- Production database remains **PARTIAL**: exact reader safety and ledger `0001`-`0008` pass; PITR availability, a 6-hour history window, compute bounds and monitoring availability are evidenced, but later application-schema parity, measured capacity headroom, scheduled/independent backup and isolated restore evidence do not.
+- Netlify Production site/domain/deploy is `NOT_CONFIGURED`; Render Production API service is `NOT_CONFIGURED`; Auth0 Production public metadata is `NOT_CONFIGURED`.
+- Human Netlify inspection confirms the Project exists and Deploy Preview history is isolated, but no Production Deploy, Production branch or deploy metadata exists. Rollback is BLOCKED and Production domain/DNS/TLS remain UNKNOWN.
+- Human Render inspection confirms the Project and a Production-named Environment exist, but its only Service is explicitly the deployed Staging API. Independent Production API/service/runtime/deploy metadata are NOT_CONFIGURED; health/readiness/log evidence is BLOCKED.
+- Human Auth0 inspection confirms only one Development Tenant and its Staging SPA exist. Production Tenant/SPA/API/issuer/audience/allowlists are NOT_CONFIGURED; Production/Staging isolation is PARTIAL and the Team Tenant limit is a provisioning BLOCKER.
+- Netlify/Render/Auth0 management evidence, DNS/TLS, external alerting and the isolated restore drill are `BLOCKED`; scheduled snapshots are `NOT_CONFIGURED`; Neon capacity acceptance is `PARTIAL` and Netlify rollback state is `UNKNOWN` until approved evidence is supplied.
+- No Production, Migration, database, deploy, DNS, Auth0, environment or traffic operation occurred.
+
 ## Sprint 34 final Neon evidence decision - 2026-08-09
 
 - Sprint 34: **COMPLETE** for Production read-only access provisioning and Neon evidence verification.

@@ -1,5 +1,21 @@
 # Production Platform Validation Report - Sprint 33C
 
+## Sprint 36 planning addendum - 2026-08-09
+
+The fail-closed Production inventory has been converted into an ordered resource provisioning plan with human Gates A-G. This adds no external evidence and changes no platform status: Auth0/Render/Netlify Production resources remain NOT_CONFIGURED, Neon remains PARTIAL, and DNS/TLS/rollback evidence remains open. Production readiness stays 70% / NOT READY. No validator was used to mutate or provision a resource.
+
+## Sprint 35 inventory addendum - 2026-08-09
+
+The fail-closed validator was rerun with only `BANK_ENV=production`; no approved Production origins, platform authorization or database reader was injected. Result: Repository PASS, six BLOCKED, three NOT_CONFIGURED, zero FAIL, zero Production mutation and zero secret output. Sprint 34's human Neon reader evidence remains PASS separately; database schema parity remains PARTIAL because the proven ledger is `0001`-`0008`. Netlify/Render/Auth0 management requests were not sent. Readiness remains 70% / NOT READY.
+
+Subsequent authorized human Neon Console inspection proved PITR availability with six hours of history, 0.25-2 CU autoscaling, 5-minute autosuspend and availability of the required monitoring categories. Scheduled snapshots are disabled, no snapshot exists, no restore was run, and exact capacity headroom was not inferred. Recovery and capacity therefore remain PARTIAL rather than PASS.
+
+Authorized human Netlify inspection proved only that the Project and Staging Preview history exist. The Project has never had a Production Deploy, so Production frontend/deploy remains NOT_CONFIGURED, rollback is BLOCKED, and Production domain/DNS/TLS remain UNKNOWN. No Preview was reclassified as Production.
+
+Authorized human Render inspection proved the Project and a Production-named Environment exist, but the single deployed Node/Singapore Service is explicitly the Staging API. Independent Production API/service/runtime/deploy metadata remain NOT_CONFIGURED; health/readiness/log evidence is BLOCKED. The Environment label was not treated as a Production service boundary.
+
+Authorized human Auth0 inspection proved only one Development Tenant and its Staging SPA exist. Production Tenant/SPA/API/issuer/audience/allowlists remain NOT_CONFIGURED; Production/Staging isolation is PARTIAL and the Team Tenant limit is BLOCKED. No Auth0 resource was created, linked or modified.
+
 ## Sprint 34 final Neon addendum - 2026-08-09
 
 Authorized human Provision/Verify passed at Commit `e58932032a788d6928c00457e3ffa661684ca580`. Neon read-only role/ACL/ledger evidence is now PASS; Codex did not connect to Production. The broader Production Database evidence remains PARTIAL because the ledger is still the foundation `0001`-`0008` set and current application-schema parity, capacity and recovery are not proven. Other platform rows below remain historical Sprint 33C status and are still BLOCKED/NOT_CONFIGURED unless separately evidenced. Overall readiness remains 70% / NOT READY.

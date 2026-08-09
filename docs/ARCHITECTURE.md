@@ -2,6 +2,14 @@
 
 ## Production readiness audit correction — 2026-08-04
 
+## Sprint 36 target Production architecture - plan only (2026-08-09)
+
+The accepted target is an isolated `Netlify Production -> Auth0 Production -> Render Production API -> Neon Production PostgreSQL` path, with separate Production VAPID/Push worker, monitoring/logging, backup/restore and rollback evidence. No target resource was created or configured in Sprint 36.
+
+Staging and Production must not share Tenant/Application/API, database credential, Render service, frontend origin, VAPID pair, cache/storage namespace or environment variables. The current Google Sheets Production path stays unchanged as the rollback baseline until the separately approved traffic Gate G. See `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` and ADR 0022.
+
+## Historical Production-readiness correction (2026-08-04)
+
 The isolated `STAGING POSTGRES` path is now active and accepted through `Netlify Draft -> Render Staging Node API -> Auth0 Staging -> Neon Staging PostgreSQL`, including controlled Commands, forced RLS, Notification Center, Web Push, offline queueing, and revision synchronization. The statements below dated 2026-07-20 are retained as historical migration context and must not be read as the current Staging state.
 
 Production has not been cut over or deployed. Its frontend remains on the Google Sheets path, while Production PostgreSQL, Auth0 event delivery, monitoring/alerting, recovery objectives, capacity evidence, and physical-device release gates remain separate Production readiness work. See `docs/PRODUCTION_READINESS_REPORT.md`.

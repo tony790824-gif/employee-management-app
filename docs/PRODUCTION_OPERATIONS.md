@@ -2,6 +2,21 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 36 gated provisioning boundary
+
+- Use `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` as the only approved order for future resource work.
+- Stop before each Gate A-G. Record action, reason, platform, possible cost, Staging impact, Production impact, rollback and exact human steps.
+- Approval is single-gate and non-transitive. Resource creation, configuration, deploy, Migration, DNS and traffic remain forbidden until their own approval.
+- Preserve the current Google Sheets Production path as rollback baseline until Gate G is separately accepted.
+
+## Sprint 35 operating state
+
+The repository inventory and fail-closed collectors were rerun without protected platform credentials. They made no Production request. Neon safe evidence is recorded. Netlify has no Production Deploy. Render has no independent Production API. Auth0 has only a Development Tenant/Staging SPA and the Team Tenant limit is reached. All currently safe read-only platform inventory is complete; the next step is an owner authorization decision, not a platform mutation.
+
+1. Review the Sprint 35 evidence summary and decide whether to authorize a separate **Production Resource Provisioning Plan** Sprint.
+2. The plan must address, in order: Auth0 Tenant capacity and dedicated Production identity, independent Render Production API, Netlify Production deploy/domain, DNS/TLS, monitoring/alerts, scheduled backup and isolated restore.
+3. This decision does not authorize creating or changing any resource. Each mutation/deploy/migration step requires a later explicit approval and rollback plan.
+
 The detailed procedure remains `docs/PRODUCTION_OPERATIONS_RUNBOOK.md`. This guide defines how Sprint 33C evidence is collected without changing Production.
 
 Sprint 34 Neon least-privilege Provision/Verify passed through an authorized human operator. The remaining evidence commands still require separately authorized, proven read-only Netlify, Render and Auth0 access.

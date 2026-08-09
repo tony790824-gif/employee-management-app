@@ -1,5 +1,25 @@
 # 班客邦 Product Backlog
 
+## Sprint 36 status - Production Resource Provisioning Plan (2026-08-09)
+
+- **Status:** COMPLETE as a safe plan; provisioning is not authorized. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Delivered:** Production inventory, target architecture, dependency order, approval Gates A-G, Secret boundary, Staging/Production isolation matrix, evidence rules and rollback plan.
+- **No external action:** no Production resource/configuration/database/Migration/deploy/DNS/traffic/Secret operation occurred. Missing Production resources remain NOT_CONFIGURED/BLOCKED/UNKNOWN.
+- **Next unique action:** Human Gate A — owner approve/reject the Auth0 Production tenant-capacity and dedicated Tenant/SPA/API provisioning decision, including current platform cost. This does not authorize Gates B-G.
+
+## Sprint 35 status - Remaining Production External Evidence Closure (2026-08-09)
+
+- **Status:** PARTIAL / HUMAN PLATFORM EVIDENCE REQUIRED. Product completion remains 98%; Production readiness remains 70%; release NOT READY.
+- **Completed safely:** repository/evidence inventory, protected-variable presence review without values, and fail-closed validator/collector execution. Repository PASS; no Production platform request was made with unproven authority.
+- **Neon:** Sprint 34 reader/application ACL evidence remains PASS. Current schema/Migration parity is PARTIAL (`0001`-`0008` proven), capacity is UNKNOWN, PITR capability is PASS, scheduled snapshots are NOT_CONFIGURED, and isolated restore remains BLOCKED.
+- **Neon recovery evidence:** PITR is available with six hours of history, but scheduled snapshots are disabled, no snapshot exists, and no restore was executed. Backup/Restore/DR is PARTIAL; isolated restore remains BLOCKED.
+- **Neon monitoring evidence:** primary compute bounds/autosuspend and all required monitoring categories are evidenced over the last day. Exact utilization/headroom was not inferred, so Capacity/Usage remains PARTIAL rather than PASS.
+- **Netlify evidence:** Project and non-Production Preview history exist, but no Production Deploy or Production branch exists. Production frontend/deploy is NOT_CONFIGURED, rollback is BLOCKED and domain/DNS/TLS remain UNKNOWN.
+- **Render evidence:** Project and Production-named Environment exist, but the only deployed Service is explicitly Staging. Independent Production API/runtime/deploy metadata are NOT_CONFIGURED; health/readiness/log evidence is BLOCKED.
+- **Auth0 evidence:** only the Development Tenant/Staging SPA exists. Production Tenant/SPA/API/issuer/audience/allowlists are NOT_CONFIGURED; isolation is PARTIAL and the Team Tenant limit is a provisioning BLOCKER.
+- **Netlify/Render/Auth0:** Production public identities are NOT_CONFIGURED and management evidence is BLOCKED; Staging configuration was not reused as Production evidence.
+- **Next single action:** owner approve/reject decision for a separate Production Resource Provisioning Plan Sprint. This decision does not authorize resource creation, configuration, deployment, Migration, restore, traffic change or secret handling.
+
 ## Sprint 34 status - Production Read-only Access Provisioning & Evidence Re-run (2026-08-08)
 
 - **Status:** COMPLETE for Neon read-only provisioning/verification. Product completion remains 98%; Production readiness remains 70%; release NOT READY.

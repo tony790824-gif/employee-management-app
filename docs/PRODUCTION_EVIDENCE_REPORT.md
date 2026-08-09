@@ -1,5 +1,118 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 36 planning record - 2026-08-09
+
+| Evidence gate | Status | Decision |
+| --- | --- | --- |
+| Production resource inventory | PASS (repository + authorized Sprint 34/35 evidence) | Current resources and gaps are mapped without new platform access. |
+| Provisioning architecture/order | PASS (plan only) | Gate A-G dependency, isolation, evidence and rollback requirements are documented. |
+| Auth0/Render/Netlify resource existence | NOT_CONFIGURED | A plan does not create or prove these resources. |
+| Neon schema/recovery/capacity closure | PARTIAL / BLOCKED | Existing evidence is preserved; no new database operation occurred. |
+| Production deployment/Migration/traffic | NOT AUTHORIZED | No action was attempted. |
+
+This planning record does not add an external evidence hash or raise readiness. The sanitized Sprint 35 hash manifest remains authoritative for the last collected platform evidence.
+
+## Sprint 35 Auth0 Production tenant inventory - 2026-08-09
+
+- Evidence source: **authorized human read-only Auth0 Team/Tenant inspection**
+- Team/Tenant inventory access: **PASS** — one visible Tenant
+- Development/Staging identity: **PASS / CONFIRMED** — Development environment, US-5, Staging SPA
+- Independent non-Development Production Tenant: **NOT_CONFIGURED / NONE VISIBLE**
+- Production SPA, issuer, API audience/signing algorithm: **NOT_CONFIGURED**
+- Production callback/logout/web-origin/CORS allowlists: **NOT_CONFIGURED**
+- Production connections/actions/protections/security-event stream: **NOT_CONFIGURED / NOT VERIFIABLE WITHOUT A PRODUCTION TENANT**
+- Production/Staging Auth0 isolation: **PARTIAL** — Development/Staging identity is explicit; Production identity stack does not exist
+- Tenant capacity: **BLOCKED / TEAM TENANT LIMIT REACHED**
+- Tenant/Application/API creation, linking, configuration change, token generation, Client Secret access and secret rotation: **NOT PERFORMED**
+
+The Development Tenant and Staging SPA are not Production evidence. No Tenant/Application/API identifier is retained in the sanitized record. It is stored as `manual.auth0.production.tenant_inventory`; record SHA-256 is `373db46f6f561ed9540d6219f2acb759c7a5780e40537216a827b37153f93243` and the 19-entry manifest SHA-256 is `be6832b30100e2ef567c4da6630c757dab9fdd11b8633349f82bf7a4e02d7f77`.
+
+## Sprint 35 Render Production service inventory - 2026-08-09
+
+- Evidence source: **authorized human read-only Render Console inspection**
+- Render Project: **PASS / EXISTS**
+- Render Environment label `Production`: **PASS / LABEL EXISTS, NOT SERVICE EVIDENCE**
+- Existing Staging API identity: **PASS / CONFIRMED** — one deployed Node service in Singapore is explicitly the Staging API
+- Independent Production API service: **NOT_CONFIGURED / NONE**
+- Production public API URL: **NOT_CONFIGURED**
+- Production runtime, region, branch, build/start commands and auto-deploy: **NOT_CONFIGURED / NOT ESTABLISHED**
+- Production deploy metadata: **NOT_CONFIGURED / NONE**
+- Production health/readiness/log monitoring: **BLOCKED / NO PRODUCTION SERVICE**
+- Production/Staging service isolation: **PARTIAL** — Staging identity is explicit, but no independent Production service exists
+- Service creation, deploy, restart, suspend, settings/environment change and secret access: **NOT PERFORMED**
+
+The Render Environment name does not override the authoritative Staging Service identity. No Service/Owner/Deploy identifier is retained in the sanitized record. It is stored as `manual.render.production.service_inventory`; record SHA-256 is `f35ebc4668f46fd7ad179d0c6591653f1a2bf8f8092ac40398e4b70445773db4` and the 18-entry manifest SHA-256 is `38ef07d0a11c20ed7c256349ef22b78c33b4f0b66141863edd10a0d1c555ae35`.
+
+## Sprint 35 Netlify Production deploy inventory - 2026-08-09
+
+- Evidence source: **authorized human read-only Netlify Console inspection**
+- Netlify project existence: **PASS / EXISTS**
+- Deploy Preview history: **PASS / EXISTS AS NON-PRODUCTION EVIDENCE ONLY**
+- Production Deploy: **NOT_CONFIGURED / NONE**
+- Production status/context, Commit SHA and timestamp: **NOT_CONFIGURED / NONE**
+- Production branch: **NOT_CONFIGURED / NOT ESTABLISHED**
+- Production rollback evidence: **BLOCKED / NO PRODUCTION DEPLOY HISTORY**
+- Production custom domain, DNS and TLS: **UNKNOWN / NOT EVIDENCED**
+- Publish, deploy, retry, rollback, cache clear, domain/project/deploy/environment change: **NOT PERFORMED**
+
+The Project and its Staging Deploy Previews do not constitute a Production frontend or deploy. No site/resource identifier is retained in the sanitized evidence record. The record is stored as `manual.netlify.production.deploy_inventory`; record SHA-256 is `8c5bc325b9fba5409946b9c23531863f7621f48cf60f85fe41a095b9c4ea19c2` and the 17-entry manifest SHA-256 is `8fdf83d47495b5d0f9f1e58558a70573f61ae16127ef059301cd290ffe0cca6d`.
+
+## Sprint 35 Neon Monitoring / Capacity evidence - 2026-08-09
+
+- Evidence source: **authorized human read-only Neon Console inspection**
+- Observation period: **LAST DAY**
+- Compute configuration evidence: **PASS** — primary compute, current state idle, autoscaling minimum `0.25 CU`, maximum `2 CU`, autosuspend `5 minutes`
+- Monitoring availability: **PASS** — RAM, CPU, rows, deadlocks, cache hit rate, working set, PostgreSQL connections, pooler client/server connections and database-size metrics are available
+- Usage evidence: **PARTIAL** — actual Production activity and populated metrics were observed, but exact utilization/peak/storage values were deliberately not inferred or retained
+- Capacity adequacy / headroom / alert thresholds: **PARTIAL / NOT PROVEN**
+- Production edit, SQL, write, Migration and deploy: **NOT PERFORMED**
+
+The unredacted screenshot is not stored because it contains an endpoint hostname. The sanitized record is stored as `manual.neon.production.monitoring_capacity`; record SHA-256 is `9428ae884820af57da72f4bf2e6dd0ddaf7c4f2fd5b80f713abc5688d17d7fa9` and the 16-entry manifest SHA-256 is `c737312c4dcc704ca38f2f3ab9626e3b4cee2f537aadb5aacc01f24b364cf0f7`.
+
+## Sprint 35 Neon Backup & Restore evidence - 2026-08-09
+
+- Evidence source: **authorized human read-only Neon Console inspection**
+- PITR / Restore from history capability: **PASS / AVAILABLE**
+- History retention window: **PARTIAL / 6 HOURS OBSERVED**
+- Scheduled snapshot: **NOT_CONFIGURED / NOT ENABLED**
+- Snapshot inventory: **NOT_CONFIGURED / NONE**
+- Isolated restore drill and measured RTO: **BLOCKED / NOT PERFORMED**
+- Preview data, Restore, snapshot creation, branch creation, retention/configuration change and Production write: **NOT PERFORMED**
+- Composite Backup/Restore/DR gate: **PARTIAL**, not PASS
+- Production readiness: **70% / NOT READY**
+
+PITR capability is now directly evidenced, but it does not prove an independent backup, scheduled snapshot, successful isolated restore, recovery correctness, or the documented RTO. The sanitized record is stored as `manual.neon.production.backup_restore`; record SHA-256 is `404135662618801cfb35e167b72ab1935113a26180f54d5135bb34ee30e15989` and the 15-entry manifest SHA-256 is `7a3eaeb656bac91de073b44109ee545ed8aa5adcef1369810d59fcb2d5049252`.
+
+## Sprint 35 external evidence inventory - 2026-08-09
+
+- Sprint status: **PARTIAL / HUMAN PLATFORM EVIDENCE REQUIRED**
+- Production readiness: **70% / NOT READY**
+- Repository baseline: `75fd5f0e445c00cc301a1115f7493c52b18ea856`; `main` and `origin/main` were `0/0` at inventory time.
+- Safe validator result: Repository `PASS`; six `BLOCKED`; three `NOT_CONFIGURED`; no `FAIL` and no Production request or mutation.
+- Safe evidence collector result: Repository `PASS`; all Netlify, Render and Auth0 Management records `BLOCKED` before network access because protected read-only authorization is absent.
+- Protected process configuration contains no approved Production frontend/API origins, Auth0 public configuration, platform resource IDs/tokens, or `DATABASE_READONLY_URL`. Existing Owner, Migrator, API, Push and Staging credentials were not substituted.
+
+| Gate | Status | Current evidence | Required closure |
+|---|---|---|---|
+| Repository isolation and evidence controls | PASS | Fail-closed validator/collector, security policy and no-deploy boundary executed locally | Preserve through final release gate |
+| Neon dedicated reader and application ACLs | PASS | Sprint 34 human Provision/Verify proves exact reader, read-only defaults, zero business reads/writes, strict Bankeban Function ACLs and ledger `0001`-`0008` | Preserve the role; do not re-provision without a reviewed need |
+| Neon current schema and Migration parity | PARTIAL | Production foundation ledger `0001`-`0008` is proven; repository has later application Migrations through `0022` while `0010` remains intentionally excluded | Read-only schema diff and an explicitly authorized future migration plan; no Migration in Sprint 35 |
+| Neon capacity and usage | PARTIAL | Compute bounds/autosuspend, metric availability and recent activity are evidenced; exact utilization, peak headroom and acceptance thresholds are not | Define evidence-safe thresholds and compare measured utilization without changing Production |
+| Neon backup/PITR | PARTIAL | PITR is available with a 6-hour history window; scheduled snapshots are disabled and no snapshot exists | Configure/verify independent backup coverage only under separate approval |
+| Neon restore drill | BLOCKED | No isolated timed restore has been authorized or run | Separate approval for a non-Production restore target; never restore active Production in this Sprint |
+| Netlify Production site/domain/deploy | NOT_CONFIGURED | Project exists and has Staging Deploy Previews, but it has never had a Production Deploy | Separate explicit Production deployment authorization; not part of Sprint 35 |
+| Netlify rollback | BLOCKED | No Production deploy history exists from which rollback can be proven | Requires a future Production deploy plus separate rollback evidence |
+| Netlify Production domain/DNS/TLS | UNKNOWN | No Production deploy or approved Production domain was evidenced | Identify the approved domain before read-only DNS/TLS validation |
+| Render Production API service | NOT_CONFIGURED | Project/Environment exist, but the only Service is explicitly Staging; no independent Production API exists | Separate explicit service/deployment authorization; not part of Sprint 35 |
+| Render Production runtime/build/start/autodeploy | NOT_CONFIGURED | No Production Service exists, so these properties are not established | Requires a future authorized Production Service |
+| Render health/readiness/logs/monitoring | BLOCKED | No Production API origin or Service exists | Requires an independently authorized Production Service before read-only validation |
+| Auth0 Production public metadata | NOT_CONFIGURED | Only the Development/Staging Tenant exists; no Production issuer, JWKS or audience exists | Requires a separately authorized Production Tenant/API |
+| Auth0 Production Application/API/allowlists | NOT_CONFIGURED | Production SPA/API and callback/logout/web-origin/CORS lists do not exist | Requires separate resource-provisioning approval after resolving the Tenant limit |
+| Auth0 Team tenant capacity | BLOCKED | Console reports the Team Tenant limit is reached | Owner plan/capacity decision required before any Production Tenant proposal |
+| Production/Staging external isolation | PARTIAL | Repository isolation passes; external endpoints and Auth0 tenant separation remain unproved | Cross-platform read-only evidence for exact Production identities |
+
+No Production deploy, Migration, database query/write, restore, DNS change, Auth0 change, environment-variable change, platform-resource change, traffic change or secret export occurred. The Sprint 34 Neon evidence hash manifest remains authoritative; this inventory does not replace it or fabricate new external evidence.
+
 ## Sprint 34 final human Neon evidence - 2026-08-09
 
 - Executed by: **authorized human operator** against Commit `e58932032a788d6928c00457e3ffa661684ca580`

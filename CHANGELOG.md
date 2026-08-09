@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 36 Production Resource Provisioning Plan
+
+- Added a fail-closed Production resource inventory, target architecture, dependency order and one-at-a-time human approval Gates A-G.
+- Documented the Production Secret boundary, Staging/Production isolation matrix, evidence requirements and cross-layer rollback plan in ADR 0022 and the provisioning plan.
+- Kept product completion at 98% and Production readiness at 70% / NOT READY; no resource, configuration, database, Migration, deploy, DNS, traffic or Secret operation occurred.
+- Set the only next action to an owner Gate A decision for Auth0 tenant capacity and dedicated Production identity provisioning.
+
 ## 2026-08-09 - Sprint 34 Neon read-only evidence closure
 
 - Recorded the authorized human Production Provision/Verify PASS against Commit `e58932032a788d6928c00457e3ffa661684ca580`; Codex did not connect to Production.

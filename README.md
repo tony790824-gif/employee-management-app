@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 36 Production Resource Provisioning Plan (2026-08-09)
+
+- Added a fail-closed, one-gate-at-a-time Production provisioning plan covering dedicated Auth0, Neon recovery/capacity, Render API/Push worker, Netlify frontend, DNS/TLS, Migration and traffic approval boundaries.
+- Added an explicit Staging/Production isolation matrix, Secret handling rules, evidence requirements, dependency order and cross-layer rollback plan.
+- No Production resource, configuration, database, Migration, deploy, DNS, traffic or Secret was operated. Product completion remains 98%; Production readiness remains 70% / NOT READY.
+- The next single step is a human Gate A approve/reject decision for Auth0 Production tenant capacity and dedicated identity resources.
+
 ## Sprint 34 Production Read-only Access Provisioning (2026-08-08)
 
 - Neon compatibility fix: the first authorized Production run stopped at its first mutation because a non-superuser cannot issue `ALTER ROLE ... NOSUPERUSER`. The corrected script fail-closes on dangerous attributes and mutates only Neon-compatible role properties; human re-run is pending and Neon evidence remains BLOCKED.

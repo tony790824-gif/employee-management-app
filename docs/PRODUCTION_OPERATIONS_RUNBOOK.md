@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 36 provisioning sequence
+
+Future Production resource work must follow `docs/PRODUCTION_RESOURCE_PROVISIONING_PLAN.md` and stop separately at Gates A-G. Before each action, the owner must receive the action, reason, platform, possible cost, Staging impact, Production impact, rollback and exact manual steps. An approval is valid for one gate only.
+
+The first and only current gate is Gate A: resolve the Auth0 Team tenant-capacity limit and approve or reject creation of a dedicated Production Tenant/SPA/API. Do not reuse the Development/Staging Tenant, and do not begin Neon, Render, Netlify, DNS, Migration or traffic work in parallel.
+
 Sprint 33C adds `pnpm production:platform:validate` as the common fail-closed evidence command. It requires explicit Production/read-only mode; public checks are GET/HEAD-only and database checks require a separate SELECT-only credential. Follow `docs/PRODUCTION_OPERATIONS.md` and `docs/PRODUCTION_RELEASE_CHECKLIST.md`; a `BLOCKED` or `NOT_CONFIGURED` result is not approval to mutate the platform.
 
 This runbook defines the evidence required before Bankeban may leave the current Production Google Sheets path. It does not authorize Production deployment, Migration, Auth0 mutation, database writes, or a destructive restore.

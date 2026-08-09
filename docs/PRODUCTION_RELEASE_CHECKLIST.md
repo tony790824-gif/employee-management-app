@@ -2,7 +2,32 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 35 inventory (2026-08-09): Repository and Sprint 34 Neon reader evidence remain PASS. Production schema parity is PARTIAL; capacity is UNKNOWN; Netlify/Render/Auth0 public identities are NOT_CONFIGURED; their management evidence, DNS/TLS, monitoring and recovery are BLOCKED. No Production request or mutation was made during this inventory.
+
+Neon Backup & Restore evidence update: PITR is available with a six-hour history window, but scheduled snapshots are disabled, no snapshot exists, and no isolated restore was executed. The combined backup/restore/RPO/RTO item remains unchecked and PARTIAL/BLOCKED as applicable.
+
+Neon Monitoring evidence update: primary compute is configured for 0.25-2 CU autoscaling and 5-minute autosuspend; RAM/CPU/activity/deadlock/cache/working-set/connection/pooler/database-size monitoring is available. No exact utilization/headroom threshold was retained, so capacity acceptance remains unchecked and PARTIAL.
+
+Netlify evidence update: the Project exists and has Deploy Preview history, but has never had a Production Deploy. Production deploy/domain/branch items remain unchecked; rollback is BLOCKED because no Production deployment history exists. No Preview is accepted as Production evidence.
+
+Render evidence update: a Production-named Environment exists, but its only Service is explicitly the Staging Node API. Independent Production service/API/runtime/deploy/health items remain unchecked and NOT_CONFIGURED/BLOCKED. Environment naming alone is not Production service evidence.
+
+Auth0 evidence update: only one Development Tenant and the Staging SPA exist. Production Tenant/SPA/API/issuer/audience/allowlists remain unchecked and NOT_CONFIGURED; Team Tenant capacity is BLOCKED. Development resources are not Production evidence.
+
 This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md`. Checking an item requires direct evidence; repository implementation or Staging proof alone is insufficient.
+
+## Sprint 36 pre-provisioning gates
+
+- [ ] Gate A: dedicated Auth0 Production Tenant/SPA/API explicitly approved and evidenced.
+- [ ] Gate B: Neon recovery/capacity work explicitly approved; existing Production database and Sprint 34 roles preserved.
+- [ ] Gate C: independent Render Production API/Push worker explicitly approved and evidenced.
+- [ ] Gate D: Netlify Production candidate explicitly approved; no Staging/Google Sheets/placeholder/Secret contamination.
+- [ ] Gate E: DNS/TLS change explicitly approved with exact rollback records.
+- [ ] Monitoring, alert delivery, capacity thresholds and evidence retention PASS.
+- [ ] Gate F: exact Production Migration manifest/checksum/recovery plan explicitly approved.
+- [ ] Gate G: owner go/no-go and reversible traffic switch explicitly approved.
+
+Unchecked gates are release blockers. Approval for one line never approves another.
 
 ## Candidate and repository
 
