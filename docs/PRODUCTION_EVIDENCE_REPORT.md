@@ -1,5 +1,16 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 45 domain availability and quote evidence - 2026-08-09
+
+- Evidence source: Verisign `.com` RDAP and Porkbun public unauthenticated search/pricing.
+- Candidate: `bankeban.com` / `.com`, owner-selected for quote evidence only.
+- Availability: `AVAILABLE_AT_QUOTE_TIME`; RDAP returned HTTP 404 and the registrar displayed an ordinary non-Premium registration result.
+- Quote: US$11.08 for a one-year registration; US$11.08/year renewal; USD. Recheck before any purchase.
+- Status: domain price evidence **PASS**; ownership, purchase, DNS/TLS and rollback remain `NOT_CONFIGURED / BLOCKED`.
+- No account, cart, purchase, payment, auto-renew, nameserver, DNS, Production, Deploy, Migration, SQL or Secret operation occurred.
+
+The sanitized records remain `public.production.domain_operations_cost` (SHA-256 `cbc82d7e3636740a7a4048c77805d2329fbabd1385657bfab4317193e4a0f731`) and `public.production.cost_model` (SHA-256 `7127414604340ad029d74f9e571229b862f83785d7625fe82af39eee472974de`). The updated 24-entry manifest SHA-256 is `f5972ef8beb92c5fc01eca39c3b13a01c9e0a0098be705e0063c27892fca9c67`.
+
 ## Sprint 44 domain and operations public evidence - 2026-08-09
 
 - Evidence source: official public Cloudflare Registrar/DNS, Netlify TLS, Better Stack pricing, Render notifications/logs/metrics and Neon pricing/snapshot documentation.

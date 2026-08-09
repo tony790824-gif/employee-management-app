@@ -1,5 +1,13 @@
 # Sprint 42 — Production Gate A Blocker Closure Plan
 
+## Sprint 45 exact domain quote update
+
+- `DNS-01` quote evidence is now PASS for owner-selected `bankeban.com` / `.com`: available and ordinary non-Premium at the evidence time, Porkbun US$11.08 first year and US$11.08/year renewal.
+- `DNS-01` itself remains `PARTIAL / NOT_CONFIGURED`: no ownership, purchase, DNS/TLS, origin, HSTS or rollback evidence exists.
+- Known planning floor is US$49/month recurring services and US$599.08/year including the current domain quote, plus variable/UNKNOWN items.
+- Gate A remains DEFER, Production Provisioning remains NO-GO and readiness remains 70% / NOT READY.
+- Sprint 46 is the next zero-resource step: Production Schema Parity Read-only Plan; no Production SQL or Migration.
+
 日期：2026-08-09
 
 狀態：**COMPLETE AS FAIL-CLOSED PLAN / GATE A DEFER / PRODUCTION NO-GO**

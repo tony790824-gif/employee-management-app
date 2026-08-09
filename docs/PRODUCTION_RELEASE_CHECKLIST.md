@@ -1,5 +1,13 @@
 # Production Release Checklist
 
+## Sprint 45 domain quote checkpoint
+
+- [x] Owner supplied one exact quote candidate: `bankeban.com` / `.com`.
+- [x] Point-in-time registry availability and registrar initial/renewal quote recorded without account or purchase activity.
+- [ ] Recheck availability, Standard/Premium classification and price immediately before an explicitly authorized purchase.
+- [ ] Prove domain ownership, DNS records, managed TLS, Auth0/Render allowlists, HSTS and rollback after their own Gate E authorization.
+- [ ] Keep Production NO-GO until every remaining external gate passes; quote evidence does not authorize purchase or deployment.
+
 Status: **NOT READY - external evidence required**
 
 Sprint 44 public cost update: Domain/DNS/TLS, monitoring/alerting/logging and Neon backup/snapshot/restore candidates are documented and hash-verified. No approved exact domain, provider integration, responder, scheduled snapshot or isolated Restore exists; readiness remains 70%, Gate A DEFER and Production NO-GO.

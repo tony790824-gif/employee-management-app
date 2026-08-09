@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 45 - Production Domain/TLD Selection and Registrar Quote Evidence Closure (read-only)
+## Sprint 46 - Production Schema Parity Read-only Plan
+
+Sprint 45 closed only the exact `bankeban.com` public availability and price-evidence item. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+
+The next single Sprint is Repository-only planning for an authorized future catalog/Migration-ledger comparison using the existing Production read-only role. It must define expected `0001`–`0022` parity, checksums, safe metadata queries, stop conditions and evidence fields. It must not connect to Production, run SQL, execute a Migration, change a database, deploy, purchase the domain or modify DNS.
+
+## Historical Sprint 45 - Production Domain/TLD Quote Evidence Closure
+
+- Owner-selected quote candidate: `bankeban.com` (`.com`).
+- Verisign `.com` RDAP returned 404 and Porkbun's public result showed a normal non-Premium registration at US$11.08 for one year, renewing at US$11.08/year.
+- Availability and price are point-in-time evidence only; no purchase, reservation, cart, account, auto-renew, nameserver or DNS action occurred.
+- Current planning floor: US$49/month recurring services; US$599.08/year including the quoted domain, plus variable/UNKNOWN costs.
+
+## Historical planned Sprint 45 - Production Domain/TLD Selection and Registrar Quote Evidence Closure (read-only)
 
 Sprint 44 completed the official public Domain/DNS/TLS, monitoring/alerting/logging and Neon recovery-cost candidate inventory. It did not close an external gate. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
 

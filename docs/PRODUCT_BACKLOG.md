@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 45 status - Production Domain/TLD Quote Evidence Closure (2026-08-09)
+
+- **Status:** COMPLETE as owner-authorized read-only public availability and quote evidence; no purchase, reservation, cart, account, DNS or Production operation occurred.
+- **Candidate:** `bankeban.com` (`.com`), quoted through Porkbun. Verisign RDAP returned 404 and the registrar displayed a normal non-Premium registration result, so availability is `AVAILABLE_AT_QUOTE_TIME` only.
+- **Quote:** US$11.08 for the first one-year registration and US$11.08/year renewal, USD. Recheck availability and price immediately before any later authorized purchase.
+- **Cost:** recurring service floor remains US$49/month / US$588/year; current first-year planning floor becomes US$599.08/year plus Neon/backup usage, monitoring/logging overage, tax where applicable, and other UNKNOWN items.
+- **Decision:** Gate A remains DEFER; Production Provisioning remains NO-GO; Production readiness remains 70% / NOT READY.
+- **Next unique Sprint:** Sprint 46 — Production Schema Parity Read-only Plan; no Production SQL, Migration or mutation.
+
 ## Sprint 44 status - Domain and Operations Cost Evidence Closure (2026-08-09)
 
 - **Status:** COMPLETE as fail-closed read-only public evidence closure; no Production or vendor resource was operated.

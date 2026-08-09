@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 45 domain operating boundary
+
+- `bankeban.com` (`.com`) is an owner-selected quote candidate, not an owned/configured Production domain.
+- Current Porkbun public quote is US$11.08 for one year and US$11.08/year renewal; registry/registrar evidence showed available and non-Premium at the evidence time.
+- Recheck price and availability immediately before any future purchase approval. Do not buy, reserve, add to cart, enable auto-renew, change nameservers/DNS, configure TLS/origins or route traffic under this evidence.
+- Gate A remains DEFER; Production remains NO-GO at 70% / NOT READY.
+
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
 ## Sprint 44 domain and operations evidence state

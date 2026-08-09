@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 45 domain quote evidence - 2026-08-09
+
+- `bankeban.com` / `.com` is the owner-selected quote candidate. Registry and registrar public evidence show it available at the evidence time as a normal non-Premium registration.
+- Porkbun public quote: US$11.08 for one year and US$11.08/year renewal. No purchase, reservation, cart, account, auto-renew, DNS, Production or billing action occurred.
+- The domain quote-evidence item is PASS, but domain ownership, DNS/TLS, exact origins and rollback remain NOT_CONFIGURED/BLOCKED.
+- Production readiness remains **70% / NOT READY**; Gate A remains **DEFER** and Production Provisioning remains **NO-GO**.
+
 ## Sprint 44 domain and operations cost evidence closure - 2026-08-09
 
 - Official public evidence is consolidated in `docs/PRODUCTION_DOMAIN_OPERATIONS_COST_EVIDENCE.md` without creating or configuring any external resource.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Sprint 45 handoff - 2026-08-09
+
+- COMPLETE read-only quote evidence: owner candidate `bankeban.com` (`.com`); Verisign RDAP 404 plus Porkbun ordinary non-Premium result.
+- Public quote: US$11.08 / one-year registration and US$11.08/year renewal. No purchase, reservation, cart, account, DNS or Production action.
+- Known planning floor is US$49/month recurring services and US$599.08/year including the current domain quote, plus variable/UNKNOWN costs.
+- Production readiness stays 70% / NOT READY; Gate A DEFER; Provisioning NO-GO.
+- Next unique Sprint: Production Schema Parity Read-only Plan. Do not connect to Production or execute SQL/Migration without a new exact authorization.
+
 ## 2026-08-09 handoff - Sprint 44 Domain and Operations Cost Evidence Closure
 
 - Status: **COMPLETE AS READ-ONLY PUBLIC EVIDENCE CLOSURE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.

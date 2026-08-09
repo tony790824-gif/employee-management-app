@@ -1,8 +1,16 @@
 # Production Total Cost Model and Final Gate A Authorization Package
 
+## Sprint 45 exact domain quote addendum
+
+- Owner-selected quote candidate: **`bankeban.com`** (`.com`), Porkbun public unauthenticated search.
+- Availability: **AVAILABLE_AT_QUOTE_TIME**. Verisign `.com` RDAP returned HTTP 404 and Porkbun displayed a normal non-Premium registration result.
+- Initial registration: **US$11.08 / one year**. Renewal: **US$11.08/year**. Availability and price must be rechecked before any later authorized purchase.
+- Known recurring service floor remains **US$49/month / US$588/year**. Adding the current domain quote yields a **US$599.08 first-year/renewal planning floor**, plus Neon/backup usage, monitoring/logging overage, tax where applicable, and other UNKNOWN items.
+- This is not a purchase or an exact Production total. Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and Production Readiness remains **70% / NOT READY**.
+
 日期：2026-08-09
 
-狀態：**SPRINT 44 READ-ONLY COST EVIDENCE ADDENDUM COMPLETE / GATE A DEFER / PRODUCTION NO-GO**
+狀態：**SPRINT 45 READ-ONLY DOMAIN QUOTE EVIDENCE COMPLETE / GATE A DEFER / PRODUCTION NO-GO**
 
 產品完成度：**98%**
 Production Readiness（正式環境準備度）：**70% / NOT READY**
@@ -260,4 +268,5 @@ flowchart LR
 - Production readiness：**70% / NOT READY（不因文件完成而提高）**
 - Production / billing / platform mutation：**NONE**
 - Sprint 44 Domain/operations public evidence：**COMPLETE / EXTERNAL GATES STILL PARTIAL**。
-- 唯一下一個 Sprint：**Sprint 45 Production Domain/TLD Selection and Registrar Quote Evidence Closure（read-only）**。不得購買或修改 DNS。
+- Sprint 45 exact domain quote evidence：**COMPLETE / DOMAIN OWNERSHIP AND DNS STILL NOT CONFIGURED**。
+- 唯一下一個 Sprint：**Sprint 46 Production Schema Parity Read-only Plan**。不得連線 Production、執行 SQL 或 Migration。

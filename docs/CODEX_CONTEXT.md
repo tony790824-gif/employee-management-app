@@ -1,5 +1,11 @@
 # Codex Context
 
+## Sprint 45 current context - 2026-08-09
+
+`bankeban.com` / `.com` is the only owner-selected Production domain quote candidate. Verisign `.com` RDAP returned 404 and Porkbun public search showed an ordinary non-Premium US$11.08 one-year registration renewing at US$11.08/year. Treat both availability and price as point-in-time evidence; nothing was purchased, reserved, added to cart, configured or deployed.
+
+Production stays 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Next work is Sprint 46 Repository-only Production Schema Parity planning; no Production connection, SQL, Migration, DNS or resource operation is authorized.
+
 ## 2026-08-09 current authority - Sprint 44 domain and operations cost evidence
 
 - Sprint 44 is COMPLETE as fail-closed read-only public evidence closure. It did not configure or close a Production capability gate.

@@ -263,14 +263,26 @@
       "status": "PARTIAL"
     },
     "domain": {
-      "approvedDomainSelected": false,
-      "candidateRegistrar": "CLOUDFLARE_REGISTRAR",
-      "initialPriceStatus": "UNKNOWN",
-      "registrarPricingModel": "REGISTRY_AND_ICANN_AT_COST",
-      "renewalPriceStatus": "UNKNOWN",
-      "source": "https://developers.cloudflare.com/registrar/account-options/renew-domains/",
-      "status": "BLOCKED",
-      "tldSelected": false
+      "approvedDomainSelected": true,
+      "availability": "AVAILABLE_AT_QUOTE_TIME",
+      "availabilityCheckedAt": "2026-08-09",
+      "availabilitySource": "https://rdap.verisign.com/com/v1/domain/bankeban.com",
+      "classification": "STANDARD_NON_PREMIUM",
+      "currency": "USD",
+      "domain": "bankeban.com",
+      "initialPriceStatus": "EVIDENCED_PUBLIC_QUOTE",
+      "initialRegistrationPrice": 11.08,
+      "purchasePerformed": false,
+      "quoteRegistrar": "PORKBUN",
+      "quoteSource": "https://porkbun.com/products/domains",
+      "registrationTermYears": 1,
+      "renewalPrice": 11.08,
+      "renewalPriceStatus": "EVIDENCED_PUBLIC_QUOTE",
+      "reservationOrCartPerformed": false,
+      "selectionScope": "OWNER_APPROVED_QUOTE_CANDIDATE_ONLY",
+      "status": "PASS_READ_ONLY_QUOTE_EVIDENCE",
+      "tld": "com",
+      "tldSelected": true
     },
     "dnsTls": {
       "cloudflareDnsQueryCostCandidateUsd": 0,
@@ -383,7 +395,11 @@
       "status": "PARTIAL"
     },
     "operationalCostEvidence": {
-      "domainRegistrationStatus": "UNKNOWN",
+      "domainFirstYearQuoteUsd": 11.08,
+      "domainQuoteCurrency": "USD",
+      "domainQuoteTermYears": 1,
+      "domainRegistrationStatus": "EVIDENCED_QUOTE_NOT_PURCHASED",
+      "domainRenewalQuoteUsd": 11.08,
       "dnsQueryCostCandidateUsd": 0,
       "externalMonitoringFreeTierCandidate": true,
       "monitoringPublicCandidateStatus": "EVIDENCED_NOT_CONFIGURED",
@@ -409,7 +425,7 @@
       "status": "PASS"
     },
     "status": "PARTIAL",
-    "unknownCostCategories": ["BACKUP_RESTORE", "DOMAIN", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_PRODUCTION_ONLY_USAGE", "NETLIFY_CAPACITY_UPGRADE", "PLATFORM_OVERAGE", "TAX"]
+    "unknownCostCategories": ["BACKUP_RESTORE", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_PRODUCTION_ONLY_USAGE", "NETLIFY_CAPACITY_UPGRADE", "PLATFORM_OVERAGE", "TAX"]
   },
   "entries": [
     { "id": "public.repository.gate", "sha256": "f302af8daa43314d441eb5feb15ec5596f4fb00a5a89505e4144fb8794168bb3" },
@@ -434,8 +450,8 @@
     { "id": "manual.auth0.production.capacity_pricing", "sha256": "4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa" },
     { "id": "manual.netlify.production.billing_usage", "sha256": "e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74" },
     { "id": "manual.neon.production.billing_usage", "sha256": "965f1a7ebe773584166fd7d0a716c93a279cd3fa743d1f37a85e6cc855e651f5" },
-    { "id": "public.production.domain_operations_cost", "sha256": "74cf991c4cbf8d1e463e938e86a1462fc2f1724e442a401d803ac9d00d83451a" },
-    { "id": "public.production.cost_model", "sha256": "332112b37cb5496aaf962c1896248a22aea51569adcec3a5c3b47ffd90da5456" }
+    { "id": "public.production.domain_operations_cost", "sha256": "cbc82d7e3636740a7a4048c77805d2329fbabd1385657bfab4317193e4a0f731" },
+    { "id": "public.production.cost_model", "sha256": "7127414604340ad029d74f9e571229b862f83785d7625fe82af39eee472974de" }
   ],
-  "sha256": "196a6657e359eb27dddb30c093cd799cf9a43c34578974d019b79bb58d020c85"
+  "sha256": "f5972ef8beb92c5fc01eca39c3b13a01c9e0a0098be705e0063c27892fca9c67"
 }

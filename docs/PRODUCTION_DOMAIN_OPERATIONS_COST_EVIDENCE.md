@@ -1,23 +1,39 @@
-# Sprint 44 — Domain and Operations Cost Evidence Closure
+# Sprint 45 — Production Domain/TLD Quote Evidence Closure
 
 日期：2026-08-09
 
-狀態：**COMPLETE AS READ-ONLY PUBLIC EVIDENCE CLOSURE / GATE A DEFER / PRODUCTION NO-GO**
+狀態：**COMPLETE AS READ-ONLY DOMAIN QUOTE EVIDENCE / GATE A DEFER / PRODUCTION NO-GO**
 
 Production Readiness：**70% / NOT READY**
 
-本文件只保存官方公開頁面的非敏感方案與價格摘要。沒有購買網域、建立帳號或整合、設定告警、連接日誌、建立快照／分支、執行還原、修改 DNS、部署、Migration、SQL、Secret 或任何 Production 資源。公開價格必須在日後採購授權前重新確認。
+本文件只保存官方公開頁面的非敏感方案與價格摘要。沒有購買、預訂或把網域加入購物車，也沒有建立帳號或整合、設定告警、連接日誌、建立快照／分支、執行還原、修改 DNS、部署、Migration、SQL、Secret 或任何 Production 資源。公開價格與可用性必須在日後採購授權前重新確認。
+
+## Sprint 45 owner-selected quote candidate
+
+Owner 指定的唯一候選為 **`bankeban.com`**（`.com`）。Verisign `.com` RDAP 在 2026-08-09 回傳 HTTP 404，代表查詢當下沒有該名稱的 registry domain object；Porkbun 公開、未登入的搜尋頁同時顯示可註冊的普通 `At Cost` 結果。
+
+| 欄位 | 唯讀證據 | 判定 |
+| --- | --- | --- |
+| Domain / TLD | `bankeban.com` / `.com` | `OWNER-SELECTED QUOTE CANDIDATE` |
+| Registrar quote | Porkbun 公開搜尋 | `EVIDENCED` |
+| Availability | Registry 無現有物件，registrar 顯示可註冊 | `AVAILABLE_AT_QUOTE_TIME` |
+| Standard / Premium | 普通 `.com` At Cost 列，未標示 Premium | `STANDARD / NON-PREMIUM AT QUOTE TIME` |
+| 首購 | **US$11.08 / 1 年** | `EVIDENCED PUBLIC QUOTE` |
+| 續約 | **US$11.08 / 年** | `EVIDENCED PUBLIC QUOTE` |
+| 費用邊界 | Porkbun 公開頁聲明非 Premium 單年價格含 ICANN 與其他 fees | `PUBLIC TERMS` |
+
+來源：Verisign `.com` RDAP（`https://rdap.verisign.com/com/v1/domain/bankeban.com`）與 Porkbun 公開 pricing/search（`https://porkbun.com/products/domains`）。可用性與報價會變動，日後如獲購買授權，必須在付款前重新確認。
 
 ## 1. Domain / DNS / TLS
 
 | 項目 | 目前證據 | 成本 | 判定 |
 | --- | --- | --- | --- |
-| Production domain / TLD | Repository 沒有已核准的實際網域名稱或 TLD | 首購 **UNKNOWN**；續約 **UNKNOWN** | `BLOCKED / OWNER SELECTION REQUIRED` |
-| Registrar 候選 | Cloudflare Registrar 以 registry 與 ICANN 成本計價，續約以 registry list price；實際價只在指定可購買網域時成立 | 依實際名稱／TLD，**UNKNOWN** | `PARTIAL` |
+| Production domain / TLD | `bankeban.com` / `.com`，僅作報價候選 | 首購 US$11.08；續約 US$11.08/年 | `QUOTE EVIDENCE PASS / NOT PURCHASED` |
+| Registrar 報價 | Porkbun 公開搜尋，普通非 Premium `.com` | USD、1 年 | `EVIDENCED / RECHECK BEFORE PURCHASE` |
 | Authoritative DNS 候選 | Cloudflare Free／Pro／Business 不按 DNS query 收費 | US$0 candidate | `PARTIAL / NOT SELECTED` |
 | Managed TLS 候選 | Netlify-managed HTTPS certificate 對所有 Netlify sites 免費並自動續期 | US$0 candidate | `PARTIAL / NOT CONFIGURED` |
 
-Cloudflare Registrar 候選會鎖定 Cloudflare nameservers；這是未來選商時的營運限制，不是購買建議。沒有實際網域／TLD，就不能把促銷價、示例價或其他網域的價格寫成 Bankeban 報價。
+Cloudflare Registrar 仍可作未來比較候選，且會鎖定 Cloudflare nameservers；這是營運限制，不是購買建議。本 Sprint 的精確 Bankeban 報價只採 Porkbun 當下公開結果，未把其他 registrar 的促銷價混入。
 
 官方來源：
 
@@ -79,8 +95,8 @@ Snapshot 單價不等於完整備份／DR 成本。隔離還原仍必須證明 m
 | 類別 | Current / candidate cost | Cost status |
 | --- | --- | --- |
 | Existing known fixed floor | US$49/月；US$588/年 | `KNOWN FIXED` |
-| Domain initial purchase | UNKNOWN | Exact name/TLD/registrar quote missing |
-| Domain renewal | UNKNOWN/year | Exact name/TLD/registrar quote missing |
+| Domain initial purchase | US$11.08 / one year | `bankeban.com`, Porkbun public quote; not purchased |
+| Domain renewal | US$11.08/year | Current public quote; recheck before purchase |
 | DNS | US$0 candidate | Not selected/configured |
 | TLS | US$0 candidate | Not configured |
 | Monitoring / basic alerting / short logs | US$0 Better Stack Free candidate | Not approved/configured; capacity and data handling not accepted |
@@ -93,7 +109,7 @@ Snapshot 單價不等於完整備份／DR 成本。隔離還原仍必須證明 m
 因此更新後最低安全 Production 只能表達為：
 
 - **US$49/month known fixed + Domain + Neon/backup usage + operations overage + other UNKNOWN items**。
-- **US$588/year known fixed + Domain initial/renewal + Neon/backup usage + operations overage + other UNKNOWN items**。
+- **US$599.08/year current known planning floor + Neon/backup usage + operations overage + other UNKNOWN items**；其中 US$11.08 是可變動且尚未購買的當下網域報價。
 
 不得把候選 Free tiers 相加後宣稱精確總價，也不得把 US$0 候選視為 Gate PASS。
 
@@ -103,9 +119,9 @@ Snapshot 單價不等於完整備份／DR 成本。隔離還原仍必須證明 m
 - Production Readiness：**70% / NOT READY**（不因文件完成而提高）。
 - Gate A：**DEFER**。
 - Production Provisioning：**NO-GO**。
-- Domain/DNS/TLS：`PARTIAL / BLOCKED`，缺實際 domain/TLD與當下首購／續約 quote。
+- Domain/DNS/TLS：網域報價證據 `PASS`；購買、所有權、DNS/TLS 與 rollback 仍 `NOT_CONFIGURED / BLOCKED`。
 - Monitoring/Alerting/Logging：`PARTIAL`，缺 owner 選型、資料處理審查、具名 responder、實際 alert delivery 與容量/留存接受。
 - Backup/Restore/DR：`PARTIAL / BLOCKED`，缺 schedule/snapshot、15-minute RPO、isolated Restore與60-minute RTO證據。
 - Production mutation：**NONE**。
 
-下一個唯一建議 Sprint：**Sprint 45 — Production Domain/TLD Selection and Registrar Quote Evidence Closure（read-only）**。Owner 先選定確切候選 domain/TLD，再於 registrar 搜尋頁提供不含帳戶／付款／個資的首購與續約價格；不得購買或修改 DNS。
+下一個唯一建議 Sprint：**Sprint 46 — Production Schema Parity Read-only Plan**。只規劃使用既有 Production read-only role 取得 catalog／Migration ledger 差異，不執行 SQL、Migration 或任何 Production mutation。

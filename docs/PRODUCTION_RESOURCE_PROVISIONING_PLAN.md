@@ -1,5 +1,11 @@
 # Production Resource Provisioning Plan — Sprint 36
 
+## Sprint 45 domain quote boundary
+
+The owner selected `bankeban.com` (`.com`) for quote evidence only. Verisign RDAP and Porkbun public search show point-in-time availability and a normal non-Premium US$11.08 one-year registration / US$11.08 annual renewal quote. No purchase, reservation, cart, account, auto-renew or DNS action occurred.
+
+This evidence closes only the quote prerequisite in `DNS-01`; it does not establish ownership, configure DNS/TLS, create Production origins or authorize Gate E. Gate A remains DEFER, provisioning remains NO-GO and readiness remains 70% / NOT READY. Sprint 46 is limited to a Production Schema Parity read-only plan; no Production connection, SQL or Migration is authorized.
+
 Date: 2026-08-09
 
 Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**

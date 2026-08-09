@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-08-09 Sprint 45 Production Domain/TLD Quote Evidence Closure
+
+- **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
+- **Evidence:** `bankeban.com` / `.com` was owner-selected for quote evidence; registry/registrar evidence showed available and ordinary non-Premium at the evidence time.
+- **Cost:** Porkbun public quote US$11.08 first year and US$11.08/year renewal. Current annual planning floor is US$599.08 plus variable/UNKNOWN costs.
+- **Open gates:** domain ownership/DNS/TLS, Production schema parity, identity/resources, monitoring/alert delivery, backup/isolated Restore and release/rollback.
+- **Safety:** no purchase, cart, payment, auto-renew, DNS, Production, SQL, Migration or Deploy operation occurred.
+
 ## 2026-08-09 Sprint 44 Domain and Operations Cost Evidence Closure
 
 - **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
