@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-09 current authority - Sprint 41 cost finalization
+
+- Sprint 41 is COMPLETE as a fail-closed cost and Gate A decision package. Product completion is 98%; Production readiness is 70% / NOT READY.
+- Gate A is DEFER and Production provisioning is NO-GO.
+- Minimum fixed known cost is US$49/month (US$588/year); Recommended fixed known is US$67/month (US$804/year); Growth total is UNKNOWN.
+- Neon actual account usage, recovery cost, domain, monitoring/on-call, logging/overage and tax are not zero and remain variable/UNKNOWN until direct evidence exists.
+- The only next action is a human read-only Neon Billing/Usage review. No Production/billing/platform/database/Migration/deploy/DNS/Secret/traffic operation is authorized.
+
 ## 2026-08-09 Sprint 40 current state
 
 - Sprint 40 is **COMPLETE AS NETLIFY BILLING / COST EVIDENCE CLOSURE**. Gate A remains DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.

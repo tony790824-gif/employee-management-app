@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 41 public cost finalization evidence - 2026-08-09
+
+- Evidence source: current official public Auth0, Neon, Render, Netlify, Cloudflare DNS, Netlify TLS and external monitoring pricing/capability pages plus existing sanitized owner evidence.
+- Minimum fixed known: **US$49/month / US$588/year**. Recommended fixed known: **US$67/month / US$804/year**. Growth total: **UNKNOWN**.
+- Neon: official unit rates and workload examples are verified, but the Production account's plan and complete-period billable usage are not. Neon remains `PARTIAL` for cost.
+- Domain registration, monitoring/on-call selection, long-term logging, isolated Restore, platform overage and tax remain `UNKNOWN` or variable.
+- Gate A: **DEFERRED**; Production readiness **70% / NOT READY**; Production provisioning **NO-GO**.
+- Billing, purchase, upgrade, Production platform, database, Migration, deploy, DNS, Secret and traffic operations: **NOT PERFORMED**.
+
 ## Sprint 40 Netlify billing evidence - 2026-08-09
 
 - Evidence source: **authorized human read-only Netlify Usage & billing inspection**.

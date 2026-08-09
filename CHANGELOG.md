@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-09 - Sprint 41 Production Cost Finalization and Gate A Decision Package
+
+- Revalidated official Auth0, Neon, Render, Netlify, DNS/TLS and monitoring cost boundaries and preserved every account-specific unknown.
+- Finalized three fail-closed models: Minimum fixed known US$49/month, Recommended fixed known US$67/month, and Growth UNKNOWN; Neon public examples remain non-binding planning anchors.
+- Kept Gate A DEFERRED, Production readiness at 70% / NOT READY and provisioning NO-GO. No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic action occurred.
+
 ## 2026-08-09 - Sprint 40 Netlify Billing Evidence and Gate A Cost Closure
 
 - Recorded sanitized owner evidence for the current Netlify Free credit-based plan, 300-credit allowance and 274.6-credit current-period usage.

@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 41 final cost addendum
+
+Official public evidence confirms the pricing formulas but not the account-specific total. Minimum fixed known is US$49/month; Recommended fixed known is US$67/month; Growth remains UNKNOWN. Neon actual plan/usage, domain, recovery, monitoring/on-call, logging overage and tax remain unresolved.
+
+Gate A remains DEFER, provisioning remains NO-GO, and readiness remains 70%. The next safe step is read-only Neon Billing/Usage evidence, not a purchase or resource operation.
+
 ## Sprint 40 Netlify cost addendum
 
 Read-only owner evidence resolves the Netlify current-plan fact as Free / Credit-based / US$0 / 300 credits. It does not resolve capacity: current usage is 274.6 credits and deploys account for 270. `NETLIFY-01` remains NOT_CONFIGURED and `NETLIFY-03` remains BLOCKED because no approved Production Deploy or rollback history exists.

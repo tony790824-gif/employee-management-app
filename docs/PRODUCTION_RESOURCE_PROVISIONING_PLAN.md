@@ -7,6 +7,12 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 41 cost and authorization boundary
+
+The final fail-closed models are: Minimum fixed known US$49/month (US$588/year), Recommended fixed known US$67/month (US$804/year), and Growth total UNKNOWN. Neon public unit rates/examples do not replace account usage evidence; domain, recovery, monitoring/on-call, logging/overage and tax remain variable or UNKNOWN.
+
+Gate A remains DEFER and the dependency order remains unchanged. Before any provisioning, the owner must separately accept the exact cost envelope and then authorize only the next single Gate. This Sprint authorizes no purchase, resource, configuration, deploy, Migration, DNS, Secret or traffic action.
+
 ## Sprint 40 Netlify billing boundary
 
 Owner evidence now proves the existing account is Free / Credit-based / US$0 with 300 monthly credits. This reduces the current known fixed floor to US$49/month plus Neon and unknowns; it does not prove Free capacity or authorize a Production Deploy.
@@ -245,4 +251,4 @@ Planning documents, repository tests and Staging evidence do not increase Produc
 
 The provisioning plan is complete, but no resource is provisioned and no Production gate is accepted. Readiness remains **70% / NOT READY**.
 
-The next single step is **Human Gate A — Auth0 Production tenant-capacity and identity provisioning decision**. The owner must first choose whether to approve the Auth0 plan/tenant capacity change and its current platform cost. Only after that explicit approval may an operator open Auth0 and create the dedicated Production identity resources. No other Production gate may start in parallel.
+The next single step is **human read-only Neon Billing/Usage evidence**. It must record only the current plan and latest complete-period compute/storage/history/snapshot/network usage plus non-sensitive amount. It does not authorize Gate A execution. Only after the complete cost envelope and a later exact owner approval may an operator consider the first Production resource; no other gate may start in parallel.

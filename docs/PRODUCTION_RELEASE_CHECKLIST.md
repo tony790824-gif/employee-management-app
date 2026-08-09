@@ -2,6 +2,15 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 41 cost authorization gate: Minimum fixed known is US$49/month; Recommended fixed known is US$67/month; Growth remains UNKNOWN. Gate A is DEFER and Production remains NO-GO.
+
+- [ ] Owner accepts **US$49/month fixed known minimum plus Neon and UNKNOWN costs**; this is not an exact total.
+- [ ] Neon current plan and latest complete billing period CU/storage/history/snapshot/network usage and charge are directly evidenced.
+- [ ] Domain registrar/TLD initial and renewal price is directly evidenced.
+- [ ] Monitoring, alert-delivery, named responder and log-retention plan/cost are selected and evidenced.
+- [ ] Backup/snapshot/isolated-Restore capability and expected cost are approved.
+- [ ] A separate exact purchase authorization exists before any billing or resource action.
+
 Sprint 40 Netlify update: current plan is Free / Credit-based / US$0 / 300 credits; 274.6 credits are used, primarily by 18 deploys. Fixed cost evidence is PASS, but capacity remains unresolved and no approved Production Deploy exists.
 
 - [x] Netlify current plan, billing model, included credits and current usage recorded without sensitive billing data.
@@ -13,7 +22,7 @@ Sprint 39 cost update: the known fixed planning floor is US$58/month plus Neon a
 
 - [x] Official public cost sources and the three cost scenarios are documented and hash-verified.
 - [x] Known fixed costs are separated from usage-based examples and unknown items.
-- [ ] Current Netlify account plan and Legacy/Credit-based billing model are verified read-only.
+- [x] Current Netlify account plan and Credit-based billing model were verified read-only in Sprint 40; the historical Sprint 39 evidence gap is closed.
 - [ ] Neon actual Production usage/recovery estimate, domain price and monitoring/alerting quote are verified.
 - [ ] Owner accepts the full fixed-plus-variable cost envelope and separately authorizes an exact Gate A action.
 

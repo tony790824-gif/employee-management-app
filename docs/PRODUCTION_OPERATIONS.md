@@ -2,6 +2,14 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 41 cost-control boundary
+
+- Gate A remains DEFER and provisioning remains NO-GO; no Production runbook step is authorized by the cost model.
+- Before any future purchase, record the exact account quote, billing cycle, included usage, overage/spend-control behavior, cancellation/downgrade impact and named owner.
+- Neon cost alerts must cover compute CU-hours, database/branch storage, restore-history storage, snapshot storage and network transfer. UNKNOWN values must not be normalized to zero.
+- Netlify deployment credit thresholds remain 70% warning, 75% stop non-essential deploys and 85% release freeze; Free exhaustion can pause projects.
+- Minimum monitoring may use provider and external Free tiers only after alert delivery and responder ownership are proven. Paid on-call/log retention remains an independent Gate.
+
 ## Sprint 40 Netlify billing operating state
 
 - Current Netlify fixed cost is Free / US$0 with 300 monthly credits; capacity remains unresolved at 274.6 credits used.
@@ -13,7 +21,7 @@ Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKE
 
 - Sprint 39's US$58/month baseline is historical. Sprint 40's current authority is **US$49/month fixed known floor plus Neon and unknowns**; do not present US$64/month as exact because it includes a published typical Neon example.
 - Gate A remains **DEFER**. Do not upgrade Auth0, add payment, buy a plan, or create Production resources.
-- The next allowed operator step is a read-only Netlify Billing / Plan details inspection. Do not switch plans, enable auto-recharge, add payment, purchase credits or deploy.
+- The historical Netlify Billing / Plan inspection was completed read-only in Sprint 40. The next allowed operator step is only a read-only Neon Billing / Usage inspection; do not upgrade, alter compute or retention, create snapshots/branches, or execute SQL.
 - Production readiness remains 70% / NOT READY and Production remains NO-GO.
 
 ## Sprint 38 Gate A operating state

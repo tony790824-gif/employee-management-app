@@ -6,6 +6,12 @@ Status: **EVIDENCE RECORDED / EXECUTION DEFERRED / PRODUCTION NO-GO**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 41 final decision addendum
+
+The fail-closed Production cost package now distinguishes three models: Minimum fixed known US$49/month, Recommended fixed known US$67/month, and Growth UNKNOWN, all plus usage-based or unresolved items. Auth0 Essentials remains the preferred future minimum-capacity identity option, but Neon actual usage, domain, recovery, monitoring/on-call and overage evidence are still incomplete.
+
+Gate A therefore remains **DEFER / NOT AUTHORIZED**. No upgrade, payment, Tenant/Application/API creation or other Production action is authorized.
+
 ## Sprint 39 final cost-package addendum
 
 The total-cost model in `docs/PRODUCTION_TOTAL_COST_GATE_A.md` confirms that Auth0's US$35/month is only one component. Sprint 40 corrects the known fixed planning floor to US$49/month plus Neon actual usage and unknown items after Netlify Free/US$0 evidence. Because recovery, domain, monitoring/alerting, overage and Netlify capacity remain open, the final Gate A recommendation remains **DEFER**.
@@ -82,4 +88,4 @@ No Gate B-G action inherits authority from Gate A.
 - Production readiness: **70% / NOT READY**
 - Production mutation: **NONE**
 
-The next Sprint should close the remaining Production cost envelope and Gate A authorization package without purchasing, creating, deploying, migrating, or changing Production.
+Sprint 41 closed the repository cost-model and Gate A decision package without purchasing, creating, deploying, migrating, or changing Production. The next allowed evidence step is the read-only Neon Billing / Usage inspection defined in `docs/NEXT_SPRINT.md`.

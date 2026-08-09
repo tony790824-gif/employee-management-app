@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 41 status - Production Cost Finalization and Gate A Decision Package (2026-08-09)
+
+- **Status:** COMPLETE as a fail-closed repository cost/decision package; Gate A remains DEFERRED and Production remains NO-GO.
+- **Models:** Minimum fixed known US$49/month (US$588/year); Recommended fixed known US$67/month (US$804/year); Growth total UNKNOWN. Neon public workload examples are not fixed Bankeban costs.
+- **Unresolved:** Neon account plan/complete-period usage, snapshot/history/restore cost, domain quote, monitoring/on-call selection, logging/overage and tax remain variable or UNKNOWN.
+- **Readiness:** product 98%; Production readiness 70% / NOT READY. Cost documentation does not close an external Production gate.
+- **Next unique action:** owner read-only Neon Billing/Usage evidence only; no upgrade, configuration, SQL, snapshot, restore, resource, deploy or purchase.
+
 ## Sprint 40 status - Netlify Billing Evidence and Gate A Cost Closure (2026-08-09)
 
 - **Status:** COMPLETE as read-only billing/cost evidence closure; Gate A remains DEFERRED and Production remains NO-GO.

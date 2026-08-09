@@ -1,5 +1,14 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 41 Production Cost Finalization
+
+- Status: **COMPLETE AS FAIL-CLOSED COST/DECISION PACKAGE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- Minimum fixed known: US$49/month or US$588/year. Recommended fixed known: US$67/month or US$804/year. Growth total remains UNKNOWN.
+- Neon Launch public rates/examples may be used only as formulas or planning anchors; the actual Production plan, complete-period CU/storage/history/snapshot/network usage and charge are not evidenced.
+- Domain registration, monitoring/on-call selection, long-term logging, isolated Restore, overage and tax remain unknown or variable. Never coerce them to zero.
+- Next unique human action is read-only Neon Billing/Usage evidence. Do not change plan, compute, retention, backup, database or any Production resource.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 handoff - Sprint 40 Netlify Billing / Gate A Cost Closure
 
 - Status: **COMPLETE AS READ-ONLY COST EVIDENCE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.

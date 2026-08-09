@@ -1,5 +1,12 @@
 # 班客邦 Project Health Report
 
+## 2026-08-09 Sprint 41 Production Cost Finalization
+
+- **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
+- **Cost:** Minimum fixed known US$49/month; Recommended fixed known US$67/month; Growth total UNKNOWN.
+- **Gate A:** DEFER. Neon actual usage/recovery, domain, monitoring/on-call, logging/overage and tax remain variable/UNKNOWN.
+- **Safety:** no Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 Sprint 40 Netlify Billing / Gate A Cost Closure
 
 - **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.

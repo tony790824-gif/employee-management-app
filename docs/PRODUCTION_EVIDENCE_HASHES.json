@@ -231,11 +231,25 @@
     },
     "evidenceDate": "2026-08-09",
     "gateARecommendation": "DEFER",
+    "growthTotalStatus": "UNKNOWN",
     "knownFixedAnnualUsd": 588,
     "knownFixedMonthlyUsd": 49,
+    "minimumProduction": {
+      "fixedAnnualUsd": 588,
+      "fixedMonthlyUsd": 49,
+      "indicativeAnnualWithNeonTypicalUsd": 768,
+      "indicativeMonthlyWithNeonTypicalUsd": 64,
+      "totalStatus": "KNOWN_FIXED_PLUS_VARIABLE_AND_UNKNOWN"
+    },
     "neon": {
+      "databaseStorageUsdPerGbMonth": 0.35,
+      "launchComputeUsdPerCuHour": 0.106,
       "launchTypicalMonthlyUsd": 15,
       "pricingModel": "USAGE_BASED",
+      "productionAccountPlanStatus": "UNKNOWN",
+      "restoreHistoryUsdPerGbMonth": 0.2,
+      "scheduledSnapshotsRequirePaidPlan": true,
+      "snapshotStorageUsdPerGbMonth": 0.09,
       "source": "https://neon.com/pricing",
       "status": "PARTIAL"
     },
@@ -250,7 +264,24 @@
       "sourceEvidenceId": "manual.netlify.production.billing_usage",
       "status": "PARTIAL"
     },
+    "operationalCostEvidence": {
+      "domainRegistrationStatus": "UNKNOWN",
+      "dnsQueryCostCandidateUsd": 0,
+      "externalMonitoringFreeTierCandidate": true,
+      "monitoringSelectionStatus": "UNKNOWN",
+      "netlifyManagedTlsCostCandidateUsd": 0,
+      "restoreDrillCostStatus": "UNKNOWN"
+    },
     "productionMutation": false,
+    "productionReadinessPercent": 70,
+    "provisioningDecision": "NO_GO",
+    "recommendedProduction": {
+      "fixedAnnualUsd": 804,
+      "fixedMonthlyUsd": 67,
+      "indicativeAnnualWithNeonTypicalUsd": 984,
+      "indicativeMonthlyWithNeonTypicalUsd": 82,
+      "totalStatus": "KNOWN_FIXED_PLUS_VARIABLE_AND_UNKNOWN"
+    },
     "render": {
       "requiredStarterServices": 2,
       "starterMonthlyUsdEach": 7,
@@ -282,7 +313,7 @@
     { "id": "manual.auth0.production.tenant_inventory", "sha256": "373db46f6f561ed9540d6219f2acb759c7a5780e40537216a827b37153f93243" },
     { "id": "manual.auth0.production.capacity_pricing", "sha256": "4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa" },
     { "id": "manual.netlify.production.billing_usage", "sha256": "e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74" },
-    { "id": "public.production.cost_model", "sha256": "7e3b78aa773f637c7f386edd0d57cdde6d7e2475b5e3440b51007e85fa0ac7b3" }
+    { "id": "public.production.cost_model", "sha256": "a7319474c0c1626641d29c75cc6393d91417161ed16e68662fc713bd11be7bdf" }
   ],
-  "sha256": "48d3a08b4b673c34e58081fd09d131186337fd0bd30b5aa35b67ecaaff3495e7"
+  "sha256": "fba14e6115bc2fce5984c4021dbfdaecd95ac513acfbae999a5c1593238b6dcf"
 }

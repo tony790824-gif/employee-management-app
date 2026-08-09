@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Next unique action after Sprint 40 - Neon usage and recovery cost evidence
+## Next unique action after Sprint 41 - Neon Production Usage and Backup Cost Evidence Closure
+
+Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**. Sprint 41 finalized the cost formulas, but the exact total remains unknown because the existing Neon Production account's plan and complete-period billable usage are not evidenced.
+
+The next single action is human read-only evidence:
+
+1. Open Neon Console **Billing → Usage** and select the Production project plus the latest complete billing period.
+2. Record only: current plan; compute CU-hours; root/child storage GB-month; instant-restore/history GB-month; snapshot storage GB-month; public network transfer; and the non-sensitive estimated/charged amount for that period.
+3. Return `UNKNOWN` for fields not shown. Do not infer the plan from the six-hour PITR view.
+4. Do not share organization/project/branch/endpoint IDs, hostname, connection string, credentials, invoice/payment details or personal information.
+5. Do not upgrade, edit compute/autosuspend/retention, create snapshot/branch, restore, run SQL or change billing.
+
+This evidence may refine cost estimates; it does not authorize Gate A, Production provisioning or a database operation.
+
+## Historical next unique action after Sprint 40 - Neon usage and recovery cost evidence
 
 Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**. Netlify current fixed cost is now evidenced at US$0, but Neon remains the largest unresolved platform-cost component.
 

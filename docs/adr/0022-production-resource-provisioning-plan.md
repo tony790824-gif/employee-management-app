@@ -20,6 +20,7 @@ Staging and Production use independent identity, service, database-role, origin,
 - Sprint 38 proved the Free Tenant-capacity limit and recorded Essentials as the preferred future minimum-capacity route. Gate A execution remains DEFERRED; this evidence does not authorize spending or identity-resource creation.
 - Sprint 39 established a fixed known cost floor plus explicit usage-based/unknown items. Gate A remains DEFERRED because a cost model does not close external Production gates or authorize billing.
 - Sprint 40 replaced the assumed Netlify paid-plan component with verified Free/Credit-based US$0 evidence. Capacity remains unresolved, so Gate D and Gate A remain closed despite the lower fixed cost floor.
+- Sprint 41 finalized fail-closed Minimum, Recommended and Growth cost models without converting variable or unknown costs to zero. Gate A remains DEFER because account-level Neon, domain, recovery and operating-cost evidence is incomplete.
 - Missing resources remain `NOT_CONFIGURED`; missing authority/evidence remains `BLOCKED` or `UNKNOWN`.
 - A future operator must stop before Gates A–G and present impact, cost, rollback and exact human steps.
 - No plan, checklist, repository test or Staging result may be represented as Production PASS.

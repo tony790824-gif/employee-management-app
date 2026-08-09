@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 41 Production Cost Finalization and Gate A Decision Package (2026-08-09)
+
+- Re-audited the Sprint 40 cost model against current official pricing/capability evidence without operating any Production or billing account.
+- Final fail-closed models: Minimum fixed known US$49/month (US$588/year), Recommended fixed known US$67/month (US$804/year), and Growth total UNKNOWN. Neon, domain, recovery and operating overages remain variable or unknown rather than US$0.
+- Gate A remains DEFER, Production readiness remains 70% / NOT READY, and provisioning remains NO-GO.
+- The next unique evidence step is a human read-only Neon Billing/Usage review; no purchase, upgrade, resource creation, deploy, Migration or Production change is authorized.
+
 ## Sprint 40 Netlify Billing Evidence and Gate A Cost Closure (2026-08-09)
 
 - Owner read-only evidence confirms Netlify Free / Credit-based / US$0 fixed cost / 300 credits per month; current period usage is 274.6 credits with 25.4 remaining.
