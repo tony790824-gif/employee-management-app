@@ -2,12 +2,20 @@
 
 日期：2026-08-09
 
-狀態：**SPRINT 39 COMPLETE AS COST/AUTHORIZATION PREPARATION / GATE A DEFER / PRODUCTION NO-GO**
+狀態：**SPRINT 40 COMPLETE AS NETLIFY BILLING/COST CLOSURE / GATE A DEFER / PRODUCTION NO-GO**
 
 產品完成度：**98%**
 Production Readiness（正式環境準備度）：**70% / NOT READY**
 
 本文件只整理 Repository（程式碼儲存庫）與官方公開價格／限制證據。它不授權購買、付款、升級、建立資源、修改設定、Deploy（部署）、Migration（資料庫遷移）、DNS 變更、Secret（秘密資訊）操作或 Production（正式環境）流量切換。所有價格均為 2026-08-09 的公開或已授權人工證據；購買前必須重新確認。
+
+## Sprint 40 Netlify Billing Evidence（帳務證據）
+
+Owner 於 2026-08-09 唯讀確認 Netlify Usage & billing：目前為 **Free / Credit-based / US$0 fixed monthly cost / 300 credits per month**。Jul 14–Aug 13 期間已使用 `274.6 / 300` credits，剩餘 `25.4`，約 91.5%；其中 18 次被帳務分類為 Production deploys，共使用 270 credits，約佔總用量 98.3%。Web requests 約 20,188、約 4 credits；bandwidth 約 30.7 MB、約 0.6 credits；Compute 與 AI inference 為 0。
+
+這是 account-level billing evidence（帳戶層級帳務證據），不是 Bankeban Production Deploy PASS。既有 Netlify Project 仍沒有經批准的正式部署；不得因帳務分類名稱為 `Production deploys` 而改寫既有 Production Evidence。
+
+Free plan 的 `no overage charges` 只證明目前不會產生 overage charge，不代表 credits 耗盡後沒有容量、建置或服務中斷風險。Netlify 因此是 **candidate zero-cost component（可能為零成本的候選項目）＋ unresolved capacity risk（未解容量風險）**。
 
 ## 1. 證據與計價原則
 
@@ -39,8 +47,8 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 | Render Production API Starter | REQUIRED_PAID | **US$7** | **US$84** | US$0 已知 | Free instance 官方明示不適合 Production。Starter 公開價 US$7/月；實際頻寬、build pipeline 與稅未知。 |
 | Render Push Worker Starter | REQUIRED_PAID | **US$7** | **US$84** | US$0 已知 | 既有架構要求獨立 Push Worker；background worker 為獨立付費 service。 |
 | Render API Standard | OPTIONAL_PAID / recommended | US$25（取代 API Starter） | US$300 | US$0 已知 | 建議小型商業情境預留較高資源；是否必要須以 Staging 容量證據決定。 |
-| Netlify Personal | REQUIRED_PAID candidate | **US$9** | **US$108** | US$0 已知 | Credit-based Personal 有 1,000 credits 與自動加購；適合作為最低非硬停機候選。現有帳戶是 legacy 或 credit-based 尚未證明。 |
-| Netlify Pro | OPTIONAL_PAID / recommended | US$20 起 | US$240 起 | US$0 已知 | 3,000 credits、audit logs、shared environment variables、30-day analytics；用量超額成本 UNKNOWN。 |
+| Netlify current Free plan | FREE candidate / capacity UNRESOLVED | **US$0** | **US$0** | US$0 | Owner evidence: Credit-based、300 credits/month、目前 274.6 used、25.4 remaining。可列入最低固定成本，但不能宣稱容量足夠。 |
+| Netlify future paid upgrade | OPTIONAL_PAID / DEFERRED | **UNKNOWN / RECONFIRM BEFORE PURCHASE** | UNKNOWN | UNKNOWN | 只有 Production 實際用量證明 Free 不足時才提出獨立升級 Gate；Personal/Pro 公開價不得當作目前固定成本。 |
 | Production domain | REQUIRED_PAID | 月均 UNKNOWN | **UNKNOWN** | 註冊／轉移 UNKNOWN | 必須先選定 TLD 與 registrar。Cloudflare Registrar 不加價但 registry/ICANN 成本依 TLD；不可先填假價格。 |
 | DNS | FREE candidate | US$0 | US$0 | US$0 | Cloudflare Free DNS 不收 DNS query 費；是否採用仍需 owner 明確批准與 DNS rollback 計畫。 |
 | TLS | FREE candidate | US$0 | US$0 | US$0 | Netlify 所有方案支援 managed SSL；實際 domain 綁定與 certificate 證據仍不存在。 |
@@ -61,13 +69,13 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 | Auth0 Essentials | US$35/月 |
 | Render API Starter | US$7/月 |
 | Render Push Worker Starter | US$7/月 |
-| Netlify Personal candidate | US$9/月 |
-| **已知固定下限** | **US$58/月；US$696/年** |
+| Netlify current Free candidate | US$0/月 |
+| **已知固定下限** | **US$49/月；US$588/年** |
 | Neon Launch 官方典型範例（非固定下限） | 約 US$15/月 |
-| **指標性規劃值** | **約 US$73/月；US$876/年** |
+| **指標性規劃值** | **約 US$64/月；US$768/年** |
 | 仍須加上 | Neon 實際用量／snapshot、domain、監控告警、logging overage、restore drill、Render/Netlify overage、稅 |
 
-因此本情境不是精確 Total（總價）；其安全表達為：**已知固定下限 US$58/月＋Neon 與其他 Unknown items（未知項目）**。若以 Neon 官方案例暫作預算，則為 **US$73/月＋未知項目**。
+因此本情境不是精確 Total（總價）；其安全表達為：**已知固定下限 US$49/月＋Neon 與其他 Unknown items（未知項目）**。若以 Neon 官方案例暫作預算，則為 **US$64/月＋未知項目**。Netlify US$0 只是目前帳戶候選，不等於容量 Gate PASS。
 
 ### Scenario 2 — Recommended Small Business Production（建議小型商業正式環境）
 
@@ -76,13 +84,14 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 | Auth0 Essentials | US$35/月 |
 | Render API Standard | US$25/月 |
 | Render Push Worker Starter | US$7/月 |
-| Netlify Pro | US$20/月起 |
-| **已知固定規劃值** | **US$87/月；US$1,044/年** |
+| Netlify current Free candidate | US$0/月；容量未證明 |
+| Netlify future paid capacity | UNKNOWN；不納入目前固定成本 |
+| **已知固定規劃值** | **US$67/月；US$804/年** |
 | Neon Launch 官方典型範例（非固定下限） | 約 US$15/月 |
-| **指標性規劃值** | **約 US$102/月；US$1,224/年** |
+| **指標性規劃值** | **約 US$82/月；US$984/年＋Netlify 未來可能升級成本** |
 | 仍須加上 | 與 Scenario 1 相同的所有未知用量、domain、DR、alerting、overage 與稅 |
 
-這個情境優先保留 Netlify audit/analytics 與較有餘裕的 API instance；仍須用容量測試決定 Render Standard 是否必要。
+這個情境優先保留較有餘裕的 API instance；Netlify 是否需要付費必須由真實穩態 Production credit 使用量決定，不預先硬編碼 Personal 或 Pro。
 
 ### Scenario 3 — Growth Production（成長後正式環境）
 
@@ -94,6 +103,25 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 
 本情境只是一條升級路徑，沒有足夠證據計算可信總價。
 
+### Netlify Scenario A — Free 足以支撐低量 Production
+
+- Production 正常發佈目標不超過每個 billing period 4 次（60 credits）。
+- 保留至少 60 credits 給緊急 rollback、必要 hotfix 與流量用量。
+- 每週檢視 credits；70% 使用量發出內部 warning，尚不能因此宣稱 Production Gate PASS。
+
+### Netlify Scenario B — Free 可用但部署紀律不足
+
+- 目前 18 deploys 已使用 270 credits，是 300 credits 的 90%，亦是本期總用量約 98.3%。
+- 正常目標仍是每 period 4 次；含緊急發佈的管理上限為 8 次（120 credits）。
+- 合併變更、先完成 Staging/Draft acceptance、只有 release candidate 才進 Production context。
+- 75% 使用量（225 credits）停止非必要 deploy；85%（255 credits）進入 release freeze；緊急修正需 owner 單次批准並保留 rollback credits。
+- Preview/Draft 是否也消耗 account credits 必須由 Usage 頁持續確認，不能假設免費。
+
+### Netlify Scenario C — Production 用量證明 Free 不足
+
+- 只有排除開發／重複 deploy 後，穩態 Production traffic、必要 deploy 與 rollback reserve 仍超過 300 credits，才能提出 paid upgrade Gate。
+- 提案必須帶 current quote、included credits、auto-recharge/overage、downgrade、billing cycle 與停機風險；本 Sprint 不選方案、不升級。
+
 ## 4. Billing（計費）、取消與成本風險
 
 | Area | 已驗證事實 | 風險／後續 |
@@ -101,7 +129,7 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 | Auth0 | 官方文件支援 self-service upgrade/downgrade，Free 可作為取消 paid subscription 的降級方向；提供 monthly/annual 選項 | 購買前確認立即生效／下期生效、Tenant/resource retention、credit/refund、稅與付款方式；**USER VERIFICATION REQUIRED** |
 | Neon | Launch/Scale 依 compute、storage、history 等用量計價；restore history 與 snapshot storage 會影響成本 | 缺少實際 CU-hours、storage、history/snapshot 預估；overage 與 restore 演練費用 **UNVERIFIED** |
 | Render | Instance 依 service 分開計費；API 與 Push Worker 各自佔 instance；可能有 egress/build overage | Cancellation/downgrade 對 availability/retention 的實際影響 **USER VERIFICATION REQUIRED** |
-| Netlify | Credit-based plan依 deploy、bandwidth、requests 消耗；Personal 可 auto-recharge；Pro downgrade 通常下期生效；legacy 轉 credit-based 不可逆 | 目前帳戶計價模式未知；先確認 current plan、legacy/credit-based 與近 30 日 credits，才可選 $9/$20 |
+| Netlify | Owner evidence confirms Free / Credit-based / US$0 / 300 credits; current period uses 274.6 credits, primarily 18 deploys | `no overage charges` 不等於無容量風險。先執行部署預算與穩態用量觀察；只有證明不足才提出付費 Gate。 |
 | Domain | 年度續費與 transfer 依 TLD/registrar | 過期會中斷 DNS/TLS/登入 origin；需列 owner、auto-renew、付款與 recovery。價格 **UNKNOWN** |
 | Vendor lock-in | Auth0 issuer/Actions、Neon branch/PITR、Render services、Netlify deploy/credits 都有平台特定操作 | 保留 OIDC/JWKS 標準邊界、PostgreSQL dump/restore、可重建 build、DNS rollback 與 provider-independent runbook；不在本 Sprint 執行遷移 |
 
@@ -149,22 +177,22 @@ flowchart LR
 1. **現在是否值得開始固定支出？** 尚未。Product 已接近完成，但 Production 整體仍 NOT READY；Netlify/Render 正式資源、Neon schema/recovery、domain、monitoring/alerting、rollback 與 exact billing 尚未閉合。
 2. **Auth0 是否應升級？** 架構上，若決定開始正式建置，Essentials 是目前已證明能提供 3 Tenants 的最低候選；現在不建議執行 upgrade。
 3. **批准後第一個真正操作？** 先由 owner 明確批准 Auth0 Essentials 固定費與獨立 Production Tenant；只有之後另一個逐步授權，才可購買並建立 Tenant。不能同時授權 SPA/API、Render、Netlify 或 DNS。
-4. **最低已知固定成本？** US$58/月、US$696/年，加 Neon 實際用量與所有未知項目；用官方案例暫估為約 US$73/月、US$876/年加未知項目。
-5. **未知成本？** Neon 實際用量/snapshot/restore、domain、監控告警、logging、Render/Netlify overage、tax，以及 current Netlify billing model。
+4. **最低已知固定成本？** US$49/月、US$588/年，加 Neon 實際用量與所有未知項目；用官方案例暫估為約 US$64/月、US$768/年加未知項目。
+5. **未知成本？** Neon 實際用量/snapshot/restore、domain、監控告警、logging、Render overage、Netlify 未來容量升級、tax。Netlify current fixed cost 已收斂為 US$0，但容量尚未收斂。
 6. **下一次必要明確授權？** 先只授權 Gate A 的 exact plan、monthly/annual billing、Tenant ownership/recovery、取消/降級影響與 stop conditions；任何購買或建立資源仍須在授權文字中明列。
 
 ### APPROVE 的必要前置（尚未滿足）
 
-- Owner 接受「US$58/月固定下限＋未知成本」而非只接受 Auth0 US$35。
+- Owner 接受「US$49/月固定下限＋未知成本」而非只接受 Auth0 US$35。
 - 在平台 UI 重新確認 Auth0 Essentials 價格、Tenant entitlement、billing cycle、downgrade/cancellation 和 Tenant retention。
-- 確認 Netlify current billing model/plan、Neon預估用量與備份成本、domain/registrar、monitoring/alerting 選型。
+- 以部署預算觀察 Netlify 穩態 credits，並確認 Neon 預估用量與備份成本、domain/registrar、monitoring/alerting 選型。
 - 明確列出 Gate A 只建立 dedicated Production Tenant，不會自動觸發 Gate B-G。
 
 ## 7. Final status
 
-- Sprint 39 文件／成本盤點：**COMPLETE**
+- Sprint 40 Netlify 帳務／成本收斂：**COMPLETE**
 - Gate A：**DEFER / NOT AUTHORIZED**
 - Production provisioning：**NO-GO**
 - Production readiness：**70% / NOT READY（不因文件完成而提高）**
 - Production / billing / platform mutation：**NONE**
-- 唯一下一個人工動作：在 Netlify 的 Billing / Plan details 唯讀確認目前帳戶是 Legacy 或 Credit-based、目前方案及近 30 日 credits；不要 upgrade、add payment、switch plan 或 deploy，回報非敏感的 plan 名稱、billing model 與 credits 數字。
+- 唯一下一個人工動作：在 Neon Usage / Billing 的唯讀頁面確認目前 Production project/branch 的 plan、最近完整 billing period CU-hours、storage/history/snapshot 用量與非敏感估算金額；不要 upgrade、修改 compute/retention、建立 snapshot/branch 或執行 SQL。

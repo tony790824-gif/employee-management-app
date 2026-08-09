@@ -7,11 +7,17 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 40 Netlify billing boundary
+
+Owner evidence now proves the existing account is Free / Credit-based / US$0 with 300 monthly credits. This reduces the current known fixed floor to US$49/month plus Neon and unknowns; it does not prove Free capacity or authorize a Production Deploy.
+
+Gate D must first apply the deployment budget and observe stable Production credits. A paid Netlify plan may be proposed only through a later separate Gate when actual necessary use exceeds Free capacity. Gate A remains DEFER and the dependency order is unchanged.
+
 ## Sprint 39 cost boundary
 
-`docs/PRODUCTION_TOTAL_COST_GATE_A.md` is the authoritative current cost model. It records a US$58/month known fixed floor plus Neon and unknown items, and an indicative US$73/month value only when using Neon's published typical Launch example. These figures do not authorize spending.
+Sprint 39's historical model recorded US$58/month using an unverified Netlify paid-plan assumption. Sprint 40 supersedes it with a US$49/month fixed floor plus Neon and unknown items, and an indicative US$64/month value only when using Neon's published typical Launch example. These figures do not authorize spending.
 
-Gate A remains **DEFER**. Auth0 Essentials is the preferred future minimum-capacity route, but the current Netlify billing model, Neon actual usage/recovery cost, domain, monitoring/alerting and overage costs must be rechecked before an APPROVE proposal. The Gate A-G order below is unchanged.
+Gate A remains **DEFER**. Auth0 Essentials is the preferred future minimum-capacity route, but Netlify stable capacity, Neon actual usage/recovery cost, domain, monitoring/alerting and overage costs must be rechecked before an APPROVE proposal. The Gate A-G order below is unchanged.
 
 ## Sprint 38 Gate A capacity decision
 

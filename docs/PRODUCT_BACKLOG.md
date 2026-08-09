@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 40 status - Netlify Billing Evidence and Gate A Cost Closure (2026-08-09)
+
+- **Status:** COMPLETE as read-only billing/cost evidence closure; Gate A remains DEFERRED and Production remains NO-GO.
+- **Evidence:** current Netlify plan is Free / Credit-based / US$0 / 300 credits monthly. Current period uses 274.6 credits; 270 credits came from 18 deploys, so capacity remains UNRESOLVED.
+- **Cost correction:** known fixed floor is now US$49/month (US$588/year) plus Neon and unknowns. Netlify Personal/Pro are not current fixed costs.
+- **Readiness:** product 98%; Production readiness 70% / NOT READY. Account billing evidence does not prove Production deploy or capacity PASS.
+- **Next unique action:** read-only Neon Usage/Billing cost evidence for CU-hours, storage/history/snapshot and current plan; no upgrade or configuration change.
+
 ## Sprint 39 status - Production Total Cost and Final Gate A Package (2026-08-09)
 
 - **Status:** COMPLETE as cost/evidence/authorization preparation; Gate A remains DEFERRED and Production remains NO-GO.

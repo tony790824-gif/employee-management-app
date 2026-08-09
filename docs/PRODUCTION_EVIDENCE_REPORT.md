@@ -1,6 +1,19 @@
 # Production Evidence Report - Sprint 33D
 
-## Sprint 39 public cost evidence - 2026-08-09
+## Sprint 40 Netlify billing evidence - 2026-08-09
+
+- Evidence source: **authorized human read-only Netlify Usage & billing inspection**.
+- Current plan / billing: **Free / Credit-based / US$0 fixed / 300 credits per month**.
+- Current period Jul 14-Aug 13: **274.6 credits used / 25.4 remaining** (about 91.5%).
+- Breakdown: 270 credits / 18 deploys; about 4 credits / 20,188 web requests; about 0.6 credits / 30.7 MB bandwidth; compute 0; AI inference 0.
+- Interpretation: deploy activity accounts for about 98.3% of current usage, so it cannot be treated as stable Production traffic. Account billing labels do not override the existing `NOT_CONFIGURED` Production deploy evidence.
+- Capacity: **PARTIAL / UNRESOLVED**. `No overage charges` does not prove service continuity after credit exhaustion.
+- Netlify plan/payment/configuration/deploy changes: **NOT PERFORMED**.
+- Gate A: **DEFERRED**; Production readiness **70% / NOT READY**.
+
+The sanitized record is `manual.netlify.production.billing_usage`; its SHA-256 is `e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74`. The corrected `public.production.cost_model` SHA-256 is `7e3b78aa773f637c7f386edd0d57cdde6d7e2475b5e3440b51007e85fa0ac7b3`, and the updated 22-entry manifest SHA-256 is `48d3a08b4b673c34e58081fd09d131186337fd0bd30b5aa35b67ecaaff3495e7`. No account, email, payment, invoice, token, Secret or credential is retained.
+
+## Sprint 39 public cost evidence - 2026-08-09 (historical baseline superseded by Sprint 40)
 
 - Evidence source: official public Auth0, Neon, Render, Netlify and Cloudflare pricing/documentation plus the sanitized Sprint 38 Auth0 owner evidence.
 - Known fixed planning floor: **US$58/month / US$696/year plus Neon usage and unknowns**.
@@ -10,7 +23,7 @@
 - Gate A: **DEFERRED / NOT AUTHORIZED**. Production readiness remains **70% / NOT READY**.
 - Billing, purchase, upgrade, Production platform, database, Migration, deploy, DNS, Secret and traffic operations: **NOT PERFORMED**.
 
-The sanitized record is `public.production.cost_model`; its SHA-256 is `a7320e60b5f175464c1224056ed3823491b5b8c036faaf7173e17c979b84630a` and the updated 21-entry manifest SHA-256 is `ce1450d0482732c6ff76fd3485c0a7cb5d90fbe55819f645a316a0d11f3f6887`. Public price evidence can change and must be rechecked before purchase.
+Sprint 40 replaced the unverified Netlify Personal assumption with owner-observed Free/Credit-based evidence. The current cost-model and manifest hashes are recorded in the Sprint 40 section above; the Sprint 39 figures are retained only as historical context.
 
 ## Sprint 38 Auth0 capacity and pricing evidence - 2026-08-09
 

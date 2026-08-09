@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-08-09 Sprint 40 current state
+
+- Sprint 40 is **COMPLETE AS NETLIFY BILLING / COST EVIDENCE CLOSURE**. Gate A remains DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.
+- Owner evidence: Netlify Free / Credit-based / US$0 / 300 credits monthly; current period 274.6 used, 25.4 remaining, with 270 credits from 18 deploys. This is billing evidence, not Production Deploy or capacity PASS.
+- Correct known fixed floor is US$49/month (US$588/year) plus Neon and unknowns. The Neon-example indicator is US$64/month (US$768/year) plus unknowns.
+- Netlify paid-plan prices are future candidates only and must be rechecked in a separate upgrade Gate if stable Production usage proves Free insufficient.
+- Next unique action is read-only Neon plan/usage/cost evidence. Preserve existing untracked `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and unapproved `0010_commission_rules` files.
+- No Production or billing action occurred.
+
 ## 2026-08-09 Sprint 39 current state
 
 - Sprint 39 is **COMPLETE AS PRODUCTION COST / FINAL GATE A PREPARATION**. Gate A remains DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.

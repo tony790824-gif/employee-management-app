@@ -8,9 +8,15 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 40 Netlify cost addendum
+
+Read-only owner evidence resolves the Netlify current-plan fact as Free / Credit-based / US$0 / 300 credits. It does not resolve capacity: current usage is 274.6 credits and deploys account for 270. `NETLIFY-01` remains NOT_CONFIGURED and `NETLIFY-03` remains BLOCKED because no approved Production Deploy or rollback history exists.
+
+Gate A remains DEFER, provisioning remains NO-GO, and readiness remains 70%.
+
 ## Sprint 39 total-cost and authorization addendum
 
-The Production cost inventory is now documented in `docs/PRODUCTION_TOTAL_COST_GATE_A.md`. The known fixed planning floor is US$58/month plus Neon and unknown items; no exact total is claimed. Gate A remains **DEFER**, Production provisioning remains **NO-GO**, and all billing/resource actions remain unauthorized.
+The Sprint 39 historical fixed planning floor was US$58/month plus Neon and unknown items. Sprint 40 supersedes it with US$49/month after owner-observed Netlify Free/US$0 evidence. No exact total is claimed; Gate A remains **DEFER**, Production provisioning remains **NO-GO**, and all billing/resource actions remain unauthorized.
 
 The next read-only evidence gap is the existing Netlify account's actual Legacy/Credit-based billing model, plan and recent credits. Viewing this evidence does not authorize a plan change or deploy.
 

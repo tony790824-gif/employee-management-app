@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 40 Netlify billing / cost closure - 2026-08-09
+
+- Owner read-only evidence confirms the current Netlify account is Free / Credit-based / US$0 fixed / 300 credits per month.
+- Current-period usage is 274.6 credits (25.4 remaining); 270 credits came from 18 deploys. This proves cost/usage, not steady-state Production capacity or an approved Production Deploy.
+- Known fixed cost floor is corrected from US$58 to **US$49/month (US$588/year) plus Neon and unknowns**. Netlify paid plans are removed from current fixed cost.
+- Netlify capacity remains PARTIAL/UNRESOLVED; deployment discipline and stable Production usage must be observed before any paid upgrade proposal.
+- Production readiness remains **70% / NOT READY**; Gate A remains DEFER and provisioning NO-GO.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 39 total-cost / final Gate A decision - 2026-08-09
 
 - Official public pricing and existing owner evidence were consolidated without operating any platform or billing account.

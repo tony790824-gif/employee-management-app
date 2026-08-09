@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 40 Netlify Billing Evidence and Gate A Cost Closure
+
+- Recorded sanitized owner evidence for the current Netlify Free credit-based plan, 300-credit allowance and 274.6-credit current-period usage.
+- Corrected the fixed cost floor to US$49/month and US$588/year by replacing the former US$9 Netlify paid-plan assumption with the evidenced US$0 current plan.
+- Added Free-capacity, deployment-discipline and future-paid-gate scenarios plus warning/freeze thresholds; no Netlify setting was changed.
+- Kept Gate A DEFERRED, Production readiness at 70% / NOT READY and provisioning NO-GO.
+
 ## 2026-08-09 - Sprint 39 Production Total Cost and Final Gate A Package
 
 - Added a source-backed inventory for Auth0, Neon, Render, Netlify, domain/DNS/TLS, monitoring, logging, backup/restore, Push worker and optional alerting.

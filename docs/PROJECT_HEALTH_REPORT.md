@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-08-09 Sprint 40 Netlify Billing / Gate A Cost Closure
+
+- **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
+- **Evidence:** current Netlify Free/Credit-based US$0 plan and 274.6/300 credit usage are recorded and hash-verified.
+- **Cost:** fixed known floor corrected to US$49/month plus Neon and unknowns.
+- **Risk:** Netlify capacity remains unresolved because 18 deploys consumed 270 credits; billing evidence is not Production Deploy evidence.
+- **Safety:** no Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 Sprint 39 Production Total Cost / Final Gate A
 
 - **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; Production provisioning NO-GO.

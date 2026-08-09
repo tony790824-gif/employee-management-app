@@ -151,7 +151,7 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 21);
+assert.equal(committedHashes.entries.length, 22);
 assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
 assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
 assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);
@@ -166,8 +166,21 @@ assert.equal(committedHashes.manualAuth0CapacityEvidence.essentials.tenantLimit,
 assert.equal(committedHashes.manualAuth0CapacityEvidence.auth0ConfigurationChanged, false);
 assert.equal(committedHashes.manualAuth0CapacityEvidence.billingActionPerformed, false);
 assert.equal(committedHashes.publicProductionCostEvidence.status, 'PARTIAL');
-assert.equal(committedHashes.publicProductionCostEvidence.knownFixedMonthlyUsd, 58);
-assert.equal(committedHashes.publicProductionCostEvidence.knownFixedAnnualUsd, 696);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.plan, 'FREE');
+assert.equal(committedHashes.manualNetlifyBillingEvidence.billingModel, 'CREDIT_BASED');
+assert.equal(committedHashes.manualNetlifyBillingEvidence.currentFixedMonthlyUsd, 0);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.includedCredits, 300);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.totalUsedCredits, 274.6);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.noOverageCharges, true);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.usageValuesApproximate, true);
+assert.equal(committedHashes.manualNetlifyBillingEvidence.productionConfigurationChanged, false);
+assert.equal(committedHashes.publicProductionCostEvidence.knownFixedMonthlyUsd, 49);
+assert.equal(committedHashes.publicProductionCostEvidence.knownFixedAnnualUsd, 588);
+assert.equal(committedHashes.publicProductionCostEvidence.netlify.currentPlan, 'FREE');
+assert.equal(committedHashes.publicProductionCostEvidence.netlify.currentFixedMonthlyUsd, 0);
+assert.equal(committedHashes.publicProductionCostEvidence.netlify.capacityStatus, 'UNRESOLVED');
+assert.equal('personalMonthlyUsd' in committedHashes.publicProductionCostEvidence.netlify, false);
+assert.equal('proStartingMonthlyUsd' in committedHashes.publicProductionCostEvidence.netlify, false);
 assert.equal(committedHashes.publicProductionCostEvidence.productionMutation, false);
 assert.equal(
   committedHashes.entries.find(item => item.id === 'manual.neon.production.readonly')?.sha256,
@@ -176,6 +189,10 @@ assert.equal(
 assert.equal(
   committedHashes.entries.find(item => item.id === 'manual.auth0.production.capacity_pricing')?.sha256,
   evidenceSha256(committedHashes.manualAuth0CapacityEvidence)
+);
+assert.equal(
+  committedHashes.entries.find(item => item.id === 'manual.netlify.production.billing_usage')?.sha256,
+  evidenceSha256(committedHashes.manualNetlifyBillingEvidence)
 );
 assert.equal(
   committedHashes.entries.find(item => item.id === 'public.production.cost_model')?.sha256,

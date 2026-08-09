@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 40 Netlify Billing / Gate A Cost Closure
+
+- Status: **COMPLETE AS READ-ONLY COST EVIDENCE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- Current Netlify evidence is Free, Credit-based, US$0 fixed, 300 credits/month; 274.6 credits are used and 25.4 remain. Deploys account for 270 credits, so capacity is not proven.
+- Correct fixed floor: Auth0 35 + Render API/worker 14 + Netlify 0 = US$49/month or US$588/year, plus Neon and unknowns. Never restore the US$9/US$20 Netlify assumption as current cost.
+- Next unique human action is read-only Neon Usage/Billing evidence. Do not change plan, compute, retention, backup or any Production resource.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 handoff - Sprint 39 Production Total Cost / Final Gate A
 
 - Status: **COMPLETE AS COST AND AUTHORIZATION PREPARATION / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.

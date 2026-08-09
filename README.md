@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 40 Netlify Billing Evidence and Gate A Cost Closure (2026-08-09)
+
+- Owner read-only evidence confirms Netlify Free / Credit-based / US$0 fixed cost / 300 credits per month; current period usage is 274.6 credits with 25.4 remaining.
+- 270 credits came from 18 deploys, so current 91.5% usage primarily reflects deployment activity and does not prove steady-state Production capacity.
+- Corrected the known fixed Production floor from US$58 to **US$49/month (US$588/year) plus Neon usage and unknowns**. Netlify is a US$0 candidate with unresolved capacity risk.
+- Gate A remains DEFERRED, Production readiness remains 70% / NOT READY, and provisioning remains NO-GO. No external platform or billing state changed.
+
 ## Sprint 39 Production Total Cost and Final Gate A Package (2026-08-09)
 
 - Added a fail-closed Production cost inventory and three scenarios without purchasing or changing any platform.

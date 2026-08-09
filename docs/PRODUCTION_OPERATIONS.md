@@ -2,9 +2,16 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 40 Netlify billing operating state
+
+- Current Netlify fixed cost is Free / US$0 with 300 monthly credits; capacity remains unresolved at 274.6 credits used.
+- Normal Production deployment target is at most 4 per billing period; management cap 8 including emergencies. Warn at 70%, stop non-essential deploys at 75%, freeze at 85% unless separately approved emergency work.
+- These are operational recommendations only. Do not modify Netlify plan, credits, payment, settings or deploy context.
+- Gate A remains DEFER, readiness 70% / NOT READY, Production NO-GO.
+
 ## Sprint 39 cost and Gate A operating state
 
-- `docs/PRODUCTION_TOTAL_COST_GATE_A.md` is the current cost authority. Use **US$58/month fixed known floor plus Neon and unknowns**; do not present US$73/month as exact because it includes a published typical Neon example.
+- Sprint 39's US$58/month baseline is historical. Sprint 40's current authority is **US$49/month fixed known floor plus Neon and unknowns**; do not present US$64/month as exact because it includes a published typical Neon example.
 - Gate A remains **DEFER**. Do not upgrade Auth0, add payment, buy a plan, or create Production resources.
 - The next allowed operator step is a read-only Netlify Billing / Plan details inspection. Do not switch plans, enable auto-recharge, add payment, purchase credits or deploy.
 - Production readiness remains 70% / NOT READY and Production remains NO-GO.

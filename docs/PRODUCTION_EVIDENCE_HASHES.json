@@ -189,6 +189,33 @@
     "teamTenantLimit": 1,
     "tenantLimitReached": true
   },
+  "manualNetlifyBillingEvidence": {
+    "accountIdentifiersRecorded": false,
+    "aiInferenceCredits": 0,
+    "bandwidthCredits": 0.6,
+    "bandwidthMegabytes": 30.7,
+    "billingModel": "CREDIT_BASED",
+    "billingPeriod": "2026-07-14_2026-08-13",
+    "capacityStatus": "UNRESOLVED",
+    "computeCredits": 0,
+    "currentFixedMonthlyUsd": 0,
+    "deploymentCount": 18,
+    "deploymentCredits": 270,
+    "includedCredits": 300,
+    "invoiceInformationRecorded": false,
+    "noOverageCharges": true,
+    "paymentInformationRecorded": false,
+    "plan": "FREE",
+    "productionConfigurationChanged": false,
+    "productionDeployExecuted": false,
+    "remainingCredits": 25.4,
+    "source": "human-read-only-netlify-usage-billing",
+    "status": "PARTIAL",
+    "totalUsedCredits": 274.6,
+    "usageValuesApproximate": true,
+    "webRequestCount": 20188,
+    "webRequestCredits": 4
+  },
   "publicProductionCostEvidence": {
     "auth0": {
       "essentialsMonthlyUsd": 35,
@@ -204,8 +231,8 @@
     },
     "evidenceDate": "2026-08-09",
     "gateARecommendation": "DEFER",
-    "knownFixedAnnualUsd": 696,
-    "knownFixedMonthlyUsd": 58,
+    "knownFixedAnnualUsd": 588,
+    "knownFixedMonthlyUsd": 49,
     "neon": {
       "launchTypicalMonthlyUsd": 15,
       "pricingModel": "USAGE_BASED",
@@ -213,10 +240,14 @@
       "status": "PARTIAL"
     },
     "netlify": {
-      "currentAccountBillingModel": "UNKNOWN",
-      "personalMonthlyUsd": 9,
-      "proStartingMonthlyUsd": 20,
-      "source": "https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/",
+      "billingModel": "CREDIT_BASED",
+      "capacityStatus": "UNRESOLVED",
+      "currentFixedMonthlyUsd": 0,
+      "currentPlan": "FREE",
+      "includedMonthlyCredits": 300,
+      "noOverageCharges": true,
+      "paidUpgradePriceStatus": "RECONFIRM_BEFORE_PURCHASE",
+      "sourceEvidenceId": "manual.netlify.production.billing_usage",
       "status": "PARTIAL"
     },
     "productionMutation": false,
@@ -227,7 +258,7 @@
       "status": "PASS"
     },
     "status": "PARTIAL",
-    "unknownCostCategories": ["BACKUP_RESTORE", "DOMAIN", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_ACTUAL_USAGE", "PLATFORM_OVERAGE", "TAX"]
+    "unknownCostCategories": ["BACKUP_RESTORE", "DOMAIN", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_ACTUAL_USAGE", "NETLIFY_CAPACITY_UPGRADE", "PLATFORM_OVERAGE", "TAX"]
   },
   "entries": [
     { "id": "public.repository.gate", "sha256": "f302af8daa43314d441eb5feb15ec5596f4fb00a5a89505e4144fb8794168bb3" },
@@ -250,7 +281,8 @@
     { "id": "manual.render.production.service_inventory", "sha256": "f35ebc4668f46fd7ad179d0c6591653f1a2bf8f8092ac40398e4b70445773db4" },
     { "id": "manual.auth0.production.tenant_inventory", "sha256": "373db46f6f561ed9540d6219f2acb759c7a5780e40537216a827b37153f93243" },
     { "id": "manual.auth0.production.capacity_pricing", "sha256": "4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa" },
-    { "id": "public.production.cost_model", "sha256": "a7320e60b5f175464c1224056ed3823491b5b8c036faaf7173e17c979b84630a" }
+    { "id": "manual.netlify.production.billing_usage", "sha256": "e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74" },
+    { "id": "public.production.cost_model", "sha256": "7e3b78aa773f637c7f386edd0d57cdde6d7e2475b5e3440b51007e85fa0ac7b3" }
   ],
-  "sha256": "ce1450d0482732c6ff76fd3485c0a7cb5d90fbe55819f645a316a0d11f3f6887"
+  "sha256": "48d3a08b4b673c34e58081fd09d131186337fd0bd30b5aa35b67ecaaff3495e7"
 }

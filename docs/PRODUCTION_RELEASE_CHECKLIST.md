@@ -2,6 +2,13 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 40 Netlify update: current plan is Free / Credit-based / US$0 / 300 credits; 274.6 credits are used, primarily by 18 deploys. Fixed cost evidence is PASS, but capacity remains unresolved and no approved Production Deploy exists.
+
+- [x] Netlify current plan, billing model, included credits and current usage recorded without sensitive billing data.
+- [x] Current Netlify fixed cost corrected to US$0; Personal/Pro are not treated as current cost.
+- [ ] Stable Production traffic/deploy credit usage remains within an accepted budget with rollback reserve.
+- [ ] Any future paid upgrade has separate current quote, capacity need, billing and approval evidence.
+
 Sprint 39 cost update: the known fixed planning floor is US$58/month plus Neon and unknown items; a US$73/month indicative value uses Neon's published typical Launch example and is not an exact total. Gate A remains DEFERRED. No billing, purchase, upgrade or Production action is authorized.
 
 - [x] Official public cost sources and the three cost scenarios are documented and hash-verified.
