@@ -182,6 +182,30 @@ assert.match(productionCost, /Gate A：\*\*DEFER/);
 assert.match(productionCost, /Neon Console.*Billing.*Usage/);
 assert.doesNotMatch(productionCost, /Netlify Personal candidate/);
 assert.match(productionCost, /70% \/ NOT READY/);
+const blockerClosure = await readFile('docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md', 'utf8');
+for (const heading of [
+  'CURRENT STATUS', 'REQUIRED ACTION', 'EXTERNAL / REPOSITORY', 'COST IMPACT',
+  'RISK', 'EVIDENCE REQUIRED', 'OWNER / HUMAN ACTION'
+]) {
+  assert.match(blockerClosure, new RegExp(heading.replace('/', '\\/')));
+}
+for (const area of [
+  'Auth0 Production', 'Neon Production', 'Render Production API',
+  'Netlify Production Frontend', 'Domain / DNS / TLS',
+  'Monitoring / Alerting / Logging', 'Backup / Restore / DR',
+  'Secrets / Credentials', 'Schema / Migration parity',
+  'Production Web Push', 'Cost / Billing'
+]) {
+  assert.match(blockerClosure, new RegExp(area.replaceAll('/', '\\/')));
+}
+assert.match(blockerClosure, /Zero-resource closure/);
+assert.match(blockerClosure, /Gate A approval required/);
+assert.match(blockerClosure, /Gate A：\*\*DEFER\*\*/);
+assert.match(blockerClosure, /Production Provisioning：\*\*NO-GO\*\*/);
+assert.match(blockerClosure, /Production Readiness：\*\*70% \/ NOT READY\*\*/);
+assert.match(blockerClosure, /Sprint 43.*Neon Production Billing \/ Usage Evidence Closure/);
+assert.match(blockerClosure, /Production.*billing.*platform mutation：\*\*NONE\*\*/);
+assert.doesNotMatch(blockerClosure, /Gate A：\*\*(?:GO|CONDITIONAL GO)\*\*/);
 assert.equal(evidenceHashes.manualEvidence.status, 'PASS');
 assert.equal(evidenceHashes.manualEvidence.codexProductionConnection, false);
 const readonlyAccess = await readFile('docs/PRODUCTION_READONLY_ACCESS.md', 'utf8');

@@ -2,6 +2,14 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 42 blocker-closure operating boundary
+
+- Use `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` as the current blocker and order authority.
+- Work may proceed only inside its `Zero-resource closure` list until the owner provides a new exact authorization.
+- Gate A approval, if later granted, applies only to the stated Auth0 action. Gates B-G, restore, Migration, deployment, DNS and traffic always require separate stops.
+- Keep a blocker `PARTIAL`, `BLOCKED`, `NOT_CONFIGURED` or `UNKNOWN` until direct current evidence meets every acceptance criterion.
+- No Production or billing operation was performed in Sprint 42.
+
 ## Sprint 41 cost-control boundary
 
 - Gate A remains DEFER and provisioning remains NO-GO; no Production runbook step is authorized by the cost model.

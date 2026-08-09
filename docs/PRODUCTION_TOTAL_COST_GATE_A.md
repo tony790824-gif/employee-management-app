@@ -9,6 +9,12 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 
 本文件只整理 Repository（程式碼儲存庫）與官方公開價格／限制證據。它不授權購買、付款、升級、建立資源、修改設定、Deploy（部署）、Migration（資料庫遷移）、DNS 變更、Secret（秘密資訊）操作或 Production（正式環境）流量切換。所有價格均為 2026-08-09 的公開或已授權人工證據；購買前必須重新確認。
 
+## Sprint 42 Gate A blocker closure addendum
+
+The cost model is unchanged: Minimum fixed known remains US$49/month (US$588/year), the Neon US$15/month workload example produces only an indicative US$64/month (US$768/year) plus unknowns, and the exact total remains unknown.
+
+`docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` identifies the remaining decision evidence and downstream gates. No new external evidence or owner budget acceptance exists, so Gate A remains **DEFER**, not `CONDITIONAL GO` or `GO`. No Production or billing action occurred.
+
 ## Sprint 41 Production Cost Finalization（正式環境成本最終確認）
 
 Sprint 41 重新稽核 Sprint 40 的人工證據及 Auth0、Neon、Render、Netlify、Cloudflare、Netlify TLS 與外部監控的官方公開資料。結論採 fail-closed：公開單價可以建立規劃公式，但沒有帳戶實際 Usage/Billing（用量／帳務）證據時，不能把變動成本填成 US$0，也不能宣稱得到精確總價。

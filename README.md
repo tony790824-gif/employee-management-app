@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 42 Production Gate A Blocker Closure Plan (2026-08-09)
+
+- Converted every current Production blocker into an ordered, evidence-based closure checklist in `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`.
+- Separated zero-resource read-only work, Gate A decision/execution prerequisites, and downstream Gates B-G so approval cannot spread across gates.
+- No external blocker was closed: Gate A remains DEFER, Production readiness remains 70% / NOT READY, and provisioning remains NO-GO.
+- No Production, billing, resource, configuration, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 41 Production Cost Finalization and Gate A Decision Package (2026-08-09)
 
 - Re-audited the Sprint 40 cost model against current official pricing/capability evidence without operating any Production or billing account.

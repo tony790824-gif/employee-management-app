@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-08-09 current authority - Sprint 42 Gate A blocker closure
+
+- Sprint 42 is COMPLETE as a Repository-only fail-closed blocker plan. It does not close an external Production gate.
+- Current authority: `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`; Gate A is DEFER, Production Provisioning is NO-GO, and Production readiness is 70% / NOT READY.
+- The blocker order is: read-only cost/operations/schema evidence -> exact owner budget/authorization -> Gate A Auth0 only -> independently approved Gates B-G.
+- Known fixed minimum remains US$49/month (US$588/year); Neon and other variable/unknown costs remain outside the exact total.
+- Preserve the existing untracked `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt`, and `0010_commission_rules` files; do not include or alter them.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 current authority - Sprint 41 cost finalization
 
 - Sprint 41 is COMPLETE as a fail-closed cost and Gate A decision package. Product completion is 98%; Production readiness is 70% / NOT READY.

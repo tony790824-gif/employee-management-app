@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Next unique action after Sprint 41 - Neon Production Usage and Backup Cost Evidence Closure
+## Sprint 43 - Neon Production Billing / Usage Evidence Closure (read-only)
+
+Sprint 42 completed the blocker plan only. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+
+The next unique Sprint is human read-only Neon evidence:
+
+1. Open Neon Console **Billing → Usage** and select the Production project plus the latest complete billing period.
+2. Record only the current plan, compute CU-hours, root/child storage GB-month, instant-restore/history GB-month, snapshot storage GB-month, public network transfer and non-sensitive estimated/charged amount.
+3. Return `UNKNOWN` for fields not displayed. Do not infer them from compute or PITR screens.
+4. Do not share organization/project/branch/endpoint IDs, hostname, connection string, credentials, invoice/payment details or personal information.
+5. Do not upgrade, edit compute/autosuspend/retention, create snapshot/branch, restore, run SQL or change billing.
+
+This evidence may close only `GA-01`/`NEON-01` cost facts. It does not authorize Gate A, Production provisioning, database operations or another Gate.
+
+## Historical next unique action after Sprint 41 - Neon Production Usage and Backup Cost Evidence Closure
 
 Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**. Sprint 41 finalized the cost formulas, but the exact total remains unknown because the existing Neon Production account's plan and complete-period billable usage are not evidenced.
 

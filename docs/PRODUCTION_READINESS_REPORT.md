@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 42 Gate A blocker closure decision - 2026-08-09
+
+- Added an authoritative, evidence-based blocker inventory and closure order without operating an external platform.
+- Separated Gate A decision blockers, Gate A execution prerequisites and downstream Gates B-G/Release blockers. No approval is transitive.
+- No external capability or evidence blocker was closed. Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and Production readiness remains **70% / NOT READY**.
+- Known fixed minimum remains **US$49/month (US$588/year)**; exact Neon, domain, recovery and operations costs remain unknown or variable.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 41 Production cost finalization / Gate A decision - 2026-08-09
 
 - Re-audited official and owner evidence without operating a platform or billing account.

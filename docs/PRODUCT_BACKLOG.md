@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 42 status - Production Gate A Blocker Closure Plan (2026-08-09)
+
+- **Status:** COMPLETE as a fail-closed Repository plan; no external Production blocker was represented as closed.
+- **Delivered:** authoritative blocker matrix, zero-resource versus approval-required split, evidence/owner/cost/risk fields, and ordered Sprint 43+ closure route.
+- **Decision:** Gate A remains DEFER; Production Provisioning remains NO-GO; Production readiness remains 70% / NOT READY.
+- **Next unique Sprint:** Sprint 43 — Neon Production Billing / Usage Evidence Closure, human read-only only. Do not change plan, compute, retention, backup, database or billing.
+- **Safety:** no Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 41 status - Production Cost Finalization and Gate A Decision Package (2026-08-09)
 
 - **Status:** COMPLETE as a fail-closed repository cost/decision package; Gate A remains DEFERRED and Production remains NO-GO.

@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 42 blocker closure addendum
+
+The consolidated blocker inventory has moved to `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`. Its current statuses are evidence-derived and no external blocker was promoted to PASS.
+
+Gate A decision remains DEFER; provisioning remains NO-GO; readiness remains 70%. Read-only Neon billing/usage, domain/operations/DR planning and schema analysis can proceed without resources, while every Auth0/Neon/Render/Netlify/DNS/Migration/deploy action remains separately approval-gated.
+
 ## Sprint 41 final cost addendum
 
 Official public evidence confirms the pricing formulas but not the account-specific total. Minimum fixed known is US$49/month; Recommended fixed known is US$67/month; Growth remains UNKNOWN. Neon actual plan/usage, domain, recovery, monitoring/on-call, logging overage and tax remain unresolved.

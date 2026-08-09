@@ -7,6 +7,12 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 42 blocker closure boundary
+
+`docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` is the current execution-order authority. It preserves the Gate A-G order while separating work that can be completed read-only without resources from work that requires an exact human approval.
+
+No external blocker was closed in Sprint 42. Gate A remains DEFER, provisioning remains NO-GO and readiness remains 70%. The next allowed work is only Neon Billing/Usage evidence; it cannot create a plan change, snapshot, branch, restore, database operation or billing action.
+
 ## Sprint 41 cost and authorization boundary
 
 The final fail-closed models are: Minimum fixed known US$49/month (US$588/year), Recommended fixed known US$67/month (US$804/year), and Growth total UNKNOWN. Neon public unit rates/examples do not replace account usage evidence; domain, recovery, monitoring/on-call, logging/overage and tax remain variable or UNKNOWN.

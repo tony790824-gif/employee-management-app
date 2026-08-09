@@ -2,6 +2,15 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 42 blocker-closure gate: the authoritative inventory and order are in `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`. Planning is complete, but no external blocker is closed. Gate A is DEFER, Production is NO-GO and readiness remains 70%.
+
+- [x] Every current blocker records status, action, external/repository boundary, cost, risk, evidence and human owner.
+- [x] Zero-resource evidence work is separated from Gate A and downstream Gates B-G mutations.
+- [x] Sprint 43+ closure order is documented and approvals are explicitly non-transitive.
+- [ ] `GA-01` Neon/domain/operations/DR cost evidence and owner budget acceptance are complete.
+- [ ] Gate A exact Auth0 action, current quote, recovery and stop conditions are explicitly authorized.
+- [ ] Every downstream Gate B-G item is independently direct-evidence PASS before its action.
+
 Sprint 41 cost authorization gate: Minimum fixed known is US$49/month; Recommended fixed known is US$67/month; Growth remains UNKNOWN. Gate A is DEFER and Production remains NO-GO.
 
 - [ ] Owner accepts **US$49/month fixed known minimum plus Neon and UNKNOWN costs**; this is not an exact total.

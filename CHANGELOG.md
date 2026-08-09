@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 42 Production Gate A Blocker Closure Plan
+
+- Added one authoritative blocker inventory covering Auth0, Neon, Render, Netlify, domain/DNS/TLS, operations, recovery, Secrets, schema parity, Web Push, costs and release rollback.
+- Classified each blocker by current status, required action, external/repository boundary, cost impact, risk, evidence and human ownership.
+- Recorded an ordered Sprint 43+ closure route while retaining Gate A DEFER, Production readiness 70% / NOT READY and Production provisioning NO-GO.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 - Sprint 41 Production Cost Finalization and Gate A Decision Package
 
 - Revalidated official Auth0, Neon, Render, Netlify, DNS/TLS and monitoring cost boundaries and preserved every account-specific unknown.

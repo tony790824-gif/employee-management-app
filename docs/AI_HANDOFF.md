@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 42 Gate A Blocker Closure Plan
+
+- Status: **COMPLETE AS FAIL-CLOSED PLAN / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` is the current blocker and execution-order authority. It separates Gate A decision blockers, Gate A execution prerequisites and downstream Gates B-G/Release blockers.
+- No external blocker was closed and no evidence hash was regenerated. Known fixed minimum remains US$49/month or US$588/year; exact total remains unknown.
+- Next unique Sprint is human read-only Neon Billing/Usage evidence. Never upgrade, edit compute/retention, create snapshot/branch, restore, run SQL or change billing.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 handoff - Sprint 41 Production Cost Finalization
 
 - Status: **COMPLETE AS FAIL-CLOSED COST/DECISION PACKAGE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
