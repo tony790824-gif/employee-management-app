@@ -216,6 +216,39 @@
     "webRequestCount": 20188,
     "webRequestCredits": 4
   },
+  "manualNeonBillingUsageEvidence": {
+    "accountIdentifiersRecorded": false,
+    "billingActionPerformed": false,
+    "currentFixedMonthlyUsd": 0,
+    "currentPlan": "FREE",
+    "freeIncludedPerProject": {
+      "autoscalingMaximumCu": 2,
+      "branchCount": 10,
+      "computeHours": 100,
+      "storageGb": 0.5
+    },
+    "organizationUsage": {
+      "computeCuHours": 10.77,
+      "historyGb": 0,
+      "networkTransferGb": 0.3,
+      "storageGb": 0.08
+    },
+    "productionConfigurationChanged": false,
+    "productionOnly": {
+      "billingStorageGbMonth": "UNKNOWN",
+      "computeCuHours": "UNKNOWN",
+      "estimatedOrChargedAmount": "UNKNOWN",
+      "networkTransferGb": "UNKNOWN",
+      "snapshotStorageGbMonth": "UNKNOWN"
+    },
+    "productionProjectStorageMb": 32.84,
+    "projectStorageConvertedToBillingGbMonth": false,
+    "source": "human-read-only-neon-console-billing-usage",
+    "stagingProjectStorageMb": 46.01,
+    "status": "PARTIAL",
+    "usageScope": "ORGANIZATION_ALL_PROJECTS",
+    "usageSince": "2026-08-01"
+  },
   "publicProductionCostEvidence": {
     "auth0": {
       "essentialsMonthlyUsd": 35,
@@ -242,15 +275,20 @@
       "totalStatus": "KNOWN_FIXED_PLUS_VARIABLE_AND_UNKNOWN"
     },
     "neon": {
+      "currentFixedMonthlyUsd": 0,
+      "currentPlan": "FREE",
       "databaseStorageUsdPerGbMonth": 0.35,
       "launchComputeUsdPerCuHour": 0.106,
       "launchTypicalMonthlyUsd": 15,
+      "organizationUsageStatus": "EVIDENCED_NOT_PRODUCTION_ONLY",
       "pricingModel": "USAGE_BASED",
-      "productionAccountPlanStatus": "UNKNOWN",
+      "productionAccountPlanStatus": "EVIDENCED_CURRENT_FREE",
+      "productionOnlyCostStatus": "UNKNOWN",
       "restoreHistoryUsdPerGbMonth": 0.2,
       "scheduledSnapshotsRequirePaidPlan": true,
       "snapshotStorageUsdPerGbMonth": 0.09,
       "source": "https://neon.com/pricing",
+      "sourceEvidenceId": "manual.neon.production.billing_usage",
       "status": "PARTIAL"
     },
     "netlify": {
@@ -289,7 +327,7 @@
       "status": "PASS"
     },
     "status": "PARTIAL",
-    "unknownCostCategories": ["BACKUP_RESTORE", "DOMAIN", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_ACTUAL_USAGE", "NETLIFY_CAPACITY_UPGRADE", "PLATFORM_OVERAGE", "TAX"]
+    "unknownCostCategories": ["BACKUP_RESTORE", "DOMAIN", "LOGGING_OVERAGE", "MONITORING_ALERTING", "NEON_PRODUCTION_ONLY_USAGE", "NETLIFY_CAPACITY_UPGRADE", "PLATFORM_OVERAGE", "TAX"]
   },
   "entries": [
     { "id": "public.repository.gate", "sha256": "f302af8daa43314d441eb5feb15ec5596f4fb00a5a89505e4144fb8794168bb3" },
@@ -313,7 +351,8 @@
     { "id": "manual.auth0.production.tenant_inventory", "sha256": "373db46f6f561ed9540d6219f2acb759c7a5780e40537216a827b37153f93243" },
     { "id": "manual.auth0.production.capacity_pricing", "sha256": "4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa" },
     { "id": "manual.netlify.production.billing_usage", "sha256": "e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74" },
-    { "id": "public.production.cost_model", "sha256": "a7319474c0c1626641d29c75cc6393d91417161ed16e68662fc713bd11be7bdf" }
+    { "id": "manual.neon.production.billing_usage", "sha256": "965f1a7ebe773584166fd7d0a716c93a279cd3fa743d1f37a85e6cc855e651f5" },
+    { "id": "public.production.cost_model", "sha256": "88831eb3d8b6b5a3073d74b40a46eafc500f18c8baf11ab01f9d3b6327e8f15a" }
   ],
-  "sha256": "fba14e6115bc2fce5984c4021dbfdaecd95ac513acfbae999a5c1593238b6dcf"
+  "sha256": "0368482e169fd9c4d30b769f9af58c12f7a97e93da3bfb438ffa9dd610f30582"
 }

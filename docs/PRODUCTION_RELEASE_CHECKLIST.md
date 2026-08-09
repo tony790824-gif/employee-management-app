@@ -2,6 +2,14 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 43 Neon billing update: current organization plan and fixed fee are evidenced as Free / US$0. Organization-wide usage is recorded, but Production-only usage, charge, capacity and recovery cost remain UNKNOWN. Gate A remains DEFER, Production NO-GO and readiness 70%.
+
+- [x] Neon current organization plan, fixed monthly plan fee, included Free limits and organization-level usage are recorded without sensitive identifiers.
+- [x] Organization-wide usage is explicitly separated from Production-only evidence; project-screen MB values are not converted to billing units.
+- [ ] Production-only CU-hours, billing storage/GB-month, network transfer, snapshot storage and estimated/charged amount are directly evidenced.
+- [ ] Free plan capacity, recovery capability and retention satisfy an approved Production requirement.
+- [ ] Domain, monitoring/alerting/logging, backup/Restore cost and owner budget acceptance are complete.
+
 Sprint 42 blocker-closure gate: the authoritative inventory and order are in `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`. Planning is complete, but no external blocker is closed. Gate A is DEFER, Production is NO-GO and readiness remains 70%.
 
 - [x] Every current blocker records status, action, external/repository boundary, cost, risk, evidence and human owner.
@@ -14,7 +22,8 @@ Sprint 42 blocker-closure gate: the authoritative inventory and order are in `do
 Sprint 41 cost authorization gate: Minimum fixed known is US$49/month; Recommended fixed known is US$67/month; Growth remains UNKNOWN. Gate A is DEFER and Production remains NO-GO.
 
 - [ ] Owner accepts **US$49/month fixed known minimum plus Neon and UNKNOWN costs**; this is not an exact total.
-- [ ] Neon current plan and latest complete billing period CU/storage/history/snapshot/network usage and charge are directly evidenced.
+- [x] Neon current organization plan and organization-level usage are directly evidenced.
+- [ ] Neon Production-only CU/storage/history/snapshot/network usage and charge are directly evidenced.
 - [ ] Domain registrar/TLD initial and renewal price is directly evidenced.
 - [ ] Monitoring, alert-delivery, named responder and log-retention plan/cost are selected and evidenced.
 - [ ] Backup/snapshot/isolated-Restore capability and expected cost are approved.

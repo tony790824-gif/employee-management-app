@@ -22,6 +22,7 @@ Staging and Production use independent identity, service, database-role, origin,
 - Sprint 40 replaced the assumed Netlify paid-plan component with verified Free/Credit-based US$0 evidence. Capacity remains unresolved, so Gate D and Gate A remain closed despite the lower fixed cost floor.
 - Sprint 41 finalized fail-closed Minimum, Recommended and Growth cost models without converting variable or unknown costs to zero. Gate A remains DEFER because account-level Neon, domain, recovery and operating-cost evidence is incomplete.
 - Sprint 42 converted every open Production blocker into an evidence-, cost-, risk- and owner-scoped closure plan. This planning result does not close an external gate; Gate A remains DEFER, provisioning remains NO-GO and every Gate A-G approval remains non-transitive.
+- Sprint 43 recorded the current Neon organization Free / US$0 plan and organization-level usage. Because those totals are not Production-only and do not prove capacity, recovery or future plan cost, Gate A remains DEFER and Gate B remains closed.
 - Missing resources remain `NOT_CONFIGURED`; missing authority/evidence remains `BLOCKED` or `UNKNOWN`.
 - A future operator must stop before Gates A–G and present impact, cost, rollback and exact human steps.
 - No plan, checklist, repository test or Staging result may be represented as Production PASS.

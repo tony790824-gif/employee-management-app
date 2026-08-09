@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 43 Neon billing evidence addendum
+
+Current Neon organization plan and fixed plan fee are now directly evidenced as Free / US$0. Organization-wide usage and per-project Free limits are recorded, but Production-only usage, charges, capacity and recovery remain unproved. The prior US$15/month figure remains a public future-planning example only.
+
+This evidence refines `GA-01` and `NEON-01` without closing them. Gate A remains DEFER, provisioning remains NO-GO and readiness remains 70%. No upgrade, configuration, SQL, Migration, snapshot, branch, Restore, billing or other Production operation occurred.
+
 ## Sprint 42 blocker closure addendum
 
 The consolidated blocker inventory has moved to `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`. Its current statuses are evidence-derived and no external blocker was promoted to PASS.

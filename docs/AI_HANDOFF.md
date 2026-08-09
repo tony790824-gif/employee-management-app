@@ -1,5 +1,15 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 43 Neon Billing / Usage Evidence Closure
+
+- Status: **COMPLETE AS HUMAN READ-ONLY EVIDENCE CLOSURE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- Current actual Neon organization plan is **Free / US$0 fixed monthly plan fee**. Included per project: 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches.
+- Current billing-period organization usage since 2026-08-01 is 10.77 CU-hours, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. Never label these Production-only.
+- Production project storage 32.84 MB and Staging project storage 46.01 MB are project-screen observations only; never convert them to GB-month.
+- Production-only compute, billing storage, network transfer, snapshot storage and estimated/charged amount remain UNKNOWN. Neon US$15/month remains only a future paid-planning example.
+- Next unique Sprint is read-only Domain and Operations Cost Evidence Closure. No purchase, platform integration, alert change, backup change or Production action is authorized.
+- No Production, Neon configuration, billing, SQL, Migration, Restore, Deploy, DNS, Secret, Auth0, Render or Netlify operation occurred.
+
 ## 2026-08-09 handoff - Sprint 42 Gate A Blocker Closure Plan
 
 - Status: **COMPLETE AS FAIL-CLOSED PLAN / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.

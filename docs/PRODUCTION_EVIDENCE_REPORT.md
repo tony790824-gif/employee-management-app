@@ -1,5 +1,20 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 43 Neon billing / usage evidence - 2026-08-09
+
+- Evidence source: **authorized human read-only Neon Console plan, usage and project-storage inspection**.
+- Current actual organization plan / fixed fee: **Free / US$0 per month**.
+- Free inclusions shown per project: **0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches**.
+- Current organization-wide usage since 2026-08-01: **10.77 CU-hours compute, 0.08 GB storage, 0 GB history and 0.3 GB network transfer**.
+- Tooltip boundary: compute, storage, history and network values aggregate all projects in the current billing period; none is accepted as Production-only.
+- Project-screen observations: **Production 32.84 MB; Staging 46.01 MB**. They were not converted to billing GB-month.
+- Production-only compute, billing storage/GB-month, network transfer, snapshot storage GB-month and estimated/charged amount: **UNKNOWN**.
+- Interpretation: current fixed plan fee is now evidenced as US$0, but future safe Production capacity/recovery and exact total cost remain `PARTIAL`/`UNKNOWN`. The prior US$15/month Neon value is only a public planning example.
+- Status: **PARTIAL**. Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and readiness remains **70% / NOT READY**.
+- Neon upgrade/configuration, billing action, SQL, Migration, snapshot, branch, Restore, Deploy, Secret and other Production mutations: **NOT PERFORMED**.
+
+The sanitized record is `manual.neon.production.billing_usage` with SHA-256 `965f1a7ebe773584166fd7d0a716c93a279cd3fa743d1f37a85e6cc855e651f5`. It contains no organization, project, branch or endpoint identifier, hostname, connection string, credential, invoice/payment data or personal information. The updated 23-entry manifest SHA-256 is `0368482e169fd9c4d30b769f9af58c12f7a97e93da3bfb438ffa9dd610f30582`.
+
 ## Sprint 42 blocker-plan evidence boundary - 2026-08-09
 
 - Repository plan and documentation consistency: **PASS**.

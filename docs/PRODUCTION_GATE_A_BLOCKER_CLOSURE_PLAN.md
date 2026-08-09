@@ -6,6 +6,14 @@
 
 Production Readiness：**70% / NOT READY**
 
+## Sprint 43 evidence closure update
+
+- `GA-01` / `NEON-01` now have direct human read-only evidence for the **current organization plan (Free / US$0)**, Free per-project limits and organization-level usage.
+- The organization totals are not Production-only; project-screen MB values are not billing GB-month. Production-only compute/storage/network/snapshot usage and charge remain UNKNOWN.
+- The historical Neon US$15/month value remains a future planning example, not current actual cost. Free / US$0 does not prove safe Production capacity or recovery.
+- Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and Production readiness remains **70% / NOT READY**.
+- No Production, billing, Neon configuration, SQL, Migration, Restore, Deploy, DNS, Secret or traffic operation occurred.
+
 本計畫把現有 Production（正式環境）阻擋轉成可逐項驗證的執行清單。它不授權購買、升級、建立資源、修改平台設定、Deploy（部署）、Migration（資料庫遷移）、資料庫寫入、DNS 變更、Secret（秘密資訊）操作或流量切換。沒有直接、目前且已授權的證據時，一律維持 `PARTIAL`、`BLOCKED`、`NOT_CONFIGURED` 或 `UNKNOWN`。
 
 ## 1. 判定層級
@@ -20,10 +28,10 @@ Production Provisioning 的阻擋分成三層，避免把後續 Gate 誤當成 G
 
 | ID / 範圍 | CURRENT STATUS | REQUIRED ACTION | EXTERNAL / REPOSITORY | COST IMPACT | RISK | EVIDENCE REQUIRED | OWNER / HUMAN ACTION |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| GA-01 Cost / Billing | **PARTIAL** | 取得 Neon 完整 billing period 的 plan、CU-hours、storage/history/snapshot/network 與非敏感金額；確認 Domain、監控、DR 與稅的預算邊界；owner 接受「US$49 固定下限＋變動／未知」 | External evidence + Repository model | **UNKNOWN**；已知固定下限 US$49/月、US$588/年 | 未知成本被誤當零、超額或中斷 | 帳戶唯讀用量、供應商當下報價、owner 明確預算接受 | **YES**；只讀證據與決策，禁止購買 |
+| GA-01 Cost / Billing | **PARTIAL；current Neon plan PASS, Production-only cost UNKNOWN** | 保留 Free / US$0 與 organization usage 證據；取得 Domain、監控、DR、Production-only Neon usage/charge 與稅的預算邊界；owner 接受「US$49 固定下限＋變動／未知」 | External evidence + Repository model | Current Neon fixed plan fee US$0；未來 Production architecture **UNKNOWN**；已知固定下限 US$49/月、US$588/年 | 組織用量被誤當 Production、未知成本被誤當零、超額或中斷 | 已取得 current plan/org usage；仍需 Production-only usage、其他供應商報價與 owner 明確預算接受 | **YES**；只讀證據與決策，禁止購買 |
 | AUTH-01 Auth0 Production capacity | **BLOCKED**；Free 只有 1 Tenant 且已由 Development 使用 | 購買前重查 Essentials entitlement／US$35 quote、billing cycle、取消／降級與 Tenant retention；提出單一 Gate A 授權 | External | **REQUIRED_PAID candidate：US$35/月**，購買前重查 | 共用 Tenant 破壞隔離；錯誤購買或不可逆設定 | 當下 plan/Tenant entitlement、owner/administrator recovery、stop/rollback 條件 | **YES**；Gate A 核准前不得升級 |
 | AUTH-02 Tenant / SPA / API | **NOT_CONFIGURED** | Gate A 核准後才建立獨立 Production Tenant、SPA、API；驗證 RS256、PKCE、issuer/audience 與 exact allowlists | External + Repository validation | 包含於已核准 Auth0 plan；其他費用 **UNKNOWN** | Staging/Production 混用、錯誤 issuer、wildcard origin | Tenant environment、public metadata、client/API public設定、allowlist、無 Secret 證據 | **YES**；必須另行精確授權 |
-| NEON-01 Neon Production Plan / capacity | **PARTIAL** | 先取得唯讀 billing/usage 與峰值/headroom；Gate B 才能決定 paid plan、autoscaling 與 retention | External; read-only evidence可先做 | Usage-based；精確值 **UNKNOWN** | 費用失控、冷啟動或容量不足 | 完整 billing period、CU/storage/history/network、接受門檻與告警 | **YES**；唯讀可先做，設定變更須 Gate B |
+| NEON-01 Neon Production Plan / capacity | **PARTIAL**；current organization Free / US$0 已證明，Production-only usage/capacity 未證明 | 保留 organization evidence；取得 Production-only usage/headroom 與未來安全方案成本；Gate B 才能決定 paid plan、autoscaling 與 retention | External; read-only evidence可先做 | Current fixed plan fee **US$0**；future Production plan/usage **UNKNOWN** | Free 被誤當 Production-ready、費用失控、冷啟動或容量不足 | Organization totals不可拆算；仍需 Production-only CU/storage/history/network、接受門檻與告警 | **YES**；唯讀可先做，設定變更須 Gate B |
 | NEON-02 Neon Backup / Restore / DR | **PARTIAL / BLOCKED** | 先決定 RPO/RTO、snapshot/retention 成本；Gate B 核准後建立隔離 snapshot/restore evidence，禁止 live restore | External + Runbook | Snapshot/history/branch/compute 與演練成本 **UNKNOWN** | 無可驗證復原、資料遺失或破壞正式 branch | Scheduled snapshot、獨立備份、隔離 restore、RPO/RTO、清理證據 | **YES**；resource/config/restore 需獨立授權 |
 | NEON-03 Schema / Migration parity | **PARTIAL**；Production ledger 只證明 `0001`–`0008` | 先以已核准 reader 建立 schema diff／Migration manifest；Gate F 才可 apply exact checksums | Repository + External read-only metadata | Repository 分析 US$0；執行／停機成本 **UNKNOWN** | Schema 不相容、資料或 rollback 風險 | Current catalog/ledger、pending清單、checksums、相容／rollback或forward-fix、備份 PASS | **YES**；Migration 明確禁止至 Gate F |
 | RENDER-01 Render Production API / Worker | **NOT_CONFIGURED** | Gates A/B 後才建立獨立 API 與 Push Worker；Auto Deploy 首次預設 OFF | External + Repository config | 已知規劃下限 **US$14/月**；頻寬／workspace／overage **UNKNOWN** | 使用 Staging credential、錯 DB、無 rollback | Service identity、runtime、commit、build/start、env presence、health/readiness、logs、CORS | **YES**；Gate C 獨立授權 |
@@ -65,23 +73,23 @@ Gates B–G 仍須各自停下並取得新的明確授權：
 
 ## 5. Sprint 43+ 建議解除路線
 
-1. **Sprint 43 — Neon Production Billing / Usage Evidence Closure（唯讀）**：取得 plan、完整期間用量與非敏感金額，更新 Minimum/Recommended 的公式；無設定或 SQL。
-2. **Sprint 44 — Domain and Operations Cost Evidence Closure（唯讀／規劃）**：TLD/registrar quote、monitoring/alerting/logging選型、RPO/RTO與DR預算；不購買／不建立 integration。
+1. **Sprint 43 — Neon Production Billing / Usage Evidence Closure（COMPLETE）**：已取得 current Free / US$0、plan limits與organization usage；Production-only欄位仍 UNKNOWN，未執行 SQL 或設定變更。
+2. **Sprint 44 — Domain and Operations Cost Evidence Closure（NEXT；唯讀／規劃）**：TLD/registrar quote、monitoring/alerting/logging選型、RPO/RTO與DR預算；不購買／不建立 integration。
 3. **Sprint 45 — Production Schema Parity Read-only Plan**：只用現有 reader/catalog evidence 建立 `0001`–`0022` 差異與 Gate F manifest；不 Migration。
 4. **Sprint 46 — Final Gate A Owner Decision Package**：用完成的成本、復原、營運與schema證據提出 `APPROVE` 或 `DEFER`。只有 owner 的 exact 授權可開始 Gate A execution。
 5. **Gate A execution Sprint（僅於核准後）**：只處理 Auth0；完成並停下。其後 Gates B–G 仍逐一另行授權。
 
 若任何先行 evidence 改變架構、成本或安全假設，立即停止並更新計畫，不得跳過順序。
 
-## 6. Sprint 42 gate decision
+## 6. Sprint 43 gate decision
 
-- Sprint 42 repository plan：**COMPLETE**。
+- Sprint 42 repository plan：**COMPLETE**；Sprint 43 Neon billing evidence：**COMPLETE / PARTIAL EVIDENCE ONLY**。
 - Gate A：**DEFER**。
 - Production Provisioning：**NO-GO**。
 - Production Readiness：**70% / NOT READY**。
 - 已知固定最低成本：**US$49/月、US$588/年**。
 - Neon US$15/月只可形成 **約 US$64/月、US$768/年＋UNKNOWN** 的規劃範例，不是精確總價。
-- 新增 external PASS：**NONE**。
+- 新增 external fact evidence：**current Neon Free / US$0 plan, Free limits and organization usage PASS**；Production-only cost/capacity gate仍未 PASS。
 - Production／billing／platform mutation：**NONE**。
 
 只有 blocker 實際解除且有 direct evidence 時，Readiness 或 Gate 狀態才可改變。文件完成本身不構成 `GO` 或 `CONDITIONAL GO`。

@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 43 status - Neon Production Billing / Usage Evidence Closure (2026-08-09)
+
+- **Status:** COMPLETE as authorized human read-only evidence closure; no Neon or Production mutation occurred.
+- **Actual account evidence:** current Neon organization plan is Free / US$0 monthly fixed plan fee. Free includes 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches per project.
+- **Usage boundary:** since 2026-08-01 the organization totals are 10.77 CU-hours compute, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. They are not Production-only values.
+- **Project-screen observations:** Production 32.84 MB and Staging 46.01 MB are not converted to billing GB-month.
+- **Still UNKNOWN:** Production-only compute, billing storage/GB-month, network transfer, snapshot storage GB-month and estimated/charged amount. The old Neon US$15/month example remains a future planning example, not actual cost.
+- **Decision:** Gate A remains DEFER; Production Provisioning remains NO-GO; Production readiness remains 70% / NOT READY.
+- **Next unique Sprint:** Sprint 44 — Domain and Operations Cost Evidence Closure, read-only only; no purchase, integration, alert configuration, backup change or Production mutation.
+
 ## Sprint 42 status - Production Gate A Blocker Closure Plan (2026-08-09)
 
 - **Status:** COMPLETE as a fail-closed Repository plan; no external Production blocker was represented as closed.

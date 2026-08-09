@@ -1,5 +1,16 @@
 # Codex Context
 
+## 2026-08-09 current authority - Sprint 43 Neon billing / usage evidence
+
+- Sprint 43 is COMPLETE as authorized human read-only evidence closure. It did not operate Neon or close a Production capability gate.
+- Current actual Neon organization plan: Free / US$0 fixed monthly plan fee; included per project are 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches.
+- Current organization-wide usage since 2026-08-01: 10.77 CU-hours compute, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. These values are not Production-only.
+- Production 32.84 MB and Staging 46.01 MB are project-screen storage observations only, not billing GB-month.
+- Production-only compute, billing storage, network transfer, snapshot storage and amount remain UNKNOWN. The US$15/month Neon example is not current actual cost.
+- Gate A remains DEFER, Production Provisioning remains NO-GO, and Production readiness remains 70% / NOT READY.
+- Preserve existing untracked `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt`, and `0010_commission_rules` files.
+- No Production, billing, platform, database, Migration, Restore, Deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 current authority - Sprint 42 Gate A blocker closure
 
 - Sprint 42 is COMPLETE as a Repository-only fail-closed blocker plan. It does not close an external Production gate.

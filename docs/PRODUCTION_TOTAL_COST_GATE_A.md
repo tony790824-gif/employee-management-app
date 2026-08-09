@@ -9,6 +9,17 @@ Production Readiness（正式環境準備度）：**70% / NOT READY**
 
 本文件只整理 Repository（程式碼儲存庫）與官方公開價格／限制證據。它不授權購買、付款、升級、建立資源、修改設定、Deploy（部署）、Migration（資料庫遷移）、DNS 變更、Secret（秘密資訊）操作或 Production（正式環境）流量切換。所有價格均為 2026-08-09 的公開或已授權人工證據；購買前必須重新確認。
 
+## Sprint 43 Neon actual-plan evidence addendum
+
+- Current actual Neon organization plan is **Free / US$0 fixed monthly plan fee**.
+- Free inclusions shown per project are 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches.
+- Organization-wide usage since 2026-08-01 is 10.77 CU-hours, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. These values cover all projects and cannot be assigned to Production.
+- Production project 32.84 MB and Staging project 46.01 MB are project-screen observations, not billing GB-month.
+- Production-only compute, billing storage, network transfer, snapshot storage and estimated/charged amount remain UNKNOWN.
+- The public Neon US$15/month workload example remains a future paid-planning anchor only; it is not the current plan fee or current charge.
+
+The known fixed Production planning floor therefore remains **US$49/month / US$588/year plus Neon future architecture and other unknowns**. Current Neon Free / US$0 account evidence does not prove the Free plan is safe for Production, and it does not convert the total into US$49 exact. Gate A remains **DEFER** and Production remains **NO-GO**.
+
 ## Sprint 42 Gate A blocker closure addendum
 
 The cost model is unchanged: Minimum fixed known remains US$49/month (US$588/year), the Neon US$15/month workload example produces only an indicative US$64/month (US$768/year) plus unknowns, and the exact total remains unknown.
@@ -80,7 +91,8 @@ Free plan 的 `no overage charges` 只證明目前不會產生 overage charge，
 | --- | --- | ---: | ---: | ---: | --- |
 | Auth0 Production Tenant / SPA / API | REQUIRED_PAID / DEFERRED | **US$35** Essentials | **US$420** | US$0 已知 | 官方頁面與 Sprint 38 人工證據均顯示 Essentials 為 US$35/月、3 Tenants；Free 只有既有 Development Tenant，無法滿足隔離。購買前重查方案、稅與地區計價。 |
 | Auth0 Professional | OPTIONAL_PAID | US$240 | US$2,880 | UNKNOWN | 目前沒有功能或容量證據證明需要；不是 Gate A 建議方案。 |
-| Neon Production database | REQUIRED_PAID capability / usage-based | **UNKNOWN**；官方 Launch 典型範例 US$15/月 | UNKNOWN | UNKNOWN | Launch 為用量計價；US$15 是官方「典型間歇工作負載」範例，不是固定最低費。實際 CU、storage、history、egress 必須重新估算。 |
+| Neon current organization plan | FREE / capacity PARTIAL | **US$0 fixed plan fee** | **US$0 fixed plan fee** | US$0 | 人工唯讀證據；組織用量不可拆成 Production-only，Free capacity/recovery 尚未通過 Production Gate。 |
+| Neon future Production architecture | REQUIRED capability / future plan UNKNOWN | **UNKNOWN**；官方 Launch 典型範例 US$15/月 | UNKNOWN | UNKNOWN | US$15 是公開規劃範例，不是目前費用或 Bankeban 報價。Production-only CU、storage、history、snapshot、network 與 charge 均 UNKNOWN。 |
 | Neon scheduled snapshots | REQUIRED capability / cost UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | Scheduled backups 需付費方案；snapshot storage 官方標示 US$0.09/GB-month（2026-05-01 起）。目前 Production 未啟用、無 snapshot。 |
 | Neon PITR / restore history | REQUIRED capability / PARTIAL | 含於方案與用量，實際 UNKNOWN | UNKNOWN | Restore drill 成本 UNKNOWN | 現有人工證據只有 6 小時 PITR；尚未達既定 RPO/RTO 證據，也未執行隔離 restore。 |
 | Render Production API Starter | REQUIRED_PAID | **US$7** | **US$84** | US$0 已知 | Free instance 官方明示不適合 Production。Starter 公開價 US$7/月；實際頻寬、build pipeline 與稅未知。 |
@@ -217,7 +229,7 @@ flowchart LR
 2. **Auth0 是否應升級？** 架構上，若決定開始正式建置，Essentials 是目前已證明能提供 3 Tenants 的最低候選；現在不建議執行 upgrade。
 3. **批准後第一個真正操作？** 先由 owner 明確批准 Auth0 Essentials 固定費與獨立 Production Tenant；只有之後另一個逐步授權，才可購買並建立 Tenant。不能同時授權 SPA/API、Render、Netlify 或 DNS。
 4. **最低已知固定成本？** US$49/月、US$588/年，加 Neon 實際用量與所有未知項目；用官方案例暫估為約 US$64/月、US$768/年加未知項目。
-5. **未知成本？** Neon 實際用量/snapshot/restore、domain、監控告警、logging、Render overage、Netlify 未來容量升級、tax。Netlify current fixed cost 已收斂為 US$0，但容量尚未收斂。
+5. **未知成本？** Neon Production-only用量/snapshot/restore與future safe plan、domain、監控告警、logging、Render overage、Netlify 未來容量升級、tax。Neon與Netlify current fixed cost均已收斂為 US$0，但兩者的Production容量均未收斂。
 6. **下一次必要明確授權？** 先只授權 Gate A 的 exact plan、monthly/annual billing、Tenant ownership/recovery、取消/降級影響與 stop conditions；任何購買或建立資源仍須在授權文字中明列。
 
 ### APPROVE 的必要前置（尚未滿足）
@@ -231,8 +243,9 @@ flowchart LR
 
 - Sprint 41 Production Cost Finalization：**COMPLETE AS FAIL-CLOSED DECISION PACKAGE**
 - Sprint 40 Netlify 帳務／成本收斂：**COMPLETE / HISTORICAL BASELINE**
+- Sprint 43 Neon current plan／organization usage收斂：**COMPLETE / PARTIAL EVIDENCE ONLY**
 - Gate A：**DEFER / NOT AUTHORIZED**
 - Production provisioning：**NO-GO**
 - Production readiness：**70% / NOT READY（不因文件完成而提高）**
 - Production / billing / platform mutation：**NONE**
-- 唯一下一個人工動作：在 Neon Console 的 **Billing → Usage** 唯讀頁面，選擇 Production project 與最近一個完整 billing period，只回報 plan 名稱、compute CU-hours、root/child storage GB-month、instant-restore/history GB-month、snapshot storage GB-month、public network transfer 與該期間非敏感 estimated/charged amount。不要提供 organization/project/branch/endpoint ID、hostname、connection string、invoice/payment/personal information；不要 upgrade、修改 compute/retention、建立 snapshot/branch 或執行 SQL。
+- 唯一下一個 Sprint：**Sprint 44 Domain and Operations Cost Evidence Closure（read-only）**。只整理 domain/registrar quote、monitoring/alerting/logging tier與backup/Restore成本候選；不得購買、配置integration、變更備份、Deploy、DNS或Production。

@@ -1,18 +1,26 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 43 - Neon Production Billing / Usage Evidence Closure (read-only)
+## Sprint 44 - Domain and Operations Cost Evidence Closure (read-only)
 
-Sprint 42 completed the blocker plan only. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+Sprint 43 closed only the Neon current-plan and organization-level usage facts. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
 
-The next unique Sprint is human read-only Neon evidence:
+The next unique Sprint is read-only evidence and selection work:
 
-1. Open Neon Console **Billing → Usage** and select the Production project plus the latest complete billing period.
-2. Record only the current plan, compute CU-hours, root/child storage GB-month, instant-restore/history GB-month, snapshot storage GB-month, public network transfer and non-sensitive estimated/charged amount.
-3. Return `UNKNOWN` for fields not displayed. Do not infer them from compute or PITR screens.
-4. Do not share organization/project/branch/endpoint IDs, hostname, connection string, credentials, invoice/payment details or personal information.
-5. Do not upgrade, edit compute/autosuspend/retention, create snapshot/branch, restore, run SQL or change billing.
+1. Record the intended Production domain/TLD and a current initial/renewal registrar quote without purchasing it.
+2. Select candidate monitoring, alerting and logging tiers; record included retention, alert delivery, overage and named-responder requirements without configuring integrations.
+3. Record backup/snapshot/isolated-Restore cost candidates and their unknowns without changing Neon retention, snapshots, branches or restore state.
+4. Keep every undisplayed or account-inapplicable value `UNKNOWN`; do not treat Free tiers as accepted Production capacity.
+5. Do not share account/project identifiers, hostname, credentials, invoice/payment details or personal information.
+6. Do not purchase, upgrade, configure alerts, create resources, run SQL, restore, deploy, change DNS or modify Production.
 
-This evidence may close only `GA-01`/`NEON-01` cost facts. It does not authorize Gate A, Production provisioning, database operations or another Gate.
+This evidence may refine `GA-01`, `DNS-01`, `OPS-01` and `NEON-02`; it does not authorize Gate A or any downstream Production Gate.
+
+## Historical Sprint 43 - Neon Production Billing / Usage Evidence Closure
+
+- Current actual Neon organization plan: Free / US$0 fixed monthly plan fee.
+- Organization usage since 2026-08-01: 10.77 CU-hours, 0.08 GB storage, 0 GB history and 0.3 GB network transfer.
+- Production-only usage, snapshot storage and charged amount remain UNKNOWN; project-screen MB values were not converted to billing units.
+- No upgrade, configuration, SQL, snapshot, branch, restore or billing operation occurred.
 
 ## Historical next unique action after Sprint 41 - Neon Production Usage and Backup Cost Evidence Closure
 

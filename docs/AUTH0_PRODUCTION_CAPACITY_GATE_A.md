@@ -6,6 +6,12 @@ Status: **EVIDENCE RECORDED / EXECUTION DEFERRED / PRODUCTION NO-GO**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 43 Neon cost-evidence addendum
+
+The current Neon organization plan is now evidenced as Free / US$0 fixed monthly plan fee, but organization-level usage cannot be attributed to Production and does not prove Free capacity or recovery. Production-only usage, future safe-plan cost, domain, operations and recovery costs remain incomplete.
+
+The Auth0 Gate A decision therefore remains **DEFER / NOT AUTHORIZED**. No Auth0 or Neon billing/resource action is authorized.
+
 ## Sprint 41 final decision addendum
 
 The fail-closed Production cost package now distinguishes three models: Minimum fixed known US$49/month, Recommended fixed known US$67/month, and Growth UNKNOWN, all plus usage-based or unresolved items. Auth0 Essentials remains the preferred future minimum-capacity identity option, but Neon actual usage, domain, recovery, monitoring/on-call and overage evidence are still incomplete.

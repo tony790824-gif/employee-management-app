@@ -7,6 +7,12 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 43 Neon billing / usage boundary
+
+Authorized human read-only evidence now proves the current Neon organization plan is Free / US$0 fixed monthly plan fee. The observed usage since 2026-08-01 is organization-wide, not Production-only, and the project-screen MB figures are not billing GB-month.
+
+This does not prove Free capacity, recovery or a future paid Production plan. Production-only compute/storage/network/snapshot usage and charged amount remain UNKNOWN. Gate A remains DEFER, provisioning remains NO-GO and the Gate A-G order is unchanged. No Neon plan, compute, autosuspend, retention, branch, snapshot, Restore, SQL or billing operation occurred.
+
 ## Sprint 42 blocker closure boundary
 
 `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` is the current execution-order authority. It preserves the Gate A-G order while separating work that can be completed read-only without resources from work that requires an exact human approval.
@@ -54,7 +60,7 @@ No resource, billing, credential, database, Migration, deployment, DNS, deletion
 | Neon Production project / branch / `neondb` | Existing; authorized read-only evidence completed | PARTIAL | Preserve the Sprint 34 reader and ACL model; do not create a duplicate database |
 | Neon schema / Migration parity | Ledger `0001`–`0008` proved; later application schema not proved/applied | PARTIAL | Gate F remains separate from resource provisioning |
 | Neon recovery | PITR available for six hours; snapshots absent; no isolated restore drill | PARTIAL / BLOCKED | Gate B may plan recovery capability; restore execution needs separate approval |
-| Neon monitoring / capacity | Required charts and 0.25–2 CU bounds visible; exact headroom not accepted | PARTIAL | Establish thresholds and capacity evidence before traffic |
+| Neon monitoring / capacity | Required charts and 0.25–2 CU bounds visible; current organization is Free and organization-level usage is recorded, but Production-only headroom is unknown | PARTIAL | Establish Production-only thresholds and capacity evidence before traffic; do not infer from organization totals |
 | Render Staging API | Existing Node service in Singapore | PASS (Staging only) | Preserve; never rename or promote it as Production |
 | Render Production API | No independent service or public API URL | NOT_CONFIGURED | Gate C creates a separate service only after A/B prerequisites |
 | Netlify project and Deploy Previews | Existing; project has never had a Production Deploy | PASS (Preview only) | Preserve previews; they are not Production evidence |
@@ -253,8 +259,8 @@ Planning documents, repository tests and Staging evidence do not increase Produc
 7. Define release thresholds for authentication, error rate, latency, connection saturation, queue backlog and notification failure before Gate G.
 8. If any security, Workspace isolation, data integrity or rollback control fails, stop traffic and return to the last accepted Production path.
 
-## 9. Sprint 36 decision
+## 9. Current decision after Sprint 43
 
 The provisioning plan is complete, but no resource is provisioned and no Production gate is accepted. Readiness remains **70% / NOT READY**.
 
-The next single step is **human read-only Neon Billing/Usage evidence**. It must record only the current plan and latest complete-period compute/storage/history/snapshot/network usage plus non-sensitive amount. It does not authorize Gate A execution. Only after the complete cost envelope and a later exact owner approval may an operator consider the first Production resource; no other gate may start in parallel.
+The Neon current plan and organization-level usage evidence is now recorded. The next single Sprint is **Domain and Operations Cost Evidence Closure**, read-only only. It may record domain/registrar quotes, monitoring/alerting/logging tiers and backup/Restore cost candidates, but cannot purchase, configure, integrate, restore or modify Production. Only after the complete cost envelope and a later exact owner approval may an operator consider the first Production resource; no other gate may start in parallel.

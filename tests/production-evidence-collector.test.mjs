@@ -151,7 +151,7 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 22);
+assert.equal(committedHashes.entries.length, 23);
 assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
 assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
 assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);
@@ -174,6 +174,22 @@ assert.equal(committedHashes.manualNetlifyBillingEvidence.totalUsedCredits, 274.
 assert.equal(committedHashes.manualNetlifyBillingEvidence.noOverageCharges, true);
 assert.equal(committedHashes.manualNetlifyBillingEvidence.usageValuesApproximate, true);
 assert.equal(committedHashes.manualNetlifyBillingEvidence.productionConfigurationChanged, false);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.status, 'PARTIAL');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.currentPlan, 'FREE');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.currentFixedMonthlyUsd, 0);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.usageScope, 'ORGANIZATION_ALL_PROJECTS');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.organizationUsage.computeCuHours, 10.77);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.organizationUsage.storageGb, 0.08);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.organizationUsage.historyGb, 0);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.organizationUsage.networkTransferGb, 0.3);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionOnly.computeCuHours, 'UNKNOWN');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionOnly.billingStorageGbMonth, 'UNKNOWN');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionOnly.networkTransferGb, 'UNKNOWN');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionOnly.snapshotStorageGbMonth, 'UNKNOWN');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionOnly.estimatedOrChargedAmount, 'UNKNOWN');
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.projectStorageConvertedToBillingGbMonth, false);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.billingActionPerformed, false);
+assert.equal(committedHashes.manualNeonBillingUsageEvidence.productionConfigurationChanged, false);
 assert.equal(committedHashes.publicProductionCostEvidence.knownFixedMonthlyUsd, 49);
 assert.equal(committedHashes.publicProductionCostEvidence.knownFixedAnnualUsd, 588);
 assert.equal(committedHashes.publicProductionCostEvidence.minimumProduction.fixedMonthlyUsd, 49);
@@ -183,7 +199,11 @@ assert.equal(committedHashes.publicProductionCostEvidence.recommendedProduction.
 assert.equal(committedHashes.publicProductionCostEvidence.recommendedProduction.fixedAnnualUsd, 804);
 assert.equal(committedHashes.publicProductionCostEvidence.recommendedProduction.indicativeMonthlyWithNeonTypicalUsd, 82);
 assert.equal(committedHashes.publicProductionCostEvidence.growthTotalStatus, 'UNKNOWN');
-assert.equal(committedHashes.publicProductionCostEvidence.neon.productionAccountPlanStatus, 'UNKNOWN');
+assert.equal(committedHashes.publicProductionCostEvidence.neon.currentPlan, 'FREE');
+assert.equal(committedHashes.publicProductionCostEvidence.neon.currentFixedMonthlyUsd, 0);
+assert.equal(committedHashes.publicProductionCostEvidence.neon.productionAccountPlanStatus, 'EVIDENCED_CURRENT_FREE');
+assert.equal(committedHashes.publicProductionCostEvidence.neon.productionOnlyCostStatus, 'UNKNOWN');
+assert.equal(committedHashes.publicProductionCostEvidence.neon.organizationUsageStatus, 'EVIDENCED_NOT_PRODUCTION_ONLY');
 assert.equal(committedHashes.publicProductionCostEvidence.neon.launchComputeUsdPerCuHour, 0.106);
 assert.equal(committedHashes.publicProductionCostEvidence.neon.databaseStorageUsdPerGbMonth, 0.35);
 assert.equal(committedHashes.publicProductionCostEvidence.neon.restoreHistoryUsdPerGbMonth, 0.2);
@@ -209,6 +229,10 @@ assert.equal(
 assert.equal(
   committedHashes.entries.find(item => item.id === 'manual.netlify.production.billing_usage')?.sha256,
   evidenceSha256(committedHashes.manualNetlifyBillingEvidence)
+);
+assert.equal(
+  committedHashes.entries.find(item => item.id === 'manual.neon.production.billing_usage')?.sha256,
+  evidenceSha256(committedHashes.manualNeonBillingUsageEvidence)
 );
 assert.equal(
   committedHashes.entries.find(item => item.id === 'public.production.cost_model')?.sha256,

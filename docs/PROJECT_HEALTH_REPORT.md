@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-08-09 Sprint 43 Neon Billing / Usage Evidence Closure
+
+- **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
+- **Evidence:** current Neon organization plan is Free / US$0 fixed monthly fee; plan limits and organization-wide billing-period usage were recorded without identifiers.
+- **Boundary:** organization totals and project-screen MB values are not Production-only billing evidence. Production-only usage and charges remain UNKNOWN.
+- **Decision:** Gate A remains DEFER. The US$15 Neon value remains a future planning example, not actual account cost.
+- **Safety:** no Production, Neon/billing configuration, SQL, Migration, Restore, Deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 Sprint 42 Production Gate A Blocker Closure
 
 - **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.

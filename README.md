@@ -1,5 +1,13 @@
 # 班客邦
 
+## Sprint 43 Neon Production Billing / Usage Evidence Closure (2026-08-09)
+
+- Recorded authorized human read-only Neon evidence: the current organization plan is Free / US$0 per month, with 0.5 GB storage, autoscaling up to 2 CU, 100 compute hours and 10 branches per project.
+- Current billing-period usage since 2026-08-01 is organization-wide: 10.77 CU-hours compute, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. It is not Production-only usage.
+- Production project storage 32.84 MB and Staging project storage 46.01 MB are retained only as project-screen observations and are not converted to GB-month charges.
+- Production-only compute, billing storage, network transfer, snapshot storage and charged amount remain UNKNOWN. The historical Neon US$15/month example is not the current actual charge.
+- Gate A remains DEFER, Production readiness remains 70% / NOT READY, and provisioning remains NO-GO. No Production or billing mutation occurred.
+
 ## Sprint 42 Production Gate A Blocker Closure Plan (2026-08-09)
 
 - Converted every current Production blocker into an ordered, evidence-based closure checklist in `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md`.

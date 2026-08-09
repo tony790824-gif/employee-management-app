@@ -2,6 +2,15 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 43 Neon billing operating state
+
+- Current actual Neon organization plan is Free / US$0 fixed monthly plan fee. This is plan evidence, not proof that Free capacity or recovery meets Production requirements.
+- Organization usage since 2026-08-01 is 10.77 CU-hours, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. Never use these values as Production-only thresholds or forecasts.
+- Production 32.84 MB and Staging 46.01 MB are project-screen observations only; do not convert them to GB-month or charges.
+- Production-only compute, billing storage, network transfer, snapshot storage and amount remain UNKNOWN. The US$15/month example is not current actual cost.
+- Do not upgrade, change compute/autosuspend/retention, create snapshots/branches, restore or run SQL. Gate A remains DEFER, readiness 70%, Production NO-GO.
+- The next permitted work is read-only Domain and Operations cost evidence; no purchase, alert integration, backup configuration or Production action is authorized.
+
 ## Sprint 42 blocker-closure operating boundary
 
 - Use `docs/PRODUCTION_GATE_A_BLOCKER_CLOSURE_PLAN.md` as the current blocker and order authority.

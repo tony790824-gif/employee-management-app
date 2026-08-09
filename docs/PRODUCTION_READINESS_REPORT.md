@@ -1,5 +1,15 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 43 Neon billing / usage evidence closure - 2026-08-09
+
+- Authorized human read-only evidence confirms the current Neon organization plan is **Free / US$0 fixed monthly plan fee**. Per-project inclusions shown are 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches.
+- Current billing-period values since 2026-08-01 are organization-wide: 10.77 CU-hours compute, 0.08 GB storage, 0 GB history and 0.3 GB network transfer. They cannot prove Production-only utilization or cost.
+- Production project storage 32.84 MB and Staging project storage 46.01 MB are project-screen observations only and were not converted to GB-month.
+- Production-only compute, billing storage/GB-month, network transfer, snapshot storage GB-month and estimated/charged amount remain **UNKNOWN**. The published US$15/month workload example is not current actual cost.
+- Cost evidence improved from unknown account plan to known current Free plan, but capacity, recovery and future paid Production architecture remain `PARTIAL`/`UNKNOWN`.
+- Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and Production readiness remains **70% / NOT READY**.
+- No Production, Neon configuration, billing, database, SQL, Migration, Restore, Deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 42 Gate A blocker closure decision - 2026-08-09
 
 - Added an authoritative, evidence-based blocker inventory and closure order without operating an external platform.

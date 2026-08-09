@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 43 Neon Billing / Usage Evidence Closure
+
+- Recorded sanitized human read-only evidence that the current Neon organization is on Free / US$0 per month and documented its included per-project limits.
+- Separated organization-wide billing-period usage from Production-only usage and retained every undisplayed Production-only cost field as UNKNOWN.
+- Updated Gate A, evidence, readiness, operations, backlog and handoff documents without changing the 70% / NOT READY, DEFER and NO-GO decisions.
+- No Production resource, billing setting, SQL, Migration, Restore, Deploy, DNS, Secret or external platform configuration was changed.
+
 ## 2026-08-09 - Sprint 42 Production Gate A Blocker Closure Plan
 
 - Added one authoritative blocker inventory covering Auth0, Neon, Render, Netlify, domain/DNS/TLS, operations, recovery, Secrets, schema parity, Web Push, costs and release rollback.
