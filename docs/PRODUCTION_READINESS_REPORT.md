@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 38 Auth0 capacity / Gate A decision - 2026-08-09
+
+- Owner-observed read-only evidence proves the Free plan is limited to the existing Development Tenant and cannot add an independent Production Tenant.
+- Essentials is the lowest observed capacity option that provides three Tenants at US$35/month; Professional is observed at US$240/month. These are point-in-time Auth0-only quotes, not the full Production cost.
+- The required architecture remains a dedicated Production Tenant. Shared-Tenant Production is rejected; identity-provider replacement is not justified in this gate.
+- Gate A recommendation is **DEFER execution now**. Option A remains the preferred future target, pending total-cost, release-timeline, billing and rollback approval.
+- Production readiness remains **70% / NOT READY**. Capacity evidence does not create or validate Production identity resources.
+- No Auth0/billing/Production/resource/database/Migration/deploy/DNS/Secret/traffic operation occurred.
+
 ## Sprint 37 provisioning-preflight decision - 2026-08-09
 
 - Sprint 36 handoff artifacts are consistent. The current consolidated authorization decision is **NO-GO**.

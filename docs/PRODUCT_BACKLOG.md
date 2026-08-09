@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 38 status - Auth0 Production Capacity Evidence and Gate A Preparation (2026-08-09)
+
+- **Status:** COMPLETE as evidence/decision preparation; Gate A execution is DEFERRED and Production remains NO-GO.
+- **Evidence:** Free currently permits one Tenant and is occupied by Development. Owner-observed Essentials is US$35/month with three Tenants; Professional is US$240/month with twelve Tenants. Pricing is point-in-time evidence and must be rechecked before purchase.
+- **Decision:** retain a dedicated Production Tenant as mandatory. Option A (Essentials) is the preferred future architecture; Option B (same Development Tenant) and Option C (identity-provider migration now) are rejected; Option D (defer) is the current approved state.
+- **Readiness:** product 98%; Production readiness 70% / NOT READY. Documentation and capacity evidence do not close a Production capability gate.
+- **No external action:** no upgrade, payment, Tenant/Application/API creation, Auth0 configuration, Production resource, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+- **Next unique Sprint:** Production total-cost envelope and Gate A authorization package. Do not purchase or provision until a later exact authorization.
+
 ## Sprint 37 status - Production Provisioning Preflight (2026-08-09)
 
 - **Status:** COMPLETE as read-only Preflight / blocker consolidation; Production authorization remains NO-GO.

@@ -2,6 +2,13 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 38 Gate A operating state
+
+- Auth0 capacity/pricing evidence is recorded in `docs/AUTH0_PRODUCTION_CAPACITY_GATE_A.md`; it contains no account, billing or Secret identifier.
+- Current decision is **DEFER**. Do not upgrade, add payment, purchase, create a Tenant/Application/API, or change Auth0.
+- Essentials is only the preferred future target architecture. Its observed US$35/month quote is not a total Production-cost estimate and must be rechecked before any later authorization.
+- The next allowed work is total-cost and authorization-package preparation only. Production remains NO-GO and Gates B-G remain closed.
+
 ## Sprint 37 NO-GO operating state
 
 - `docs/PRODUCTION_PROVISIONING_PREFLIGHT_REPORT.md` consolidates every current blocker and confirms Production provisioning is NO-GO.

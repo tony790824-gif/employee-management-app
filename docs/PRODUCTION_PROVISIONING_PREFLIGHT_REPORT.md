@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 38 Gate A capacity addendum
+
+Read-only owner evidence closes the unknown Auth0 Team capacity fact: Free permits one Tenant and is already occupied by Development; Essentials is observed at US$35/month with three Tenants. `AUTH-01` remains **BLOCKED / BILLING_REQUIRED / APPROVAL_REQUIRED** because no purchase is authorized. `AUTH-02` and `AUTH-03` remain **NOT_CONFIGURED**.
+
+Decision: **DEFER Gate A execution now**, retain Essentials/dedicated Production Tenant as the preferred target, reject shared-Tenant Production, and keep the overall decision **NO-GO**. Production readiness remains 70%.
+
 This report consolidates blockers before any Production resource is created. It authorizes no resource, configuration, deploy, Migration, database access/write, DNS change, Secret operation, deletion, purchase, upgrade, or traffic switch. Unproved external state remains `PARTIAL`, `BLOCKED`, `NOT_CONFIGURED`, or `UNKNOWN`.
 
 ## 1. Sprint 36 handoff audit

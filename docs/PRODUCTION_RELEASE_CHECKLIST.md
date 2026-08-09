@@ -2,6 +2,8 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 38 Auth0 capacity update: the Free plan/Tenant limit and point-in-time Essentials/Professional quotes are recorded and hashed. The checklist remains NOT READY: Gate A execution is DEFERRED, no dedicated Production Tenant/SPA/API exists, and no purchase or Auth0 change is authorized.
+
 Sprint 35 inventory (2026-08-09): Repository and Sprint 34 Neon reader evidence remain PASS. Production schema parity is PARTIAL; capacity is UNKNOWN; Netlify/Render/Auth0 public identities are NOT_CONFIGURED; their management evidence, DNS/TLS, monitoring and recovery are BLOCKED. No Production request or mutation was made during this inventory.
 
 Neon Backup & Restore evidence update: PITR is available with a six-hour history window, but scheduled snapshots are disabled, no snapshot exists, and no isolated restore was executed. The combined backup/restore/RPO/RTO item remains unchecked and PARTIAL/BLOCKED as applicable.
@@ -21,7 +23,9 @@ This checklist is Production-specific and complements `docs/RELEASE_CHECKLIST.md
 - [x] Sprint 36 plan/ADR/Readiness/Evidence/Operations/Checklist/Backlog consistency reviewed.
 - [x] Every current blocker classified by automation, human action, external limit, possible billing, approval and missing evidence.
 - [x] Current Production provisioning decision recorded as **NO-GO**.
-- [ ] Auth0 Team capacity and current plan/cost evidence reviewed without purchase or mutation.
+- [x] Auth0 Team capacity and current plan/cost evidence reviewed without purchase or mutation.
+- [x] Shared Development-Tenant Production rejected; dedicated Production Tenant retained as the required architecture.
+- [x] Current Gate A execution decision recorded as **DEFER**; no spending or resource operation authorized.
 - [ ] Gate A proposal explicitly approved; this checkbox alone must not create resources.
 - [ ] Every Gate A-G prerequisite is direct-evidence PASS before its own action.
 

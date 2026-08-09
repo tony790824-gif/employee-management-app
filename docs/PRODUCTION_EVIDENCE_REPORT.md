@@ -1,5 +1,21 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 38 Auth0 capacity and pricing evidence - 2026-08-09
+
+- Evidence source: **authorized human read-only Auth0 Team subscription/capacity inspection**
+- Current plan / charge: **Free / US$0**
+- Current Tenant entitlement: **1**; existing Tenant is **Development**; additional Tenant creation is **BLOCKED / LIMIT REACHED**
+- Independent Production Tenant/SPA/API: **NOT_CONFIGURED**
+- Essentials: **US$35/month, 500 MAU, 3 Tenants, 10 Actions, 1,000 M2M Tokens**
+- Professional: **US$240/month, 1,000 MAU, 12 Tenants, 15 Actions**
+- Enterprise: **UNKNOWN / CONTACT SALES**
+- Gate A execution: **DEFERRED / NOT AUTHORIZED**
+- Billing, payment, upgrade, Tenant/Application/API creation and Auth0 configuration: **NOT PERFORMED**
+
+The values are point-in-time owner evidence and may change. No account, payment, Tenant identifier, Secret, token, or screenshot is retained. The sanitized record is `manual.auth0.production.capacity_pricing`; its SHA-256 is `4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa`, and the 20-entry manifest SHA-256 is `1806378026e1132ad7baab4312d4b44c76417bd7dc9814b14139bac7309973c1`.
+
+This evidence closes the unknown plan/capacity fact only. It does not close the Production identity gate, raise readiness, or authorize a purchase/resource operation.
+
 ## Sprint 37 preflight evidence record - 2026-08-09
 
 | Evidence gate | Status | Decision |

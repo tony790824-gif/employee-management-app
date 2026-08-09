@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 38 Auth0 Production Capacity Evidence and Gate A Preparation
+
+- Added a sanitized SHA-256 evidence record for the owner-observed Auth0 Free, Essentials and Professional capacity/pricing state without retaining account or billing identifiers.
+- Evaluated four identity options and rejected shared Development-Tenant Production and an unapproved identity-provider migration.
+- Recorded Gate A as **DEFER execution now**; Auth0 Essentials remains the preferred future minimum-capacity route for a dedicated Production Tenant.
+- Kept Production readiness at 70% / NOT READY and provisioning NO-GO. No purchase, billing, Auth0, Production, database, Migration, deploy, DNS, Secret or traffic action occurred.
+
 ## 2026-08-09 - Sprint 37 Production Provisioning Preflight
 
 - Audited the Sprint 36 handoff and confirmed the resource plan, ADR, Readiness, Evidence, Operations, Release Checklist and Backlog remain consistent.

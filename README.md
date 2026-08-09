@@ -1,5 +1,12 @@
 # 班客邦
 
+## Sprint 38 Auth0 Production Capacity Evidence and Gate A Preparation (2026-08-09)
+
+- Recorded sanitized, hashed, read-only Auth0 plan/Tenant-capacity evidence: Free is limited to the existing Development Tenant; the observed Essentials quote is US$35/month with three Tenants.
+- Gate A recommendation is **DEFER execution now**, while retaining Essentials with a dedicated Production Tenant as the preferred future architecture. Same-Tenant Production is rejected.
+- No plan upgrade, purchase, payment, Tenant/Application/API creation, Auth0 change, Production resource, deploy, Migration, database, DNS, Secret or traffic operation occurred.
+- Product completion remains 98%; Production readiness remains **70% / NOT READY** and provisioning remains **NO-GO**. See [Gate A Capacity Proposal](docs/AUTH0_PRODUCTION_CAPACITY_GATE_A.md).
+
 ## Sprint 37 Production Provisioning Preflight (2026-08-09)
 
 - Consolidated every Production blocker and classified it as safely automatable, user action, external limit, possible billing, approval required and/or missing evidence.

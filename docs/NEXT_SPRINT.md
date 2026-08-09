@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Next unique action after Sprint 37 - Auth0 capacity evidence and decision
+## Next unique Sprint after Sprint 38 - Production cost envelope and final Gate A authorization package
+
+Production remains **NO-GO** at **70% / NOT READY**. Sprint 38 recorded capacity evidence and selected Option A as the preferred future architecture, but the current execution decision is **DEFER**.
+
+The next Sprint may only:
+
+1. consolidate current non-secret cost/capacity evidence for Auth0, Neon recovery/capacity, Render, Netlify, domain/DNS, monitoring/alerting and backup/restore;
+2. state the minimum viable Production stack, monthly/annual range, billing owners, renewal/cancellation risks and unresolved quotes without purchasing anything;
+3. recheck Auth0 Essentials price, Tenant entitlement, downgrade/retention implications and required security features immediately before any proposal;
+4. produce an exact Gate A approve/reject/defer package with impact, rollback and stop conditions;
+5. stop before plan upgrade, payment, Tenant/Application/API creation, any Production resource change, deploy, Migration, database operation, DNS, Secret or traffic action.
+
+If the owner does not explicitly authorize the exact Gate A action later, keep Production NO-GO and the Development Tenant Staging-only.
+
+## Historical next action after Sprint 37 - Auth0 capacity evidence and decision
 
 Production provisioning remains **NO-GO** and readiness remains **70% / NOT READY**.
 

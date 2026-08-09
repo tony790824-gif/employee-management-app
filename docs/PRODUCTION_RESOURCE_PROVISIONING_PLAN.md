@@ -7,6 +7,12 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 38 Gate A capacity decision
+
+Owner-observed Auth0 capacity evidence confirms that Free is limited to the existing Development Tenant. Essentials is the lowest observed plan with three Tenants and is the preferred future route for isolated Development/Staging/Production identity. The current execution recommendation is **DEFER**: do not spend, upgrade, or create resources while the total Production cost and other gates remain open.
+
+Option B (Production resources inside the Development Tenant) is rejected as non-compliant with this plan's isolation boundary. Option C (identity-provider replacement) is rejected for the current gate because it introduces a new architecture and migration programme. Option D (defer) preserves Staging and keeps Production NO-GO. See `docs/AUTH0_PRODUCTION_CAPACITY_GATE_A.md`.
+
 This document is a fail-closed execution plan. It does not authorize a resource creation, configuration change, deploy, Migration, restore, DNS change, traffic switch, or Secret access. A human must approve one gate at a time. Staging evidence never substitutes for Production evidence.
 
 ## Sprint 37 preflight decision

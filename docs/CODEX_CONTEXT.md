@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-09 Sprint 38 current state
+
+- Sprint 38 is **COMPLETE AS AUTH0 CAPACITY EVIDENCE / GATE A PREPARATION**. Gate A execution is DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.
+- Owner-observed Auth0 evidence: Free costs US$0 and permits one Tenant; the existing Tenant is Development and the limit is reached. Essentials is quoted at US$35/month with three Tenants; Professional at US$240/month with twelve Tenants.
+- Dedicated Production Tenant remains mandatory. Essentials is the preferred future minimum-capacity architecture; same-Tenant Production is rejected. Prices are point-in-time evidence, not a guarantee.
+- No purchase, plan/payment change, Tenant/SPA/API creation, Auth0 mutation, Production resource, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+- Next unique work: consolidate the total Production cost envelope and prepare an exact, separately authorized Gate A execution decision. Do not execute Gate A or start Gates B-G.
+
 ## 2026-08-09 Sprint 37 current state
 
 - Sprint 37 is **COMPLETE AS READ-ONLY PREFLIGHT / NO-GO**. Product completion remains 98%; Production readiness remains 70% / NOT READY.

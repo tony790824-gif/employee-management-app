@@ -2,6 +2,10 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 38 Gate A stop
+
+Auth0 capacity evidence is complete, but Gate A execution is **DEFERRED**. Free cannot provide the required dedicated Production Tenant; Essentials is the preferred future minimum-capacity option based on the owner's point-in-time console evidence. Do not upgrade, purchase, add payment, create or configure identity resources. Recheck the quote, entitlement, downgrade/retention terms, total Production cost and rollback plan before requesting exact Gate A authority.
+
 ## Sprint 37 preflight stop
 
 Production provisioning is **NO-GO**. The only current manual step is to inspect Auth0 Team plan/Tenant capacity and return non-secret entitlement and quoted-cost information. Do not purchase, upgrade, create, delete or modify a resource. Gate A execution still requires a later explicit action approval.

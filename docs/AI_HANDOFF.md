@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 38 Auth0 Capacity / Gate A
+
+- Status: **COMPLETE AS EVIDENCE AND DECISION PREPARATION / EXECUTION DEFERRED**; product 98%, Production readiness 70%, release NOT READY, provisioning NO-GO.
+- `docs/AUTH0_PRODUCTION_CAPACITY_GATE_A.md` is the current Gate A authority. The owner-observed Free limit cannot support a second Tenant; Essentials is the preferred future minimum-capacity option, not a purchase authorization.
+- Do not reuse the Development Tenant for Production. Do not upgrade, add payment, create a Tenant/SPA/API, or start Gate B-G.
+- Next work may only consolidate the complete Production cost envelope and a later exact Gate A authorization package. Recheck Auth0 pricing and downgrade/retention rules at authorization time.
+- No Production, Auth0, billing, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 handoff - Sprint 37 Production Provisioning Preflight
 
 - Status: **COMPLETE AS READ-ONLY PREFLIGHT / NO-GO**; product 98%, Production readiness 70%, release NOT READY.
