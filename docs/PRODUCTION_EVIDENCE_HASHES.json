@@ -249,6 +249,86 @@
     "usageScope": "ORGANIZATION_ALL_PROJECTS",
     "usageSince": "2026-08-01"
   },
+  "publicDomainOperationsCostEvidence": {
+    "backupRestore": {
+      "currentHistoryRetentionHours": 6,
+      "isolatedRestoreCostStatus": "UNKNOWN",
+      "isolatedRestoreExecuted": false,
+      "paidHistoryStorageUsdPerGbMonth": 0.2,
+      "scheduledSnapshotConfigured": false,
+      "scheduledSnapshotsRequirePaidPlan": true,
+      "snapshotCreated": false,
+      "snapshotStorageUsdPerGbMonth": 0.09,
+      "source": "https://neon.com/pricing",
+      "status": "PARTIAL"
+    },
+    "domain": {
+      "approvedDomainSelected": false,
+      "candidateRegistrar": "CLOUDFLARE_REGISTRAR",
+      "initialPriceStatus": "UNKNOWN",
+      "registrarPricingModel": "REGISTRY_AND_ICANN_AT_COST",
+      "renewalPriceStatus": "UNKNOWN",
+      "source": "https://developers.cloudflare.com/registrar/account-options/renew-domains/",
+      "status": "BLOCKED",
+      "tldSelected": false
+    },
+    "dnsTls": {
+      "cloudflareDnsQueryCostCandidateUsd": 0,
+      "dnsConfigured": false,
+      "dnsSource": "https://developers.cloudflare.com/dns/faq/",
+      "netlifyManagedTlsCostCandidateUsd": 0,
+      "tlsConfigured": false,
+      "tlsSource": "https://docs.netlify.com/manage/domains/secure-domains-with-https/https-ssl/",
+      "status": "PARTIAL"
+    },
+    "evidenceDate": "2026-08-09",
+    "monitoringAlertingLogging": {
+      "betterStackFree": {
+        "emailAndSlackAlerts": true,
+        "errorExceptionsPerMonth": 100000,
+        "logsGbPerMonth": 3,
+        "logsRetentionDays": 3,
+        "metricsGb": 30,
+        "monthlyUsd": 0,
+        "monitorsAndHeartbeats": 10,
+        "statusPageCount": 1
+      },
+      "betterStackNano": {
+        "annualBillingMonthlyEquivalentUsd": 25,
+        "logsGb": 40,
+        "logsRetentionDays": 30,
+        "monthlyUsd": 30,
+        "status": "OPTIONAL_NOT_APPROVED"
+      },
+      "betterStackOverage": {
+        "ingestionUsdPerGb": 0.1,
+        "queryBoostUsdPerGbScanned": 0.001,
+        "retentionUsdPerGbMonth": 0.05
+      },
+      "betterStackResponder": {
+        "annualBillingMonthlyEquivalentUsd": 29,
+        "monthlyUsd": 34,
+        "status": "OPTIONAL_NOT_APPROVED"
+      },
+      "namedResponderStatus": "UNKNOWN",
+      "providerConfigured": false,
+      "renderLogRetentionDays": {
+        "enterprise": 30,
+        "hobby": 7,
+        "pro": 14,
+        "scale": 30
+      },
+      "renderLogRateLimitPerInstancePerMinute": 6000,
+      "renderLogsSource": "https://render.com/docs/logging",
+      "renderNotificationsSource": "https://render.com/docs/notifications",
+      "source": "https://betterstack.com/pricing",
+      "status": "PARTIAL"
+    },
+    "productionMutation": false,
+    "productionReadinessPercent": 70,
+    "provisioningDecision": "NO_GO",
+    "status": "PARTIAL"
+  },
   "publicProductionCostEvidence": {
     "auth0": {
       "essentialsMonthlyUsd": 35,
@@ -306,8 +386,10 @@
       "domainRegistrationStatus": "UNKNOWN",
       "dnsQueryCostCandidateUsd": 0,
       "externalMonitoringFreeTierCandidate": true,
-      "monitoringSelectionStatus": "UNKNOWN",
+      "monitoringPublicCandidateStatus": "EVIDENCED_NOT_CONFIGURED",
+      "monitoringSelectionStatus": "PARTIAL",
       "netlifyManagedTlsCostCandidateUsd": 0,
+      "operationsPaidOptionStatus": "OPTIONAL_NOT_APPROVED",
       "restoreDrillCostStatus": "UNKNOWN"
     },
     "productionMutation": false,
@@ -352,7 +434,8 @@
     { "id": "manual.auth0.production.capacity_pricing", "sha256": "4171303caf1165cb0b6fbd4c1a3651252b653fe31c68110e74a298b037672aaa" },
     { "id": "manual.netlify.production.billing_usage", "sha256": "e3b1d4408d322da2049ad29a4181505f9a59609623c1af1f5b421463e734de74" },
     { "id": "manual.neon.production.billing_usage", "sha256": "965f1a7ebe773584166fd7d0a716c93a279cd3fa743d1f37a85e6cc855e651f5" },
-    { "id": "public.production.cost_model", "sha256": "88831eb3d8b6b5a3073d74b40a46eafc500f18c8baf11ab01f9d3b6327e8f15a" }
+    { "id": "public.production.domain_operations_cost", "sha256": "74cf991c4cbf8d1e463e938e86a1462fc2f1724e442a401d803ac9d00d83451a" },
+    { "id": "public.production.cost_model", "sha256": "332112b37cb5496aaf962c1896248a22aea51569adcec3a5c3b47ffd90da5456" }
   ],
-  "sha256": "0368482e169fd9c4d30b769f9af58c12f7a97e93da3bfb438ffa9dd610f30582"
+  "sha256": "196a6657e359eb27dddb30c093cd799cf9a43c34578974d019b79bb58d020c85"
 }

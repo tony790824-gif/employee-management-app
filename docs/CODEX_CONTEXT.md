@@ -1,5 +1,16 @@
 # Codex Context
 
+## 2026-08-09 current authority - Sprint 44 domain and operations cost evidence
+
+- Sprint 44 is COMPLETE as fail-closed read-only public evidence closure. It did not configure or close a Production capability gate.
+- `docs/PRODUCTION_DOMAIN_OPERATIONS_COST_EVIDENCE.md` is the current Domain/DNS/TLS, monitoring/alerting/logging and backup/Restore cost-candidate authority.
+- No approved Production domain/TLD exists; initial/renewal price remains UNKNOWN. Cloudflare DNS and Netlify-managed TLS are US$0 candidates only.
+- Better Stack Free is a limited US$0 candidate; optional paid telemetry/responder rates are documented but not approved. Provider selection, named responder, retention and alert-delivery proof remain open.
+- Neon six-hour PITR remains PARTIAL; no schedule/snapshot/isolated Restore exists. Snapshot/history unit rates are known but actual usage and drill cost remain UNKNOWN.
+- Known fixed floor remains US$49/month and US$588/year plus variable/UNKNOWN items. Gate A remains DEFER, Production Provisioning remains NO-GO, readiness remains 70% / NOT READY.
+- Preserve existing untracked `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt`, and `0010_commission_rules` files.
+- No Production, billing, account/integration, alert/log, snapshot, branch, Restore, SQL, Migration, Deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 current authority - Sprint 43 Neon billing / usage evidence
 
 - Sprint 43 is COMPLETE as authorized human read-only evidence closure. It did not operate Neon or close a Production capability gate.

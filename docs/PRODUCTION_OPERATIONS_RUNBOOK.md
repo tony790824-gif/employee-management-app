@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 44 evidence stop
+
+Domain/DNS/TLS, monitoring/alerting/logging and backup/Restore public candidates are documented, but no Production capability was configured. The exact Production domain/TLD and initial/renewal quote remain UNKNOWN; responder ownership, alert-delivery proof, log-retention acceptance, scheduled snapshot and isolated Restore remain open.
+
+Do not create an account/integration/monitor/alert/log stream, buy a domain, change DNS, create a snapshot/branch, run Restore or upgrade a plan. The next permitted action is only an owner-selected exact domain/TLD and a read-only registrar quote. Gate A remains DEFER and Production remains NO-GO.
+
 ## Sprint 38 Gate A stop
 
 Auth0 capacity evidence is complete, but Gate A execution is **DEFERRED**. Free cannot provide the required dedicated Production Tenant; Essentials is the preferred future minimum-capacity option based on the owner's point-in-time console evidence. Do not upgrade, purchase, add payment, create or configure identity resources. Recheck the quote, entitlement, downgrade/retention terms, total Production cost and rollback plan before requesting exact Gate A authority.

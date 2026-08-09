@@ -1,5 +1,15 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 44 Domain and Operations Cost Evidence Closure
+
+- Status: **COMPLETE AS READ-ONLY PUBLIC EVIDENCE CLOSURE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- No approved Production domain/TLD exists. Initial and renewal prices remain UNKNOWN; Cloudflare DNS and Netlify-managed TLS are only US$0 candidates.
+- Better Stack Free is the documented limited US$0 monitoring/basic-alerting/short-log candidate. Paid telemetry/responder rates are optional and not approved; named responder, data handling, retention and delivery evidence remain open.
+- Neon six-hour PITR remains PARTIAL; scheduled snapshots are not configured, snapshot/history totals remain usage-based/UNKNOWN, and isolated Restore remains BLOCKED.
+- Known fixed floor remains US$49/month and US$588/year plus domain, Neon/backup usage, operations overage and other UNKNOWN items.
+- Next unique Sprint is read-only exact Production domain/TLD selection and registrar quote evidence. Do not purchase, configure DNS/TLS, create integrations, change backup or operate Production.
+- No Production, billing, account/integration, alert/log, snapshot, branch, Restore, SQL, Migration, Deploy, DNS, Secret, Auth0, Render, Netlify or Neon mutation occurred.
+
 ## 2026-08-09 handoff - Sprint 43 Neon Billing / Usage Evidence Closure
 
 - Status: **COMPLETE AS HUMAN READ-ONLY EVIDENCE CLOSURE / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.

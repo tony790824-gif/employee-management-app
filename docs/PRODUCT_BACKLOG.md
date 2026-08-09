@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 44 status - Domain and Operations Cost Evidence Closure (2026-08-09)
+
+- **Status:** COMPLETE as fail-closed read-only public evidence closure; no Production or vendor resource was operated.
+- **Domain:** no approved Production domain/TLD exists in the Repository. Initial and renewal prices remain UNKNOWN. Cloudflare Registrar is only a candidate; Cloudflare DNS and Netlify-managed TLS have US$0 candidates.
+- **Operations candidates:** Better Stack Free publicly includes 10 monitors/heartbeats, Slack/email alerts, 3 GB logs retained for 3 days and 30 GB metrics. Paid Nano telemetry and Responder prices are documented as optional, not approved.
+- **Recovery:** current six-hour PITR remains PARTIAL; scheduled snapshots are not configured, snapshot storage is US$0.09/GB-month with unknown usage, and isolated Restore remains BLOCKED.
+- **Cost:** known fixed floor remains US$49/month and US$588/year plus domain, Neon/backup usage, operations overage and other UNKNOWN items.
+- **Decision:** Gate A remains DEFER; Production Provisioning remains NO-GO; Production readiness remains 70% / NOT READY.
+- **Next unique Sprint:** Sprint 45 — Production Domain/TLD Selection and Registrar Quote Evidence Closure, read-only only; no purchase or DNS change.
+
 ## Sprint 43 status - Neon Production Billing / Usage Evidence Closure (2026-08-09)
 
 - **Status:** COMPLETE as authorized human read-only evidence closure; no Neon or Production mutation occurred.

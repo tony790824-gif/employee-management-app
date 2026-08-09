@@ -7,6 +7,14 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 44 domain and operations cost boundary
+
+Official public evidence now identifies Cloudflare DNS and Netlify-managed TLS as US$0 candidates, Better Stack Free as a limited monitoring/alerting/logging candidate, and Neon snapshot/history unit rates. None is selected, configured or accepted as Production capacity.
+
+No approved Production domain/TLD exists, so registration and renewal prices remain UNKNOWN. Current six-hour PITR remains partial; scheduled snapshots and isolated Restore are not configured/evidenced. The known fixed floor remains US$49/month and US$588/year plus domain, Neon/backup usage, operations overage and other unknowns. Gate A remains DEFER, provisioning remains NO-GO and the Gate A-G order is unchanged.
+
+The next allowed work is only an owner-selected exact domain/TLD and read-only registrar quote. Purchase, DNS/TLS configuration, monitoring/log integration, snapshot/branch/Restore, deploy and all Production mutations remain forbidden.
+
 ## Sprint 43 Neon billing / usage boundary
 
 Authorized human read-only evidence now proves the current Neon organization plan is Free / US$0 fixed monthly plan fee. The observed usage since 2026-08-01 is organization-wide, not Production-only, and the project-screen MB figures are not billing GB-month.
@@ -259,8 +267,10 @@ Planning documents, repository tests and Staging evidence do not increase Produc
 7. Define release thresholds for authentication, error rate, latency, connection saturation, queue backlog and notification failure before Gate G.
 8. If any security, Workspace isolation, data integrity or rollback control fails, stop traffic and return to the last accepted Production path.
 
-## 9. Current decision after Sprint 43
+## 9. Current decision after Sprint 44
 
 The provisioning plan is complete, but no resource is provisioned and no Production gate is accepted. Readiness remains **70% / NOT READY**.
 
-The Neon current plan and organization-level usage evidence is now recorded. The next single Sprint is **Domain and Operations Cost Evidence Closure**, read-only only. It may record domain/registrar quotes, monitoring/alerting/logging tiers and backup/Restore cost candidates, but cannot purchase, configure, integrate, restore or modify Production. Only after the complete cost envelope and a later exact owner approval may an operator consider the first Production resource; no other gate may start in parallel.
+The Neon current plan/organization usage and public domain/operations/recovery candidates are now recorded. No approved exact Production domain exists, so initial/renewal cost remains UNKNOWN; monitoring/logging and DR gates remain incomplete.
+
+The next single Sprint is **Production Domain/TLD Selection and Registrar Quote Evidence Closure**, read-only only. It may record the owner-selected name/TLD and public initial/renewal quote, but cannot purchase, reserve, configure DNS/TLS or modify Production. Only after the complete cost envelope and a later exact owner approval may an operator consider the first Production resource; no other gate may start in parallel.

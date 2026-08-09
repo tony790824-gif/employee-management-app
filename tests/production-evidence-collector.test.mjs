@@ -151,7 +151,7 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 23);
+assert.equal(committedHashes.entries.length, 24);
 assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
 assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
 assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);
@@ -209,7 +209,18 @@ assert.equal(committedHashes.publicProductionCostEvidence.neon.databaseStorageUs
 assert.equal(committedHashes.publicProductionCostEvidence.neon.restoreHistoryUsdPerGbMonth, 0.2);
 assert.equal(committedHashes.publicProductionCostEvidence.neon.snapshotStorageUsdPerGbMonth, 0.09);
 assert.equal(committedHashes.publicProductionCostEvidence.operationalCostEvidence.domainRegistrationStatus, 'UNKNOWN');
-assert.equal(committedHashes.publicProductionCostEvidence.operationalCostEvidence.monitoringSelectionStatus, 'UNKNOWN');
+assert.equal(committedHashes.publicProductionCostEvidence.operationalCostEvidence.monitoringSelectionStatus, 'PARTIAL');
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.domain.approvedDomainSelected, false);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.domain.initialPriceStatus, 'UNKNOWN');
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.domain.renewalPriceStatus, 'UNKNOWN');
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.dnsTls.cloudflareDnsQueryCostCandidateUsd, 0);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.dnsTls.netlifyManagedTlsCostCandidateUsd, 0);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.monitoringAlertingLogging.betterStackFree.monitorsAndHeartbeats, 10);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.monitoringAlertingLogging.betterStackFree.logsRetentionDays, 3);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.monitoringAlertingLogging.providerConfigured, false);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.backupRestore.scheduledSnapshotConfigured, false);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.backupRestore.isolatedRestoreExecuted, false);
+assert.equal(committedHashes.publicDomainOperationsCostEvidence.productionMutation, false);
 assert.equal(committedHashes.publicProductionCostEvidence.productionReadinessPercent, 70);
 assert.equal(committedHashes.publicProductionCostEvidence.provisioningDecision, 'NO_GO');
 assert.equal(committedHashes.publicProductionCostEvidence.netlify.currentPlan, 'FREE');
@@ -237,6 +248,10 @@ assert.equal(
 assert.equal(
   committedHashes.entries.find(item => item.id === 'public.production.cost_model')?.sha256,
   evidenceSha256(committedHashes.publicProductionCostEvidence)
+);
+assert.equal(
+  committedHashes.entries.find(item => item.id === 'public.production.domain_operations_cost')?.sha256,
+  evidenceSha256(committedHashes.publicDomainOperationsCostEvidence)
 );
 assert.equal(evidenceSha256(committedHashes.entries), committedHashes.sha256);
 assert.equal(new Set(committedHashes.entries.map(item => item.id)).size, committedHashes.entries.length);

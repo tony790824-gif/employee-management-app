@@ -1,5 +1,15 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 44 domain and operations cost evidence closure - 2026-08-09
+
+- Official public evidence is consolidated in `docs/PRODUCTION_DOMAIN_OPERATIONS_COST_EVIDENCE.md` without creating or configuring any external resource.
+- No approved Production domain/TLD exists; initial and renewal registration prices remain **UNKNOWN**. Cloudflare DNS and Netlify-managed TLS are US$0 candidates, not configured Production gates.
+- Better Stack Free is a US$0 candidate for limited uptime/heartbeat monitoring, Slack/email alerting, error monitoring, 3 GB/3-day logs and 30 GB metrics. Provider selection, data-handling acceptance, named responder and alert-delivery proof remain `PARTIAL`/`BLOCKED`.
+- Neon current six-hour PITR remains `PARTIAL`; scheduled snapshots remain `NOT_CONFIGURED`, snapshot/history storage totals are usage-based and `UNKNOWN`, and isolated Restore remains `BLOCKED`.
+- The known fixed floor remains **US$49/month / US$588/year plus domain, Neon/backup usage, operations overage and other UNKNOWN items**.
+- Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and Production readiness remains **70% / NOT READY**.
+- Purchase, upgrade, account/integration, alert/log setup, snapshot, branch, Restore, SQL, Migration, DNS, Deploy, Secret and Production mutation: **NOT PERFORMED**.
+
 ## Sprint 43 Neon billing / usage evidence closure - 2026-08-09
 
 - Authorized human read-only evidence confirms the current Neon organization plan is **Free / US$0 fixed monthly plan fee**. Per-project inclusions shown are 0.5 GB storage, autoscaling to 2 CU, 100 compute hours and 10 branches.

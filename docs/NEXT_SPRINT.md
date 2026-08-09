@@ -1,6 +1,29 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 44 - Domain and Operations Cost Evidence Closure (read-only)
+## Sprint 45 - Production Domain/TLD Selection and Registrar Quote Evidence Closure (read-only)
+
+Sprint 44 completed the official public Domain/DNS/TLS, monitoring/alerting/logging and Neon recovery-cost candidate inventory. It did not close an external gate. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+
+The next single human read-only action is:
+
+1. Choose one exact intended Production domain name and TLD; do not purchase it.
+2. In the selected registrar search page, record the current initial registration and renewal prices, currency, term and whether the name is standard or premium.
+3. Return only the domain candidate and public quote. Do not provide account ID, registrant details, invoice, payment information or credentials.
+4. Do not buy, add payment, enable auto-renew, change nameservers/DNS, configure Netlify/Auth0/Render, deploy or reserve any resource.
+5. If the chosen name is unavailable or premium, record that status and select no replacement without owner direction.
+
+This may close the Domain price evidence item only. It does not authorize Gate A, a purchase, DNS/TLS setup or any Production resource.
+
+## Historical Sprint 44 - Domain and Operations Cost Evidence Closure
+
+- No approved Production domain/TLD exists; initial and renewal prices remain UNKNOWN.
+- Cloudflare DNS and Netlify-managed TLS are US$0 candidates, not configured gates.
+- Better Stack Free is a US$0 monitoring/basic-alerting/short-log candidate; optional paid telemetry and responder prices are recorded but not approved.
+- Neon six-hour PITR remains PARTIAL, scheduled snapshots are not configured, snapshot/history storage totals are usage-based and UNKNOWN, and isolated Restore remains BLOCKED.
+- Known fixed floor remains US$49/month and US$588/year plus variable/UNKNOWN items.
+- No purchase, account/integration, alert, log connection, snapshot, branch, Restore, SQL, DNS, deploy or Production mutation occurred.
+
+## Historical planned Sprint 44 - Domain and Operations Cost Evidence Closure (read-only)
 
 Sprint 43 closed only the Neon current-plan and organization-level usage facts. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
 

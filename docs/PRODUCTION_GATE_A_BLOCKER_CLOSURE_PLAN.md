@@ -6,6 +6,15 @@
 
 Production Readiness：**70% / NOT READY**
 
+## Sprint 44 domain and operations evidence update
+
+- `GA-01`, `DNS-01`, `OPS-01` and `NEON-02` now have current official public candidate pricing/limits; this closes only Repository evidence collection, not an external Production gate.
+- No approved exact domain/TLD exists, so registration and renewal remain UNKNOWN. Cloudflare DNS and Netlify-managed TLS are US$0 candidates only.
+- Better Stack Free is a limited US$0 monitoring/alerting/logging candidate; provider selection, data handling, named responder, retention/capacity and alert-delivery proof remain open.
+- Neon six-hour PITR remains PARTIAL; scheduled snapshots and isolated Restore remain unconfigured/blocked. Unit rates do not prove actual cost or RPO/RTO.
+- Known fixed floor remains US$49/month and US$588/year plus variable/UNKNOWN costs. Gate A remains DEFER, Production Provisioning remains NO-GO, readiness remains 70% / NOT READY.
+- No purchase, billing, account/integration, alert/log configuration, snapshot, branch, Restore, SQL, Migration, Deploy, DNS, Secret or Production mutation occurred.
+
 ## Sprint 43 evidence closure update
 
 - `GA-01` / `NEON-01` now have direct human read-only evidence for the **current organization plan (Free / US$0)**, Free per-project limits and organization-level usage.
@@ -36,8 +45,8 @@ Production Provisioning 的阻擋分成三層，避免把後續 Gate 誤當成 G
 | NEON-03 Schema / Migration parity | **PARTIAL**；Production ledger 只證明 `0001`–`0008` | 先以已核准 reader 建立 schema diff／Migration manifest；Gate F 才可 apply exact checksums | Repository + External read-only metadata | Repository 分析 US$0；執行／停機成本 **UNKNOWN** | Schema 不相容、資料或 rollback 風險 | Current catalog/ledger、pending清單、checksums、相容／rollback或forward-fix、備份 PASS | **YES**；Migration 明確禁止至 Gate F |
 | RENDER-01 Render Production API / Worker | **NOT_CONFIGURED** | Gates A/B 後才建立獨立 API 與 Push Worker；Auto Deploy 首次預設 OFF | External + Repository config | 已知規劃下限 **US$14/月**；頻寬／workspace／overage **UNKNOWN** | 使用 Staging credential、錯 DB、無 rollback | Service identity、runtime、commit、build/start、env presence、health/readiness、logs、CORS | **YES**；Gate C 獨立授權 |
 | NETLIFY-01 Netlify Production Frontend | **NOT_CONFIGURED**；現有只有 Preview，當前帳戶 Free | Gates A–C 後才建立 immutable Production candidate；先採 deployment credit budget，不發布流量 | External + Repository artifact checks | 現行固定 **US$0**；容量／未來升級 **UNKNOWN** | Credits 耗盡暫停、錯環境資產、無 rollback | Commit/deploy ID、`dataBackend=postgres`、Production-only public config、headers/cache/deep routes、rollback artifact | **YES**；Gate D 獨立授權 |
-| DNS-01 Domain / DNS / TLS | **UNKNOWN / NOT_CONFIGURED** | 購買前選 TLD/registrar並取得 initial/renewal quote；Gates A–D 後才變更 DNS/TLS | External | Domain **UNKNOWN**；DNS/TLS 可有 US$0 candidate 但未選定 | Domain 所有權、TLS/origin mismatch、流量誤切 | Registrar/TLD quote、owner、舊/新 record、TTL、certificate、HTTPS/HSTS、rollback | **YES**；購買與 Gate E 均需授權 |
-| OPS-01 Monitoring / Alerting / Logging | **PARTIAL / BLOCKED** | 在零資源變更下先選最低 provider方案、SLO、threshold、retention、named responder；建立資源後驗證 alert delivery | Repository + External | Free tier candidate；on-call／長期 logs／overage **UNKNOWN** | 故障無告警、資料留存不足、無負責人 | Dashboard、alert route、測試事件、ack/escalation、retention與access evidence | **YES**；選型可先做，外部配置需相應 Gate |
+| DNS-01 Domain / DNS / TLS | **PARTIAL / NOT_CONFIGURED**；public candidates evidenced, exact name/TLD absent | Owner先選 exact domain/TLD並取得 initial/renewal quote；Gates A–D 後才變更 DNS/TLS | External | Domain **UNKNOWN**；Cloudflare DNS與Netlify TLS有US$0 candidate但未選定 | Domain 所有權、TLS/origin mismatch、流量誤切 | Exact registrar/TLD quote、owner、舊/新 record、TTL、certificate、HTTPS/HSTS、rollback | **YES**；唯讀quote可先做，購買與Gate E均需授權 |
+| OPS-01 Monitoring / Alerting / Logging | **PARTIAL**；public Free/paid candidates evidenced, not selected/configured | Owner選provider/data boundary/retention/named responder；建立資源後驗證alert delivery與容量 | Repository + External | Better Stack Free US$0 candidate；paid telemetry/responder與overage已列；actual選型/人工成本 **UNKNOWN** | 故障無告警、資料留存不足、敏感log外送、無負責人 | Dashboard、alert route、測試事件、ack/escalation、retention、capacity、access evidence | **YES**；選型可先做，外部配置需相應Gate |
 | SEC-01 Secrets / Credentials | **PARTIAL / NOT_CONFIGURED** | 先完成變數名稱、owner、scope、rotation/rollback inventory；資源建立時才在平台 Secret store 產生／設定 | Repository + External | 通常包含於平台；KMS／管理工具 **UNKNOWN** | Secret 洩漏、role reuse、跨環境綁定 | Presence boolean、scope/expiry、public fingerprint；禁止輸出值 | **YES**；每個平台 Gate 內獨立處理 |
 | PUSH-01 Production Web Push | **NOT_CONFIGURED** | Gate C 建立 Production-only VAPID pair、Push role/worker/env；Gate D 只嵌入 public key | External + Repository validation | Worker已列 Render下限；provider transport US$0 candidate；overage **UNKNOWN** | Staging key重用、錯 subscription、無配送／隱私外洩 | VAPID fingerprint parity、worker readiness、subscription/session/workspace isolation、404/410 cleanup、真機 evidence | **YES**；不得先建 key/worker |
 | REL-01 Release / Rollback / Devices | **BLOCKED** | 各資源存在後完成 immutable candidate、public evidence、告警、isolated restore、Migration plan、Windows/Android/iPhone/iPad matrix與 rollback rehearsal | Repository + External + physical devices | 人工／平台演練成本 **UNKNOWN** | 無法安全回滾、裝置回歸、誤切流量 | Full Release Checklist、evidence hashes、device records、rollback times、owner Gate G | **YES**；Gate G 另行授權 |
@@ -74,22 +83,23 @@ Gates B–G 仍須各自停下並取得新的明確授權：
 ## 5. Sprint 43+ 建議解除路線
 
 1. **Sprint 43 — Neon Production Billing / Usage Evidence Closure（COMPLETE）**：已取得 current Free / US$0、plan limits與organization usage；Production-only欄位仍 UNKNOWN，未執行 SQL 或設定變更。
-2. **Sprint 44 — Domain and Operations Cost Evidence Closure（NEXT；唯讀／規劃）**：TLD/registrar quote、monitoring/alerting/logging選型、RPO/RTO與DR預算；不購買／不建立 integration。
-3. **Sprint 45 — Production Schema Parity Read-only Plan**：只用現有 reader/catalog evidence 建立 `0001`–`0022` 差異與 Gate F manifest；不 Migration。
-4. **Sprint 46 — Final Gate A Owner Decision Package**：用完成的成本、復原、營運與schema證據提出 `APPROVE` 或 `DEFER`。只有 owner 的 exact 授權可開始 Gate A execution。
-5. **Gate A execution Sprint（僅於核准後）**：只處理 Auth0；完成並停下。其後 Gates B–G 仍逐一另行授權。
+2. **Sprint 44 — Domain and Operations Cost Evidence Closure（COMPLETE AS PUBLIC EVIDENCE）**：official candidates與unit rates已收斂；external gates仍PARTIAL，未購買或配置。
+3. **Sprint 45 — Production Domain/TLD Selection and Registrar Quote Evidence Closure**：owner只讀選定exact domain/TLD及initial/renewal quote；不得購買或改DNS。
+4. **Sprint 46 — Production Schema Parity Read-only Plan**：只用現有 reader/catalog evidence 建立 `0001`–`0022` 差異與 Gate F manifest；不 Migration。
+5. **Sprint 47 — Final Gate A Owner Decision Package**：用完成的成本、復原、營運與schema證據提出 `APPROVE` 或 `DEFER`。只有 owner 的 exact 授權可開始 Gate A execution。
+6. **Gate A execution Sprint（僅於核准後）**：只處理 Auth0；完成並停下。其後 Gates B–G 仍逐一另行授權。
 
 若任何先行 evidence 改變架構、成本或安全假設，立即停止並更新計畫，不得跳過順序。
 
-## 6. Sprint 43 gate decision
+## 6. Sprint 44 gate decision
 
-- Sprint 42 repository plan：**COMPLETE**；Sprint 43 Neon billing evidence：**COMPLETE / PARTIAL EVIDENCE ONLY**。
+- Sprint 42 repository plan、Sprint 43 Neon billing evidence及Sprint 44 public domain/operations evidence：**COMPLETE / EXTERNAL GATES STILL PARTIAL**。
 - Gate A：**DEFER**。
 - Production Provisioning：**NO-GO**。
 - Production Readiness：**70% / NOT READY**。
 - 已知固定最低成本：**US$49/月、US$588/年**。
 - Neon US$15/月只可形成 **約 US$64/月、US$768/年＋UNKNOWN** 的規劃範例，不是精確總價。
-- 新增 external fact evidence：**current Neon Free / US$0 plan, Free limits and organization usage PASS**；Production-only cost/capacity gate仍未 PASS。
+- 新增 public fact evidence：Domain/DNS/TLS、monitoring/alerting/logging及backup/Restore candidate pricing/limits已記錄；exact domain、provider selection、alert delivery及isolated Restore仍未PASS。
 - Production／billing／platform mutation：**NONE**。
 
 只有 blocker 實際解除且有 direct evidence 時，Readiness 或 Gate 狀態才可改變。文件完成本身不構成 `GO` 或 `CONDITIONAL GO`。

@@ -2,6 +2,15 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 44 public cost update: Domain/DNS/TLS, monitoring/alerting/logging and Neon backup/snapshot/restore candidates are documented and hash-verified. No approved exact domain, provider integration, responder, scheduled snapshot or isolated Restore exists; readiness remains 70%, Gate A DEFER and Production NO-GO.
+
+- [x] Official public Domain/DNS/TLS, monitoring/alerting/logging and backup/Restore unit-cost candidates are recorded without account identifiers or Secrets.
+- [x] Free tiers are labelled candidates and are not treated as accepted Production capacity or configured evidence.
+- [ ] Owner selects an exact Production domain/TLD and directly evidences current initial/renewal quote without purchasing.
+- [ ] Monitoring/logging provider, data-handling boundary, retention, capacity, named responder and alert-delivery evidence are accepted.
+- [ ] Scheduled snapshot/retention policy and isolated Restore prove RPO/RTO under a separately approved Gate.
+- [ ] Owner accepts the complete fixed + variable + UNKNOWN cost envelope.
+
 Sprint 43 Neon billing update: current organization plan and fixed fee are evidenced as Free / US$0. Organization-wide usage is recorded, but Production-only usage, charge, capacity and recovery cost remain UNKNOWN. Gate A remains DEFER, Production NO-GO and readiness 70%.
 
 - [x] Neon current organization plan, fixed monthly plan fee, included Free limits and organization-level usage are recorded without sensitive identifiers.

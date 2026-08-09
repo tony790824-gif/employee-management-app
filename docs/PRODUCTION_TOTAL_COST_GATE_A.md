@@ -2,12 +2,23 @@
 
 日期：2026-08-09
 
-狀態：**SPRINT 41 COMPLETE AS FAIL-CLOSED COST FINALIZATION / GATE A DEFER / PRODUCTION NO-GO**
+狀態：**SPRINT 44 READ-ONLY COST EVIDENCE ADDENDUM COMPLETE / GATE A DEFER / PRODUCTION NO-GO**
 
 產品完成度：**98%**
 Production Readiness（正式環境準備度）：**70% / NOT READY**
 
 本文件只整理 Repository（程式碼儲存庫）與官方公開價格／限制證據。它不授權購買、付款、升級、建立資源、修改設定、Deploy（部署）、Migration（資料庫遷移）、DNS 變更、Secret（秘密資訊）操作或 Production（正式環境）流量切換。所有價格均為 2026-08-09 的公開或已授權人工證據；購買前必須重新確認。
+
+## Sprint 44 domain and operations cost evidence addendum
+
+- Repository 內沒有已核准的 Production domain/TLD，因此 domain 首購與續約價格仍為 **UNKNOWN**。Cloudflare Registrar 只列為 at-cost 候選；沒有指定可購買名稱就不能建立 Bankeban 報價。
+- Cloudflare authoritative DNS 與 Netlify-managed TLS 均有 US$0 候選，但尚未選定、配置或通過 Production Gate。
+- Better Stack Free 是 US$0 的候選最低營運層：10 monitors/heartbeats、1 status page、Slack/email alerts、100,000 exceptions、3 GB logs/3-day retention與30 GB metrics。它未被核准或配置，不能視為 Production capacity PASS。
+- 可選的 Better Stack Nano telemetry 公開價為 US$30/月或年繳折算 US$25/月；Responder 為 US$34/月或年繳折算 US$29/月。兩者都不是必要固定成本，也沒有購買授權。
+- Render logs 的官方保留為 Hobby 7 天、Pro 14 天、Scale/Enterprise 30 天；Production workspace/service尚未建立，實際方案與成本仍未成立。
+- Neon Free 的六小時 PITR 仍為 PARTIAL；scheduled snapshot未配置。Snapshot storage公開單價為US$0.09/GB-month，paid history storage為US$0.20/GB-month；實際用量、隔離 Restore與演練工時均UNKNOWN。
+
+更新後最低成本仍只能表達為 **US$49/month / US$588/year known fixed + Domain + Neon/backup usage + operations overage + other UNKNOWN items**。候選 Free tiers不會把未知成本變成零。詳見`docs/PRODUCTION_DOMAIN_OPERATIONS_COST_EVIDENCE.md`。Gate A維持**DEFER**，Production維持**NO-GO**。
 
 ## Sprint 43 Neon actual-plan evidence addendum
 
@@ -103,9 +114,9 @@ Free plan 的 `no overage charges` 只證明目前不會產生 overage charge，
 | Production domain | REQUIRED_PAID | 月均 UNKNOWN | **UNKNOWN** | 註冊／轉移 UNKNOWN | 必須先選定 TLD 與 registrar。Cloudflare Registrar 不加價但 registry/ICANN 成本依 TLD；不可先填假價格。 |
 | DNS | FREE candidate | US$0 | US$0 | US$0 | Cloudflare Free DNS 不收 DNS query 費；是否採用仍需 owner 明確批准與 DNS rollback 計畫。 |
 | TLS | FREE candidate | US$0 | US$0 | US$0 | Netlify 所有方案支援 managed SSL；實際 domain 綁定與 certificate 證據仍不存在。 |
-| Monitoring / alerting | REQUIRED capability / UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | Provider metrics 可作基線，但 Production alert delivery、on-call channel、retention 與 responder 尚未配置。外部 Sentry／PostHog／其他告警未選型。 |
-| Logging / retention | REQUIRED capability / PARTIAL | 方案內＋UNKNOWN overage | UNKNOWN | UNKNOWN | Auth0 Essentials 5-day log retention/1 stream；Neon Launch 3-day metrics/logs；Render retention/streaming的帳戶實價需人工確認。 |
-| Backup / restore / DR drill | REQUIRED capability / UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | Snapshot storage、隔離 branch/compute、演練工時與保留策略尚未估價；不得以 PITR available 冒充完整 DR PASS。 |
+| Monitoring / alerting | REQUIRED capability / PARTIAL | Better Stack Free US$0 candidate；paid responder可選US$34/月或年繳折算US$29/月 | Paid responder年繳候選US$348/年 | Usage/人工作業UNKNOWN | Public candidate已證明；Production alert delivery、data handling、named responder、retention與capacity尚未核准或配置。 |
+| Logging / retention | REQUIRED capability / PARTIAL | Free 3 GB/3-day candidate；Nano US$30/月或年繳折算US$25/月；overage另計 | Nano年繳候選US$300/年 | ingestion US$0.10/GB、retention US$0.05/GB-month、query boost US$0.001/GB scanned | Render 7/14/30-day plan retention與Neon Launch 3-day UI logs已記錄；actual Production plan/volume未建立。 |
+| Backup / restore / DR drill | REQUIRED capability / PARTIAL/BLOCKED | Snapshot US$0.09/GB-month；paid history US$0.20/GB-month | UNKNOWN | Isolated branch/compute/storage/labor UNKNOWN | 六小時PITR不等於完整DR；scheduled snapshot未配置且isolated Restore未執行。 |
 | Web Push provider transport | FREE | US$0 已知 | US$0 已知 | US$0 | 標準 Web Push/FCM transport 本身目前無獨立供應商訂閱；Push Worker compute 已在 Render 列入。 |
 | External alerting service | OPTIONAL_PAID / UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | 未選供應商、方案或配額；購買前另做官方證據與隱私審查。 |
 
@@ -248,4 +259,5 @@ flowchart LR
 - Production provisioning：**NO-GO**
 - Production readiness：**70% / NOT READY（不因文件完成而提高）**
 - Production / billing / platform mutation：**NONE**
-- 唯一下一個 Sprint：**Sprint 44 Domain and Operations Cost Evidence Closure（read-only）**。只整理 domain/registrar quote、monitoring/alerting/logging tier與backup/Restore成本候選；不得購買、配置integration、變更備份、Deploy、DNS或Production。
+- Sprint 44 Domain/operations public evidence：**COMPLETE / EXTERNAL GATES STILL PARTIAL**。
+- 唯一下一個 Sprint：**Sprint 45 Production Domain/TLD Selection and Registrar Quote Evidence Closure（read-only）**。不得購買或修改 DNS。

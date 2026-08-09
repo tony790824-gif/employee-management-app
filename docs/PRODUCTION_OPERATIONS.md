@@ -2,6 +2,16 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 44 domain and operations evidence state
+
+- Use `docs/PRODUCTION_DOMAIN_OPERATIONS_COST_EVIDENCE.md` as the current public cost/limits authority. It is evidence and planning only, not an operations authorization.
+- No approved Production domain/TLD exists. Domain first-year/renewal prices remain UNKNOWN; do not buy, reserve, enable auto-renew or change DNS.
+- Cloudflare DNS and Netlify-managed TLS are US$0 candidates. Better Stack Free is a limited US$0 monitoring/alerting/logging candidate. None is configured or accepted as Production capacity.
+- Before any later monitoring Gate, name the responder, approve data handling/retention, configure separate Production filters, and prove external alert delivery for frontend, readiness, Push Worker and database signals.
+- Render dashboard logs retain 7/14/30 days by Hobby/Pro/Scale-Enterprise plan. Better Stack Free logs retain 3 GB for 3 days; paid Nano offers 40 GB and 30-day retention. Production plan/volume/overage remain unselected.
+- Neon six-hour PITR is not the full backup/DR control. No scheduled snapshot or isolated Restore exists; do not create either without Gate B approval.
+- Known fixed floor remains US$49/month and US$588/year plus domain and variable/UNKNOWN costs. Gate A remains DEFER, readiness 70%, Production NO-GO.
+
 ## Sprint 43 Neon billing operating state
 
 - Current actual Neon organization plan is Free / US$0 fixed monthly plan fee. This is plan evidence, not proof that Free capacity or recovery meets Production requirements.

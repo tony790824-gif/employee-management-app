@@ -1,5 +1,13 @@
 # 班客邦 Project Health Report
 
+## 2026-08-09 Sprint 44 Domain and Operations Cost Evidence Closure
+
+- **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.
+- **Evidence:** official Domain/DNS/TLS, monitoring/alerting/logging and Neon backup/snapshot/restore candidates are documented and hash-verified without an external configuration action.
+- **Cost:** known fixed floor remains US$49/month and US$588/year plus Domain and variable/UNKNOWN items. Free tiers remain candidates, not accepted Production capacity.
+- **Open gates:** exact domain initial/renewal quote, provider/responder selection, alert delivery, log retention acceptance, scheduled snapshot and isolated Restore.
+- **Safety:** no Production, billing, account/integration, alert/log connection, snapshot, branch, Restore, SQL, Migration, Deploy, DNS or Secret operation occurred.
+
 ## 2026-08-09 Sprint 43 Neon Billing / Usage Evidence Closure
 
 - **Product completion:** 98%. **Production readiness:** 70%. **Release:** NOT READY; provisioning NO-GO.

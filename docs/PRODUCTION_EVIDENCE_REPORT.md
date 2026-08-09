@@ -1,5 +1,18 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 44 domain and operations public evidence - 2026-08-09
+
+- Evidence source: official public Cloudflare Registrar/DNS, Netlify TLS, Better Stack pricing, Render notifications/logs/metrics and Neon pricing/snapshot documentation.
+- Production domain/TLD: **NOT SELECTED**. Initial purchase and renewal prices remain **UNKNOWN**; no sample or promotional domain price is accepted as Bankeban evidence.
+- DNS/TLS: Cloudflare authoritative DNS and Netlify-managed TLS are US$0 candidates. Neither is selected/configured Production evidence.
+- Monitoring/alerting/logging: Better Stack Free is a US$0 candidate with 10 monitors/heartbeats, Slack/email alerts, 3 GB/3-day logs and 30 GB metrics. Paid Nano telemetry and Responder rates are recorded as optional; no account/integration/monitor/alert/log stream exists.
+- Backup/Restore: six-hour PITR remains `PARTIAL`; no snapshot/schedule exists. Snapshot storage US$0.09/GB-month and paid history storage US$0.20/GB-month are official unit rates, while actual usage and isolated Restore cost remain `UNKNOWN`/`BLOCKED`.
+- Known fixed floor: **US$49/month / US$588/year plus Domain, Neon/backup usage, operations overage and other UNKNOWN items**.
+- Status: **PARTIAL EXTERNAL GATES / COMPLETE READ-ONLY PUBLIC EVIDENCE SCOPE**. Gate A remains **DEFER**, Production Provisioning remains **NO-GO**, and readiness remains **70% / NOT READY**.
+- Purchase, billing, account/integration, alert/log configuration, snapshot, branch, Restore, SQL, Migration, DNS, Deploy, Secret and Production mutation: **NOT PERFORMED**.
+
+The sanitized public record is `public.production.domain_operations_cost` with SHA-256 `74cf991c4cbf8d1e463e938e86a1462fc2f1724e442a401d803ac9d00d83451a`. The updated 24-entry manifest SHA-256 is `196a6657e359eb27dddb30c093cd799cf9a43c34578974d019b79bb58d020c85`. It stores only public non-account data and no account/project/branch/endpoint identifier, hostname, credential, invoice/payment data or personal information.
+
 ## Sprint 43 Neon billing / usage evidence - 2026-08-09
 
 - Evidence source: **authorized human read-only Neon Console plan, usage and project-storage inspection**.
