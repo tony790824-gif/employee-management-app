@@ -2,6 +2,14 @@
 
 Status: **NOT READY - external evidence required**
 
+Sprint 39 cost update: the known fixed planning floor is US$58/month plus Neon and unknown items; a US$73/month indicative value uses Neon's published typical Launch example and is not an exact total. Gate A remains DEFERRED. No billing, purchase, upgrade or Production action is authorized.
+
+- [x] Official public cost sources and the three cost scenarios are documented and hash-verified.
+- [x] Known fixed costs are separated from usage-based examples and unknown items.
+- [ ] Current Netlify account plan and Legacy/Credit-based billing model are verified read-only.
+- [ ] Neon actual Production usage/recovery estimate, domain price and monitoring/alerting quote are verified.
+- [ ] Owner accepts the full fixed-plus-variable cost envelope and separately authorizes an exact Gate A action.
+
 Sprint 38 Auth0 capacity update: the Free plan/Tenant limit and point-in-time Essentials/Professional quotes are recorded and hashed. The checklist remains NOT READY: Gate A execution is DEFERRED, no dedicated Production Tenant/SPA/API exists, and no purchase or Auth0 change is authorized.
 
 Sprint 35 inventory (2026-08-09): Repository and Sprint 34 Neon reader evidence remain PASS. Production schema parity is PARTIAL; capacity is UNKNOWN; Netlify/Render/Auth0 public identities are NOT_CONFIGURED; their management evidence, DNS/TLS, monitoring and recovery are BLOCKED. No Production request or mutation was made during this inventory.

@@ -7,6 +7,12 @@ Status: **PLAN COMPLETE / PROVISIONING NOT AUTHORIZED**
 Product completion: **98%**
 Production readiness: **70% / NOT READY**
 
+## Sprint 39 cost boundary
+
+`docs/PRODUCTION_TOTAL_COST_GATE_A.md` is the authoritative current cost model. It records a US$58/month known fixed floor plus Neon and unknown items, and an indicative US$73/month value only when using Neon's published typical Launch example. These figures do not authorize spending.
+
+Gate A remains **DEFER**. Auth0 Essentials is the preferred future minimum-capacity route, but the current Netlify billing model, Neon actual usage/recovery cost, domain, monitoring/alerting and overage costs must be rechecked before an APPROVE proposal. The Gate A-G order below is unchanged.
+
 ## Sprint 38 Gate A capacity decision
 
 Owner-observed Auth0 capacity evidence confirms that Free is limited to the existing Development Tenant. Essentials is the lowest observed plan with three Tenants and is the preferred future route for isolated Development/Staging/Production identity. The current execution recommendation is **DEFER**: do not spend, upgrade, or create resources while the total Production cost and other gates remain open.

@@ -1,5 +1,14 @@
 # Codex Context
 
+## 2026-08-09 Sprint 39 current state
+
+- Sprint 39 is **COMPLETE AS PRODUCTION COST / FINAL GATE A PREPARATION**. Gate A remains DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.
+- Known fixed planning floor is US$58/month (US$696/year) plus Neon actual usage and unknown items. The official Neon typical Launch example produces an indicative US$73/month (US$876/year) plus unknowns; never call it an exact minimum or total.
+- Recommended small-business planning is US$87/month fixed plus Neon/unknowns; with the same Neon example it is about US$102/month, still not exact.
+- Auth0 Essentials remains the future minimum-capacity candidate for a dedicated Production Tenant. Do not execute upgrade, billing or any Gate A-G mutation.
+- Next unique step is read-only Netlify billing-model/plan/30-day-credit verification. Preserve all untracked `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and unapproved `0010_commission_rules` files.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 Sprint 38 current state
 
 - Sprint 38 is **COMPLETE AS AUTH0 CAPACITY EVIDENCE / GATE A PREPARATION**. Gate A execution is DEFERRED; product completion remains 98%; Production readiness remains 70% / NOT READY.

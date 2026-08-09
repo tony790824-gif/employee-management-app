@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 39 public cost evidence - 2026-08-09
+
+- Evidence source: official public Auth0, Neon, Render, Netlify and Cloudflare pricing/documentation plus the sanitized Sprint 38 Auth0 owner evidence.
+- Known fixed planning floor: **US$58/month / US$696/year plus Neon usage and unknowns**.
+- Indicative planning value using Neon's published typical Launch example: **US$73/month / US$876/year plus unknowns**; this is not a guaranteed minimum or exact total.
+- Auth0 Essentials: US$35/month and 3 Tenants; Render Starter: US$7/month per API/worker service; Netlify Personal candidate: US$9/month. Account applicability, overages, tax and current Netlify billing model remain unverified.
+- Neon, domain, monitoring/alerting, backup/restore, logging and overage totals remain `PARTIAL` or `UNKNOWN`; no unsupported number is promoted to PASS.
+- Gate A: **DEFERRED / NOT AUTHORIZED**. Production readiness remains **70% / NOT READY**.
+- Billing, purchase, upgrade, Production platform, database, Migration, deploy, DNS, Secret and traffic operations: **NOT PERFORMED**.
+
+The sanitized record is `public.production.cost_model`; its SHA-256 is `a7320e60b5f175464c1224056ed3823491b5b8c036faaf7173e17c979b84630a` and the updated 21-entry manifest SHA-256 is `ce1450d0482732c6ff76fd3485c0a7cb5d90fbe55819f645a316a0d11f3f6887`. Public price evidence can change and must be rechecked before purchase.
+
 ## Sprint 38 Auth0 capacity and pricing evidence - 2026-08-09
 
 - Evidence source: **authorized human read-only Auth0 Team subscription/capacity inspection**

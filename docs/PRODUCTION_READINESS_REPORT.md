@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 39 total-cost / final Gate A decision - 2026-08-09
+
+- Official public pricing and existing owner evidence were consolidated without operating any platform or billing account.
+- Known fixed planning floor is US$58/month (US$696/year) plus Neon usage and unknowns. An indicative US$73/month (US$876/year) uses Neon's published typical Launch example and is not an exact total.
+- Unknowns remain: Neon actual usage/snapshot/restore, domain, monitoring/alerting, logging, Render/Netlify overage, tax and the current Netlify billing model.
+- Gate A recommendation remains **DEFER**. Auth0 Essentials is still the preferred future minimum-capacity route, but Production provisioning is NO-GO.
+- Production readiness remains **70% / NOT READY**. Public pricing evidence and documentation do not close any external capability, recovery, isolation or release gate.
+- No Production, billing, platform, database, Migration, deploy, DNS, Secret or traffic operation occurred.
+
 ## Sprint 38 Auth0 capacity / Gate A decision - 2026-08-09
 
 - Owner-observed read-only evidence proves the Free plan is limited to the existing Development Tenant and cannot add an independent Production Tenant.

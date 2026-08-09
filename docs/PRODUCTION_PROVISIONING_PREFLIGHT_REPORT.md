@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 39 total-cost and authorization addendum
+
+The Production cost inventory is now documented in `docs/PRODUCTION_TOTAL_COST_GATE_A.md`. The known fixed planning floor is US$58/month plus Neon and unknown items; no exact total is claimed. Gate A remains **DEFER**, Production provisioning remains **NO-GO**, and all billing/resource actions remain unauthorized.
+
+The next read-only evidence gap is the existing Netlify account's actual Legacy/Credit-based billing model, plan and recent credits. Viewing this evidence does not authorize a plan change or deploy.
+
 ## Sprint 38 Gate A capacity addendum
 
 Read-only owner evidence closes the unknown Auth0 Team capacity fact: Free permits one Tenant and is already occupied by Development; Essentials is observed at US$35/month with three Tenants. `AUTH-01` remains **BLOCKED / BILLING_REQUIRED / APPROVAL_REQUIRED** because no purchase is authorized. `AUTH-02` and `AUTH-03` remain **NOT_CONFIGURED**.

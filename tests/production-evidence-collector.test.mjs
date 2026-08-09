@@ -151,7 +151,7 @@ assert.doesNotMatch(markdown, /sensitive-token|Authorization|DATABASE_READONLY_U
 
 const committedHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(committedHashes.algorithm, 'SHA-256');
-assert.equal(committedHashes.entries.length, 20);
+assert.equal(committedHashes.entries.length, 21);
 assert.equal(committedHashes.manualEvidence.status, EVIDENCE_STATUS.PASS);
 assert.equal(committedHashes.manualEvidence.source, 'human-executed-production-provision-verify');
 assert.equal(committedHashes.manualEvidence.codexProductionConnection, false);
@@ -165,6 +165,10 @@ assert.equal(committedHashes.manualAuth0CapacityEvidence.teamTenantLimit, 1);
 assert.equal(committedHashes.manualAuth0CapacityEvidence.essentials.tenantLimit, 3);
 assert.equal(committedHashes.manualAuth0CapacityEvidence.auth0ConfigurationChanged, false);
 assert.equal(committedHashes.manualAuth0CapacityEvidence.billingActionPerformed, false);
+assert.equal(committedHashes.publicProductionCostEvidence.status, 'PARTIAL');
+assert.equal(committedHashes.publicProductionCostEvidence.knownFixedMonthlyUsd, 58);
+assert.equal(committedHashes.publicProductionCostEvidence.knownFixedAnnualUsd, 696);
+assert.equal(committedHashes.publicProductionCostEvidence.productionMutation, false);
 assert.equal(
   committedHashes.entries.find(item => item.id === 'manual.neon.production.readonly')?.sha256,
   evidenceSha256(committedHashes.manualEvidence)
@@ -172,6 +176,10 @@ assert.equal(
 assert.equal(
   committedHashes.entries.find(item => item.id === 'manual.auth0.production.capacity_pricing')?.sha256,
   evidenceSha256(committedHashes.manualAuth0CapacityEvidence)
+);
+assert.equal(
+  committedHashes.entries.find(item => item.id === 'public.production.cost_model')?.sha256,
+  evidenceSha256(committedHashes.publicProductionCostEvidence)
 );
 assert.equal(evidenceSha256(committedHashes.entries), committedHashes.sha256);
 assert.equal(new Set(committedHashes.entries.map(item => item.id)).size, committedHashes.entries.length);

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## 2026-08-09 handoff - Sprint 39 Production Total Cost / Final Gate A
+
+- Status: **COMPLETE AS COST AND AUTHORIZATION PREPARATION / GATE A DEFER / PRODUCTION NO-GO**; product 98%, Production readiness 70%, release NOT READY.
+- `docs/PRODUCTION_TOTAL_COST_GATE_A.md` is the current cost and authorization authority. Known fixed floor: US$58/month or US$696/year plus Neon usage and unknown items. The indicative US$73/month figure uses Neon's published typical Launch example and is not a guaranteed total.
+- Auth0 Essentials remains the preferred future minimum-capacity option, but do not upgrade, buy, add payment or create any Tenant/SPA/API. Gates B-G remain closed.
+- Next unique human action: view Netlify Billing / Plan details and return only current plan, Legacy/Credit-based model and recent credit usage. Do not change plan or deploy.
+- No Production, billing, Auth0, Neon, Render, Netlify, DNS, database, Migration, deploy, Secret or traffic operation occurred.
+
 ## 2026-08-09 handoff - Sprint 38 Auth0 Capacity / Gate A
 
 - Status: **COMPLETE AS EVIDENCE AND DECISION PREPARATION / EXECUTION DEFERRED**; product 98%, Production readiness 70%, release NOT READY, provisioning NO-GO.

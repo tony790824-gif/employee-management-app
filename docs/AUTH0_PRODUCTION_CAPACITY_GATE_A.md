@@ -6,6 +6,12 @@ Status: **EVIDENCE RECORDED / EXECUTION DEFERRED / PRODUCTION NO-GO**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 39 final cost-package addendum
+
+The total-cost model in `docs/PRODUCTION_TOTAL_COST_GATE_A.md` confirms that Auth0's US$35/month is only one component. The known fixed planning floor is US$58/month plus Neon actual usage and unknown items. Because recovery, domain, monitoring/alerting, overage and current Netlify billing evidence remain open, the final Gate A recommendation remains **DEFER**.
+
+Essentials remains the preferred future minimum-capacity candidate. No purchase, payment, upgrade, Tenant/Application/API creation or other Gate A execution is authorized.
+
 This document records owner-observed, read-only Auth0 Team subscription and Tenant-capacity evidence. It is a decision proposal only. It does not authorize a plan upgrade, payment method, purchase, Tenant/Application/API creation, Auth0 configuration change, Secret access, deployment, Migration, database operation, DNS change, or traffic switch.
 
 ## 1. Evidence boundary

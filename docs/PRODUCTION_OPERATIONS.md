@@ -2,6 +2,13 @@
 
 Status: **NEON READ-ONLY EVIDENCE PASS / OTHER EXTERNAL PLATFORM EVIDENCE BLOCKED**
 
+## Sprint 39 cost and Gate A operating state
+
+- `docs/PRODUCTION_TOTAL_COST_GATE_A.md` is the current cost authority. Use **US$58/month fixed known floor plus Neon and unknowns**; do not present US$73/month as exact because it includes a published typical Neon example.
+- Gate A remains **DEFER**. Do not upgrade Auth0, add payment, buy a plan, or create Production resources.
+- The next allowed operator step is a read-only Netlify Billing / Plan details inspection. Do not switch plans, enable auto-recharge, add payment, purchase credits or deploy.
+- Production readiness remains 70% / NOT READY and Production remains NO-GO.
+
 ## Sprint 38 Gate A operating state
 
 - Auth0 capacity/pricing evidence is recorded in `docs/AUTH0_PRODUCTION_CAPACITY_GATE_A.md`; it contains no account, billing or Secret identifier.

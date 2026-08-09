@@ -1,5 +1,19 @@
 # Next external gate — Production evidence and authorization
 
+## Next unique action after Sprint 39 - Netlify billing model evidence
+
+Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**. The cost model is complete enough to show a fixed known floor, but not an exact total.
+
+The next single action is read-only:
+
+1. Open Netlify **Billing / Plan details** for the existing Team/Project owner account.
+2. Record only the current plan name, whether billing is Legacy or Credit-based, included monthly credits and recent 30-day credit usage.
+3. Do not add payment, upgrade, downgrade, switch billing model, buy credits, change the Project, or deploy.
+4. Do not share account identifiers, invoices, payment details, tokens or screenshots containing personal/billing information.
+5. Return the non-sensitive values so the US$9 Personal versus US$20 Pro candidate and overage risk can be resolved.
+
+This action does not authorize Gate A execution, a purchase or any Production resource operation. See `docs/PRODUCTION_TOTAL_COST_GATE_A.md`.
+
 ## Next unique Sprint after Sprint 38 - Production cost envelope and final Gate A authorization package
 
 Production remains **NO-GO** at **70% / NOT READY**. Sprint 38 recorded capacity evidence and selected Option A as the preferred future architecture, but the current execution decision is **DEFER**.

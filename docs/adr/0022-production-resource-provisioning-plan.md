@@ -18,6 +18,7 @@ Staging and Production use independent identity, service, database-role, origin,
 - Sprint 36 may complete with no Production mutation and without increasing the 70% readiness score.
 - Sprint 37 read-only preflight confirmed the order and recorded a NO-GO decision. Blocker classification does not authorize or provision a resource.
 - Sprint 38 proved the Free Tenant-capacity limit and recorded Essentials as the preferred future minimum-capacity route. Gate A execution remains DEFERRED; this evidence does not authorize spending or identity-resource creation.
+- Sprint 39 established a fixed known cost floor plus explicit usage-based/unknown items. Gate A remains DEFERRED because a cost model does not close external Production gates or authorize billing.
 - Missing resources remain `NOT_CONFIGURED`; missing authority/evidence remains `BLOCKED` or `UNKNOWN`.
 - A future operator must stop before Gates A–G and present impact, cost, rollback and exact human steps.
 - No plan, checklist, repository test or Staging result may be represented as Production PASS.

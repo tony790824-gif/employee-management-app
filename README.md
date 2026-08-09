@@ -1,5 +1,13 @@
 # 班客邦
 
+## Sprint 39 Production Total Cost and Final Gate A Package (2026-08-09)
+
+- Added a fail-closed Production cost inventory and three scenarios without purchasing or changing any platform.
+- The known fixed planning floor is **US$58/month (US$696/year) plus Neon usage and other unknown items**. Using Neon's published typical Launch example gives an indicative **US$73/month (US$876/year) plus unknowns**, not a guaranteed total.
+- Gate A remains **DEFER**. Auth0 Essentials remains the preferred future minimum-capacity option for a dedicated Production Tenant, but no upgrade or resource creation is authorized.
+- Product completion remains 98%; Production readiness remains **70% / NOT READY** and provisioning remains **NO-GO**. See [Production Total Cost and Gate A](docs/PRODUCTION_TOTAL_COST_GATE_A.md).
+- No Production, billing, Auth0, Neon, Render, Netlify, DNS, database, Migration, deploy, Secret or traffic operation occurred.
+
 ## Sprint 38 Auth0 Production Capacity Evidence and Gate A Preparation (2026-08-09)
 
 - Recorded sanitized, hashed, read-only Auth0 plan/Tenant-capacity evidence: Free is limited to the existing Development Tenant; the observed Essentials quote is US$35/month with three Tenants.

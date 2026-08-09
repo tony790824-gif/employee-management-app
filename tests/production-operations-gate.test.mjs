@@ -166,7 +166,7 @@ assert.match(evidenceReport, /NOT AUTHORIZED/);
 assert.match(evidenceReport, /Production mutation: \*\*none\*\*/);
 const evidenceHashes = JSON.parse(await readFile('docs/PRODUCTION_EVIDENCE_HASHES.json', 'utf8'));
 assert.equal(evidenceHashes.algorithm, 'SHA-256');
-assert.equal(evidenceHashes.entries.length, 20);
+assert.equal(evidenceHashes.entries.length, 21);
 assert.equal(evidenceHashes.manualEvidence.status, 'PASS');
 assert.equal(evidenceHashes.manualEvidence.codexProductionConnection, false);
 const readonlyAccess = await readFile('docs/PRODUCTION_READONLY_ACCESS.md', 'utf8');

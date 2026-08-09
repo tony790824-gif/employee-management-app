@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 39 status - Production Total Cost and Final Gate A Package (2026-08-09)
+
+- **Status:** COMPLETE as cost/evidence/authorization preparation; Gate A remains DEFERRED and Production remains NO-GO.
+- **Cost:** known fixed planning floor is US$58/month (US$696/year) plus Neon actual usage, domain, monitoring/alerting, backup/restore and other unknowns. The US$73/month / US$876/year figure uses Neon's published typical Launch example and is not a guaranteed total.
+- **Decision:** Auth0 Essentials remains the preferred future minimum-capacity route for a dedicated Production Tenant, but no purchase, payment, upgrade or resource operation is authorized.
+- **Readiness:** product 98%; Production readiness 70% / NOT READY. Documentation and public price evidence do not close an external Production gate.
+- **Next unique action:** read-only Netlify billing-model/plan/30-day-credit verification; do not upgrade, switch plans, add payment or deploy.
+
 ## Sprint 38 status - Auth0 Production Capacity Evidence and Gate A Preparation (2026-08-09)
 
 - **Status:** COMPLETE as evidence/decision preparation; Gate A execution is DEFERRED and Production remains NO-GO.
