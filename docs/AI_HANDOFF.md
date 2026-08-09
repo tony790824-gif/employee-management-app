@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Sprint 47 handoff - 2026-08-10
+
+- Status: **BLOCKED AT CURRENT PRODUCTION EVIDENCE / REPOSITORY AND 0010 HISTORY CLOSED**.
+- `0010` is classified as an intentional unapproved gap, not an expected ledger row: no Git object/path history exists, while committed records consistently exclude it. Never use the local untracked files as a baseline.
+- The current process and `.env.production` lack both `DATABASE_READONLY_URL` and `BANK_PRODUCTION_READONLY_ROLE`; no Production connection was attempted and no Migrator/API credential was reused.
+- Historical Production ledger evidence is `0001`-`0008`; current ledger and all structural difference counts remain UNKNOWN/BLOCKED.
+- `docs/PRODUCTION_SCHEMA_PARITY_REPORT.md` is the current authority. Production stays 70% / NOT READY, Gate A DEFER, Provisioning NO-GO.
+- Next unique Sprint: materialize and hash the expected catalog in a disposable non-Production PostgreSQL instance under explicit local-Migration authorization. Do not start a Production inspection first.
+
 ## Sprint 46 handoff - 2026-08-09
 
 - COMPLETE as a Repository-only schema-parity plan; actual Production parity evidence remains **BLOCKED** and was not collected.

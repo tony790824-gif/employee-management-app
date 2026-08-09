@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 47 status - Production Schema Parity Read-only Evidence Closure (2026-08-10)
+
+- **Status:** BLOCKED at current Production evidence; Repository inventory, query safety and `0010` history are closed.
+- **0010:** intentional unapproved gap / not an expected ledger row. Git has no tracked/renamed/deleted `0010` Migration; local untracked files remain excluded.
+- **Evidence blocker:** dedicated Production read-only URL and role are unavailable to this process. No privileged credential was substituted and no Production connection occurred.
+- **Parity:** current Migration Ledger and Structural Schema parity are BLOCKED/UNKNOWN; exact object difference counts are UNKNOWN.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO.
+- **Next unique Sprint:** disposable non-Production expected catalog baseline materialization, only with explicit local Migration authorization.
+
 ## Sprint 46 status - Production Schema Parity Read-only Plan (2026-08-09)
 
 - **Status:** COMPLETE as Repository-only planning; actual Production parity remains BLOCKED / NOT EXECUTED.

@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Sprint 47 schema parity evidence checkpoint
+
+- [x] `0010` Git/history classification closed as an intentional unapproved gap; no fake Migration/checksum was created.
+- [x] All 21 expected tracked Migration checksums and the catalog query safety validator pass.
+- [ ] Materialize and hash a catalog-resolved expected schema in an isolated non-Production PostgreSQL instance.
+- [ ] Provide the dedicated Production read-only URL/role through an approved process-only channel.
+- [ ] Prove current role identity and `transaction_read_only=on`, then collect sanitized catalog evidence.
+- [ ] Compare Migration ledger and structural schema independently; exact missing/extra/mismatch counts remain UNKNOWN.
+- [ ] Keep Production NO-GO and parity BLOCKED until every current evidence section passes.
+
 ## Sprint 46 schema parity planning checkpoint
 
 - [x] Expected ledger slots `0001`-`0022` and SHA-256 values for all 21 Git-tracked sources are recorded.

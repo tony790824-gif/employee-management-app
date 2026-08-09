@@ -25,6 +25,7 @@ export const PARITY_STOP_CONDITIONS = Object.freeze([
   'ACL_MISMATCH',
   'UNEXPECTED_EXTENSION',
   'QUERY_NOT_PROVEN_READ_ONLY',
+  'EXPECTED_SCHEMA_BASELINE_INCOMPLETE',
   'EVIDENCE_INCOMPLETE'
 ]);
 
@@ -78,8 +79,10 @@ export async function validateExpectedInventory(inventory) {
     failures.push('EXPECTED_EXTENSION_INVENTORY_MISMATCH');
   }
   for (const item of expectedInventory.migrations) {
-    if (item.sourceStatus === 'MISSING_TRACKED_SOURCE') {
-      failures.push(`MISSING_TRACKED_SOURCE:${item.version}`);
+    if (item.sourceStatus === 'INTENTIONAL_UNAPPROVED_GAP') {
+      if (item.version !== '0010' || item.name !== null || item.file !== null || item.checksum !== null) {
+        failures.push(`INVALID_INTENTIONAL_GAP:${item.version}`);
+      }
       continue;
     }
     if (item.sourceStatus !== 'TRACKED' || !item.file || !tracked.has(item.file)) {
@@ -100,8 +103,9 @@ export async function validateExpectedInventory(inventory) {
   return Object.freeze({
     status: failures.length ? 'BLOCKED' : 'PASS',
     expectedRange: Object.freeze({ start: '0001', end: '0022', count: 22 }),
+    expectedLedgerEntryCount: expectedInventory.migrations.filter(item => item.sourceStatus === 'TRACKED').length,
     trackedCount: tracked.size,
-    missingVersions: Object.freeze(expectedInventory.migrations.filter(item => item.sourceStatus !== 'TRACKED').map(item => item.version)),
+    intentionalGapVersions: Object.freeze(expectedInventory.migrations.filter(item => item.sourceStatus === 'INTENTIONAL_UNAPPROVED_GAP').map(item => item.version)),
     failures: Object.freeze(failures)
   });
 }
@@ -156,7 +160,8 @@ export async function repositoryDryRun() {
   const sql = validateReadOnlyCatalogSql(await readFile(queryUrl, 'utf8'));
   const stopReasons = [
     ...(inventory.status === 'PASS' ? [] : ['MIGRATION_MISSING', 'EVIDENCE_INCOMPLETE']),
-    ...(sql.status === 'PASS' ? [] : ['QUERY_NOT_PROVEN_READ_ONLY'])
+    ...(sql.status === 'PASS' ? [] : ['QUERY_NOT_PROVEN_READ_ONLY']),
+    'EXPECTED_SCHEMA_BASELINE_INCOMPLETE'
   ];
   return Object.freeze({
     mode: 'REPOSITORY_ONLY_DRY_RUN',
@@ -165,6 +170,10 @@ export async function repositoryDryRun() {
     expectedMigrationRange: inventory.expectedRange,
     inventory,
     catalogQueryPlan: sql,
+    expectedCatalogBaseline: Object.freeze({
+      status: 'BLOCKED',
+      reason: 'NOT_MATERIALIZED_FROM_REVIEWED_MIGRATIONS'
+    }),
     finalStatus: stopReasons.length ? 'BLOCKED' : 'PASS',
     stopReasons: Object.freeze(stopReasons)
   });

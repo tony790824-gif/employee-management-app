@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 47 schema parity evidence closure - 2026-08-10
+
+- Repository/Git-history evidence closes `0010` as an intentional unapproved gap and validates the 21 tracked checksums/query safety.
+- Expected catalog metadata is not materialized, and current Production read-only credentials are unavailable to the process. No Production connection or SQL was attempted.
+- Current Migration Ledger Parity and Schema Structural Parity remain **BLOCKED / UNKNOWN**. Historical ledger `0001`-`0008` shows 13 later expected versions absent at that evidence time, but is not current evidence.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**. No scoring blocker was actually closed.
+
 ## Sprint 46 schema parity read-only planning - 2026-08-09
 
 - Repository-only plan, tracked checksum inventory, SELECT-only catalog query set, evidence schema and fail-closed tests are complete.

@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 47 - Migration 0010 Governance and Expected-ledger Closure
+## Sprint 48 - Disposable Expected Catalog Baseline Materialization
+
+Sprint 47 closed the Git-history classification of `0010` as an intentional unapproved gap, but Production parity evidence remains **BLOCKED**. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+
+The next single Sprint should create a disposable, isolated non-Production PostgreSQL instance, apply only the 21 reviewed Git-tracked Migrations (`0001`-`0009`, `0011`-`0022`), and export normalized/hashable catalog metadata as the expected structural baseline. It requires explicit authorization to execute Migrations only in that disposable environment. It must not connect to or modify Production, include the untracked `0010` files, deploy, or operate external Production resources.
+
+## Historical Sprint 47 - Production Schema Parity Read-only Evidence Closure
+
+- `0010` classification: intentional unapproved gap; it is not an expected ledger row.
+- Repository checksum inventory and SELECT-only query plan: PASS.
+- Expected catalog baseline: BLOCKED / not materialized.
+- Current Production read-only identity/catalog inspection: BLOCKED because the dedicated URL and role were not available to the process; no higher-privilege credential was substituted.
+- Current Migration Ledger Parity and Structural Parity: BLOCKED/UNKNOWN. No Production connection or SQL occurred.
+
+## Historical planned Sprint 47 - Migration 0010 Governance and Expected-ledger Closure
 
 Sprint 46 completed the Repository-only schema-parity plan, catalog query review, evidence contract and dry-run validator. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
 

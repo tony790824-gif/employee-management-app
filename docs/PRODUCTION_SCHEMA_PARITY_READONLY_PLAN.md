@@ -1,6 +1,6 @@
 # Production Schema Parity Read-only Plan
 
-Status: **REPOSITORY PLAN COMPLETE / PRODUCTION EVIDENCE BLOCKED**
+Status: **REPOSITORY PLAN COMPLETE / EXPECTED CATALOG BASELINE AND PRODUCTION EVIDENCE BLOCKED**
 
 Date: 2026-08-09
 
@@ -21,10 +21,10 @@ The future operator must use the existing dedicated Production read-only role an
 `database/production-schema-parity.expected.json` defines the required ledger slots `0001` through `0022`. It records SHA-256 checksums only for Git-tracked `.up.sql` sources.
 
 - Tracked and checksum-verified: `0001`–`0009`, `0011`–`0022` (21 versions).
-- `0010`: **MISSING_TRACKED_SOURCE**. Untracked local files are deliberately ignored and are not an authoritative Migration source.
+- `0010`: **INTENTIONAL_UNAPPROVED_GAP**. Git object/history inspection found no tracked `0010` Migration, rename, deletion or squash; committed operating records consistently exclude it as unapproved/unapplied. Untracked local files remain non-authoritative.
 - Required Extension derived from tracked sources: `pgcrypto`. Any further Extension requirement depends on resolving `0010` and cannot be assumed.
-- Consequently, the expected ledger inventory is fail-closed **BLOCKED**. A future Production parity result cannot be PASS until `0010` governance establishes an approved, reviewed, Git-tracked source or a formally documented reserved/retired ledger rule.
-- No checksum is invented for `0010`, and no existing Migration is modified.
+- The expected ledger therefore contains 21 entries across slots `0001`-`0022`; `0010` is not an expected ledger row. No checksum is invented for the gap, and no existing Migration is modified.
+- The catalog-resolved expected schema remains **BLOCKED** because the reviewed Migration set has not been materialized in an isolated non-Production PostgreSQL instance. Static SQL guesses are not accepted as an equivalent baseline.
 
 ## Comparison scope
 
@@ -44,7 +44,7 @@ The later authorized comparison covers metadata only:
 
 No business-table row may be read. `public.schema_migrations` is the only non-catalog relation allowed.
 
-After `0010` governance is resolved, expected object metadata must be generated from the reviewed Migration set in a disposable, isolated non-Production PostgreSQL instance matching the approved Production major version. Normalize and hash that catalog output before any Production comparison. Neither Staging state nor hand-authored object guesses may replace this expected artifact.
+Expected object metadata must be generated from the 21 reviewed Migration sources in a disposable, isolated non-Production PostgreSQL instance matching the approved Production major version. Normalize and hash that catalog output before any Production comparison. Neither Staging state nor hand-authored object guesses may replace this expected artifact.
 
 ## Read-only query plan
 
@@ -57,7 +57,7 @@ After `0010` governance is resolved, expected object metadata must be generated 
 - reads only `pg_catalog`, `information_schema` and `public.schema_migrations`;
 - excludes Function bodies, business rows and mutation-capable calls.
 
-`database/production-schema-parity-plan.mjs` statically validates the tracked inventory and query file without accepting a database URL or opening a network connection. Its dry-run is expected to report `BLOCKED` while `0010` is unresolved; that is a successful fail-closed result, not a test failure.
+`database/production-schema-parity-plan.mjs` statically validates the tracked inventory and query file without accepting a database URL or opening a network connection. Its dry-run verifies the 21-entry ledger inventory and query safety, then reports `BLOCKED` because the catalog-resolved expected schema is not materialized; that is a successful fail-closed result, not a test failure.
 
 ## Mandatory stop conditions
 
@@ -87,9 +87,10 @@ It must not contain credentials, connection strings, hostnames, endpoint/project
 
 ## Future authorization sequence
 
-1. Resolve the `0010` governance blocker in Repository review; do not use current untracked files by assumption.
-2. Freeze a reviewed commit and regenerate/verify the tracked checksum inventory.
-3. Obtain exact human authorization for a Production metadata-only run using the dedicated read-only role.
-4. Verify target identity and role safety before catalog output.
-5. Capture sanitized evidence, compare all sections and hash the evidence artifact.
-6. Stop on any difference. Any remediation requires a separate plan and authorization.
+1. Materialize the 21 tracked Migrations in a disposable, isolated non-Production PostgreSQL instance under a separately approved Sprint; do not include local untracked `0010` files.
+2. Normalize and hash its catalog metadata as the expected structural baseline.
+3. Make the dedicated Production read-only credential available only through an approved process environment; never commit or paste it.
+4. Obtain exact human authorization for a Production metadata-only run.
+5. Verify target identity and role safety before catalog output.
+6. Capture sanitized evidence, compare all sections and hash the evidence artifact.
+7. Stop on any difference. Any remediation requires a separate plan and authorization.

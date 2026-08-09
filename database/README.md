@@ -2,7 +2,7 @@
 
 ## Production schema parity planning
 
-Run `pnpm db:parity:plan` for a Repository-only validation of the tracked checksum inventory and future catalog query safety. The expected range is `0001`-`0022`, but tracked main currently has 21 sources and no authoritative tracked `0010`; the dry-run must therefore report `BLOCKED`. Do not use untracked `0010` files or run `database/operator/production-schema-parity.readonly.sql` without a separate exact human Production authorization.
+Run `pnpm db:parity:plan` for a Repository-only validation of the tracked checksum inventory and future catalog query safety. The expected slots are `0001`-`0022`, with 21 expected ledger rows; `0010` is an intentional unapproved gap rather than a Migration. The dry-run remains `BLOCKED` until a catalog-resolved expected baseline is materialized. Do not use untracked `0010` files or run `database/operator/production-schema-parity.readonly.sql` without separate exact human Production authorization.
 
 ## Production evidence reader (manual only)
 

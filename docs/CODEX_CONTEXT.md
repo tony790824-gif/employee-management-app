@@ -1,5 +1,13 @@
 # Codex Context
 
+## Sprint 47 current context - 2026-08-10
+
+`docs/PRODUCTION_SCHEMA_PARITY_REPORT.md` records the fail-closed outcome. Git history proves `0010` was never tracked/renamed/deleted and committed records consistently classify it as unapproved and intentionally excluded; expected ledger entries are the 21 tracked Migrations only.
+
+The repository inventory/query validator passes, but the expected catalog baseline has not been materialized. The current execution environment also lacks the dedicated Production read-only URL and role. No Production connection or SQL was attempted; historical ledger `0001`-`0008` cannot establish current parity. All structural difference counts remain UNKNOWN/BLOCKED.
+
+Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Preserve `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and the untracked `0010_commission_rules` files. Next work is only a separately authorized disposable non-Production expected-catalog baseline Sprint.
+
 ## Sprint 46 current context - 2026-08-09
 
 Sprint 46 is complete as Repository-only planning. The authoritative plan is `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md`; expected inventory is `database/production-schema-parity.expected.json`; dry-run validator is `database/production-schema-parity-plan.mjs`; future manual query is `database/operator/production-schema-parity.readonly.sql`.

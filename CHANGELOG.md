@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-10 - Sprint 47 Production Schema Parity Read-only Evidence Closure
+
+- Classified Migration slot `0010` as an intentional unapproved gap using Git/history and committed operating evidence; no fake Migration or checksum was created.
+- Added a fail-closed parity report separating expected ledger, expected catalog, current Production ledger and structural parity.
+- Recorded that the dedicated Production read-only URL/role were unavailable, so no connection or SQL was attempted and exact differences remain UNKNOWN.
+- Kept Production readiness 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production, Migration, deploy, external configuration, DNS, Secret or traffic operation occurred.
+
 ## 2026-08-09 - Sprint 46 Production Schema Parity Read-only Plan
 
 - Added a Git-tracked Migration inventory for expected ledger slots `0001`-`0022`, preserving `0010` as a fail-closed missing authoritative source rather than accepting untracked files.

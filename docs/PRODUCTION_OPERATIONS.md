@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 47 parity evidence stop state
+
+- Current parity collection is BLOCKED before connection: the process has no dedicated Production read-only URL/role. Never substitute Migrator/API/Push/Admin credentials.
+- `0010` is an intentional unapproved gap and not an expected ledger row. Continue to exclude local untracked files.
+- Before any Production query, first create a normalized expected catalog artifact from the 21 tracked Migrations in a separately authorized disposable non-Production database.
+- A later Production run still requires exact human authorization and process-only credentials. Stop on identity/read-only mismatch before returning metadata.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 46 schema parity operating boundary
 
 - `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md` is the future parity-run authority, but it grants no permission to connect or execute SQL.

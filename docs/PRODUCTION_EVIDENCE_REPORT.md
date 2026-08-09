@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 47 schema parity evidence attempt - 2026-08-10
+
+- Final status: **BLOCKED**. Repository and `0010` history are closed; current Production catalog evidence is not.
+- Dedicated Production read-only URL/role were absent from the process and protected Production env file. Identity/read-only state was not queried, and privileged credentials were not substituted.
+- `0010` is an intentional unapproved gap, not an expected ledger row. The 21 tracked Migration checksums pass.
+- Historical Production ledger `0001`-`0008` is retained as historical evidence only. Current ledger, schema structure and exact missing/extra/mismatch counts are UNKNOWN.
+- Full sanitized result and remediation-only next steps are in `docs/PRODUCTION_SCHEMA_PARITY_REPORT.md`.
+- No Production request, SQL, write, Migration, resource/configuration change, deploy, DNS, Secret or traffic operation occurred. Readiness remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO.
+
 ## Sprint 46 Repository-only schema parity plan - 2026-08-09
 
 - Evidence status: **BLOCKED / NOT COLLECTED**. No Production database connection or SQL execution was authorized or attempted.
