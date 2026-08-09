@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-schema-parity-evidence-v1.json",
+  "title": "Bankeban Production Schema Parity Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timestamp",
+    "commitSha",
+    "expectedMigrationRange",
+    "observedMigrationRange",
+    "checksumResult",
+    "schemaParityResult",
+    "functionParityResult",
+    "aclResult",
+    "rlsPolicyResult",
+    "extensionResult",
+    "finalStatus",
+    "stopReasons"
+  ],
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "commitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "expectedMigrationRange": { "$ref": "#/$defs/range" },
+    "observedMigrationRange": { "anyOf": [{ "$ref": "#/$defs/range" }, { "type": "null" }] },
+    "checksumResult": { "$ref": "#/$defs/result" },
+    "schemaParityResult": { "$ref": "#/$defs/result" },
+    "functionParityResult": { "$ref": "#/$defs/result" },
+    "aclResult": { "$ref": "#/$defs/result" },
+    "rlsPolicyResult": { "$ref": "#/$defs/result" },
+    "extensionResult": { "$ref": "#/$defs/result" },
+    "finalStatus": { "enum": ["PASS", "PARTIAL", "BLOCKED"] },
+    "stopReasons": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "count"],
+      "properties": {
+        "start": { "type": "string", "pattern": "^[0-9]{4}$" },
+        "end": { "type": "string", "pattern": "^[0-9]{4}$" },
+        "count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "differences"],
+      "properties": {
+        "status": { "enum": ["PASS", "PARTIAL", "BLOCKED"] },
+        "differences": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-09 - Sprint 46 Production Schema Parity Read-only Plan
+
+- Added a Git-tracked Migration inventory for expected ledger slots `0001`-`0022`, preserving `0010` as a fail-closed missing authoritative source rather than accepting untracked files.
+- Added a Repository-only checksum/query validator, future SELECT-only catalog query set, sanitized evidence schema and regression tests.
+- Updated Production readiness, evidence, operations, release, backlog and handoff documents without changing 70% / NOT READY, Gate A DEFER or Production NO-GO.
+- No Production connection, SQL, Migration, database/resource change, deploy, DNS, domain purchase or Secret operation occurred.
+
 ## 2026-08-09 - Sprint 43 Neon Billing / Usage Evidence Closure
 
 - Recorded sanitized human read-only evidence that the current Neon organization is on Free / US$0 per month and documented its included per-project limits.

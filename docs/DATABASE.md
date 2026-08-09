@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Sprint 46 Production schema parity plan
+
+`database/production-schema-parity.expected.json` is the expected `0001`-`0022` ledger inventory. It contains verified SHA-256 values for the 21 Git-tracked Migration sources and marks `0010` as `MISSING_TRACKED_SOURCE`; untracked local files are never an accepted source. `pnpm db:parity:plan` performs a Repository-only dry run and intentionally reports parity BLOCKED until `0010` governance is resolved.
+
+`database/operator/production-schema-parity.readonly.sql` is reserved for a separately authorized future manual run. It returns catalog and `public.schema_migrations` metadata only, never business rows or Function bodies. Sprint 46 did not connect to or modify Production.
+
 ## Sprint 34 Production evidence reader
 
 Use only the manual scripts in `database/operator/` and the procedure in `docs/PRODUCTION_READONLY_ACCESS.md`. The evidence role is SQL-created and must be `LOGIN NOINHERIT`, connection-limited, read-only by default, and able to select only `public.schema_migrations` plus PostgreSQL catalogs. The first authorized Production run stopped at the first mutation because Neon rejected `ALTER ROLE ... NOSUPERUSER`; no later statements or data/schema changes occurred. The corrected script verifies dangerous attributes without mutating them and is **BLOCKED / PENDING HUMAN RE-RUN**.

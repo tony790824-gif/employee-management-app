@@ -1,5 +1,9 @@
 # PostgreSQL migration and snapshot import
 
+## Production schema parity planning
+
+Run `pnpm db:parity:plan` for a Repository-only validation of the tracked checksum inventory and future catalog query safety. The expected range is `0001`-`0022`, but tracked main currently has 21 sources and no authoritative tracked `0010`; the dry-run must therefore report `BLOCKED`. Do not use untracked `0010` files or run `database/operator/production-schema-parity.readonly.sql` without a separate exact human Production authorization.
+
 ## Production evidence reader (manual only)
 
 `database/operator/production-readonly-role.provision.sql`, `.verify.sql`, and `.disable.sql` are confirmation-gated operator procedures, not Migrations and not application startup scripts. Follow `docs/PRODUCTION_READONLY_ACCESS.md`. The role can read catalogs and `public.schema_migrations` only; it must never receive business-table access or replace Owner, Migrator, API, Push, or Staging credentials. The first authorized Sprint 34 run stopped at its first mutation because Neon rejected `ALTER ROLE ... NOSUPERUSER`; `ON_ERROR_STOP` prevented all later statements. The corrected script awaits human re-run.

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "expectedRange": {
+    "start": "0001",
+    "end": "0022"
+  },
+  "requiredExtensionsFromTrackedSources": ["pgcrypto"],
+  "migrations": [
+    { "version": "0001", "name": "core", "file": "0001_core.up.sql", "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa", "sourceStatus": "TRACKED" },
+    { "version": "0002", "name": "business", "file": "0002_business.up.sql", "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9", "sourceStatus": "TRACKED" },
+    { "version": "0003", "name": "commands", "file": "0003_commands.up.sql", "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f", "sourceStatus": "TRACKED" },
+    { "version": "0004", "name": "identity_tenant_boundary", "file": "0004_identity_tenant_boundary.up.sql", "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5", "sourceStatus": "TRACKED" },
+    { "version": "0005", "name": "identity_context_name_resolution", "file": "0005_identity_context_name_resolution.up.sql", "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3", "sourceStatus": "TRACKED" },
+    { "version": "0006", "name": "session_token_boundary", "file": "0006_session_token_boundary.up.sql", "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be", "sourceStatus": "TRACKED" },
+    { "version": "0007", "name": "leave_resource_id_precedence", "file": "0007_leave_resource_id_precedence.up.sql", "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff", "sourceStatus": "TRACKED" },
+    { "version": "0008", "name": "session_subject_binding", "file": "0008_session_subject_binding.up.sql", "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf", "sourceStatus": "TRACKED" },
+    { "version": "0009", "name": "auth0_security_event_inbox", "file": "0009_auth0_security_event_inbox.up.sql", "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e", "sourceStatus": "TRACKED" },
+    { "version": "0010", "name": null, "file": null, "checksum": null, "sourceStatus": "MISSING_TRACKED_SOURCE" },
+    { "version": "0011", "name": "ui_bootstrap", "file": "0011_ui_bootstrap.up.sql", "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf", "sourceStatus": "TRACKED" },
+    { "version": "0012", "name": "current_user_bootstrap", "file": "0012_current_user_bootstrap.up.sql", "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797", "sourceStatus": "TRACKED" },
+    { "version": "0013", "name": "time_off_requests", "file": "0013_time_off_requests.up.sql", "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2", "sourceStatus": "TRACKED" },
+    { "version": "0014", "name": "notification_center", "file": "0014_notification_center.up.sql", "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc", "sourceStatus": "TRACKED" },
+    { "version": "0015", "name": "notification_command_validation", "file": "0015_notification_command_validation.up.sql", "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f", "sourceStatus": "TRACKED" },
+    { "version": "0016", "name": "web_push_subscriptions", "file": "0016_web_push_subscriptions.up.sql", "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476", "sourceStatus": "TRACKED" },
+    { "version": "0017", "name": "active_session_reestablishment", "file": "0017_active_session_reestablishment.up.sql", "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0", "sourceStatus": "TRACKED" },
+    { "version": "0018", "name": "edge_web_push_provider_allowlist", "file": "0018_edge_web_push_provider_allowlist.up.sql", "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277", "sourceStatus": "TRACKED" },
+    { "version": "0019", "name": "real_event_notifications", "file": "0019_real_event_notifications.up.sql", "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6", "sourceStatus": "TRACKED" },
+    { "version": "0020", "name": "push_subscription_priority", "file": "0020_push_subscription_priority.up.sql", "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f", "sourceStatus": "TRACKED" },
+    { "version": "0021", "name": "push_delivery_fallback", "file": "0021_push_delivery_fallback.up.sql", "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4", "sourceStatus": "TRACKED" },
+    { "version": "0022", "name": "announcement_center", "file": "0022_announcement_center.up.sql", "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3", "sourceStatus": "TRACKED" }
+  ]
+}

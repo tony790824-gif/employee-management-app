@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 46 schema parity read-only planning - 2026-08-09
+
+- Repository-only plan, tracked checksum inventory, SELECT-only catalog query set, evidence schema and fail-closed tests are complete.
+- Required ledger slots are `0001`-`0022`. The Git-tracked source has 21 entries (`0001`-`0009`, `0011`-`0022`); `0010` has no authoritative tracked source and no accepted checksum.
+- Actual Production schema parity remains **BLOCKED / NOT EXECUTED**. Sprint 46 did not connect to Production or execute SQL, and the validator cannot mark parity PASS while `0010` governance is unresolved.
+- Production readiness remains **70% / NOT READY**; Gate A remains **DEFER** and Production Provisioning remains **NO-GO**. Planning alone does not change the score.
+
 ## Sprint 45 domain quote evidence - 2026-08-09
 
 - `bankeban.com` / `.com` is the owner-selected quote candidate. Registry and registrar public evidence show it available at the evidence time as a normal non-Premium registration.

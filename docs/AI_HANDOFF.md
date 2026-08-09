@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Sprint 46 handoff - 2026-08-09
+
+- COMPLETE as a Repository-only schema-parity plan; actual Production parity evidence remains **BLOCKED** and was not collected.
+- `database/production-schema-parity.expected.json` defines `0001`-`0022`: 21 Git-tracked sources/checksums pass, while `0010` is explicitly `MISSING_TRACKED_SOURCE` with no invented checksum.
+- `database/production-schema-parity-plan.mjs` and `database/operator/production-schema-parity.readonly.sql` validate the inventory and future SELECT-only catalog scope without accepting a database URL or connecting to Production.
+- `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md` and its evidence schema define metadata scope, stop conditions and sanitized evidence. Production remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO.
+- Preserve and exclude the existing untracked `0010_commission_rules` files. The next unique Sprint is Repository-only Migration `0010` governance; do not run Production SQL/Migration or start parity evidence collection.
+
 ## Sprint 45 handoff - 2026-08-09
 
 - COMPLETE read-only quote evidence: owner candidate `bankeban.com` (`.com`); Verisign RDAP 404 plus Porkbun ordinary non-Premium result.

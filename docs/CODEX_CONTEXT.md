@@ -1,5 +1,13 @@
 # Codex Context
 
+## Sprint 46 current context - 2026-08-09
+
+Sprint 46 is complete as Repository-only planning. The authoritative plan is `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md`; expected inventory is `database/production-schema-parity.expected.json`; dry-run validator is `database/production-schema-parity-plan.mjs`; future manual query is `database/operator/production-schema-parity.readonly.sql`.
+
+The tracked Repository has 21 Migration sources: `0001`-`0009` and `0011`-`0022`. Slot `0010` is `MISSING_TRACKED_SOURCE`; existing local untracked `0010_commission_rules` files remain excluded and must not be treated as evidence. Repository validation therefore correctly ends `BLOCKED` for actual parity while proving the catalog query plan is SELECT-only. No Production connection or SQL occurred.
+
+Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Next work is only Migration `0010` governance/expected-ledger closure in Repository; do not connect to Production, execute a Migration, deploy or operate external resources.
+
 ## Sprint 45 current context - 2026-08-09
 
 `bankeban.com` / `.com` is the only owner-selected Production domain quote candidate. Verisign `.com` RDAP returned 404 and Porkbun public search showed an ordinary non-Premium US$11.08 one-year registration renewing at US$11.08/year. Treat both availability and price as point-in-time evidence; nothing was purchased, reserved, added to cart, configured or deployed.

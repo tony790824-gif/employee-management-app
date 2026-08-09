@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 46 Repository-only schema parity plan - 2026-08-09
+
+- Evidence status: **BLOCKED / NOT COLLECTED**. No Production database connection or SQL execution was authorized or attempted.
+- Repository expected range: `0001`-`0022`; 21 tracked sources/checksums verified locally. `0010` is explicitly `MISSING_TRACKED_SOURCE`, so the expected inventory and any future parity result fail closed.
+- The future evidence contract is `docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.schema.json`; it permits only sanitized result metadata and forbids connection/host/project/endpoint identifiers and credentials.
+- The future catalog query set is statically proven SELECT-only and restricted to `pg_catalog`, `information_schema` and `public.schema_migrations`. This proof is planning evidence only, not Production parity evidence.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**.
+
 ## Sprint 45 domain availability and quote evidence - 2026-08-09
 
 - Evidence source: Verisign `.com` RDAP and Porkbun public unauthenticated search/pricing.

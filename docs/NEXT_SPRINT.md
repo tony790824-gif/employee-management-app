@@ -1,10 +1,16 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 46 - Production Schema Parity Read-only Plan
+## Sprint 47 - Migration 0010 Governance and Expected-ledger Closure
+
+Sprint 46 completed the Repository-only schema-parity plan, catalog query review, evidence contract and dry-run validator. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
+
+The next single Sprint is Repository-only governance for Migration slot `0010`. The tracked source of truth contains `0001`-`0009` and `0011`-`0022`, while local untracked `0010_commission_rules` files are not authoritative and were not inspected, staged or checksummed by Sprint 46. Sprint 47 must decide through review whether `0010` becomes an approved tracked Migration or a formally reserved/retired ledger slot, then update the expected-ledger policy and tests. It must not connect to Production, execute SQL/Migration, modify a database, deploy or operate an external resource.
+
+## Historical Sprint 46 - Production Schema Parity Read-only Plan
 
 Sprint 45 closed only the exact `bankeban.com` public availability and price-evidence item. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.
 
-The next single Sprint is Repository-only planning for an authorized future catalog/Migration-ledger comparison using the existing Production read-only role. It must define expected `0001`–`0022` parity, checksums, safe metadata queries, stop conditions and evidence fields. It must not connect to Production, run SQL, execute a Migration, change a database, deploy, purchase the domain or modify DNS.
+Completed as a Repository-only plan. `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md` defines expected `0001`-`0022` slots, tracked checksums, safe metadata queries, stop conditions and evidence fields. The validator correctly reports `BLOCKED` because `0010` has no Git-tracked authoritative source. No Production connection, SQL, Migration, database change, deploy, domain purchase or DNS operation occurred.
 
 ## Historical Sprint 45 - Production Domain/TLD Quote Evidence Closure
 

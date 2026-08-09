@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Sprint 46 schema parity planning checkpoint
+
+- [x] Expected ledger slots `0001`-`0022` and SHA-256 values for all 21 Git-tracked sources are recorded.
+- [x] Future catalog scope, sanitized evidence schema and fail-closed stop conditions are documented and tested without a database connection.
+- [x] Future manual query contains only SELECT metadata access to catalogs and `public.schema_migrations`; no business rows or Function bodies are read.
+- [ ] Resolve Migration `0010` governance; it currently has no authoritative Git-tracked source/checksum.
+- [ ] Obtain separate human authorization, execute the read-only Production comparison and hash complete evidence.
+- [ ] Require all ledger/checksum/schema/Function/owner/ACL/RLS/policy/Extension results PASS before schema parity can pass.
+- [ ] Keep readiness 70% / NOT READY, Gate A DEFER and Production NO-GO until actual evidence closes the gates.
+
 ## Sprint 45 domain quote checkpoint
 
 - [x] Owner supplied one exact quote candidate: `bankeban.com` / `.com`.

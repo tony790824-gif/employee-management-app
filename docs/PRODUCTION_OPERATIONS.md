@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 46 schema parity operating boundary
+
+- `docs/PRODUCTION_SCHEMA_PARITY_READONLY_PLAN.md` is the future parity-run authority, but it grants no permission to connect or execute SQL.
+- Run `pnpm db:parity:plan` locally to validate only the tracked inventory and query safety. Its current `BLOCKED` result is required because Migration `0010` lacks a tracked authoritative source.
+- Do not use untracked `0010_commission_rules` files, Owner/Migrator/API/Push credentials or Staging evidence to bypass the blocker.
+- A future catalog run requires a new exact human authorization and the dedicated Production read-only role. Stop on identity, role, ledger/checksum, schema, owner, ACL, RLS/policy, Extension or evidence mismatch; never repair during evidence collection.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 45 domain operating boundary
 
 - `bankeban.com` (`.com`) is an owner-selected quote candidate, not an owned/configured Production domain.

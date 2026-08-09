@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 46 status - Production Schema Parity Read-only Plan (2026-08-09)
+
+- **Status:** COMPLETE as Repository-only planning; actual Production parity remains BLOCKED / NOT EXECUTED.
+- **Inventory:** expected slots `0001`-`0022`; 21 Git-tracked Migration sources and SHA-256 values verified. `0010` is `MISSING_TRACKED_SOURCE`; no local untracked file was accepted or checksummed.
+- **Controls:** SELECT-only catalog query plan, evidence schema, stop conditions and dry-run tests added. No database URL is accepted and no Production connection is made.
+- **Decision:** Production readiness remains 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO.
+- **Next unique Sprint:** Migration `0010` Governance and Expected-ledger Closure, Repository-only. Do not execute SQL/Migration or operate Production.
+
 ## Sprint 45 status - Production Domain/TLD Quote Evidence Closure (2026-08-09)
 
 - **Status:** COMPLETE as owner-authorized read-only public availability and quote evidence; no purchase, reservation, cart, account, DNS or Production operation occurred.
