@@ -1,6 +1,21 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 49 - Authorized Production Read-only Catalog Comparison
+## Sprint 50 proposal - Production Migration Gap Remediation Plan (Repository-only)
+
+Sprint 49 completed its authorized read-only scope and correctly stopped at Migration Ledger parity. Production contains `0001`-`0008`; compared with the approved expected ledger, `0009` and `0011`-`0022` are missing. There are no unexpected versions or checksum mismatches. Structural catalog collection did not start.
+
+The next single Sprint may only prepare a fail-closed remediation plan: Migration dependency/order review, preconditions, backup/restore prerequisites, rollback/stop conditions, downtime and evidence contract. It must not connect with a privileged credential, run a Migration, repair schema, grant/revoke, deploy or mutate Production. Any future execution requires a separate exact owner authorization after Gate A and recovery prerequisites are satisfied.
+
+## Historical Sprint 49 - Authorized Production Read-only Catalog Comparison
+
+- Dedicated read-only identity, role boundary and TLS `verify-full`: PASS.
+- Migration Ledger Parity: BLOCKED; expected 21, observed 8, missing `0009` and `0011`-`0022`.
+- Unexpected versions/checksum mismatches: NONE.
+- Structural catalog: NOT STARTED / BLOCKED by ledger gate.
+- Sanitized evidence SHA-256: `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no mutation occurred.
+
+## Historical planned Sprint 49 - Authorized Production Read-only Catalog Comparison
 
 Sprint 48 completed the deterministic expected catalog baseline from two empty disposable PostgreSQL 18 databases. The committed SHA-256 is `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`; both 21-row ledgers exclude `0010`.
 

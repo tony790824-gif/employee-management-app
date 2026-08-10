@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 49 status - Authorized Production Read-only Catalog Comparison (2026-08-10)
+
+- **Sprint status:** COMPLETE for the authorized evidence scope; **Production parity:** BLOCKED.
+- **Boundary:** dedicated Production read-only identity PASS, role boundary PASS and TLS `verify-full` PASS. Only catalog metadata and `public.schema_migrations` were read.
+- **Ledger result:** expected 21 rows; Production 8 rows (`0001`-`0008`). Missing `0009` and `0011`-`0022`; unexpected versions NONE; checksum mismatches NONE.
+- **Fail-closed result:** structural catalog collection did not start, so schema/Function/ACL/RLS/policy/Extension parity remains NOT EVALUATED/BLOCKED.
+- **Evidence:** expected baseline `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`; sanitized evidence `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO. No Migration, repair, grant, deploy or Production mutation occurred.
+- **Next unique Sprint:** Repository-only Production Migration Gap Remediation Plan. It may plan dependency/order/rollback/evidence only; it must not apply any Production Migration without a separate exact authorization.
+
 ## Sprint 48 status - Disposable Expected Catalog Baseline Materialization (2026-08-10)
 
 - **Status:** COMPLETE for the expected, non-Production side of schema parity.

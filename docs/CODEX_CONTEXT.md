@@ -1,5 +1,13 @@
 # Codex Context
 
+## Sprint 49 current context - 2026-08-10
+
+The authorized Production metadata-only run used the dedicated read-only identity. Identity/role boundary and TLS `verify-full` passed. The normalized expected baseline hash remains `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+
+Migration Ledger parity failed closed: expected 21 entries; Production observed eight (`0001`-`0008`). Missing versions are `0009` and `0011`-`0022`; unexpected versions and checksum mismatches are NONE. The comparator deliberately did not enter structural catalog collection. Sanitized evidence hash is `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+
+Sprint 49 evidence scope is complete, but Production schema parity remains BLOCKED. Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production mutation, Migration, repair, deploy or credential change occurred. Preserve existing excluded untracked files. Next work can only be a separately scoped Repository-only Migration gap remediation plan; do not execute it automatically.
+
 ## Sprint 48 current context - 2026-08-10
 
 The expected schema side is now materialized from the approved Git source. A local disposable PostgreSQL 18 cluster created two independent empty databases; both applied exactly 21 Migrations (`0001`-`0009`, `0011`-`0022`), excluded `0010`, produced matching ledgers and byte-identical normalized catalogs.

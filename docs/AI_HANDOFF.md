@@ -1,5 +1,16 @@
 # AI Handoff
 
+## Sprint 49 handoff - 2026-08-10
+
+- Sprint scope **COMPLETE**; Production schema parity remains **BLOCKED**.
+- An authorized human used the dedicated Production read-only credential. Identity, safe role boundary and TLS `verify-full` all passed; no Owner/Migrator/API/Push/Staging credential was substituted.
+- Ledger evidence is current: expected 21 rows, Production 8 (`0001`-`0008`), missing `0009` and `0011`-`0022`, with no unexpected versions or checksum mismatches.
+- The comparator stopped before structural catalog queries. Schema, Function, ACL, RLS/policy and Extension parity are NOT EVALUATED/BLOCKED, not inferred failures.
+- Evidence files: `docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.json` and `.sha256`; evidence hash `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+- Production readiness remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO. No Production write, Migration, repair, grant/revoke, deploy or credential change occurred.
+- Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and untracked `0010_commission_rules` files.
+- Next unique work is a Repository-only Migration gap remediation plan. Do not run the missing Migrations or structural comparison without new explicit authorization and satisfied recovery prerequisites.
+
 ## Sprint 48 handoff - 2026-08-10
 
 - Status: **COMPLETE FOR EXPECTED BASELINE / PRODUCTION PARITY STILL BLOCKED**.

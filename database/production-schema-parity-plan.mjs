@@ -34,6 +34,10 @@ export const PARITY_STOP_CONDITIONS = Object.freeze([
 export const EVIDENCE_FIELDS = Object.freeze([
   'timestamp',
   'commitSha',
+  'expectedBaselineHash',
+  'productionCatalogHash',
+  'identityResult',
+  'tlsVerification',
   'expectedMigrationRange',
   'observedMigrationRange',
   'checksumResult',

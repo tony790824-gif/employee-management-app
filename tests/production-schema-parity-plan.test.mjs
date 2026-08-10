@@ -41,6 +41,34 @@ assert.doesNotMatch(querySql, /pg_get_functiondef|\bprosrc\b/i);
 assert.match(querySql, /public\.schema_migrations/);
 assert.match(querySql, /pg_catalog\.pg_policies/);
 assert.match(querySql, /pg_catalog\.pg_extension/);
+assert.doesNotMatch(
+  querySql,
+  /membership\.member\s*=\s*roles\.oid\s+OR\s+membership\.roleid\s*=\s*roles\.oid/i,
+  'An inbound-only membership must not be treated as privilege inheritance by the read-only role.'
+);
+assert.match(querySql, /pg_has_role\(roles\.oid, granted_role\.oid, 'MEMBER'\)/);
+assert.match(querySql, /'MEMBER WITH ADMIN OPTION'/);
+assert.match(querySql, /pg_has_role\(\s*roles\.oid,\s*granted_role\.oid,\s*'USAGE'\s*\)/);
+assert.match(querySql, /pg_has_role\(\s*roles\.oid,\s*granted_role\.oid,\s*'SET'\s*\)/);
+
+const outboundMembershipIsUnsafe = ({
+  outbound = false,
+  adminPath = false,
+  usagePath = false,
+  setPath = false
+} = {}) => outbound && (
+  adminPath || usagePath || setPath
+);
+assert.equal(outboundMembershipIsUnsafe({ outbound: false, adminPath: true }), false,
+  'Another role being a member of the read-only role does not expand the read-only role privileges.');
+assert.equal(outboundMembershipIsUnsafe({ outbound: true, setPath: true }), true,
+  'A SET path to a privilege-carrying role must fail closed.');
+assert.equal(outboundMembershipIsUnsafe({ outbound: true, usagePath: true }), true,
+  'An inherited privilege path must fail closed.');
+assert.equal(outboundMembershipIsUnsafe({ outbound: true, adminPath: true }), true,
+  'An outbound role-administration path must fail closed even before object privileges are considered.');
+assert.equal(outboundMembershipIsUnsafe({ outbound: true }), false,
+  'A membership with no ADMIN, USAGE or SET path does not expand effective privileges.');
 
 for (const condition of [
   'TARGET_IDENTITY_UNPROVEN',
@@ -64,6 +92,10 @@ const evidence = Object.fromEntries(EVIDENCE_FIELDS.map(field => [field, null]))
 Object.assign(evidence, {
   timestamp: '2026-08-09T00:00:00.000Z',
   commitSha: '0'.repeat(40),
+  expectedBaselineHash: '1'.repeat(64),
+  productionCatalogHash: null,
+  identityResult: 'PASS',
+  tlsVerification: 'VERIFY_FULL_PASS',
   expectedMigrationRange: { start: '0001', end: '0022', count: 22 },
   observedMigrationRange: null,
   checksumResult: { status: 'BLOCKED', differences: ['MISSING:0010'] },

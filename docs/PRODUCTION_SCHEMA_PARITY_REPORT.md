@@ -1,5 +1,16 @@
 # Production Schema Parity Report
 
+## Sprint 49 authorized Production-side result - 2026-08-10
+
+- Sprint evidence scope: **COMPLETE**; final parity status: **BLOCKED**.
+- Identity/role boundary/TLS `verify-full`: **PASS / PASS / PASS**.
+- Migration Ledger Parity: **BLOCKED**. Expected 21, observed 8 (`0001`-`0008`); missing `0009` and `0011`-`0022`; unexpected NONE; checksum mismatch NONE.
+- Structural Catalog Parity: **BLOCKED / NOT EVALUATED**. The fail-closed comparator stopped before structural collection.
+- Expected baseline SHA-256: `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- Sanitized evidence SHA-256: `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+- Production readiness remains 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO.
+- No Migration, schema repair, write, grant/revoke, deploy or credential change occurred.
+
 ## Sprint 48 expected-side update - 2026-08-10
 
 - Expected Migration ledger: **PASS** — 21 approved versions; `0010` intentionally absent.

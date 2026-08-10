@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-10 - Sprint 49 authorized Production read-only catalog comparison
+
+- Added a sanitized, hash-verified Production ledger comparison using only the dedicated read-only identity and TLS `verify-full`.
+- Recorded the fail-closed result: Production has `0001`-`0008`; `0009` and `0011`-`0022` are missing, with no unexpected versions or checksum mismatches.
+- Structural catalog collection did not start. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production mutation occurred.
+
 ## 2026-08-09 - Sprint 34 Neon read-only evidence closure
 
 - Recorded the authorized human Provision/Verify PASS, the sanitized SHA-256 Neon evidence record, Sprint 34 COMPLETE status, and unchanged 70% / NOT READY Production decision. Codex did not connect to Production.

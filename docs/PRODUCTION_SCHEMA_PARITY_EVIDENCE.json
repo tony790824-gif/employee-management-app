@@ -1,0 +1,70 @@
+{
+  "aclResult": {
+    "differences": [
+      "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
+    ],
+    "status": "BLOCKED"
+  },
+  "checksumResult": {
+    "differences": [
+      "MISSING:0009",
+      "MISSING:0011",
+      "MISSING:0012",
+      "MISSING:0013",
+      "MISSING:0014",
+      "MISSING:0015",
+      "MISSING:0016",
+      "MISSING:0017",
+      "MISSING:0018",
+      "MISSING:0019",
+      "MISSING:0020",
+      "MISSING:0021",
+      "MISSING:0022"
+    ],
+    "status": "BLOCKED"
+  },
+  "commitSha": "1286bde12ecd8ac1313cf24043d4802d96055adc",
+  "expectedBaselineHash": "28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df",
+  "expectedMigrationRange": {
+    "count": 21,
+    "end": "0022",
+    "start": "0001"
+  },
+  "extensionResult": {
+    "differences": [
+      "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
+    ],
+    "status": "BLOCKED"
+  },
+  "finalStatus": "BLOCKED",
+  "functionParityResult": {
+    "differences": [
+      "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
+    ],
+    "status": "BLOCKED"
+  },
+  "identityResult": "PASS",
+  "observedMigrationRange": {
+    "count": 8,
+    "end": "0008",
+    "start": "0001"
+  },
+  "productionCatalogHash": null,
+  "rlsPolicyResult": {
+    "differences": [
+      "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
+    ],
+    "status": "BLOCKED"
+  },
+  "schemaParityResult": {
+    "differences": [
+      "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
+    ],
+    "status": "BLOCKED"
+  },
+  "stopReasons": [
+    "MIGRATION_LEDGER_MISMATCH"
+  ],
+  "timestamp": "2026-08-10T12:10:39.881Z",
+  "tlsVerification": "VERIFY_FULL_PASS"
+}

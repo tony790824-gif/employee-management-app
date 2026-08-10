@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 49 authorized Production read-only comparison - 2026-08-10
+
+- Dedicated Production read-only identity, safe role boundary and TLS `verify-full`: **PASS**.
+- Current Migration Ledger Parity: **BLOCKED**. Expected 21 rows; observed `0001`-`0008` (8 rows). Missing `0009` and `0011`-`0022`; unexpected versions NONE; checksum mismatches NONE.
+- Structural Schema/Function/ACL/RLS/policy/Extension parity: **BLOCKED / NOT EVALUATED** because the ledger gate stopped collection before those queries.
+- Sanitized evidence SHA-256: `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`; expected baseline remains `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**. Read-only evidence clarifies the blocker but does not close it or raise the score.
+- No Production write, Migration, repair, grant/revoke, deploy, Secret or credential change occurred.
+
 ## Sprint 48 expected catalog baseline materialization - 2026-08-10
 
 - A local loopback-only disposable PostgreSQL 18 cluster applied the exact 21 approved tracked Migrations twice from empty databases. Both ledgers pass and exclude `0010`.

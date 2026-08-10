@@ -1,12 +1,22 @@
 # Production Release Checklist
 
+## Sprint 49 Production ledger checkpoint
+
+- [x] Dedicated Production read-only identity, safe role boundary and TLS `verify-full` proved before ledger collection.
+- [x] Current ledger compared with the committed 21-row expected baseline; sanitized evidence/hash recorded.
+- [x] Exact blocker recorded: Production `0001`-`0008`; missing `0009` and `0011`-`0022`; no unexpected versions or checksum mismatches.
+- [x] Structural catalog collection stopped before execution when ledger parity failed.
+- [ ] Review and separately authorize a Production Migration remediation plan; this checklist does not authorize execution.
+- [ ] Re-run ledger and structural parity only after any separately approved remediation and require every section PASS.
+- [ ] Keep release NOT READY, Gate A DEFER and Production NO-GO while parity remains BLOCKED.
+
 ## Sprint 48 expected catalog baseline checkpoint
 
 - [x] Disposable database identity proved PostgreSQL 18, loopback-only listener, Temp-contained data directory and dedicated local owner before every Migration.
 - [x] Two empty databases applied only `0001`-`0009` and `0011`-`0022`; `0010` was not read, checksummed, executed or added to either ledger.
 - [x] Both normalized catalogs are byte-identical and match committed SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
 - [x] Committed artifact contains all required metadata categories and no runtime identity, path, endpoint, credential or business rows.
-- [ ] Obtain separate authorization and protected process-only Production reader inputs for the actual catalog comparison.
+- [x] Obtain separate authorization and protected process-only Production reader inputs for the actual catalog comparison.
 - [ ] Keep Production parity BLOCKED and release NO-GO until current Production ledger and every structural section match this baseline.
 
 ## Sprint 47 schema parity evidence checkpoint

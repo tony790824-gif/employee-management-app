@@ -7,6 +7,10 @@
   "required": [
     "timestamp",
     "commitSha",
+    "expectedBaselineHash",
+    "productionCatalogHash",
+    "identityResult",
+    "tlsVerification",
     "expectedMigrationRange",
     "observedMigrationRange",
     "checksumResult",
@@ -21,6 +25,15 @@
   "properties": {
     "timestamp": { "type": "string", "format": "date-time" },
     "commitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "expectedBaselineHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "productionCatalogHash": {
+      "anyOf": [
+        { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        { "type": "null" }
+      ]
+    },
+    "identityResult": { "enum": ["PASS", "BLOCKED"] },
+    "tlsVerification": { "enum": ["VERIFY_FULL_PASS", "BLOCKED"] },
     "expectedMigrationRange": { "$ref": "#/$defs/range" },
     "observedMigrationRange": { "anyOf": [{ "$ref": "#/$defs/range" }, { "type": "null" }] },
     "checksumResult": { "$ref": "#/$defs/result" },

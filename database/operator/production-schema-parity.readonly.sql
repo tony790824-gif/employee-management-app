@@ -36,10 +36,33 @@ SELECT NOT rolsuper
        AND NOT rolbypassrls
        AND rolcanlogin
        AND NOT rolinherit
+       -- An inbound membership (another role is a member of this read-only
+       -- role) does not grant this role any privilege. Fail closed only when
+       -- this role has an outbound/reachable role path that provides role
+       -- administration or can expose privileges through USAGE/SET. Treat
+       -- every such path as unsafe even if the granted role is empty today.
        AND NOT EXISTS (
          SELECT 1
-           FROM pg_catalog.pg_auth_members AS membership
-          WHERE membership.member = roles.oid OR membership.roleid = roles.oid
+           FROM pg_catalog.pg_roles AS granted_role
+          WHERE granted_role.oid <> roles.oid
+            AND pg_catalog.pg_has_role(roles.oid, granted_role.oid, 'MEMBER')
+            AND (
+              pg_catalog.pg_has_role(
+                roles.oid,
+                granted_role.oid,
+                'MEMBER WITH ADMIN OPTION'
+              )
+              OR pg_catalog.pg_has_role(
+                roles.oid,
+                granted_role.oid,
+                'USAGE'
+              )
+              OR pg_catalog.pg_has_role(
+                roles.oid,
+                granted_role.oid,
+                'SET'
+              )
+            )
        )
        AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_database AS database_record WHERE database_record.datdba = roles.oid)
        AND NOT EXISTS (SELECT 1 FROM pg_catalog.pg_namespace AS namespace WHERE namespace.nspowner = roles.oid)

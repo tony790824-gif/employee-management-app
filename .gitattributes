@@ -1,0 +1,4 @@
+database/production-expected-catalog-baseline.json text eol=lf
+database/production-expected-catalog-baseline.sha256 text eol=lf
+docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.json text eol=lf
+docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.sha256 text eol=lf

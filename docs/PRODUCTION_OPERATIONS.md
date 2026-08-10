@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 49 parity stop state
+
+- Authorized dedicated-reader identity, role boundary and TLS `verify-full` passed.
+- Migration ledger comparison stopped fail-closed: Production has `0001`-`0008`; expected also requires `0009` and `0011`-`0022`. No unexpected versions or checksum mismatches were found.
+- Do not run structural catalog comparison against this state. Do not apply, repair, grant/revoke or deploy anything from this evidence.
+- Any remediation first requires a Repository-only dependency/rollback/recovery plan and a separate exact owner authorization. Gate A and recovery prerequisites remain unsatisfied.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 47 parity evidence stop state
 
 - Current parity collection is BLOCKED before connection: the process has no dedicated Production read-only URL/role. Never substitute Migrator/API/Push/Admin credentials.

@@ -1,5 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 49 authorized Production ledger evidence - 2026-08-10
+
+- Evidence status: **BLOCKED AT MIGRATION LEDGER / COLLECTION COMPLETE**.
+- Identity provenance: dedicated Production read-only identity **PASS**; role boundary **PASS**; TLS `verify-full` **PASS**.
+- Expected ledger: 21 entries (`0001`-`0009`, `0011`-`0022`). Observed ledger: 8 entries (`0001`-`0008`).
+- Missing: `0009`, `0011`-`0022`. Unexpected: NONE. Checksum mismatch: NONE.
+- Structural catalog was not collected after the ledger mismatch; all structural sections remain NOT EVALUATED/BLOCKED.
+- Expected baseline SHA-256: `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- Sanitized evidence: `docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.json`; SHA-256 `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`.
+- Evidence contains only status/count/version/hash metadata; it excludes URL, hostname, user/password, endpoint/project identifiers, Token, Cookie and business data.
+- No Production mutation, Migration, repair, grant/revoke, deploy or credential change occurred. Readiness stays 70% / NOT READY; Gate A DEFER; Provisioning NO-GO.
+
 ## Sprint 48 expected catalog evidence - 2026-08-10
 
 The non-Production expected-side catalog artifact is **PASS** and hash/rebuild verified. It is prerequisite comparison evidence, not Production evidence. Current Production ledger/catalog evidence remains **BLOCKED / UNKNOWN**, Production readiness remains 70% / NOT READY, Gate A remains DEFER and Provisioning remains NO-GO. No Production resource was queried or modified.

@@ -1,5 +1,9 @@
 # Production Schema Parity Read-only Plan
 
+## Sprint 49 executed evidence outcome - 2026-08-10
+
+The authorized human run proved the dedicated read-only identity, corrected outbound-only role boundary and TLS `verify-full`, then compared only the Migration ledger. Expected 21 entries; Production observed `0001`-`0008`. Missing `0009` and `0011`-`0022`; unexpected versions and checksum mismatches are NONE. The runner stopped before structural catalog collection. Evidence SHA-256: `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`. This result authorizes no repair or Migration.
+
 Status: **EXPECTED CATALOG BASELINE PASS / PRODUCTION EVIDENCE BLOCKED**
 
 Date: 2026-08-09
@@ -30,7 +34,7 @@ The future operator must use the existing dedicated Production read-only role an
 
 The later authorized comparison covers metadata only:
 
-1. database and read-only role identity, role attributes and memberships;
+1. database and read-only role identity, role attributes and outbound/reachable membership privilege paths;
 2. `public.schema_migrations` version, name and checksum;
 3. `public` and `app_private` schemas and ownership/ACL metadata;
 4. tables, views, materialized views and sequences;
@@ -67,7 +71,7 @@ Stop immediately and record `BLOCKED` when any condition occurs:
 
 - target host/database identity cannot be proven through the separately authorized runbook;
 - current/session role does not match the dedicated Production read-only role;
-- role has SUPERUSER, CREATEDB, CREATEROLE, REPLICATION, BYPASSRLS, unsafe inheritance, membership or ownership;
+- role has SUPERUSER, CREATEDB, CREATEROLE, REPLICATION, BYPASSRLS, unsafe inheritance, ownership, or any outbound/reachable membership path with ADMIN, USAGE or SET capability; inbound-only membership does not grant privileges to the read-only role and is recorded as metadata rather than treated as an automatic blocker;
 - an expected Migration is missing, an unknown version is present, or name/checksum differs;
 - any schema object, Function signature, owner, ACL, RLS flag/policy or required Extension differs;
 - an unexpected Extension is present;
@@ -81,6 +85,8 @@ No mismatch authorizes a repair, Migration, grant, revoke or other Production ch
 Future sanitized evidence must conform to `docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.schema.json` and contain:
 
 - timestamp and compared Git commit SHA;
+- the committed expected-baseline hash and sanitized Production catalog hash (or `null` when ledger mismatch stops structural collection);
+- identity-boundary and TLS `verify-full` results;
 - expected and observed Migration ranges;
 - checksum, schema, Function, ACL, RLS/policy and Extension results;
 - final `PASS`, `PARTIAL` or `BLOCKED` status and non-sensitive stop reasons.

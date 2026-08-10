@@ -29,7 +29,7 @@ const FORBIDDEN_ENVIRONMENT_KEYS = Object.freeze([
   'BANK_PRODUCTION_DATABASE_HOST'
 ]);
 
-const CATALOG_QUERIES = Object.freeze({
+export const CATALOG_QUERIES = Object.freeze({
   schemas: `
     SELECT n.nspname AS schema_name,
            pg_catalog.pg_get_userbyid(n.nspowner) AS owner_name,
