@@ -1,5 +1,14 @@
 # Production Operations Evidence Guide
 
+## Sprint 50 Migration remediation operating boundary
+
+- Use `docs/PRODUCTION_MIGRATION_GAP_REMEDIATION_PLAN.md` as the only planning authority; its execution runbook is a draft and grants no permission.
+- Future sequence is exactly `0009`, `0011`-`0022`; reject `0010`, a dirty working tree, a directory-discovered manifest or a stale checksum.
+- Do not use the current generic `db:migrate up` for this gap. It does not provide the required exact allowlist or human stop after every version.
+- Current recovery gate is BLOCKED, maintenance window is REQUIRED and zero-downtime is UNKNOWN. Never proceed without isolated Restore/RPO/RTO evidence and explicit per-event authorization.
+- On failure, roll back only the current uncommitted transaction and stop. Do not automatically run down, edit the ledger, skip a version or continue.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Sprint 50 performed no Production operation.
+
 ## Sprint 49 parity stop state
 
 - Authorized dedicated-reader identity, role boundary and TLS `verify-full` passed.

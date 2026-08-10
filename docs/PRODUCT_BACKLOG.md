@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 50 status - Production Migration Gap Remediation Plan (2026-08-10)
+
+- **Sprint status:** COMPLETE as a Repository-only, fail-closed plan; Production execution remains **BLOCKED / NOT AUTHORIZED**.
+- **Inventory/order:** `0009`, `0011`-`0022` in strict order. `0010` remains an intentional unapproved gap and is rejected from the chain.
+- **Controls:** per-version dependencies, Production preconditions, DDL/lock/runtime risks, rollback classifications, recovery prerequisites, stop conditions and sanitized evidence contract are recorded and machine-validated.
+- **New blocker found:** the generic Migration runner scans the directory and applies all pending files without a per-version verification stop. It is not approved for this gap; a clean immutable artifact and exact-manifest one-version executor/rehearsal are required.
+- **Recovery/downtime:** scheduled snapshot and isolated Restore proof remain absent; recovery gate is BLOCKED. Maintenance window is REQUIRED and zero-downtime is UNKNOWN.
+- **Decision:** readiness remains 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO. No Production connection, SQL, Migration, deploy or external resource operation occurred.
+- **Next unique Sprint:** isolated non-Production `0001`-`0008` to `0022` upgrade rehearsal with exact allowlist and per-version checkpoints. It must not use Production data or credentials.
+
 ## Sprint 49 status - Authorized Production Read-only Catalog Comparison (2026-08-10)
 
 - **Sprint status:** COMPLETE for the authorized evidence scope; **Production parity:** BLOCKED.

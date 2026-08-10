@@ -1,5 +1,17 @@
 # AI Handoff
 
+## Sprint 50 handoff - 2026-08-10
+
+- Sprint 50 is **COMPLETE AS REPOSITORY-ONLY PLANNING**; Production Migration execution remains **BLOCKED / NOT AUTHORIZED**.
+- Authority: `docs/PRODUCTION_MIGRATION_GAP_REMEDIATION_PLAN.md`; future draft procedure: `docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md`; machine-readable inventory: `database/production-migration-gap-remediation.expected.json`.
+- Exact order is `0009`, `0011`-`0022`. Never include the local untracked `0010_commission_rules` files.
+- Every version has a verified up/down checksum, dependency, precondition, mutation/lock risk, rollback class and compatibility note. No version is declared unconditionally reversible.
+- Recovery remains BLOCKED: no scheduled snapshot or isolated Restore verification; RPO 15 minutes/RTO 60 minutes not proven. A maintenance window is required and zero-downtime is UNKNOWN.
+- The generic migrator directory-scans and its `up` command applies all pending versions without per-version stops; it is not approved for this Production gap.
+- Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Sprint 50 made no Production connection, SQL, Migration, repair, deploy or external change.
+- Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and untracked `0010` files.
+- Next unique work: a separately authorized disposable non-Production upgrade rehearsal from `0001`-`0008`, using an exact allowlist and one-version verification checkpoints.
+
 ## Sprint 49 handoff - 2026-08-10
 
 - Sprint scope **COMPLETE**; Production schema parity remains **BLOCKED**.

@@ -1,5 +1,15 @@
 # Codex Context
 
+## Sprint 50 current context - 2026-08-10
+
+Sprint 50 completed only the fail-closed Production Migration gap plan. The confirmed missing versions remain `0009` and `0011`-`0022`; strict order is mandatory and `0010` remains excluded. Production structural catalog was not evaluated and no new Production evidence was collected.
+
+The authoritative plan is `docs/PRODUCTION_MIGRATION_GAP_REMEDIATION_PLAN.md`; the non-authorizing draft is `docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md`. The inventory/validator records exact up/down hashes, dependencies, preconditions, DDL/lock risks, rollback conditions, recovery blockers and sanitized evidence fields.
+
+Production execution is blocked by unsatisfied backup/Restore evidence, unknown Production structural/table-size/lock facts, unproven runtime compatibility, absent Gate A authorization and unsuitable generic tooling. `database/migrate.mjs` directory-scans all files and `up` has no per-version stop, so it must not be used against this gap without a separately reviewed exact-manifest executor.
+
+Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection, SQL, Migration, repair, deploy or external platform action occurred. Next work is only an isolated non-Production `0001`-`0008` upgrade rehearsal under separate authorization.
+
 ## Sprint 49 current context - 2026-08-10
 
 The authorized Production metadata-only run used the dedicated read-only identity. Identity/role boundary and TLS `verify-full` passed. The normalized expected baseline hash remains `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.

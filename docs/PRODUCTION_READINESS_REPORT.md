@@ -1,5 +1,15 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 50 Migration gap remediation planning - 2026-08-10
+
+- Repository-only dependency, precondition, lock/runtime, recovery, rollback and evidence review is **COMPLETE** for missing `0009`, `0011`-`0022`; `0010` remains excluded.
+- Production Migration execution: **BLOCKED / NOT AUTHORIZED**. Structural predecessor metadata, row/table size and lock evidence remain NOT EVALUATED/UNKNOWN.
+- Recovery: **BLOCKED** because scheduled snapshot and isolated Restore proof are absent and the 15-minute RPO / 60-minute RTO targets are not proven for this change.
+- Downtime: maintenance window **REQUIRED**; zero-downtime **UNKNOWN**. Existing-table CHECK validation, trigger DDL and non-concurrent indexes require measured rehearsal.
+- Tooling: current generic runner is **BLOCKED** for this gap because directory discovery can see unapproved files and `up` cannot pause after each successful version.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**. Planning closes no Production evidence gate.
+- No Production connection, SQL, Migration, schema repair, deploy, credential or external resource change occurred.
+
 ## Sprint 49 authorized Production read-only comparison - 2026-08-10
 
 - Dedicated Production read-only identity, safe role boundary and TLS `verify-full`: **PASS**.

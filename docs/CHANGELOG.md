@@ -2,6 +2,13 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-10 - Sprint 50 Production Migration gap remediation plan
+
+- Added a machine-validated exact plan for missing `0009`, `0011`-`0022`, preserving `0010` as an excluded intentional gap.
+- Recorded per-version dependencies, preconditions, DDL/lock/runtime risks, rollback conditions, recovery gates, stop conditions and sanitized evidence requirements.
+- Rejected the generic directory-scanning migrator for this Production gap and required an isolated one-version-at-a-time rehearsal before any future approval.
+- Kept Production 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production mutation occurred.
+
 ## 2026-08-10 - Sprint 49 authorized Production read-only catalog comparison
 
 - Added a sanitized, hash-verified Production ledger comparison using only the dedicated read-only identity and TLS `verify-full`.

@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 50 proposal - Production Migration Gap Remediation Plan (Repository-only)
+## Sprint 51 proposal - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal
+
+Sprint 50 completed the Repository-only remediation plan. The strict future chain is `0009`, `0011`-`0022`; `0010` is excluded. Production execution remains BLOCKED because recovery/isolated-Restore proof, structural preconditions, runtime compatibility, exact stepwise execution tooling and Gate A authorization are absent.
+
+The next single Sprint should build an isolated, disposable, non-Production database at the approved `0001`-`0008` baseline, then rehearse only the exact 13-version allowlist one version per transaction with a verification stop after each version. It must measure lock/duration behavior, exercise precondition failures and rollback guards, prove `0010` rejection and emit sanitized evidence. It must not use Production data/credentials, connect to Production, deploy, mutate external resources or claim the rehearsal makes Production safe.
+
+## Historical Sprint 50 - Production Migration Gap Remediation Plan
+
+- Repository plan and validator: COMPLETE.
+- Production Migration execution, structural preconditions and recovery gate: BLOCKED / NOT AUTHORIZED.
+- Maintenance window: REQUIRED; zero-downtime: UNKNOWN.
+- Generic directory-scanning `db:migrate up`: not approved for this gap because it cannot enforce the exact 13-version list and per-version human stops.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no mutation occurred.
+
+## Historical Sprint 50 proposal - Production Migration Gap Remediation Plan (Repository-only)
 
 Sprint 49 completed its authorized read-only scope and correctly stopped at Migration Ledger parity. Production contains `0001`-`0008`; compared with the approved expected ledger, `0009` and `0011`-`0022` are missing. There are no unexpected versions or checksum mismatches. Structural catalog collection did not start.
 

@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 50 Migration execution stop
+
+`docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md` defines a future one-version-at-a-time sequence, but is not authorized. The exact chain is `0009`, `0011`-`0022`; `0010` is prohibited. Do not use the generic directory-scanning migrator or begin a maintenance event.
+
+Execution remains blocked until a clean immutable artifact, exact-manifest executor, structural precondition evidence, measured isolated rehearsal, scheduled backup/restore proof, RPO/RTO proof, compatibility plan, maintenance window and exact owner authorization all pass. Transaction rollback is allowed only for the current uncommitted version; post-commit down/forward-fix decisions require a new version-specific approval.
+
 ## Sprint 44 evidence stop
 
 Domain/DNS/TLS, monitoring/alerting/logging and backup/Restore public candidates are documented, but no Production capability was configured. The exact Production domain/TLD and initial/renewal quote remain UNKNOWN; responder ownership, alert-delivery proof, log-retention acceptance, scheduled snapshot and isolated Restore remain open.
