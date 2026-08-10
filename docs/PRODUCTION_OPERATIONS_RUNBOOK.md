@@ -32,6 +32,12 @@ Sprint 33C adds `pnpm production:platform:validate` as the common fail-closed ev
 
 This runbook defines the evidence required before Bankeban may leave the current Production Google Sheets path. It does not authorize Production deployment, Migration, Auth0 mutation, database writes, or a destructive restore.
 
+## Sprint 55 Isolated Restore authorization stop
+
+The exact proposed boundary is documented in `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md`, but authorization is **DEFER / NOT_GRANTED**. Do not create or Restore a target until the owner separately confirms current Neon capacity/cost, names the Recovery Commander and explicitly approves the one-target/one-credential scope.
+
+Any provider charge, plan upgrade, overwrite/active-Production path, shared credential, Production traffic/application binding or scope difference is an immediate stop requiring a new decision. Repository validation is not external authorization.
+
 ## Sprint 54 Recovery readiness stop
 
 The Repository Recovery preflight is complete, but the actual Production Recovery Gate is **NO-GO**. Human read-only evidence proves only that PITR/Restore from history is available with a six-hour visible window. Scheduled snapshots are disabled, no snapshot exists, and no isolated Restore or timed verification has occurred.

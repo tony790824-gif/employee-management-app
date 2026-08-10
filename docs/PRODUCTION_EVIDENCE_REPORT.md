@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 55 isolated Restore authorization evidence - 2026-08-10
+
+- Evidence class: **REPOSITORY-ONLY AUTHORIZATION DECISION**, not Restore/capacity/cost/RPO/RTO evidence.
+- Sanitized evidence SHA-256: `b674d9aeba6d06be79b84e5a17d3576b0d5225ab1d08ba92bcc64cf86862f892`.
+- Proposed maximum: one disposable isolated target and one distinct temporary verification credential; Production traffic, app binding, SQL, Migration, plan/retention/snapshot changes and billing actions are forbidden.
+- Decision: **DEFER / NOT_GRANTED** because commander, cost/capacity and recovery controls remain non-PASS.
+- External resource creation, Production connection, SQL and mutation: **NONE**.
+
 ## Sprint 54 Recovery readiness evidence - 2026-08-10
 
 - Evidence class: **REPOSITORY CONTROL + EXISTING HUMAN READ-ONLY CAPABILITY EVIDENCE**, not an executed Restore.

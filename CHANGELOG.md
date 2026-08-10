@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-10 - Sprint 55 Isolated Restore Authorization Decision
+
+- Added a fail-closed authorization package limiting any future exercise to one disposable target and one distinct temporary credential with zero Production traffic and mandatory cleanup.
+- Defined cost/capacity stops, Recovery Commander requirement, RPO/RTO UTC measurements and restored-target verification.
+- Recorded authorization DEFER / NOT_GRANTED because provider cost/capacity and ownership evidence remain open.
+- Kept readiness 70% / NOT READY and performed no Production or external resource operation.
+
 ## 2026-08-10 - Sprint 54 Production Recovery Readiness
 
 - Added a Repository-only fail-closed Recovery package and validator covering PITR, retention, backup, isolated Restore, RPO/RTO, Migration restore point, verification, cleanup and ownership.

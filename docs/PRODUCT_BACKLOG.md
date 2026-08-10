@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 55 status - Isolated Restore Authorization Decision (2026-08-10)
+
+- **Sprint status:** COMPLETE for Repository authorization package and fail-closed decision; the external exercise remains BLOCKED / NOT GRANTED.
+- **Proposed boundary:** one disposable non-Production recovery target, one distinct temporary verification credential, zero Production traffic/application binding, metadata/hash verification only and mandatory zero-residual cleanup.
+- **Decision blockers:** exact Owner authorization NOT_GRANTED; Recovery Commander NOT_CONFIGURED; current Branch/Restore capacity and cost UNKNOWN; independent backup BLOCKED; scheduled snapshot NOT_CONFIGURED.
+- **RPO/RTO:** measurement methods are defined, but RPO 15 minutes remains BLOCKED and RTO 60 minutes remains BLOCKED / NOT MEASURED.
+- **Decision:** readiness stays 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO; Production Migration authorization NOT_GRANTED.
+- **Next unique Sprint:** human read-only Neon Restore capacity/cost confirmation and Recovery Commander nomination; no resource creation or Restore.
+
 ## Sprint 54 status - Production Recovery Readiness (2026-08-10)
 
 - **Sprint status:** COMPLETE for Repository preflight, evidence contract and fail-closed validation; actual Production Recovery remains NO-GO.

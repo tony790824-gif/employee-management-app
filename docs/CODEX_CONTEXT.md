@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-10 current state - Sprint 55 Isolated Restore Authorization Decision
+
+Sprint 55 completed only the Repository authorization decision package. It defines one future disposable target, one distinct temporary credential, zero Production traffic, no application binding/business-data output, UTC RPO/RTO timing, catalog/security verification and mandatory cleanup. It does not authorize the operation.
+
+The fail-closed decision remains DEFER / NOT_GRANTED because the Recovery Commander is not named, exact Owner authority is absent, Neon Branch/Restore capacity and incremental cost are unknown, independent backup is blocked and scheduled snapshot is not configured. RPO 15 minutes remains BLOCKED and RTO 60 minutes remains BLOCKED / NOT MEASURED.
+
+Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. No Production connection, SQL, Migration, Restore, resource, deploy, configuration, billing or Secret operation occurred. Next work is read-only provider capacity/cost evidence plus commander nomination.
+
 ## 2026-08-10 current state - Sprint 54 Production Recovery Readiness
 
 Sprint 54 added a Repository-only, fail-closed Recovery Gate. The prior human read-only evidence confirms PITR/Restore-from-history availability and six hours of visible history, but scheduled snapshots are disabled, no snapshot exists and no Restore was run.

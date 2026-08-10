@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 55 proposal - Authorized Isolated Restore Decision and Recovery Ownership
+## Sprint 56 proposal - Neon Restore Capacity/Cost Evidence and Recovery Commander Nomination
+
+Sprint 55 defined the exact one-time isolated Restore authorization boundary, but did not authorize or operate it. Before a Restore can be proposed for approval, the owner must perform a read-only Neon console check and provide only non-secret facts: whether one isolated target can be created without overwriting Production, current available Branch/Restore capacity, whether a charge or plan upgrade is required, and the nominated human Recovery Commander.
+
+Do not create a Branch/target, click Restore, change retention/snapshots, upgrade/pay, reveal identifiers, run SQL/Migration or deploy. If capability or cost cannot be proven safely, keep Isolated Restore/RPO/RTO BLOCKED.
+
+## Historical Sprint 55 - Isolated Restore Authorization Decision
+
+- Repository authorization package: COMPLETE; evidence SHA-256 `b674d9aeba6d06be79b84e5a17d3576b0d5225ab1d08ba92bcc64cf86862f892`.
+- Authorization decision DEFER; exercise authorization NOT_GRANTED; six decision Gates non-PASS.
+- Exact scope is limited to one disposable target and one distinct temporary credential with zero Production traffic and required cleanup.
+- Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED.
+
+## Historical Sprint 55 proposal - Authorized Isolated Restore Decision and Recovery Ownership
 
 Sprint 54 completed the Repository-only Recovery preflight and evidence contract. Provider PITR capability and a six-hour history observation are recorded, but no independent backup, scheduled snapshot, isolated Restore, 15-minute RPO proof, 60-minute RTO timing, restored-target verification, cleanup evidence or named recovery commander exists.
 

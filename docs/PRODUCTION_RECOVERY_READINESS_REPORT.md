@@ -2,6 +2,8 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
+Sprint 55 follow-up: `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md` now defines the exact future one-time boundary, measurement and cleanup contract. Authorization remains DEFER / NOT_GRANTED because cost/capacity and a named Recovery Commander are missing. No Recovery Gate below changed to PASS.
+
 Date: 2026-08-10
 
 ## Evidence decision

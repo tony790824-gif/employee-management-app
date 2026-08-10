@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 55 isolated Restore authorization boundary
+
+- `pnpm production:recovery:authorize` validates a Repository-only package. PASS means the package is internally consistent; the external decision remains DEFER and authorization NOT_GRANTED.
+- A future request may cover at most one disposable isolated target and one distinct temporary credential. It must never receive Production traffic or application configuration and must leave zero residual resources.
+- RPO is measured from selected restore-point UTC to Restore acceptance UTC and also requires provider continuity evidence. RTO is measured from Restore acceptance to completed verification. Cleanup is timed separately.
+- Stop on unknown cost/capacity, required upgrade/payment, absent commander, target/credential reuse, traffic exposure, identity/TLS failure, RPO/RTO miss, catalog/security mismatch, sensitive output or cleanup failure.
+- Current next action is read-only console evidence and commander nomination only; no target, Restore, credential, SQL, Migration or configuration change.
+
 ## Sprint 54 recovery operating boundary
 
 - `pnpm production:recovery:readiness` is Repository-only, accepts no database URL and executes no SQL. A package-validation PASS still reports actual Production Recovery `NO_GO` while any required Gate is non-PASS.

@@ -54,6 +54,14 @@ export async function runProductionRepositoryGate() {
     'REPOSITORY_ONLY_RECOVERY_READINESS_GATE', 'CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED',
     'productionConnectionAttempted: false', 'productionMutation: false'
   ], failures);
+  await existsAndContains('docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md', [
+    'AUTHORIZATION DEFERRED', 'Maximum new recovery targets: one',
+    'RPO minutes =', 'RTO minutes =', 'Recovery Commander status is **NOT_CONFIGURED**'
+  ], failures);
+  await existsAndContains('database/production-isolated-restore-authorization-gate.mjs', [
+    'REPOSITORY_ONLY_ISOLATED_RESTORE_AUTHORIZATION_GATE', 'CURRENT_AUTHORIZATION_GATE_MUST_DEFER',
+    'externalResourceCreated: false', 'productionMutation: false'
+  ], failures);
   await existsAndContains('docs/adr/0020-production-security-operations-gate.md', [
     'Accepted', 'Staging', 'Production'
   ], failures);

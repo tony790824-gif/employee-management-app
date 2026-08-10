@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 55 Isolated Restore authorization checkpoint
+
+- [x] Define exact one-target/one-temporary-credential authorization boundary.
+- [x] Define zero Production traffic/application binding and sensitive-data boundary.
+- [x] Define RPO/RTO UTC measurement, restored catalog/security verification and cleanup contract.
+- [x] Add a fail-closed Repository authorization Gate and hash evidence.
+- [ ] Name and accept a human Recovery Commander/cleanup owner.
+- [ ] Re-confirm current Neon Branch/Restore capacity and exact cost without creating a resource.
+- [ ] Obtain exact one-time Owner authorization; currently NOT_GRANTED.
+- [ ] Execute and time the isolated Restore only after that separate authorization.
+- [ ] Keep RPO/RTO BLOCKED and RTO NOT MEASURED until actual evidence passes.
+- [ ] Keep Production Migration authorization NOT_GRANTED.
+
 ## Sprint 54 Production Recovery checkpoint
 
 - [x] Preserve human read-only evidence of PITR availability and six-hour history without exposing identifiers.

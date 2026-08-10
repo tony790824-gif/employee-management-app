@@ -12,3 +12,6 @@ database/production-migration-final-readiness.expected.json text eol=lf
 database/production-recovery-readiness.expected.json text eol=lf
 docs/PRODUCTION_RECOVERY_READINESS_EVIDENCE.json text eol=lf
 docs/PRODUCTION_RECOVERY_READINESS_EVIDENCE.sha256 text eol=lf
+database/production-isolated-restore-authorization.expected.json text eol=lf
+docs/PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.json text eol=lf
+docs/PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.sha256 text eol=lf
