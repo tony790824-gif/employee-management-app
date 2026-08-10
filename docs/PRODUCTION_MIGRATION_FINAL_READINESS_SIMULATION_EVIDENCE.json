@@ -1,0 +1,347 @@
+{
+  "cleanup": {
+    "postgresProcessesTerminated": true,
+    "residualDisposableResourceCount": 0,
+    "temporaryConfigRemoved": true,
+    "temporaryCredentialRemoved": true,
+    "temporaryDataRemoved": true
+  },
+  "currentProductionGate": {
+    "blockerCount": 17,
+    "blockers": [
+      {
+        "gateId": "EXPLICIT_EVENT_AUTHORIZATION",
+        "reason": "NO_EXACT_PRODUCTION_MIGRATION_EVENT_AUTHORIZATION",
+        "status": "NOT_GRANTED"
+      },
+      {
+        "gateId": "APPROVED_MIGRATION_OPERATOR",
+        "reason": "NO_APPROVED_LEAST_PRIVILEGE_PRODUCTION_MIGRATION_OPERATOR_EVIDENCE",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "TARGET_IDENTITY",
+        "reason": "HISTORICAL_READ_ONLY_IDENTITY_PASS_MUST_BE_RECONFIRMED_FOR_EVENT",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "TLS_VERIFY_FULL",
+        "reason": "HISTORICAL_PASS_MUST_BE_RECONFIRMED_FOR_EVENT",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "ROLE_BOUNDARY",
+        "reason": "MIGRATION_OPERATOR_BOUNDARY_NOT_EVIDENCED",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "FRESH_LEDGER_AND_CHECKSUM",
+        "reason": "PRODUCTION_0001_TO_0008_EVIDENCE_REQUIRES_EVENT_TIME_REFRESH",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "ZERO_UNEXPECTED_MIGRATIONS",
+        "reason": "EVENT_TIME_LEDGER_REFRESH_REQUIRED",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "STRUCTURAL_STARTING_BASELINE",
+        "reason": "CURRENT_PRODUCTION_STRUCTURAL_CATALOG_NOT_EVALUATED",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "BACKUP_RESTORE_RPO_RTO",
+        "reason": "ISOLATED_RESTORE_AND_RPO_RTO_NOT_PROVEN",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "IMMUTABLE_EXECUTION_ARTIFACT",
+        "reason": "FINAL_CLEAN_IMMUTABLE_PRODUCTION_EXECUTION_ARTIFACT_NOT_APPROVED",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "PRODUCTION_ENVIRONMENT_CONFIGURATION",
+        "reason": "INDEPENDENT_PRODUCTION_RUNTIME_RESOURCES_NOT_CONFIGURED",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "MAINTENANCE_WINDOW",
+        "reason": "WINDOW_AND_CHANGE_OWNERS_NOT_APPROVED",
+        "status": "NOT_GRANTED"
+      },
+      {
+        "gateId": "TRAFFIC_AND_LONG_TRANSACTION_CONTROL",
+        "reason": "PRODUCTION_TRAFFIC_DRAIN_AND_LOCK_BUDGET_NOT_EVIDENCED",
+        "status": "UNKNOWN"
+      },
+      {
+        "gateId": "MONITORING_AND_RESPONDERS",
+        "reason": "NAMED_RESPONDERS_AND_ALERT_DELIVERY_NOT_ESTABLISHED",
+        "status": "NOT_CONFIGURED"
+      },
+      {
+        "gateId": "RUNTIME_COMPATIBILITY",
+        "reason": "OLD_NEW_API_WORKER_FRONTEND_COMPATIBILITY_NOT_PROVEN",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "EVIDENCE_FRESHNESS",
+        "reason": "EVENT_TIME_EVIDENCE_BUNDLE_DOES_NOT_EXIST",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "REPOSITORY_COMMIT_IDENTITY",
+        "reason": "AUTHORIZED_CANDIDATE_COMMIT_NOT_RECORDED",
+        "status": "BLOCKED"
+      }
+    ],
+    "status": "NO_GO"
+  },
+  "gateA": "DEFER",
+  "generatedAt": "2026-08-10T13:42:48.820Z",
+  "postgresMajorVersion": 18,
+  "productionConnectionAttempted": false,
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionMigrationTechnicalReadiness": "NO_GO",
+  "productionMutation": false,
+  "productionProvisioning": "NO_GO",
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionSqlExecuted": false,
+  "productionStatus": "NOT_READY",
+  "schemaVersion": 1,
+  "scope": "DISPOSABLE_LOCAL_NON_PRODUCTION",
+  "simulation": {
+    "baselineFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "baselineLedger": [
+      "0001",
+      "0002",
+      "0003",
+      "0004",
+      "0005",
+      "0006",
+      "0007",
+      "0008"
+    ],
+    "executionOrder": [
+      "0009",
+      "0011",
+      "0012",
+      "0013",
+      "0014",
+      "0015",
+      "0016",
+      "0017",
+      "0018",
+      "0019",
+      "0020",
+      "0021",
+      "0022"
+    ],
+    "expectedCatalogMatch": true,
+    "failureProbes": {
+      "postconditionFailure": "PASS_ROLLED_BACK_AND_STOPPED",
+      "transactionFailure": "PASS_ROLLED_BACK_AND_STOPPED"
+    },
+    "finalFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e",
+    "finalLedger": [
+      "0001",
+      "0002",
+      "0003",
+      "0004",
+      "0005",
+      "0006",
+      "0007",
+      "0008",
+      "0009",
+      "0011",
+      "0012",
+      "0013",
+      "0014",
+      "0015",
+      "0016",
+      "0017",
+      "0018",
+      "0019",
+      "0020",
+      "0021",
+      "0022"
+    ],
+    "gateResult": "GO",
+    "gateScope": "TEST_ONLY_NON_PRODUCTION",
+    "identity": "PASS",
+    "migrationResults": [
+      {
+        "blockingDetected": false,
+        "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e",
+        "durationMs": 8.728,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0009"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf",
+        "durationMs": 2.806,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0011"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797",
+        "durationMs": 6.873,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0012"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2",
+        "durationMs": 16.178,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0013"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc",
+        "durationMs": 11.482,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0014"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f",
+        "durationMs": 3.46,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0015"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476",
+        "durationMs": 17.928,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0016"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0",
+        "durationMs": 2.194,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0017"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277",
+        "durationMs": 3.777,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0018"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6",
+        "durationMs": 7.915,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0019"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f",
+        "durationMs": 6.852,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0020"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4",
+        "durationMs": 3.31,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0021"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3",
+        "durationMs": 13.113,
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "transaction": "COMMITTED",
+        "version": "0022"
+      }
+    ],
+    "rollbackGuards": [
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0009"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0011"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0012"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0013"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0014"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0015"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0016"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0017"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0018"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0019"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0020"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0021"
+      },
+      {
+        "result": "BLOCKED_NOT_AUTHORIZED",
+        "version": "0022"
+      }
+    ],
+    "status": "PASS"
+  }
+}

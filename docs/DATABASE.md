@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Sprint 53 final Migration readiness Gate
+
+`pnpm db:migration:final-readiness` validates the exact future Production sequence, checksums, evidence provenance and all required readiness records without opening a database connection. Every Gate must be `PASS`; all other states are NO-GO.
+
+The disposable-only `pnpm db:migration:final-readiness:simulate` passed on PostgreSQL 18.4. This does not authorize or establish Production readiness. Current Production Migration Technical Readiness remains NO-GO and authorization remains NOT GRANTED.
+
 ## Sprint 52 disposable structural parity
 
 `pnpm db:migration:structural-parity` creates two new local PostgreSQL 18 clusters: a known `0001`-`0008` baseline upgraded through the exact approved chain and an independent fresh install. It compares normalized schemas, relations/views, columns, constraints, indexes, Functions/signatures, triggers, sequences, policies/RLS, Extensions, owners, ACLs and ledger rows.

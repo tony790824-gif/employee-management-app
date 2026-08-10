@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 53 status - Production Migration Final Execution Readiness (2026-08-10)
+
+- **Sprint status:** COMPLETE for Repository Runbook/Gate and disposable simulation; Production execution remains NO-GO / NOT AUTHORIZED.
+- **Gate:** 19 required records, all fail closed unless exactly PASS. Current evidence has 2 PASS and 17 non-PASS.
+- **Repository truth:** exact `0009`, `0011`-`0022` sequence/checksums and `0010` rejection PASS; evidence provenance PASS.
+- **Simulation:** a new loopback-only PostgreSQL 18.4 run passed baseline, per-version verification, final structural fingerprint, failure probes and cleanup.
+- **Blockers:** event authorization, Migration operator, fresh Production preflight/structural baseline, recovery/RPO/RTO, immutable artifact, runtime environment/compatibility, maintenance/traffic, monitoring/responders and evidence freshness.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO; Production Migration Technical Readiness NO-GO.
+- **Next unique Sprint:** separately authorized Backup/Restore/RPO/RTO and maintenance ownership evidence closure; no Production Migration.
+
 ## Sprint 52 status - Disposable Structural Schema Parity (2026-08-10)
 
 - **Sprint status:** COMPLETE for disposable non-Production evidence; current Production parity remains BLOCKED.

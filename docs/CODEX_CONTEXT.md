@@ -1,5 +1,13 @@
 # Codex Context
 
+## Sprint 53 current context - 2026-08-10
+
+Sprint 53 finalized the future Production Migration Runbook and added a machine-readable 19-Gate package plus Repository-only evaluator. The current Gate has only two PASS items: exact sequence and explicit `0010` exclusion. Seventeen prerequisites remain non-PASS, so Production Migration Technical Readiness is NO-GO and authorization is NOT GRANTED.
+
+A new PostgreSQL 18.4 disposable simulation rebuilt `0001`-`0008`, applied exact `0009`, `0011`-`0022`, verified every transaction/precondition/postcondition, matched starting/final fingerprints and removed all temporary resources. Evidence SHA-256 is `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`.
+
+The simulation is not Production evidence. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection, SQL, Migration, deploy, credential or external resource operation occurred. Next unique work is an explicitly authorized Backup/Restore/RPO/RTO and maintenance ownership evidence Sprint, without applying a Production Migration.
+
 ## Sprint 52 current context - 2026-08-10
 
 Sprint 52 created two independent loopback-only PostgreSQL 18.4 clusters. The upgrade path captured the `0001`-`0008` structural fingerprint before applying `0009`, `0011`-`0022`; the fresh path applied all 21 approved versions from empty. Both excluded `0010`.

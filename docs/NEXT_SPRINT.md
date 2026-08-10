@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 53 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
+## Sprint 54 proposal - Authorized Backup/Restore/RPO/RTO and Maintenance Evidence Closure
+
+Sprint 53 completed the Runbook, machine-readable Gate and disposable success-path simulation. Actual Production technical readiness is still NO-GO because recovery, event-time Production preflight, approved operator/artifact, maintenance/traffic controls, monitoring responders and runtime compatibility remain non-PASS.
+
+The next unique Sprint should close only the highest safety dependency: obtain an exact owner-approved, non-Migration recovery evidence scope; prove the available pre-change restore point, isolated Restore, RPO 15 minutes, RTO 60 minutes, recovery commander and maintenance ownership. If any step requires a Production snapshot, branch, restore or configuration mutation, stop for a separate exact approval. Do not apply `0009` or any other Production Migration.
+
+## Historical Sprint 53 - Production Migration Final Execution Readiness
+
+- Runbook and 19-Gate package: COMPLETE.
+- Disposable PostgreSQL 18.4 Gate/sequence simulation: PASS; cleanup residual 0.
+- Actual Production Gate: NO-GO; authorization NOT GRANTED; 17 Gates non-PASS.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
+## Historical Sprint 53 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
 
 Sprint 52 proved that an isolated `0001`-`0008` upgrade and an independent fresh install produce the same complete structural fingerprint. It did not prove behavior with representative row counts, concurrent sessions, live runtime versions or recovery.
 

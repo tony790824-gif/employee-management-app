@@ -1,5 +1,16 @@
 # AI Handoff
 
+## Sprint 53 handoff - 2026-08-10
+
+- Sprint 53 is **COMPLETE FOR RUNBOOK/GATE/DISPOSABLE SIMULATION**; Production Migration remains **NO-GO / NOT AUTHORIZED**.
+- Authority: `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_READINESS_REPORT.md`, finalized `docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md`, and `database/production-migration-final-readiness.expected.json`.
+- `pnpm db:migration:final-readiness` is Repository-only. It validates 19 required Gates, exact order/checksums, evidence provenance and the current fail-closed decision without accepting a database URL or executing SQL.
+- Current Gate: 2 PASS (`0010_ABSENT`, `EXACT_EXECUTION_SEQUENCE`) and 17 non-PASS. Any non-PASS or missing Gate remains NO-GO.
+- `pnpm db:migration:final-readiness:simulate` passed on one new loopback-only PostgreSQL 18.4 cluster; evidence SHA-256 `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`, residual resources 0.
+- Disposable simulation GO is never Production GO. Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; authorization NOT GRANTED.
+- Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and untracked `0010` files.
+- Next unique work: separately authorized Backup/Restore/RPO/RTO and maintenance ownership evidence closure. Do not apply a Production Migration.
+
 ## Sprint 52 handoff - 2026-08-10
 
 - Sprint 52 is **COMPLETE FOR DISPOSABLE STRUCTURAL PARITY**; current Production parity remains BLOCKED.

@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 53 final Migration readiness boundary
+
+- `pnpm db:migration:final-readiness` is Repository-only and performs no connection or SQL. It validates the 19-Gate package and must return NO-GO while any record is not exactly PASS.
+- `pnpm db:migration:final-readiness:simulate` is confirmation-gated and disposable-only. Its GO result validates only the test scenario; it never changes the Production decision.
+- Current actual decision: Technical Readiness NO-GO, authorization NOT GRANTED, 17 open Gates.
+- Do not use `database/migrate.mjs up` for this gap. Do not batch versions, include `0010`, auto-run down, edit the ledger or retry without a new human checkpoint.
+- The next permitted work is a separately authorized recovery/RPO/RTO and maintenance ownership evidence closure. It must not apply a Production Migration.
+
 ## Sprint 52 structural parity rehearsal boundary
 
 - `pnpm db:migration:structural-parity` is confirmation-gated, local/disposable-only and rejects configured Production database inputs.

@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 53 Production Migration final-readiness checkpoint
+
+- [x] Validate exact `0009`, `0011`-`0022` order/checksums and reject `0010`.
+- [x] Finalize the future per-version Runbook, partial-execution stop, retry and recovery rules.
+- [x] Add a machine-readable 19-Gate fail-closed evaluator with no permissive fallback.
+- [x] Rehearse the Gate and exact sequence on a new disposable PostgreSQL 18.4 cluster; cleanup residual 0.
+- [ ] Record exact event authorization and authorized candidate Commit.
+- [ ] Prove approved least-privilege Migration operator, target/TLS/role boundary and fresh ledger/checksums.
+- [ ] Prove current Production `0001`-`0008` structural starting fingerprint.
+- [ ] Prove isolated Restore, RPO 15 minutes, RTO 60 minutes and pre-change restore point.
+- [ ] Approve immutable execution artifact, maintenance window, traffic controls, lock budget, monitoring/responders and runtime compatibility.
+- [ ] Keep Production Migration Technical Readiness NO-GO and authorization NOT GRANTED until every item is PASS.
+
 ## Sprint 52 disposable structural parity checkpoint
 
 - [x] Create independent loopback-only PostgreSQL 18.4 upgrade and fresh-install clusters.
