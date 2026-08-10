@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 54 proposal - Authorized Backup/Restore/RPO/RTO and Maintenance Evidence Closure
+## Sprint 55 proposal - Authorized Isolated Restore Decision and Recovery Ownership
+
+Sprint 54 completed the Repository-only Recovery preflight and evidence contract. Provider PITR capability and a six-hour history observation are recorded, but no independent backup, scheduled snapshot, isolated Restore, 15-minute RPO proof, 60-minute RTO timing, restored-target verification, cleanup evidence or named recovery commander exists.
+
+The next unique action is an owner decision on whether to authorize one isolated Neon Restore evidence exercise, including its exact cost/resource boundary, disposable target, zero-traffic rule, distinct credentials, timed verification, cleanup and recovery commander. If the current plan cannot support this safely, keep the Gate BLOCKED and decide the plan/cost separately. Do not upgrade, create a resource, Restore, run SQL or apply a Production Migration without a new exact authorization.
+
+## Historical Sprint 54 - Production Recovery Readiness
+
+- Repository preflight/evidence package: COMPLETE and hash-verified.
+- Production Recovery technical readiness: NO-GO; 12 of 14 required Gates are non-PASS.
+- RPO 15 minutes: BLOCKED. RTO 60 minutes: BLOCKED / NOT MEASURED.
+- Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT GRANTED.
+
+## Historical Sprint 54 proposal - Authorized Backup/Restore/RPO/RTO and Maintenance Evidence Closure
 
 Sprint 53 completed the Runbook, machine-readable Gate and disposable success-path simulation. Actual Production technical readiness is still NO-GO because recovery, event-time Production preflight, approved operator/artifact, maintenance/traffic controls, monitoring responders and runtime compatibility remain non-PASS.
 

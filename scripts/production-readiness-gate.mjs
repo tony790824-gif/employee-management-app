@@ -46,6 +46,14 @@ export async function runProductionRepositoryGate() {
   await existsAndContains('docs/PRODUCTION_OPERATIONS_RUNBOOK.md', [
     'RPO', 'RTO', 'Rollback', 'Auth0', 'read-only', 'PENDING EXTERNAL APPROVAL'
   ], failures);
+  await existsAndContains('docs/PRODUCTION_RECOVERY_READINESS_REPORT.md', [
+    'PRODUCTION RECOVERY NO-GO', 'RPO <= 15 minutes', 'RTO <= 60 minutes',
+    'no connection, SQL, Restore or configuration change'
+  ], failures);
+  await existsAndContains('database/production-recovery-readiness-gate.mjs', [
+    'REPOSITORY_ONLY_RECOVERY_READINESS_GATE', 'CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED',
+    'productionConnectionAttempted: false', 'productionMutation: false'
+  ], failures);
   await existsAndContains('docs/adr/0020-production-security-operations-gate.md', [
     'Accepted', 'Staging', 'Production'
   ], failures);

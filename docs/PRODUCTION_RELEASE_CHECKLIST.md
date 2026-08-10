@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 54 Production Recovery checkpoint
+
+- [x] Preserve human read-only evidence of PITR availability and six-hour history without exposing identifiers.
+- [x] Add a fail-closed Repository Recovery Gate and sanitized hash evidence.
+- [x] Document the future isolated-target, timing, verification, cleanup and Migration restore-point contracts.
+- [ ] Prove an independent encrypted backup and approved retention window.
+- [ ] Configure/evidence an accepted snapshot or equivalent recovery control under separate approval.
+- [ ] Complete one isolated Restore with distinct credentials and zero Production traffic.
+- [ ] Prove RPO 15 minutes and RTO 60 minutes using actual timestamps; current RTO is NOT MEASURED.
+- [ ] Verify restored ledger/catalog/Functions/indexes/constraints/owners/ACL/RLS and required app objects.
+- [ ] Name the recovery commander and prove cleanup.
+- [ ] Keep Recovery NO-GO and Production Migration authorization NOT GRANTED until all items are PASS.
+
 ## Sprint 53 Production Migration final-readiness checkpoint
 
 - [x] Validate exact `0009`, `0011`-`0022` order/checksums and reject `0010`.

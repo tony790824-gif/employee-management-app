@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "REPOSITORY_CONTROL_AND_HUMAN_READ_ONLY_PRODUCTION_CAPABILITY_EVIDENCE",
+  "evidenceDate": "2026-08-10",
+  "sourceEvidenceId": "manual.neon.production.backup_restore",
+  "providerCapability": {
+    "pitrAvailable": true,
+    "historyRetentionHours": 6,
+    "scheduledSnapshotEnabled": false,
+    "latestSnapshot": "NONE"
+  },
+  "isolatedRestore": {
+    "executed": false,
+    "targetCreated": false,
+    "productionTrafficRouted": false,
+    "verificationCompleted": false,
+    "cleanupVerified": false,
+    "status": "BLOCKED"
+  },
+  "rpo15Minutes": "BLOCKED",
+  "rto60Minutes": "BLOCKED",
+  "rtoElapsedMinutes": "NOT_MEASURED",
+  "migrationRestorePoint": {
+    "procedureDocumented": true,
+    "restorePointCreated": false,
+    "status": "BLOCKED"
+  },
+  "productionRecoveryTechnicalReadiness": "NO_GO",
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "gateA": "DEFER",
+  "productionProvisioning": "NO_GO",
+  "productionConnectionAttempted": false,
+  "productionSqlExecuted": false,
+  "productionMutation": false,
+  "secretsOrIdentifiersRecorded": false
+}

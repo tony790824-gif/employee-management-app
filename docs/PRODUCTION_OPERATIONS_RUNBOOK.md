@@ -32,6 +32,12 @@ Sprint 33C adds `pnpm production:platform:validate` as the common fail-closed ev
 
 This runbook defines the evidence required before Bankeban may leave the current Production Google Sheets path. It does not authorize Production deployment, Migration, Auth0 mutation, database writes, or a destructive restore.
 
+## Sprint 54 Recovery readiness stop
+
+The Repository Recovery preflight is complete, but the actual Production Recovery Gate is **NO-GO**. Human read-only evidence proves only that PITR/Restore from history is available with a six-hour visible window. Scheduled snapshots are disabled, no snapshot exists, and no isolated Restore or timed verification has occurred.
+
+Do not infer RPO 15 minutes or RTO 60 minutes from provider capability. Before any future Migration, require an exact restore-point identifier and UTC timestamp, retention expiry, pre-change ledger/catalog hash, isolated target with distinct credentials and zero Production traffic, timed restore/verification, a named recovery commander and verified cleanup. `docs/PRODUCTION_RECOVERY_READINESS_REPORT.md` is the current authority; it grants no permission to create, Restore, delete, upgrade or migrate.
+
 ## Release objectives
 
 - Initial business RPO target: **15 minutes**. Provider history, independent encrypted backup, and retained audit evidence must satisfy this before cutover.

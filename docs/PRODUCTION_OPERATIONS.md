@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 54 recovery operating boundary
+
+- `pnpm production:recovery:readiness` is Repository-only, accepts no database URL and executes no SQL. A package-validation PASS still reports actual Production Recovery `NO_GO` while any required Gate is non-PASS.
+- Current evidence proves PITR availability and a six-hour history observation only. It does not prove RPO 15 minutes, RTO 60 minutes, an independent backup or an isolated Restore.
+- Before any future Migration, require an exact provider restore-point identifier/UTC timestamp, retention expiry, pre-change ledger/catalog hash, recovery commander, rollback owner, isolated verification plan and cleanup owner.
+- A restored target must use distinct credentials, receive no Production traffic, never connect to the Production app, and be destroyed only after ledger/catalog/ACL/RLS verification and evidence capture.
+- Do not create a snapshot/branch, Restore, upgrade, pay, run SQL/Migration, deploy or modify a platform without separate exact authorization.
+
 ## Sprint 53 final Migration readiness boundary
 
 - `pnpm db:migration:final-readiness` is Repository-only and performs no connection or SQL. It validates the 19-Gate package and must return NO-GO while any record is not exactly PASS.

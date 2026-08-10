@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-10 current state - Sprint 54 Production Recovery Readiness
+
+Sprint 54 added a Repository-only, fail-closed Recovery Gate. The prior human read-only evidence confirms PITR/Restore-from-history availability and six hours of visible history, but scheduled snapshots are disabled, no snapshot exists and no Restore was run.
+
+The validator must keep Recovery NO-GO until every required Gate is exactly PASS. Current non-PASS items include independent backup, retention acceptance, scheduled snapshot, isolated target/credential/traffic isolation, RPO 15 minutes, RTO 60 minutes, Migration restore point, restored ledger/catalog/ACL verification, cleanup and recovery commander. RTO elapsed time is NOT MEASURED.
+
+Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Production Migration authorization NOT GRANTED. No Production connection, SQL, Migration, Restore, deploy, configuration, billing or Secret operation occurred. Next unique work requires exact owner authorization for an isolated Restore decision/exercise; never infer authority from this documentation.
+
 ## Sprint 53 current context - 2026-08-10
 
 Sprint 53 finalized the future Production Migration Runbook and added a machine-readable 19-Gate package plus Repository-only evaluator. The current Gate has only two PASS items: exact sequence and explicit `0010` exclusion. Seventeen prerequisites remain non-PASS, so Production Migration Technical Readiness is NO-GO and authorization is NOT GRANTED.
