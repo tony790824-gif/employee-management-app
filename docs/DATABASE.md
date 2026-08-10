@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Sprint 48 expected Production catalog baseline
+
+The expected structural baseline is generated from the 21 approved Git-tracked Migrations in two empty local disposable PostgreSQL 18 databases. `0010` is an intentional unapproved ledger gap and is never loaded. The canonical artifact is `database/production-expected-catalog-baseline.json`, with SHA-256 recorded in `database/production-expected-catalog-baseline.sha256`.
+
+Run `pnpm db:parity:materialize` only with the exact disposable confirmation and a local PostgreSQL 18 binary path. The generator rejects Production database inputs, proves loopback/Temp/dedicated-role identity before Migration, rebuilds twice, and deletes the cluster. This command is not a Production migration or parity command.
+
 ## Sprint 46 Production schema parity plan
 
 `database/production-schema-parity.expected.json` is the expected `0001`-`0022` slot inventory. It contains verified SHA-256 values for the 21 Git-tracked Migration sources and classifies `0010` as an `INTENTIONAL_UNAPPROVED_GAP`; untracked local files are never an accepted source or ledger row. `pnpm db:parity:plan` verifies that inventory and reports structural parity BLOCKED until a catalog-resolved expected baseline is materialized.

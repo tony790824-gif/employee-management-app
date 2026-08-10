@@ -1,5 +1,17 @@
 # Next external gate — Production evidence and authorization
 
+## Sprint 49 - Authorized Production Read-only Catalog Comparison
+
+Sprint 48 completed the deterministic expected catalog baseline from two empty disposable PostgreSQL 18 databases. The committed SHA-256 is `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`; both 21-row ledgers exclude `0010`.
+
+The next single Sprint requires a new explicit authorization plus the dedicated Production read-only URL/role through a protected process-only channel. It may execute only the existing metadata query, verify target/role/read-only identity, sanitize and hash results, and compare every ledger/catalog section against the committed baseline. Any mismatch must stop fail-closed; it may not repair, migrate, grant, deploy or mutate Production.
+
+## Historical Sprint 48 - Disposable Expected Catalog Baseline Materialization
+
+- Expected-side status: PASS; two rebuilds produced byte-identical metadata and hash.
+- Production-side status: BLOCKED / not executed.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 48 - Disposable Expected Catalog Baseline Materialization
 
 Sprint 47 closed the Git-history classification of `0010` as an intentional unapproved gap, but Production parity evidence remains **BLOCKED**. Production remains **NO-GO** at **70% / NOT READY** and Gate A remains **DEFER**.

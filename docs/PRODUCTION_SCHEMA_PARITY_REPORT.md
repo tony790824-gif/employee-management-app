@@ -1,5 +1,13 @@
 # Production Schema Parity Report
 
+## Sprint 48 expected-side update - 2026-08-10
+
+- Expected Migration ledger: **PASS** — 21 approved versions; `0010` intentionally absent.
+- Expected structural catalog: **PASS** — two independent PostgreSQL 18 rebuilds; SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- Current Production Migration ledger: **BLOCKED / UNKNOWN** — not queried in Sprint 48.
+- Current Production structural parity: **BLOCKED / UNKNOWN** — not queried or compared in Sprint 48.
+- Production connection/mutation: **NONE**.
+
 Date: 2026-08-10
 
 Sprint: 47 - Production Schema Parity Read-only Evidence Closure

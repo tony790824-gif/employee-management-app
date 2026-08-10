@@ -1,10 +1,19 @@
 # Production Release Checklist
 
+## Sprint 48 expected catalog baseline checkpoint
+
+- [x] Disposable database identity proved PostgreSQL 18, loopback-only listener, Temp-contained data directory and dedicated local owner before every Migration.
+- [x] Two empty databases applied only `0001`-`0009` and `0011`-`0022`; `0010` was not read, checksummed, executed or added to either ledger.
+- [x] Both normalized catalogs are byte-identical and match committed SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- [x] Committed artifact contains all required metadata categories and no runtime identity, path, endpoint, credential or business rows.
+- [ ] Obtain separate authorization and protected process-only Production reader inputs for the actual catalog comparison.
+- [ ] Keep Production parity BLOCKED and release NO-GO until current Production ledger and every structural section match this baseline.
+
 ## Sprint 47 schema parity evidence checkpoint
 
 - [x] `0010` Git/history classification closed as an intentional unapproved gap; no fake Migration/checksum was created.
 - [x] All 21 expected tracked Migration checksums and the catalog query safety validator pass.
-- [ ] Materialize and hash a catalog-resolved expected schema in an isolated non-Production PostgreSQL instance.
+- [x] Materialize and hash a catalog-resolved expected schema in an isolated non-Production PostgreSQL instance.
 - [ ] Provide the dedicated Production read-only URL/role through an approved process-only channel.
 - [ ] Prove current role identity and `transaction_read_only=on`, then collect sanitized catalog evidence.
 - [ ] Compare Migration ledger and structural schema independently; exact missing/extra/mismatch counts remain UNKNOWN.

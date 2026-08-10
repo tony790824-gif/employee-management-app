@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Sprint 48 handoff - 2026-08-10
+
+- Status: **COMPLETE FOR EXPECTED BASELINE / PRODUCTION PARITY STILL BLOCKED**.
+- `database/materialize-expected-catalog.mjs` uses an exact confirmation, rejects Production database inputs, starts a PostgreSQL 18 loopback-only Temp cluster, validates identity before Migration, and loads only filenames from the approved tracked inventory.
+- Two fresh databases applied `0001`-`0009` and `0011`-`0022`; both ledgers contain 21 rows and no `0010`. The untracked `0010_commission_rules` files remain untouched and excluded.
+- Artifact: `database/production-expected-catalog-baseline.json`; SHA-256: `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`; reproducibility PASS.
+- Production was not connected or modified. Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+- Next unique Sprint: only after a new explicit authorization and protected dedicated reader inputs, collect current Production metadata and compare it with this baseline. Never substitute owner/migrator/API credentials.
+
 ## Sprint 47 handoff - 2026-08-10
 
 - Status: **BLOCKED AT CURRENT PRODUCTION EVIDENCE / REPOSITORY AND 0010 HISTORY CLOSED**.

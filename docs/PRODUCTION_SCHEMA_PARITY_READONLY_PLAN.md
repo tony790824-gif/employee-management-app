@@ -1,6 +1,6 @@
 # Production Schema Parity Read-only Plan
 
-Status: **REPOSITORY PLAN COMPLETE / EXPECTED CATALOG BASELINE AND PRODUCTION EVIDENCE BLOCKED**
+Status: **EXPECTED CATALOG BASELINE PASS / PRODUCTION EVIDENCE BLOCKED**
 
 Date: 2026-08-09
 
@@ -12,7 +12,7 @@ Production Provisioning: **NO-GO**
 
 ## Purpose and boundary
 
-This plan prepares a later, separately authorized metadata-only comparison between the Git-tracked PostgreSQL schema and Production. Sprint 46 did not connect to Production, execute SQL or a Migration, change a database, deploy, configure an external platform, purchase `bankeban.com`, or handle a credential.
+This plan prepares a later, separately authorized metadata-only comparison between the Git-tracked PostgreSQL schema and Production. Sprint 48 materialized the expected side in a local disposable PostgreSQL 18 environment; it did not connect to Production, deploy, configure an external platform, purchase `bankeban.com`, or handle a Production credential.
 
 The future operator must use the existing dedicated Production read-only role and the exact authorization procedure in `docs/PRODUCTION_READONLY_ACCESS.md`. Staging evidence cannot satisfy this plan.
 
@@ -24,7 +24,7 @@ The future operator must use the existing dedicated Production read-only role an
 - `0010`: **INTENTIONAL_UNAPPROVED_GAP**. Git object/history inspection found no tracked `0010` Migration, rename, deletion or squash; committed operating records consistently exclude it as unapproved/unapplied. Untracked local files remain non-authoritative.
 - Required Extension derived from tracked sources: `pgcrypto`. Any further Extension requirement depends on resolving `0010` and cannot be assumed.
 - The expected ledger therefore contains 21 entries across slots `0001`-`0022`; `0010` is not an expected ledger row. No checksum is invented for the gap, and no existing Migration is modified.
-- The catalog-resolved expected schema remains **BLOCKED** because the reviewed Migration set has not been materialized in an isolated non-Production PostgreSQL instance. Static SQL guesses are not accepted as an equivalent baseline.
+- The catalog-resolved expected schema is **PASS**. `database/production-expected-catalog-baseline.json` was generated twice from empty disposable databases and both canonical outputs produced SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
 
 ## Comparison scope
 
@@ -57,7 +57,9 @@ Expected object metadata must be generated from the 21 reviewed Migration source
 - reads only `pg_catalog`, `information_schema` and `public.schema_migrations`;
 - excludes Function bodies, business rows and mutation-capable calls.
 
-`database/production-schema-parity-plan.mjs` statically validates the tracked inventory and query file without accepting a database URL or opening a network connection. Its dry-run verifies the 21-entry ledger inventory and query safety, then reports `BLOCKED` because the catalog-resolved expected schema is not materialized; that is a successful fail-closed result, not a test failure.
+`database/production-schema-parity-plan.mjs` statically validates the tracked inventory, query file, committed baseline shape and SHA-256 without accepting a database URL or opening a network connection. Its Repository dry-run now passes the expected-side inventory/query/baseline gates. That PASS does not inspect or imply Production parity.
+
+`database/materialize-expected-catalog.mjs` is the separately confirmation-gated local generator. It rejects Production database inputs, verifies a loopback-only PostgreSQL 18 Temp cluster before any Migration, applies the exact approved inventory twice, compares byte-identical canonical output, writes the artifact/hash and destroys the cluster.
 
 ## Mandatory stop conditions
 
@@ -87,10 +89,9 @@ It must not contain credentials, connection strings, hostnames, endpoint/project
 
 ## Future authorization sequence
 
-1. Materialize the 21 tracked Migrations in a disposable, isolated non-Production PostgreSQL instance under a separately approved Sprint; do not include local untracked `0010` files.
-2. Normalize and hash its catalog metadata as the expected structural baseline.
-3. Make the dedicated Production read-only credential available only through an approved process environment; never commit or paste it.
-4. Obtain exact human authorization for a Production metadata-only run.
-5. Verify target identity and role safety before catalog output.
-6. Capture sanitized evidence, compare all sections and hash the evidence artifact.
-7. Stop on any difference. Any remediation requires a separate plan and authorization.
+1. Preserve the committed expected artifact/hash and re-materialize it whenever an approved Migration changes.
+2. Make the dedicated Production read-only credential available only through an approved process environment; never commit or paste it.
+3. Obtain exact human authorization for a Production metadata-only run.
+4. Verify target identity and role safety before catalog output.
+5. Capture sanitized evidence, compare all sections against the committed baseline and hash the evidence artifact.
+6. Stop on any difference. Any remediation requires a separate plan and authorization.

@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 const inventoryUrl = new URL('./production-schema-parity.expected.json', import.meta.url);
 const queryUrl = new URL('./operator/production-schema-parity.readonly.sql', import.meta.url);
+const baselineUrl = new URL('./production-expected-catalog-baseline.json', import.meta.url);
+const baselineHashUrl = new URL('./production-expected-catalog-baseline.sha256', import.meta.url);
 
 export const EXPECTED_VERSIONS = Object.freeze(
   Array.from({ length: 22 }, (_, index) => String(index + 1).padStart(4, '0'))
@@ -62,6 +64,56 @@ async function sha256File(file) {
 
 export async function loadExpectedInventory() {
   return JSON.parse(await readFile(inventoryUrl, 'utf8'));
+}
+
+export async function loadExpectedCatalogBaseline() {
+  return JSON.parse(await readFile(baselineUrl, 'utf8'));
+}
+
+export async function validateExpectedCatalogBaseline() {
+  const failures = [];
+  let raw;
+  let baseline;
+  let hashRecord;
+  try {
+    [raw, hashRecord] = await Promise.all([
+      readFile(baselineUrl, 'utf8'),
+      readFile(baselineHashUrl, 'utf8')
+    ]);
+    baseline = JSON.parse(raw);
+  } catch {
+    return Object.freeze({ status: 'BLOCKED', failures: Object.freeze(['BASELINE_ARTIFACT_MISSING_OR_INVALID']) });
+  }
+  const actualHash = createHash('sha256').update(raw, 'utf8').digest('hex');
+  const expectedHash = hashRecord.trim().match(/^([a-f0-9]{64})  production-expected-catalog-baseline\.json$/)?.[1];
+  if (!expectedHash || expectedHash !== actualHash) failures.push('BASELINE_HASH_MISMATCH');
+  if (baseline.schemaVersion !== 1 || baseline.postgresMajorVersion !== 18) failures.push('BASELINE_FORMAT_MISMATCH');
+  if (JSON.stringify(baseline.intentionalGaps) !== JSON.stringify(['0010'])) failures.push('BASELINE_GAP_MISMATCH');
+  if (baseline.migrationInventory?.length !== 21 || baseline.catalog?.migrationLedger?.length !== 21) {
+    failures.push('BASELINE_LEDGER_COUNT_MISMATCH');
+  }
+  if (baseline.migrationInventory?.some(item => item.version === '0010')
+    || baseline.catalog?.migrationLedger?.some(item => item.version === '0010')) {
+    failures.push('BASELINE_CONTAINS_0010');
+  }
+  const inventory = await loadExpectedInventory();
+  const expectedLedger = inventory.migrations
+    .filter(item => item.sourceStatus === 'TRACKED')
+    .map(({ version, name, checksum }) => ({ version, name, checksum }));
+  const ledgerTuple = row => [row?.version, row?.name, row?.checksum];
+  if (JSON.stringify(baseline.catalog?.migrationLedger?.map(ledgerTuple)) !== JSON.stringify(expectedLedger.map(ledgerTuple))) {
+    failures.push('BASELINE_LEDGER_MISMATCH');
+  }
+  for (const category of ['schemas', 'relations', 'columns', 'constraints', 'indexes', 'functions', 'triggers', 'sequences', 'policies', 'extensions']) {
+    if (!Array.isArray(baseline.catalog?.[category])) failures.push(`BASELINE_CATEGORY_MISSING:${category}`);
+    if (baseline.objectCounts?.[category] !== baseline.catalog?.[category]?.length) failures.push(`BASELINE_COUNT_MISMATCH:${category}`);
+  }
+  return Object.freeze({
+    status: failures.length ? 'BLOCKED' : 'PASS',
+    sha256: actualHash,
+    objectCounts: Object.freeze({ ...(baseline.objectCounts || {}) }),
+    failures: Object.freeze(failures)
+  });
 }
 
 export async function validateExpectedInventory(inventory) {
@@ -158,10 +210,11 @@ export function validateEvidenceShape(evidence) {
 export async function repositoryDryRun() {
   const inventory = await validateExpectedInventory();
   const sql = validateReadOnlyCatalogSql(await readFile(queryUrl, 'utf8'));
+  const baseline = await validateExpectedCatalogBaseline();
   const stopReasons = [
     ...(inventory.status === 'PASS' ? [] : ['MIGRATION_MISSING', 'EVIDENCE_INCOMPLETE']),
     ...(sql.status === 'PASS' ? [] : ['QUERY_NOT_PROVEN_READ_ONLY']),
-    'EXPECTED_SCHEMA_BASELINE_INCOMPLETE'
+    ...(baseline.status === 'PASS' ? [] : ['EXPECTED_SCHEMA_BASELINE_INCOMPLETE'])
   ];
   return Object.freeze({
     mode: 'REPOSITORY_ONLY_DRY_RUN',
@@ -170,10 +223,7 @@ export async function repositoryDryRun() {
     expectedMigrationRange: inventory.expectedRange,
     inventory,
     catalogQueryPlan: sql,
-    expectedCatalogBaseline: Object.freeze({
-      status: 'BLOCKED',
-      reason: 'NOT_MATERIALIZED_FROM_REVIEWED_MIGRATIONS'
-    }),
+    expectedCatalogBaseline: baseline,
     finalStatus: stopReasons.length ? 'BLOCKED' : 'PASS',
     stopReasons: Object.freeze(stopReasons)
   });

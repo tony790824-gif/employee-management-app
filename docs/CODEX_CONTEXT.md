@@ -1,5 +1,13 @@
 # Codex Context
 
+## Sprint 48 current context - 2026-08-10
+
+The expected schema side is now materialized from the approved Git source. A local disposable PostgreSQL 18 cluster created two independent empty databases; both applied exactly 21 Migrations (`0001`-`0009`, `0011`-`0022`), excluded `0010`, produced matching ledgers and byte-identical normalized catalogs.
+
+The committed artifact is `database/production-expected-catalog-baseline.json`; its SHA-256 is `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`. The materializer refuses Production input variables and verifies loopback/database/role/Temp-directory/PostgreSQL-major identity before any Migration.
+
+Production comparison was not executed. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Preserve `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and the untracked `0010_commission_rules` files. The next unique Sprint is a separately authorized metadata-only Production comparison using only the dedicated read-only role.
+
 ## Sprint 47 current context - 2026-08-10
 
 `docs/PRODUCTION_SCHEMA_PARITY_REPORT.md` records the fail-closed outcome. Git history proves `0010` was never tracked/renamed/deleted and committed records consistently classify it as unapproved and intentionally excluded; expected ledger entries are the 21 tracked Migrations only.

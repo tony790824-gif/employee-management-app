@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-10 - Sprint 48 Disposable Expected Catalog Baseline Materialization
+
+- Added a confirmation-gated local PostgreSQL 18 materializer with loopback/Temp/role/database identity checks and explicit rejection of Production database inputs.
+- Applied only the 21 approved tracked Migrations to two empty disposable databases; both ledgers excluded `0010` and produced byte-identical normalized catalog metadata.
+- Committed the expected catalog artifact and SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`, plus deterministic/fail-closed regression coverage.
+- Kept Production readiness 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production connection, SQL, Migration, deploy or external resource operation occurred.
+
 ## 2026-08-10 - Sprint 47 Production Schema Parity Read-only Evidence Closure
 
 - Classified Migration slot `0010` as an intentional unapproved gap using Git/history and committed operating evidence; no fake Migration or checksum was created.

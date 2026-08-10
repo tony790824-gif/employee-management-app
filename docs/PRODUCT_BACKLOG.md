@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 48 status - Disposable Expected Catalog Baseline Materialization (2026-08-10)
+
+- **Status:** COMPLETE for the expected, non-Production side of schema parity.
+- **Materialization:** two empty local PostgreSQL 18 disposable databases applied the same 21 tracked Migrations; both ledgers pass and exclude intentional gap `0010`.
+- **Artifact:** `database/production-expected-catalog-baseline.json`; deterministic SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- **Boundary:** current Production ledger and structural parity remain BLOCKED/UNKNOWN; no Production connection or mutation occurred.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO.
+- **Next unique Sprint:** separately authorized Production read-only catalog evidence collection and exact baseline comparison using only the dedicated metadata reader.
+
 ## Sprint 47 status - Production Schema Parity Read-only Evidence Closure (2026-08-10)
 
 - **Status:** BLOCKED at current Production evidence; Repository inventory, query safety and `0010` history are closed.

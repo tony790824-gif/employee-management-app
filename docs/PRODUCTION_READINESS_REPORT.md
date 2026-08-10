@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 48 expected catalog baseline materialization - 2026-08-10
+
+- A local loopback-only disposable PostgreSQL 18 cluster applied the exact 21 approved tracked Migrations twice from empty databases. Both ledgers pass and exclude `0010`.
+- The normalized catalog artifact covers schemas, relations, columns, constraints, indexes, Functions, triggers, sequences, policies, Extensions, ownership/ACL and ledger metadata. Both rebuilds produced SHA-256 `28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df`.
+- Expected Catalog Baseline is now **PASS**. Current Production Migration Ledger Parity and Structural Schema Parity remain **BLOCKED / UNKNOWN** because no Production catalog run occurred.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**. Closing the expected side alone does not close a Production evidence gate or change the score.
+- No Production endpoint, credential, SQL, Migration, database, deploy or external platform was accessed or modified.
+
 ## Sprint 47 schema parity evidence closure - 2026-08-10
 
 - Repository/Git-history evidence closes `0010` as an intentional unapproved gap and validates the 21 tracked checksums/query safety.

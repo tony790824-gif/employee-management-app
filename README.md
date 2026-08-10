@@ -1,5 +1,7 @@
 # 班客邦
 
+Sprint 48 adds a deterministic PostgreSQL 18 expected-catalog baseline for future Production read-only schema comparison. It is generated only from the 21 approved tracked Migrations in a disposable local database; intentional gap `0010` remains excluded. Production parity itself is still blocked and no Production operation is authorized by this artifact.
+
 ## Sprint 43 Neon Production Billing / Usage Evidence Closure (2026-08-09)
 
 - Recorded authorized human read-only Neon evidence: the current organization plan is Free / US$0 per month, with 0.5 GB storage, autoscaling up to 2 CU, 100 compute hours and 10 branches per project.

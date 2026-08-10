@@ -5,6 +5,7 @@ import {
   EXPECTED_VERSIONS,
   PARITY_STOP_CONDITIONS,
   loadExpectedInventory,
+  validateExpectedCatalogBaseline,
   repositoryDryRun,
   validateEvidenceShape,
   validateExpectedInventory,
@@ -82,11 +83,14 @@ assert.equal(dryRun.mode, 'REPOSITORY_ONLY_DRY_RUN');
 assert.equal(dryRun.productionConnectionAttempted, false);
 assert.equal(dryRun.productionSqlExecuted, false);
 assert.equal(dryRun.catalogQueryPlan.status, 'PASS');
-assert.equal(dryRun.finalStatus, 'BLOCKED');
-assert.deepEqual(dryRun.expectedCatalogBaseline, {
-  status: 'BLOCKED',
-  reason: 'NOT_MATERIALIZED_FROM_REVIEWED_MIGRATIONS'
-});
-assert.deepEqual(dryRun.stopReasons, ['EXPECTED_SCHEMA_BASELINE_INCOMPLETE']);
+assert.equal(dryRun.finalStatus, 'PASS');
+assert.equal(dryRun.expectedCatalogBaseline.status, 'PASS');
+assert.match(dryRun.expectedCatalogBaseline.sha256, /^[a-f0-9]{64}$/);
+assert.deepEqual(dryRun.stopReasons, []);
+
+const baselineResult = await validateExpectedCatalogBaseline();
+assert.equal(baselineResult.status, 'PASS');
+assert.equal(baselineResult.objectCounts.migrationLedger, 21);
+assert.deepEqual(baselineResult.failures, []);
 
 console.log('Production schema parity repository-only plan passed fail-closed validation');
