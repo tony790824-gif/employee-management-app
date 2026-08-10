@@ -1,5 +1,15 @@
 # Codex Context
 
+## Sprint 52 current context - 2026-08-10
+
+Sprint 52 created two independent loopback-only PostgreSQL 18.4 clusters. The upgrade path captured the `0001`-`0008` structural fingerprint before applying `0009`, `0011`-`0022`; the fresh path applied all 21 approved versions from empty. Both excluded `0010`.
+
+The comparator checks actual normalized catalog rows, not only the ledger. Schemas, tables/views, columns and types, nullability/defaults, constraints, indexes, Functions/signatures, triggers, sequences, Extensions, RLS/policies, ownership and ACL all match. Missing, unexpected, mismatched and PUBLIC privilege drift counts are zero.
+
+Both structural fingerprints are `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`. Sanitized evidence SHA-256 is `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`. Cleanup passed with zero residual disposable resources.
+
+This does not establish current Production structural parity. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection or mutation occurred. Next unique work is representative synthetic-data lock/runtime and disposable recovery rehearsal.
+
 ## Sprint 51 current context - 2026-08-10
 
 Sprint 51 completed two independent, disposable PostgreSQL 18.4 upgrade rehearsals. The tool refused Production inputs, bound each temporary cluster to loopback, verified local identity, used exact Git-tracked filenames/checksums, rebuilt `0001`-`0008`, then applied only `0009` and `0011`-`0022` one version per transaction. `0010` was rejected.

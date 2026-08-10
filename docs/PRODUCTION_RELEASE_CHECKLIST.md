@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Sprint 52 disposable structural parity checkpoint
+
+- [x] Create independent loopback-only PostgreSQL 18.4 upgrade and fresh-install clusters.
+- [x] Capture the `0001`-`0008` baseline structural fingerprint before upgrade.
+- [x] Apply exact tracked `0009`, `0011`-`0022` and reject `0010`.
+- [x] Compare schemas, tables/views, columns/types/defaults/nullability, constraints, indexes, Functions/signatures, triggers, sequences, Extensions, policies/RLS, owners and ACLs.
+- [x] Require ledger parity and structural fingerprint MATCH; missing, unexpected, mismatched and PUBLIC privilege drift are zero.
+- [x] Terminate processes and delete disposable data/config/credentials; residual resource count 0.
+- [ ] Rehearse representative data-volume/concurrency locks and coordinated runtime compatibility.
+- [ ] Complete isolated Restore, RPO/RTO, recovery-owner and exact Production authorization gates.
+- [ ] Keep current Production parity BLOCKED and release NO-GO until separately authorized Production evidence passes.
+
 ## Sprint 51 isolated upgrade rehearsal checkpoint
 
 - [x] Build two independent local loopback-only PostgreSQL 18.4 clusters and remove them after use.

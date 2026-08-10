@@ -1,5 +1,11 @@
 # Database 文件（現況與目標）
 
+## Sprint 52 disposable structural parity
+
+`pnpm db:migration:structural-parity` creates two new local PostgreSQL 18 clusters: a known `0001`-`0008` baseline upgraded through the exact approved chain and an independent fresh install. It compares normalized schemas, relations/views, columns, constraints, indexes, Functions/signatures, triggers, sequences, policies/RLS, Extensions, owners, ACLs and ledger rows.
+
+The tool is disposable non-Production only, rejects Production database inputs and excludes `0010`. A local PASS does not establish current Production parity or authorize a Production Migration. Current Production remains `0001`-`0008`, NOT READY and NO-GO.
+
 ## Sprint 48 expected Production catalog baseline
 
 The expected structural baseline is generated from the 21 approved Git-tracked Migrations in two empty local disposable PostgreSQL 18 databases. `0010` is an intentional unapproved ledger gap and is never loaded. The canonical artifact is `database/production-expected-catalog-baseline.json`, with SHA-256 recorded in `database/production-expected-catalog-baseline.sha256`.

@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 52 structural parity rehearsal boundary
+
+- `pnpm db:migration:structural-parity` is confirmation-gated, local/disposable-only and rejects configured Production database inputs.
+- It creates one `0001`-`0008` upgrade path and one independent fresh-install path, then compares actual catalog rows across every approved structural section. It does not infer parity from the ledger alone.
+- A mismatch in objects, definitions, signatures, owner, ACL or PUBLIC privilege drift stops fail-closed. Evidence contains only sanitized catalog identifiers, counts, statuses and hashes.
+- Current result is disposable MATCH with zero residual resources. Never use it to claim current Production parity, scale/lock safety, recovery, RPO/RTO or authorization.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 51 disposable rehearsal boundary
 
 - `pnpm db:migration:rehearse` is a confirmation-gated **local disposable-only** tool. It rejects configured Production database inputs and is not approved as a Production executor.

@@ -1,5 +1,7 @@
 # 班客邦
 
+Sprint 52 completed a disposable PostgreSQL 18.4 structural-parity cross-check. An isolated `0001`-`0008` upgrade path and an independent fresh install produced the same full catalog fingerprint across tables, columns/types, constraints, indexes, Functions/signatures, triggers, RLS/policies, Extensions, ownership and ACL. Missing, unexpected and mismatched object counts are zero, and all temporary resources were removed. This is non-Production evidence only: Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 Sprint 49 completed the authorized Production metadata-only comparison with the dedicated read-only identity and TLS `verify-full`. The Migration ledger gate failed closed: Production has `0001`-`0008`, while the 21-row expected ledger additionally requires `0009` and `0011`-`0022`; there are no unexpected versions or checksum mismatches. Structural catalog collection did not start. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Migration or Production mutation occurred.
 
 Sprint 48 adds a deterministic PostgreSQL 18 expected-catalog baseline for future Production read-only schema comparison. It is generated only from the 21 approved tracked Migrations in a disposable local database; intentional gap `0010` remains excluded. Production parity itself is still blocked and no Production operation is authorized by this artifact.

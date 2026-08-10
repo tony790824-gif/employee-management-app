@@ -1,0 +1,701 @@
+{
+  "baseline": {
+    "fingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "ledger": [
+      {
+        "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa",
+        "name": "core",
+        "version": "0001"
+      },
+      {
+        "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9",
+        "name": "business",
+        "version": "0002"
+      },
+      {
+        "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f",
+        "name": "commands",
+        "version": "0003"
+      },
+      {
+        "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5",
+        "name": "identity_tenant_boundary",
+        "version": "0004"
+      },
+      {
+        "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3",
+        "name": "identity_context_name_resolution",
+        "version": "0005"
+      },
+      {
+        "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be",
+        "name": "session_token_boundary",
+        "version": "0006"
+      },
+      {
+        "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff",
+        "name": "leave_resource_id_precedence",
+        "version": "0007"
+      },
+      {
+        "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf",
+        "name": "session_subject_binding",
+        "version": "0008"
+      }
+    ],
+    "objectCounts": {
+      "columns": 140,
+      "constraints": 234,
+      "extensions": 2,
+      "functions": 48,
+      "indexes": 34,
+      "migrationLedger": 8,
+      "policies": 11,
+      "relations": 18,
+      "schemas": 2,
+      "sequences": 0,
+      "tables": 18,
+      "triggers": 9,
+      "views": 0
+    },
+    "status": "PASS"
+  },
+  "baselineVersions": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008"
+  ],
+  "cleanup": {
+    "postgresProcessesTerminated": true,
+    "residualDisposableResourceCount": 0,
+    "temporaryConfigRemoved": true,
+    "temporaryCredentialRemoved": true,
+    "temporaryDataRemoved": true
+  },
+  "commitSha": "82239e0ac0c3b8cdc8062102fdc3ff4330f92b78",
+  "comparison": {
+    "fingerprintMatch": "MATCH",
+    "freshFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e",
+    "mismatchedObjects": [],
+    "missingObjects": [],
+    "ownerAclMismatch": [],
+    "parityGroups": {
+      "functionsTriggersRls": "PASS",
+      "ownershipAcl": "PASS",
+      "tablesColumnsConstraintsIndexes": "PASS"
+    },
+    "publicPrivilegeDrift": {
+      "missing": [],
+      "unexpected": []
+    },
+    "sectionResults": {
+      "columns": {
+        "freshCount": 247,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 247
+      },
+      "constraints": {
+        "freshCount": 396,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 396
+      },
+      "extensions": {
+        "freshCount": 2,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 2
+      },
+      "functions": {
+        "freshCount": 72,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 72
+      },
+      "indexes": {
+        "freshCount": 63,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 63
+      },
+      "migrationLedger": {
+        "freshCount": 21,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 21
+      },
+      "policies": {
+        "freshCount": 19,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 19
+      },
+      "relations": {
+        "freshCount": 27,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 27
+      },
+      "schemas": {
+        "freshCount": 2,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 2
+      },
+      "sequences": {
+        "freshCount": 0,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 0
+      },
+      "triggers": {
+        "freshCount": 17,
+        "mismatched": [],
+        "missing": [],
+        "status": "PASS",
+        "unexpected": [],
+        "upgradeCount": 17
+      }
+    },
+    "status": "PASS",
+    "unexpectedObjects": [],
+    "upgradeFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e"
+  },
+  "expectedCatalogBaselineSha256": "28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df",
+  "freshInstall": {
+    "executionOrder": [
+      "0001",
+      "0002",
+      "0003",
+      "0004",
+      "0005",
+      "0006",
+      "0007",
+      "0008",
+      "0009",
+      "0011",
+      "0012",
+      "0013",
+      "0014",
+      "0015",
+      "0016",
+      "0017",
+      "0018",
+      "0019",
+      "0020",
+      "0021",
+      "0022"
+    ],
+    "finalCatalogHash": "a610a3d337fd623a8a055a084186b0985fffb75212569acb4f381d02c4f824fb",
+    "finalLedger": [
+      {
+        "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa",
+        "name": "core",
+        "version": "0001"
+      },
+      {
+        "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9",
+        "name": "business",
+        "version": "0002"
+      },
+      {
+        "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f",
+        "name": "commands",
+        "version": "0003"
+      },
+      {
+        "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5",
+        "name": "identity_tenant_boundary",
+        "version": "0004"
+      },
+      {
+        "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3",
+        "name": "identity_context_name_resolution",
+        "version": "0005"
+      },
+      {
+        "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be",
+        "name": "session_token_boundary",
+        "version": "0006"
+      },
+      {
+        "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff",
+        "name": "leave_resource_id_precedence",
+        "version": "0007"
+      },
+      {
+        "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf",
+        "name": "session_subject_binding",
+        "version": "0008"
+      },
+      {
+        "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e",
+        "name": "auth0_security_event_inbox",
+        "version": "0009"
+      },
+      {
+        "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf",
+        "name": "ui_bootstrap",
+        "version": "0011"
+      },
+      {
+        "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797",
+        "name": "current_user_bootstrap",
+        "version": "0012"
+      },
+      {
+        "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2",
+        "name": "time_off_requests",
+        "version": "0013"
+      },
+      {
+        "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc",
+        "name": "notification_center",
+        "version": "0014"
+      },
+      {
+        "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f",
+        "name": "notification_command_validation",
+        "version": "0015"
+      },
+      {
+        "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476",
+        "name": "web_push_subscriptions",
+        "version": "0016"
+      },
+      {
+        "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0",
+        "name": "active_session_reestablishment",
+        "version": "0017"
+      },
+      {
+        "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277",
+        "name": "edge_web_push_provider_allowlist",
+        "version": "0018"
+      },
+      {
+        "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6",
+        "name": "real_event_notifications",
+        "version": "0019"
+      },
+      {
+        "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f",
+        "name": "push_subscription_priority",
+        "version": "0020"
+      },
+      {
+        "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4",
+        "name": "push_delivery_fallback",
+        "version": "0021"
+      },
+      {
+        "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3",
+        "name": "announcement_center",
+        "version": "0022"
+      }
+    ],
+    "migrationResults": [
+      {
+        "result": "COMMITTED",
+        "version": "0001"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0002"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0003"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0004"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0005"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0006"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0007"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0008"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0009"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0011"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0012"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0013"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0014"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0015"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0016"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0017"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0018"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0019"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0020"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0021"
+      },
+      {
+        "result": "COMMITTED",
+        "version": "0022"
+      }
+    ],
+    "objectCounts": {
+      "columns": 247,
+      "constraints": 396,
+      "extensions": 2,
+      "functions": 72,
+      "indexes": 63,
+      "migrationLedger": 21,
+      "policies": 19,
+      "relations": 27,
+      "schemas": 2,
+      "sequences": 0,
+      "tables": 27,
+      "triggers": 17,
+      "views": 0
+    },
+    "status": "PASS"
+  },
+  "gateA": "DEFER",
+  "generatedAt": "2026-08-10T13:26:30.557Z",
+  "intentionalExcludedVersions": [
+    "0010"
+  ],
+  "postgresMajorVersion": 18,
+  "productionConnectionAttempted": false,
+  "productionMutation": false,
+  "productionProvisioning": "NO_GO",
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "schemaVersion": 1,
+  "scope": "DISPOSABLE_LOCAL_NON_PRODUCTION",
+  "upgrade": {
+    "executionOrder": [
+      "0009",
+      "0011",
+      "0012",
+      "0013",
+      "0014",
+      "0015",
+      "0016",
+      "0017",
+      "0018",
+      "0019",
+      "0020",
+      "0021",
+      "0022"
+    ],
+    "finalCatalogHash": "a610a3d337fd623a8a055a084186b0985fffb75212569acb4f381d02c4f824fb",
+    "finalLedger": [
+      {
+        "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa",
+        "name": "core",
+        "version": "0001"
+      },
+      {
+        "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9",
+        "name": "business",
+        "version": "0002"
+      },
+      {
+        "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f",
+        "name": "commands",
+        "version": "0003"
+      },
+      {
+        "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5",
+        "name": "identity_tenant_boundary",
+        "version": "0004"
+      },
+      {
+        "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3",
+        "name": "identity_context_name_resolution",
+        "version": "0005"
+      },
+      {
+        "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be",
+        "name": "session_token_boundary",
+        "version": "0006"
+      },
+      {
+        "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff",
+        "name": "leave_resource_id_precedence",
+        "version": "0007"
+      },
+      {
+        "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf",
+        "name": "session_subject_binding",
+        "version": "0008"
+      },
+      {
+        "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e",
+        "name": "auth0_security_event_inbox",
+        "version": "0009"
+      },
+      {
+        "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf",
+        "name": "ui_bootstrap",
+        "version": "0011"
+      },
+      {
+        "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797",
+        "name": "current_user_bootstrap",
+        "version": "0012"
+      },
+      {
+        "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2",
+        "name": "time_off_requests",
+        "version": "0013"
+      },
+      {
+        "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc",
+        "name": "notification_center",
+        "version": "0014"
+      },
+      {
+        "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f",
+        "name": "notification_command_validation",
+        "version": "0015"
+      },
+      {
+        "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476",
+        "name": "web_push_subscriptions",
+        "version": "0016"
+      },
+      {
+        "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0",
+        "name": "active_session_reestablishment",
+        "version": "0017"
+      },
+      {
+        "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277",
+        "name": "edge_web_push_provider_allowlist",
+        "version": "0018"
+      },
+      {
+        "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6",
+        "name": "real_event_notifications",
+        "version": "0019"
+      },
+      {
+        "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f",
+        "name": "push_subscription_priority",
+        "version": "0020"
+      },
+      {
+        "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4",
+        "name": "push_delivery_fallback",
+        "version": "0021"
+      },
+      {
+        "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3",
+        "name": "announcement_center",
+        "version": "0022"
+      }
+    ],
+    "migrationResults": [
+      {
+        "blockingDetected": false,
+        "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0009"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0011"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0012"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0013"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0014"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0015"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0016"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0017"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0018"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0019"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0020"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0021"
+      },
+      {
+        "blockingDetected": false,
+        "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3",
+        "postcondition": "PASS",
+        "precondition": "PASS",
+        "result": "COMMITTED",
+        "version": "0022"
+      }
+    ],
+    "objectCounts": {
+      "columns": 247,
+      "constraints": 396,
+      "extensions": 2,
+      "functions": 72,
+      "indexes": 63,
+      "migrationLedger": 21,
+      "policies": 19,
+      "relations": 27,
+      "schemas": 2,
+      "sequences": 0,
+      "tables": 27,
+      "triggers": 17,
+      "views": 0
+    },
+    "status": "PASS"
+  },
+  "upgradeAllowlist": [
+    "0009",
+    "0011",
+    "0012",
+    "0013",
+    "0014",
+    "0015",
+    "0016",
+    "0017",
+    "0018",
+    "0019",
+    "0020",
+    "0021",
+    "0022"
+  ]
+}

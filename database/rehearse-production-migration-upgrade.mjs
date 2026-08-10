@@ -245,7 +245,7 @@ export function validateSanitizedEvidence(value) {
   return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures) });
 }
 
-async function loadExactMigrationSet() {
+export async function loadExactMigrationSet() {
   const [expected, remediation] = await Promise.all([loadExpectedInventory(), loadRemediationInventory()]);
   const [expectedValidation, remediationValidation] = await Promise.all([
     validateExpectedInventory(expected), validateRemediationInventory(remediation)
@@ -282,7 +282,7 @@ async function unusedPort() {
   });
 }
 
-function resolvePostgresBin(env = process.env) {
+export function resolvePostgresBin(env = process.env) {
   const candidates = [String(env.BANK_DISPOSABLE_POSTGRES_BIN || '').trim(), 'C:\\Program Files\\PostgreSQL\\18\\bin'].filter(Boolean);
   for (const candidate of candidates) {
     try {
@@ -488,9 +488,9 @@ async function runFailureProbes(client, migration, baselineMigrations) {
   return Object.freeze({ transactionFailure, postconditionFailure });
 }
 
-async function collectNormalizedCatalog(client) {
+async function collectNormalizedCatalog(client, queries = CATALOG_QUERIES) {
   const catalog = { migrationLedger: await readLedger(client) };
-  for (const [name, sql] of Object.entries(CATALOG_QUERIES)) catalog[name] = (await client.query(sql)).rows;
+  for (const [name, sql] of Object.entries(queries)) catalog[name] = (await client.query(sql)).rows;
   return normalizeCatalog(catalog, OWNER);
 }
 
@@ -517,7 +517,14 @@ function deterministicRunSummary(run) {
   });
 }
 
-async function runOneRehearsal({ postgresBin, migrationSet, expectedCatalog, runLabel }) {
+export async function runOneRehearsal({
+  postgresBin,
+  migrationSet,
+  expectedCatalog,
+  runLabel,
+  includeCatalog = false,
+  structuralQueries = CATALOG_QUERIES
+}) {
   const rootDirectory = path.join(os.tmpdir(), `${TEMP_PREFIX}${randomBytes(8).toString('hex')}`);
   const dataDirectory = path.join(rootDirectory, 'data');
   const passwordFile = path.join(rootDirectory, 'initdb-password.txt');
@@ -555,6 +562,9 @@ async function runOneRehearsal({ postgresBin, migrationSet, expectedCatalog, run
       const baselineObservations = await applyBaseline(client, migrationSet.baseline);
       const baselineLedger = await assertLedger(client, migrationSet.baseline, 'BASELINE_LEDGER_MISMATCH');
       const baselineCatalog = await collectNormalizedCatalog(client);
+      const structuralBaselineCatalog = structuralQueries === CATALOG_QUERIES
+        ? baselineCatalog
+        : await collectNormalizedCatalog(client, structuralQueries);
       const baselineCatalogHash = sha256(canonicalJson(baselineCatalog));
       const failureProbes = await runFailureProbes(client, migrationSet.upgrade[0], migrationSet.baseline);
       const applied = [...migrationSet.baseline];
@@ -566,6 +576,9 @@ async function runOneRehearsal({ postgresBin, migrationSet, expectedCatalog, run
       }
       const finalLedger = await assertLedger(client, [...migrationSet.baseline, ...migrationSet.upgrade], 'FINAL_LEDGER_MISMATCH');
       const finalCatalog = await collectNormalizedCatalog(client);
+      const structuralFinalCatalog = structuralQueries === CATALOG_QUERIES
+        ? finalCatalog
+        : await collectNormalizedCatalog(client, structuralQueries);
       const finalCatalogHash = sha256(canonicalJson(finalCatalog));
       const expectedCatalogMatch = canonicalJson(finalCatalog) === canonicalJson(expectedCatalog);
       if (!expectedCatalogMatch) throw new Error('EXPECTED_FINAL_CATALOG_MISMATCH');
@@ -593,7 +606,90 @@ async function runOneRehearsal({ postgresBin, migrationSet, expectedCatalog, run
         finalCatalogHash,
         expectedCatalogMatch
       };
-      return { ...runResult, deterministicSummary: deterministicRunSummary(runResult) };
+      return {
+        ...runResult,
+        ...(includeCatalog ? { baselineCatalog: structuralBaselineCatalog, finalCatalog: structuralFinalCatalog } : {}),
+        deterministicSummary: deterministicRunSummary(runResult)
+      };
+    } finally {
+      await client.end();
+    }
+  } finally {
+    if (started || existsSync(path.join(dataDirectory, 'postmaster.pid'))) {
+      try {
+        run(path.join(postgresBin, 'pg_ctl.exe'), [`--pgdata=${dataDirectory}`, '--mode=fast', '--wait', 'stop'], { detachedIo: true });
+      } catch {
+        // Cleanup continues; original failures remain authoritative.
+      }
+    }
+    await rm(rootDirectory, { recursive: true, force: true });
+  }
+}
+
+export async function runOneFreshInstall({
+  postgresBin,
+  migrationSet,
+  expectedCatalog,
+  runLabel = 'FRESH_INSTALL',
+  structuralQueries = CATALOG_QUERIES
+}) {
+  const rootDirectory = path.join(os.tmpdir(), `${TEMP_PREFIX}${randomBytes(8).toString('hex')}`);
+  const dataDirectory = path.join(rootDirectory, 'data');
+  const passwordFile = path.join(rootDirectory, 'initdb-password.txt');
+  const password = randomBytes(32).toString('base64url');
+  const port = await unusedPort();
+  const databaseName = `${DATABASE_PREFIX}${randomBytes(4).toString('hex')}`;
+  const migrations = [...migrationSet.baseline, ...migrationSet.upgrade];
+  let started = false;
+  await mkdir(rootDirectory, { recursive: false });
+  try {
+    await writeFile(passwordFile, `${password}\n`, { encoding: 'utf8', mode: 0o600 });
+    run(path.join(postgresBin, 'initdb.exe'), [
+      `--pgdata=${dataDirectory}`,
+      `--username=${OWNER}`,
+      `--pwfile=${passwordFile}`,
+      '--auth-local=trust',
+      '--auth-host=scram-sha-256',
+      '--encoding=UTF8',
+      '--no-locale'
+    ]);
+    await rm(passwordFile, { force: true });
+    run(path.join(postgresBin, 'pg_ctl.exe'), [
+      `--pgdata=${dataDirectory}`,
+      `--options=-p ${port} -h 127.0.0.1`,
+      `--log=${path.join(rootDirectory, 'postgres.log')}`,
+      '--wait',
+      'start'
+    ], { detachedIo: true });
+    started = true;
+    await createDatabase(port, password, databaseName);
+    const client = await connect(port, password, databaseName);
+    try {
+      const identity = await inspectIdentity(client);
+      const identityResult = validateRehearsalIdentity(identity, { databaseName, rootDirectory });
+      if (identityResult.status !== 'PASS') throw new Error(`DISPOSABLE_IDENTITY_BLOCKED:${identityResult.failures.join(',')}`);
+      const migrationResults = await applyBaseline(client, migrations);
+      const finalLedger = await assertLedger(client, migrations, 'FRESH_INSTALL_LEDGER_MISMATCH');
+      const finalCatalog = await collectNormalizedCatalog(client);
+      const structuralFinalCatalog = structuralQueries === CATALOG_QUERIES
+        ? finalCatalog
+        : await collectNormalizedCatalog(client, structuralQueries);
+      const finalCatalogHash = sha256(canonicalJson(finalCatalog));
+      const expectedCatalogMatch = canonicalJson(finalCatalog) === canonicalJson(expectedCatalog);
+      if (!expectedCatalogMatch) throw new Error('FRESH_INSTALL_EXPECTED_CATALOG_MISMATCH');
+      return Object.freeze({
+        run: runLabel,
+        pathMode: 'FRESH_INSTALL_FROM_EMPTY',
+        environment: 'DISPOSABLE_LOCAL_NON_PRODUCTION',
+        postgresMajorVersion: 18,
+        identityVerification: 'PASS',
+        migrationOrder: Object.freeze(migrations.map(item => item.version)),
+        migrationResults: Object.freeze(migrationResults),
+        finalLedger: Object.freeze(finalLedger),
+        finalCatalog: structuralFinalCatalog,
+        finalCatalogHash,
+        expectedCatalogMatch
+      });
     } finally {
       await client.end();
     }

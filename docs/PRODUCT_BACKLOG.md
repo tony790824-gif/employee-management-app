@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 52 status - Disposable Structural Schema Parity (2026-08-10)
+
+- **Sprint status:** COMPLETE for disposable non-Production evidence; current Production parity remains BLOCKED.
+- **Paths:** an isolated `0001`-`0008` upgrade path and a second fresh-install path both reached exact `0001`-`0009`, `0011`-`0022`; `0010` remained rejected.
+- **Structural result:** tables, columns/types, constraints, indexes, functions/signatures, triggers, policies/RLS, ownership/ACL, extensions, schemas and ledger all match with zero missing, unexpected or mismatched objects.
+- **Fingerprint:** upgrade and fresh install both produced `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`.
+- **Cleanup:** both temporary clusters and credentials removed; residual count 0.
+- **Decision:** readiness remains 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO. No Production connection or mutation occurred.
+- **Next unique Sprint:** representative synthetic-data lock/runtime and disposable recovery rehearsal.
+
 ## Sprint 51 status - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal (2026-08-10)
 
 - **Sprint status:** COMPLETE for two disposable, isolated PostgreSQL 18.4 rehearsals; Production execution remains BLOCKED / NOT AUTHORIZED.

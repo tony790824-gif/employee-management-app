@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 52 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
+## Sprint 53 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
+
+Sprint 52 proved that an isolated `0001`-`0008` upgrade and an independent fresh install produce the same complete structural fingerprint. It did not prove behavior with representative row counts, concurrent sessions, live runtime versions or recovery.
+
+The next unique Sprint should remain disposable and non-Production: generate non-sensitive representative synthetic data, exercise controlled concurrent sessions, measure version-specific locks/timeouts, and rehearse recovery from a disposable backup after an injected failure. It must not use Production data or credentials, connect to Production, include `0010`, or claim local RPO/RTO as Production evidence.
+
+## Historical Sprint 52 - Disposable Structural Schema Parity
+
+- Upgrade and fresh-install PostgreSQL 18.4 paths: PASS.
+- Ledger and all structural sections: PASS; fingerprint MATCH; missing/unexpected/mismatched objects: 0.
+- Cleanup: PASS; residual resources: 0.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production operation occurred.
+
+## Historical Sprint 52 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
 
 Sprint 51 proved the exact empty-database `0001`-`0008` to `0022` chain twice in isolated PostgreSQL 18.4. It did not prove Production-sized locks, concurrent-runtime compatibility or recovery.
 

@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-10 - Sprint 52 disposable structural schema parity
+
+- Compared a `0001`-`0008` upgrade path with an independent fresh install using complete normalized PostgreSQL 18.4 catalog fingerprints.
+- All structural sections, ledger, owner/ACL and PUBLIC privilege drift checks passed with no missing or unexpected objects.
+- Cleanup and sanitized evidence hashing passed; Production remained 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## 2026-08-10 - Sprint 51 isolated Migration upgrade rehearsal
 
 - Rehearsed the exact `0001`-`0008` to `0022` path twice on fresh PostgreSQL 18.4 disposable clusters while rejecting `0010`.
