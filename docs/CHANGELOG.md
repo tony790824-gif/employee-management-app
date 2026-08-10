@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-10 - Sprint 51 isolated Migration upgrade rehearsal
+
+- Rehearsed the exact `0001`-`0008` to `0022` path twice on fresh PostgreSQL 18.4 disposable clusters while rejecting `0010`.
+- Recorded per-version duration/transaction/lock outcomes, failure rollback probes and deterministic sanitized evidence.
+- Preserved Production 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production operation occurred.
+
 ## 2026-08-10 - Sprint 50 Production Migration gap remediation plan
 
 - Added a machine-validated exact plan for missing `0009`, `0011`-`0022`, preserving `0010` as an excluded intentional gap.

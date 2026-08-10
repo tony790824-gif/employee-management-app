@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 51 disposable rehearsal boundary
+
+- `pnpm db:migration:rehearse` is a confirmation-gated **local disposable-only** tool. It rejects configured Production database inputs and is not approved as a Production executor.
+- It uses the exact order `0009`, `0011`-`0022`, rejects `0010`, verifies tracked checksums and stops/rolls back on any predecessor, precondition, postcondition, ledger or blocking-lock failure.
+- Two empty PostgreSQL 18.4 runs passed deterministically. Do not extrapolate their durations to Production or use them to claim zero downtime, RPO/RTO, capacity or live-runtime compatibility.
+- Production recovery, scale/lock, compatibility, maintenance and authorization gates remain blocked. Production stays 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
+
 ## Sprint 50 Migration remediation operating boundary
 
 - Use `docs/PRODUCTION_MIGRATION_GAP_REMEDIATION_PLAN.md` as the only planning authority; its execution runbook is a draft and grants no permission.

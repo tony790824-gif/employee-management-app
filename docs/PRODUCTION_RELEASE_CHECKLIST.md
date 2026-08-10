@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Sprint 51 isolated upgrade rehearsal checkpoint
+
+- [x] Build two independent local loopback-only PostgreSQL 18.4 clusters and remove them after use.
+- [x] Rebuild exact `0001`-`0008` baseline before each upgrade.
+- [x] Apply only `0009`, `0011`-`0022` one version per transaction; reject `0010`, skipped, reordered, extra and checksum-mismatched inputs.
+- [x] Verify version pre/postconditions, predecessor/final ledger, required `0018`/`0020` Functions, lock evidence and transaction rollback behavior.
+- [x] Produce deterministic sanitized evidence and matching final catalogs across both runs.
+- [ ] Prove representative data-volume/concurrency lock behavior and coordinated runtime compatibility.
+- [ ] Complete scheduled backup/isolated Restore, RPO/RTO and recovery-owner evidence.
+- [ ] Obtain separate exact Production authorization; Sprint 51 grants none.
+- [ ] Keep readiness 70% / NOT READY, Gate A DEFER and Production NO-GO until actual Production gates close.
+
 ## Sprint 50 Migration remediation checkpoint
 
 - [x] Exact missing inventory is `0009`, `0011`-`0022`; `0010` is excluded.
@@ -7,7 +19,7 @@
 - [x] Generic directory-scanning Migration execution is rejected until an exact allowlist and per-version stop path exists.
 - [ ] Collect structural predecessor metadata and prove every version-specific precondition against current Production.
 - [ ] Complete scheduled backup/restore and isolated Restore evidence; prove RPO 15 minutes and RTO 60 minutes.
-- [ ] Rehearse the exact upgrade from `0001`-`0008` in disposable non-Production and measure locks/durations/rollback guards.
+- [x] Rehearse the exact upgrade from `0001`-`0008` in disposable non-Production and measure empty-database locks/durations/rollback guards.
 - [ ] Approve a maintenance window, runtime compatibility matrix, recovery owner, forward-fix owner and exact execution artifact.
 - [ ] Obtain separate explicit authorization for the exact Production event. This checklist and Sprint 50 do not authorize it.
 - [ ] Keep readiness 70% / NOT READY, Gate A DEFER and Production NO-GO until actual evidence closes every gate.

@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-10 - Sprint 51 Isolated Migration Upgrade Rehearsal
+
+- Added a Production-input-rejecting PostgreSQL 18 disposable rehearsal tool with an exact Git-tracked `0009`, `0011`-`0022` allowlist and explicit `0010` rejection.
+- Completed two independent `0001`-`0008` upgrade rehearsals with per-version transactions, pre/postconditions, ledger/lock checks and fail-closed rollback probes.
+- Produced deterministic sanitized evidence and matching final catalog hashes, plus regression tests for order, dependency, checksum, transaction and rollback guards.
+- Kept readiness 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production connection, credential, SQL, Migration, deploy or external operation occurred.
+
 ## 2026-08-10 - Sprint 50 Production Migration Gap Remediation Plan
 
 - Added an exact, checksum-verified inventory and validator for the 13 missing Production Migrations (`0009`, `0011`-`0022`) while rejecting `0010`.

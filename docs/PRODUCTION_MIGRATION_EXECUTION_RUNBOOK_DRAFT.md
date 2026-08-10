@@ -4,6 +4,8 @@ Status: **DRAFT / BLOCKED / NOT AN AUTHORIZATION**
 
 This runbook describes a possible future maintenance event for `0009`, `0011`-`0022`. It must not be run until Gate A, recovery, tooling, structural preconditions and a separate exact owner approval all pass.
 
+Sprint 51 proved the exact one-version transaction sequence and failure stops only on empty disposable PostgreSQL 18.4 databases. `database/rehearse-production-migration-upgrade.mjs` remains local/disposable-only and must not be pointed at Production. Representative lock/runtime evidence, recovery and every Production authorization checkpoint below remain open.
+
 ## Gate 0 - authorization checkpoint
 
 Record the exact approved commit, target environment, 13-version allowlist, operator role, maintenance window, traffic plan, recovery commander and forward-fix owner. Reject general or stale approval. Reject `0010` and any source that is not a clean immutable Git artifact.

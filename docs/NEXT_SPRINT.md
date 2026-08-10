@@ -1,6 +1,19 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 51 proposal - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal
+## Sprint 52 proposal - Representative Synthetic-data Lock and Recovery Rehearsal
+
+Sprint 51 proved the exact empty-database `0001`-`0008` to `0022` chain twice in isolated PostgreSQL 18.4. It did not prove Production-sized locks, concurrent-runtime compatibility or recovery.
+
+The next unique Sprint should remain disposable and non-Production: generate non-sensitive representative synthetic data and controlled concurrent sessions, measure version-specific lock/timeout behavior, and rehearse recovery from a disposable backup after an injected mid-chain failure. It must not use Production data or credentials, connect to Production, weaken the exact allowlist, include `0010`, or claim Production RPO/RTO from local evidence.
+
+## Historical Sprint 51 - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal
+
+- Two independent PostgreSQL 18.4 clusters: PASS; baseline/final ledgers and catalogs deterministic.
+- Exact chain `0009`, `0011`-`0022`: PASS one version per transaction; `0010`: REJECTED.
+- Precondition, dependency, checksum, failure rollback and conditional-rollback guards: PASS.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production connection or mutation occurred.
+
+## Historical Sprint 51 proposal - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal
 
 Sprint 50 completed the Repository-only remediation plan. The strict future chain is `0009`, `0011`-`0022`; `0010` is excluded. Production execution remains BLOCKED because recovery/isolated-Restore proof, structural preconditions, runtime compatibility, exact stepwise execution tooling and Gate A authorization are absent.
 

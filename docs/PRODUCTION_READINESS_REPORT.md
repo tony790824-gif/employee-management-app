@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 51 isolated Migration upgrade rehearsal - 2026-08-10
+
+- Two independent loopback-only PostgreSQL 18.4 clusters rebuilt `0001`-`0008` and applied exactly `0009`, `0011`-`0022` one version per transaction: **PASS**.
+- Exact allowlist/order/checksums, `0010` rejection, pre/postconditions, `0018`/`0020` Function dependencies, ledger checks, lock checks and transaction rollback probes: **PASS**.
+- Both final normalized catalogs matched; deterministic evidence SHA-256 is `c9063a0a55b251b4945db9a2c8f71ae08f42c4fcdf4aab18c275b9d81d318b66`.
+- This closes only the empty disposable rehearsal item. Production-sized lock/data compatibility, recovery/isolated Restore, RPO/RTO, runtime compatibility and authorization remain **BLOCKED / UNKNOWN**.
+- Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**. No Production connection, SQL, Migration, deploy, credential or external resource operation occurred.
+
 ## Sprint 50 Migration gap remediation planning - 2026-08-10
 
 - Repository-only dependency, precondition, lock/runtime, recovery, rollback and evidence review is **COMPLETE** for missing `0009`, `0011`-`0022`; `0010` remains excluded.

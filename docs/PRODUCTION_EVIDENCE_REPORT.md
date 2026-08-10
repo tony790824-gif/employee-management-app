@@ -1,5 +1,15 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 51 disposable Migration rehearsal evidence - 2026-08-10
+
+- Evidence class: **DISPOSABLE NON-PRODUCTION REHEARSAL ONLY**; it is not Production schema, scale, lock or recovery evidence.
+- PostgreSQL 18.4 runs A/B independently rebuilt `0001`-`0008` and applied exact `0009`, `0011`-`0022`; `0010` was rejected.
+- Both final ledgers and normalized catalogs match. Baseline catalog SHA-256: `ff59824a1f3eedc97ed4bd562dc78a75dbdc454a92297137650b7f17e6c3753f`; final catalog SHA-256: `a610a3d337fd623a8a055a084186b0985fffb75212569acb4f381d02c4f824fb`.
+- Deterministic summary SHA-256: `c9063a0a55b251b4945db9a2c8f71ae08f42c4fcdf4aab18c275b9d81d318b66`. Sanitized evidence SHA-256: `0192da56bc53ac60f882463a231e1edcac74980477b40a3f65c67043e91eb359`.
+- `docs/PRODUCTION_MIGRATION_UPGRADE_REHEARSAL_EVIDENCE.json` contains only versions, checksums, durations, status/lock booleans and catalog/evidence hashes; sensitive runtime identity is excluded.
+- No Production input, connection, data, SQL, Migration, credential, deploy or external resource was used or modified.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. Production ledger/structural parity remains blocked until separately authorized remediation and verification.
+
 ## Sprint 50 Repository-only remediation evidence - 2026-08-10
 
 - Evidence class: **REPOSITORY PLANNING EVIDENCE ONLY**; no new Production catalog/runtime/recovery evidence was collected.

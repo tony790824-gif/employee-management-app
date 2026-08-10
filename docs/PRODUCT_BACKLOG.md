@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 51 status - Isolated 0001-0008 to 0022 Migration Upgrade Rehearsal (2026-08-10)
+
+- **Sprint status:** COMPLETE for two disposable, isolated PostgreSQL 18.4 rehearsals; Production execution remains BLOCKED / NOT AUTHORIZED.
+- **Baseline/chain:** both runs rebuilt `0001`-`0008`, then committed exactly `0009`, `0011`-`0022` one version per transaction. `0010` was rejected and never read or executed.
+- **Controls:** exact Git-tracked allowlist/checksums, predecessor ledger, version pre/postconditions, lock evidence and rollback-on-failure stops passed. `0018`/`0020` Function dependencies were verified.
+- **Determinism:** both final ledgers and normalized catalogs matched; deterministic evidence SHA-256 is `c9063a0a55b251b4945db9a2c8f71ae08f42c4fcdf4aab18c275b9d81d318b66`.
+- **Boundary:** empty disposable timings are not Production lock/data-volume proof. Recovery, RPO/RTO, runtime compatibility and authorization remain blocked.
+- **Decision:** readiness remains 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO. No Production connection or mutation occurred.
+- **Next unique Sprint:** isolated representative synthetic-data lock/runtime and recovery rehearsal; never use Production data.
+
 ## Sprint 50 status - Production Migration Gap Remediation Plan (2026-08-10)
 
 - **Sprint status:** COMPLETE as a Repository-only, fail-closed plan; Production execution remains **BLOCKED / NOT AUTHORIZED**.

@@ -1,5 +1,15 @@
 # Codex Context
 
+## Sprint 51 current context - 2026-08-10
+
+Sprint 51 completed two independent, disposable PostgreSQL 18.4 upgrade rehearsals. The tool refused Production inputs, bound each temporary cluster to loopback, verified local identity, used exact Git-tracked filenames/checksums, rebuilt `0001`-`0008`, then applied only `0009` and `0011`-`0022` one version per transaction. `0010` was rejected.
+
+Every version passed exact predecessor-ledger, precondition, postcondition, ledger and lock checks. `0018` and `0020` verified the required predecessor Functions. Forced SQL and postcondition failures rolled back without changing the baseline ledger or leaving `0009` objects. Automatic down execution remained blocked because every remediation is conditionally reversible.
+
+Both final ledgers/catalogs were deterministic. Final catalog SHA-256: `a610a3d337fd623a8a055a084186b0985fffb75212569acb4f381d02c4f824fb`; deterministic evidence SHA-256: `c9063a0a55b251b4945db9a2c8f71ae08f42c4fcdf4aab18c275b9d81d318b66`; full sanitized evidence SHA-256: `0192da56bc53ac60f882463a231e1edcac74980477b40a3f65c67043e91eb359`.
+
+This is empty disposable evidence, not Production data-volume, contention, recovery or compatibility evidence. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection or mutation occurred. The next unique Sprint is a disposable representative synthetic-data lock/runtime and recovery rehearsal.
+
 ## Sprint 50 current context - 2026-08-10
 
 Sprint 50 completed only the fail-closed Production Migration gap plan. The confirmed missing versions remain `0009` and `0011`-`0022`; strict order is mandatory and `0010` remains excluded. Production structural catalog was not evaluated and no new Production evidence was collected.

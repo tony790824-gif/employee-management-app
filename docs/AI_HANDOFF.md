@@ -1,5 +1,18 @@
 # AI Handoff
 
+## Sprint 51 handoff - 2026-08-10
+
+- Sprint 51 is **COMPLETE FOR DISPOSABLE NON-PRODUCTION REHEARSAL**; Production Migration remains BLOCKED / NOT AUTHORIZED.
+- `database/rehearse-production-migration-upgrade.mjs` creates two fresh loopback-only PostgreSQL 18.4 clusters, rejects Production inputs, loads only the exact tracked allowlist and removes each cluster after use.
+- Both runs rebuilt `0001`-`0008`, applied exactly `0009`, `0011`-`0022` one transaction at a time, and rejected `0010`.
+- Per-version predecessor/precondition/postcondition/ledger/lock controls passed; `0018` and `0020` Function dependencies passed. Forced SQL and postcondition failures rolled back to the baseline state.
+- Both final catalogs matched with SHA-256 `a610a3d337fd623a8a055a084186b0985fffb75212569acb4f381d02c4f824fb`; deterministic evidence SHA-256 is `c9063a0a55b251b4945db9a2c8f71ae08f42c4fcdf4aab18c275b9d81d318b66`.
+- Evidence/report: `docs/PRODUCTION_MIGRATION_UPGRADE_REHEARSAL_EVIDENCE.json`, `.sha256`, and `docs/PRODUCTION_MIGRATION_UPGRADE_REHEARSAL_REPORT.md`.
+- Empty disposable timings are not Production scale/lock/recovery evidence. Recovery, RPO/RTO, runtime compatibility and Gate A authorization remain blocked.
+- Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection, credential, SQL, Migration, deploy or external operation occurred.
+- Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and the untracked `0010` files.
+- Next unique work: representative synthetic-data lock/runtime and disposable recovery rehearsal only; do not start a Production event.
+
 ## Sprint 50 handoff - 2026-08-10
 
 - Sprint 50 is **COMPLETE AS REPOSITORY-ONLY PLANNING**; Production Migration execution remains **BLOCKED / NOT AUTHORIZED**.
