@@ -5,6 +5,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { REQUIRED_MISSING_VERSIONS, validateRemediationInventory } from './production-migration-gap-remediation-plan.mjs';
+import { repositoryClosureGate } from './production-migration-repository-closure-gate.mjs';
 
 const PROJECT_ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PACKAGE_PATH = new URL('./production-migration-final-readiness.expected.json', import.meta.url);
@@ -59,7 +60,7 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
 export async function validateFinalReadinessPackage(input) {
   const value = input || await loadFinalReadinessPackage();
   const failures = [];
-  if (value.schemaVersion !== 3 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 62) failures.push('PACKAGE_FORMAT_MISMATCH');
+  if (value.schemaVersion !== 4 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 63) failures.push('PACKAGE_FORMAT_MISMATCH');
   const inventory = value.repositoryInventory || {};
   if (inventory.expectedCount !== 21 || inventory.result !== 'PASS') failures.push('REPOSITORY_INVENTORY_STATUS_MISMATCH');
   if (JSON.stringify(inventory.approvedVersions) !== JSON.stringify([...value.productionBaseline.expectedVersions, ...REQUIRED_MISSING_VERSIONS])) failures.push('REPOSITORY_INVENTORY_VERSION_MISMATCH');
@@ -113,7 +114,9 @@ export async function validateFinalReadinessPackage(input) {
   };
   for (const gateId of value.requiredGateIds || []) visitDependency(gateId);
   if (JSON.stringify(classificationCounts) !== JSON.stringify(value.classificationSummary)) failures.push('CLASSIFICATION_SUMMARY_MISMATCH');
-  if (Object.values(classificationCounts).reduce((sum, count) => sum + count, 0) !== 18) failures.push('NON_PASS_CLASSIFICATION_COUNT_MISMATCH');
+  const passCount = (value.requiredGateIds || []).filter(gateId => value.currentGateEvidence?.[gateId]?.status === 'PASS').length;
+  const nonPassCount = Object.values(classificationCounts).reduce((sum, count) => sum + count, 0);
+  if (nonPassCount !== (value.requiredGateIds || []).length - passCount) failures.push('NON_PASS_CLASSIFICATION_COUNT_MISMATCH');
   for (const gateId of ['RPO_15_MINUTES', 'PRE_MIGRATION_RESTORE_POINT', 'TRAFFIC_AND_LONG_TRANSACTION_CONTROL']) {
     if (matrix[gateId]?.category !== 'PRODUCTION_MUTATION_REQUIRED' || matrix[gateId]?.canCloseWithoutProductionMutation !== false) {
       failures.push(`PRODUCTION_MUTATION_BOUNDARY_WEAKENED:${gateId}`);
@@ -133,6 +136,10 @@ export async function validateFinalReadinessPackage(input) {
   if (rollback.status !== 'PARTIAL' || rollback.unconditionallyReversibleCount !== 0 || rollback.conditionallyReversibleCount !== 13 || rollback.automaticDownAllowed !== false) failures.push('ROLLBACK_SAFETY_WEAKENED');
   if (value.currentGateEvidence?.ISOLATED_RESTORE?.status !== 'PASS' || value.currentGateEvidence?.RTO_60_MINUTES?.status !== 'PASS') failures.push('RECOVERY_PASS_PROVENANCE_DRIFT');
   if (value.currentGateEvidence?.RPO_15_MINUTES?.status !== 'BLOCKED' || value.currentGateEvidence?.PRE_MIGRATION_RESTORE_POINT?.status !== 'BLOCKED') failures.push('RECOVERY_BLOCKER_WEAKENED');
+  if (value.currentGateEvidence?.IMMUTABLE_EXECUTION_ARTIFACT?.status !== 'PASS' || value.currentGateEvidence?.RUNTIME_COMPATIBILITY?.status !== 'PASS') failures.push('SPRINT_63_REPOSITORY_CLOSURE_DRIFT');
+
+  const repositoryClosure = await repositoryClosureGate();
+  if (repositoryClosure.immutableExactManifest !== 'PASS' || repositoryClosure.runtimeCompatibility !== 'PASS' || repositoryClosure.candidateCommitAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_63_REPOSITORY_CLOSURE_EVIDENCE_MISMATCH');
 
   const remediation = await validateRemediationInventory();
   if (remediation.status !== 'PASS') failures.push(...remediation.failures.map(item => `REMEDIATION:${item}`));

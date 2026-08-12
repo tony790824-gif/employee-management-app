@@ -1,5 +1,11 @@
 # Next external gate — Production evidence and authorization
 
+## Sprint 64 proposal - Event-time dedicated-reader evidence authorization
+
+Sprint 63 closed only `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT`, producing 6 PASS / 16 non-PASS. The next smallest safe scope is an authorization package for a single event-time, dedicated Production read-only run covering only target identity, TLS verify-full, fresh ledger/checksums, zero unexpected versions and structural starting baseline.
+
+Do not execute that read until the Owner explicitly grants the exact read-only boundary and protected inputs are present. Do not substitute Owner/Admin/Migrator/API/Push/Staging credentials. Do not perform SQL writes, Migration, restore point, traffic control, external configuration or deployment. Candidate Commit and Migration authorization remain NOT_GRANTED.
+
 ## Sprint 63 proposal - Repository Runtime Compatibility and Immutable Artifact Closure
 
 Sprint 62 proves exactly which Gates can close without Production mutation. The next smallest safe scope is only the two `REPOSITORY_CLOSABLE` Gates: complete the API/worker/frontend compatibility matrix at every `0008` through `0022` checkpoint and produce a clean, exact-manifest, hash-verified candidate artifact that excludes `0010`.

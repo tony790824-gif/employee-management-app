@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 63 Production Migration stop
+
+The Repository runtime checkpoint contract and exact immutable manifest are PASS, moving the 22-Gate result to 6 PASS / 16 non-PASS. This does not authorize a candidate Commit or Production execution. Keep API/worker/frontend drained at intermediate checkpoints and do not resume until final `0022` ledger/catalog parity and all separate event Gates pass.
+
+The manifest hash is `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`; `0010` remains prohibited. Event-time Production evidence, operator, runtime infrastructure, RPO/restore point, maintenance/traffic controls, monitoring/responders, candidate identity and exact authorization remain non-PASS.
+
 ## Sprint 61 Production Migration stop
 
 Repository/disposable Migration validation is complete, but the actual 22-Gate Production decision is NO-GO with 18 non-PASS items. Do not request or execute Migration authorization until RPO, independent backup/full restored security parity, event-specific restore point, fresh dedicated-reader evidence, least-privilege operator, immutable artifact, maintenance/traffic/lock controls, monitoring/responders and runtime compatibility all pass.

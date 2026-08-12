@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "mode": "REPOSITORY_ONLY_RUNTIME_COMPATIBILITY",
+  "lastReviewedSprint": 63,
+  "result": "PASS",
+  "scope": "REPOSITORY_AND_DISPOSABLE_NON_PRODUCTION_ONLY",
+  "runtimeMatrix": {
+    "node": { "required": ">=20", "tested": "24.14.0", "productionObserved": "UNKNOWN", "unknown": ["PRODUCTION_API_NODE_VERSION", "PRODUCTION_PUSH_WORKER_NODE_VERSION"] },
+    "packageManager": { "required": "pnpm 11.x (package metadata pins 11.9.0)", "tested": "11.16.0", "productionObserved": "UNKNOWN", "unknown": ["PRODUCTION_BUILD_PNPM_VERSION"] },
+    "databaseDriver": { "required": "pg ^8.22.0", "tested": "pg 8.22.0 from pnpm-lock.yaml", "productionObserved": "UNKNOWN", "unknown": ["PRODUCTION_API_DRIVER_VERSION"] },
+    "postgresql": { "required": "PostgreSQL major 18 for the committed expected-catalog contract", "tested": "PostgreSQL 18.4 disposable upgrade and fresh-install parity", "productionObserved": "UNKNOWN_IN_SPRINT_63", "unknown": ["EVENT_TIME_PRODUCTION_SERVER_VERSION", "PRODUCTION_EXTENSION_VERSIONS"] },
+    "extensions": { "required": ["pgcrypto"], "tested": "Present in the PostgreSQL 18.4 expected catalog and exact migration rehearsals", "productionObserved": "HISTORICAL_METADATA_ONLY_NOT_EVENT_TIME", "unknown": ["EVENT_TIME_PRODUCTION_EXTENSION_OWNER_AND_VERSION"] },
+    "transactions": { "required": "One migration version per transaction with pre/post verification and a human stop", "tested": "Two deterministic upgrade rehearsals plus structural parity rehearsal", "productionObserved": "NOT_EXECUTED", "unknown": ["PRODUCTION_LOCK_DURATION", "PRODUCTION_ROW_VOLUME", "PRODUCTION_CONCURRENT_SESSIONS"] }
+  },
+  "approvedCheckpoints": ["0008", "0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
+  "checkpointPolicy": {
+    "0008": "ALL_POSTGRES_APPLICATION_RUNTIMES_DRAINED_BEFORE_FIRST_MIGRATION",
+    "0009": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0011": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0012": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0013": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0014": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0015": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0016": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0017": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0018": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0019": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0020": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0021": "ALL_POSTGRES_APPLICATION_RUNTIMES_REMAIN_DRAINED",
+    "0022": "CURRENT_API_WORKER_FRONTEND_ALLOWED_ONLY_AFTER_FINAL_LEDGER_AND_CATALOG_PASS"
+  },
+  "components": {
+    "api": { "intermediateCheckpoints": "MUST_REMAIN_STOPPED", "finalCheckpoint": "TESTED_BY_FULL_REPOSITORY_SUITE", "productionObserved": "NOT_CONFIGURED" },
+    "pushWorker": { "intermediateCheckpoints": "MUST_REMAIN_STOPPED_AND_QUEUE_DRAINED", "finalCheckpoint": "TESTED_BY_WEB_PUSH_NOTIFICATION_AND_ANNOUNCEMENT_SUITES", "productionObserved": "NOT_CONFIGURED" },
+    "frontend": { "intermediateCheckpoints": "MUST_NOT_SEND_POSTGRES_REQUESTS", "finalCheckpoint": "TESTED_BY_BUILD_CHECK_AND_FRONTEND_SUITES", "productionObserved": "NOT_CONFIGURED" }
+  },
+  "evidence": {
+    "upgrade": "docs/PRODUCTION_MIGRATION_UPGRADE_REHEARSAL_EVIDENCE.json",
+    "structuralParity": "docs/PRODUCTION_STRUCTURAL_PARITY_REHEARSAL_EVIDENCE.json",
+    "expectedCatalog": "database/production-expected-catalog-baseline.json",
+    "packageMetadata": "package.json",
+    "dependencyLock": "pnpm-lock.yaml",
+    "runtimeEntry": "server/index.mjs",
+    "frontendBuild": "scripts/build.mjs"
+  },
+  "claims": { "mixedVersionOperation": "PROHIBITED_NOT_PROVEN", "zeroDowntime": "NOT_CLAIMED", "productionCompatibility": "NOT_OBSERVED", "repositoryCompatibilityContract": "PASS" },
+  "productionConnectionAttempted": false,
+  "productionMutation": false
+}

@@ -2,9 +2,11 @@
 
 Status: **FINAL TECHNICAL RUNBOOK / NO-GO / NOT AN AUTHORIZATION**
 
-Sprint 62 closure review classifies every non-PASS Gate exactly once and records the dependency-ordered minimum path in `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_READINESS_REPORT.md`. The current matrix remains 4 PASS / 18 non-PASS. Repository-only and read-only closure work cannot authorize a Migration; external configuration, RPO/restore-point/traffic mutations and exact Owner decisions remain separate stops.
+Sprint 63 closes only the Repository runtime-contract and immutable-manifest Gates. The matrix is now 6 PASS / 16 non-PASS. The exact manifest hash is `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`; its candidate authorization remains NOT_GRANTED.
 
-Sprint 61 revalidation keeps this Runbook fail-closed. The machine-readable package now separates isolated Restore PASS and RTO PASS from RPO NOT_PROVEN and the blocked event-specific pre-Migration restore point. A fresh disposable upgrade/fresh-install parity run and 22-Gate simulation pass, but the real Production Gate has 18 non-PASS items. No dedicated reader inputs were available for event-time revalidation, and no Production operation ran.
+Sprint 62 closure review classified every non-PASS Gate exactly once and recorded the dependency-ordered minimum path in `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_READINESS_REPORT.md`. Sprint 63 closed only the two Repository targets, leaving 6 PASS / 16 non-PASS. Repository-only and read-only closure work cannot authorize a Migration; external configuration, RPO/restore-point/traffic mutations and exact Owner decisions remain separate stops.
+
+Sprint 61 revalidation keeps this Runbook fail-closed. The machine-readable package separates isolated Restore PASS and RTO PASS from RPO NOT_PROVEN and the blocked event-specific pre-Migration restore point. A fresh disposable upgrade/fresh-install parity run and 22-Gate simulation pass; after Sprint 63 the real Production Gate still has 16 non-PASS items. No dedicated reader inputs were available for event-time revalidation, and no Production operation ran.
 
 This runbook describes a possible future maintenance event for `0009`, `0011`-`0022`. It must not be run until Gate A, recovery, tooling, structural preconditions and a separate exact owner approval all pass.
 
@@ -32,7 +34,7 @@ Historical Sprint 49 identity/ledger evidence is provenance, not event-time evid
 
 Build from a clean checkout of the authorized commit. Verify the 13 up/down SHA-256 values against `database/production-migration-gap-remediation.expected.json`. Prove there is no `0010` or undeclared file. The current generic `db:migrate up` path is prohibited because it directory-scans and cannot stop after each version.
 
-Current status: **BLOCKED** until the final candidate Commit and immutable artifact are separately approved.
+Current Repository artifact status: **PASS**. The separate candidate Commit identity and Owner execution authorization remain **BLOCKED / NOT_GRANTED**.
 
 ## Gate 4 - traffic and lock checkpoint
 
@@ -83,6 +85,8 @@ Require exact final structural fingerprint `f7fcde233753d0d09ed0a3adf796fb2c814a
 
 Database parity does not authorize Render, Netlify, Auth0, DNS, Secret or traffic changes. Those remain separate release gates. Deploy only versions proven compatible with the committed schema and preserve the approved rollback/forward-fix path.
 
+Repository compatibility status: **PASS** only under the fail-closed policy that API, push worker and PostgreSQL frontend remain drained at `0008` through `0021`. The current runtime is allowed only after `0022` ledger/catalog verification. Mixed-version and zero-downtime operation remain prohibited/not proven; event-time traffic control is a separate non-PASS Gate.
+
 ## Current outcome
 
-The Runbook and machine-readable Gate are complete and passed disposable simulation. Production Migration Technical Readiness remains **NO-GO**, and Production Migration Authorization remains **NOT GRANTED**, because 18 required Gates are not PASS. Do not label this `TECHNICALLY READY FOR AUTHORIZED MIGRATION`.
+The Runbook and machine-readable Gate are complete and passed Repository/disposable validation. Production Migration Technical Readiness remains **NO-GO**, and Production Migration Authorization remains **NOT GRANTED**, because 16 required Gates are not PASS. Do not label this `TECHNICALLY READY FOR AUTHORIZED MIGRATION`.

@@ -15,8 +15,8 @@ assert.equal(validation.repositoryTruth, 'PASS');
 assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.ok(validation.blockerCount >= 10);
-assert.equal(readiness.schemaVersion, 3);
-assert.equal(readiness.lastReviewedSprint, 62);
+assert.equal(readiness.schemaVersion, 4);
+assert.equal(readiness.lastReviewedSprint, 63);
 assert.equal(readiness.repositoryInventory.expectedCount, 21);
 assert.equal(readiness.repositoryInventory.result, 'PASS');
 assert.deepEqual(readiness.repositoryInventory.intentionalGaps, ['0010']);
@@ -36,6 +36,8 @@ assert.equal(readiness.currentGateEvidence.ISOLATED_RESTORE.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.RTO_60_MINUTES.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.RPO_15_MINUTES.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.PRE_MIGRATION_RESTORE_POINT.status, 'BLOCKED');
+assert.equal(readiness.currentGateEvidence.IMMUTABLE_EXECUTION_ARTIFACT.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.RUNTIME_COMPATIBILITY.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.EXPLICIT_EVENT_AUTHORIZATION.status, 'NOT_GRANTED');
 assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 'BLOCKED');
 assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'ABSENT');
@@ -45,7 +47,7 @@ assert.equal(readiness.rollbackAssessment.unconditionallyReversibleCount, 0);
 assert.equal(readiness.rollbackAssessment.conditionallyReversibleCount, 13);
 assert.equal(readiness.rollbackAssessment.automaticDownAllowed, false);
 assert.deepEqual(readiness.classificationSummary, {
-  REPOSITORY_CLOSABLE: 2,
+  REPOSITORY_CLOSABLE: 0,
   READONLY_PRODUCTION_CLOSABLE: 5,
   EXTERNAL_CONFIGURATION_REQUIRED: 3,
   PRODUCTION_MUTATION_REQUIRED: 3,
@@ -53,6 +55,8 @@ assert.deepEqual(readiness.classificationSummary, {
   HUMAN_AUTHORIZATION_REQUIRED: 3,
   BLOCKED_BY_DEPENDENCY: 2
 });
+assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status === 'PASS').length, 6);
+assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status !== 'PASS').length, 16);
 assert.equal(Object.keys(readiness.gateClosureMatrix).length, 22);
 for (const gateId of readiness.requiredGateIds) {
   const gate = readiness.currentGateEvidence[gateId];

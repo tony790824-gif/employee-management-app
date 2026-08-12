@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-13 current state - Sprint 63 Repository Migration Gate closure
+
+The two Repository-closable Gates now pass. The runtime matrix proves a safe checkpoint policy, not live mixed-version operation: API, worker and PostgreSQL frontend must stay drained through `0021`, and the current runtime may resume only after `0022` ledger/catalog PASS. Production runtime observation remains UNKNOWN/NOT_CONFIGURED.
+
+The immutable manifest binds 21 approved versions and all 42 up/down files to exact SHA-256 values, preserves the 13-version upgrade order, rejects `0010`, and has aggregate hash `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`. Candidate authorization is NOT_GRANTED.
+
+Gate result is 6 PASS / 16 non-PASS. Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO, Migration Technical Readiness NO-GO and authorization NOT_GRANTED. Production mutation: NONE.
+
 ## 2026-08-12 current state - Sprint 62 Production Migration Preflight Gate Closure
 
 The existing authoritative Migration Gate is now schema v3 and reviewed for Sprint 62. All 22 Gates include evidence/source, blocking reason, exactly one primary closure classification when non-PASS, required action/authorization/resource, cost implication and dependencies. Current result remains 4 PASS / 18 non-PASS and fail-closed NO-GO.

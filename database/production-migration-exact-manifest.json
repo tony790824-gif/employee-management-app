@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "mode": "IMMUTABLE_EXACT_MIGRATION_MANIFEST",
+  "migrationSourceCommitSha": "cac991c64a9b1df82e7e74c15a0779cf5e3dfea4",
+  "candidateCommitAuthorization": "NOT_GRANTED",
+  "exactMigrationCount": 21,
+  "orderedMigrationIds": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008",
+    "0009",
+    "0011",
+    "0012",
+    "0013",
+    "0014",
+    "0015",
+    "0016",
+    "0017",
+    "0018",
+    "0019",
+    "0020",
+    "0021",
+    "0022"
+  ],
+  "intentionalExcludedVersions": [
+    "0010"
+  ],
+  "upgradeExecutionOrder": [
+    "0009",
+    "0011",
+    "0012",
+    "0013",
+    "0014",
+    "0015",
+    "0016",
+    "0017",
+    "0018",
+    "0019",
+    "0020",
+    "0021",
+    "0022"
+  ],
+  "compatibilityEvidence": "database/production-migration-runtime-compatibility.expected.json",
+  "compatibilityEvidenceSha256": "be15201982cb05c85da0f0e7769195ded77041ee05626edfd0088032ef3bb2e0",
+  "generationMethod": "pnpm db:migration:repository-closure -- --write-manifest",
+  "safety": {
+    "productionExecutionAuthorization": "NOT_GRANTED",
+    "genericDirectoryScanningExecutorAllowed": false,
+    "oneVersionPerTransactionRequired": true,
+    "humanStopAfterEachVersionRequired": true
+  },
+  "migrations": [
+    {
+      "version": "0001",
+      "up": {
+        "path": "database/migrations/0001_core.up.sql",
+        "sha256": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa"
+      },
+      "down": {
+        "path": "database/migrations/0001_core.down.sql",
+        "sha256": "6da41f73179cf08c380141b3582da10e02c99139a2982574d88032bfe806db2c"
+      }
+    },
+    {
+      "version": "0002",
+      "up": {
+        "path": "database/migrations/0002_business.up.sql",
+        "sha256": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9"
+      },
+      "down": {
+        "path": "database/migrations/0002_business.down.sql",
+        "sha256": "0f5461be267e6cdd193f5ac534998d7202738ef409eba5e45cd8d121e14a139e"
+      }
+    },
+    {
+      "version": "0003",
+      "up": {
+        "path": "database/migrations/0003_commands.up.sql",
+        "sha256": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f"
+      },
+      "down": {
+        "path": "database/migrations/0003_commands.down.sql",
+        "sha256": "1c92d8dfd368baeb441d7cb34aa789de64b2d97855481ba3d6d94281029fd7f8"
+      }
+    },
+    {
+      "version": "0004",
+      "up": {
+        "path": "database/migrations/0004_identity_tenant_boundary.up.sql",
+        "sha256": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5"
+      },
+      "down": {
+        "path": "database/migrations/0004_identity_tenant_boundary.down.sql",
+        "sha256": "e0432332da715a5bbf50e7ac207f5b83032a675c9384992b3c2b273bd82f3dd2"
+      }
+    },
+    {
+      "version": "0005",
+      "up": {
+        "path": "database/migrations/0005_identity_context_name_resolution.up.sql",
+        "sha256": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3"
+      },
+      "down": {
+        "path": "database/migrations/0005_identity_context_name_resolution.down.sql",
+        "sha256": "951429ef24ecd36ff5ba911ecf7b8d20a04b6e76b37e404daf8f84364134a7dc"
+      }
+    },
+    {
+      "version": "0006",
+      "up": {
+        "path": "database/migrations/0006_session_token_boundary.up.sql",
+        "sha256": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be"
+      },
+      "down": {
+        "path": "database/migrations/0006_session_token_boundary.down.sql",
+        "sha256": "316b5d8225db38c0ba5d380e87a2e64600bc6bc6e324fb53ad79d21902a13a0f"
+      }
+    },
+    {
+      "version": "0007",
+      "up": {
+        "path": "database/migrations/0007_leave_resource_id_precedence.up.sql",
+        "sha256": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff"
+      },
+      "down": {
+        "path": "database/migrations/0007_leave_resource_id_precedence.down.sql",
+        "sha256": "824b446130b4d28dd4d35821a8385286da2c2be5d7783e98907565efa280d753"
+      }
+    },
+    {
+      "version": "0008",
+      "up": {
+        "path": "database/migrations/0008_session_subject_binding.up.sql",
+        "sha256": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf"
+      },
+      "down": {
+        "path": "database/migrations/0008_session_subject_binding.down.sql",
+        "sha256": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be"
+      }
+    },
+    {
+      "version": "0009",
+      "up": {
+        "path": "database/migrations/0009_auth0_security_event_inbox.up.sql",
+        "sha256": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e"
+      },
+      "down": {
+        "path": "database/migrations/0009_auth0_security_event_inbox.down.sql",
+        "sha256": "82f2b1dc1a63ee5b2e283f0b2b75b35ce8466bec524cdd936f7e90c933807eeb"
+      }
+    },
+    {
+      "version": "0011",
+      "up": {
+        "path": "database/migrations/0011_ui_bootstrap.up.sql",
+        "sha256": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf"
+      },
+      "down": {
+        "path": "database/migrations/0011_ui_bootstrap.down.sql",
+        "sha256": "8001362b0968b7f62e3079c57ec627ec4fc0ffc37a1abd2a6b9599734b5c11d6"
+      }
+    },
+    {
+      "version": "0012",
+      "up": {
+        "path": "database/migrations/0012_current_user_bootstrap.up.sql",
+        "sha256": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797"
+      },
+      "down": {
+        "path": "database/migrations/0012_current_user_bootstrap.down.sql",
+        "sha256": "df00c65be8cbacc5f3767ffeb61f7643601fd14a6c7136dffe2e365a5c2c3332"
+      }
+    },
+    {
+      "version": "0013",
+      "up": {
+        "path": "database/migrations/0013_time_off_requests.up.sql",
+        "sha256": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2"
+      },
+      "down": {
+        "path": "database/migrations/0013_time_off_requests.down.sql",
+        "sha256": "5a08f2353a083d98348b1fd64ca92bed41d7706706147e6e5dacf335a28045b4"
+      }
+    },
+    {
+      "version": "0014",
+      "up": {
+        "path": "database/migrations/0014_notification_center.up.sql",
+        "sha256": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc"
+      },
+      "down": {
+        "path": "database/migrations/0014_notification_center.down.sql",
+        "sha256": "8c3a4ff22b56b52d9caddfc94994f63e8f2d5cb47c7b47cb867f5d1a50825341"
+      }
+    },
+    {
+      "version": "0015",
+      "up": {
+        "path": "database/migrations/0015_notification_command_validation.up.sql",
+        "sha256": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f"
+      },
+      "down": {
+        "path": "database/migrations/0015_notification_command_validation.down.sql",
+        "sha256": "cb05c8249c984767a0757f2141d5757302ff1f8ba20112e4e839a6d3c91fc1bb"
+      }
+    },
+    {
+      "version": "0016",
+      "up": {
+        "path": "database/migrations/0016_web_push_subscriptions.up.sql",
+        "sha256": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476"
+      },
+      "down": {
+        "path": "database/migrations/0016_web_push_subscriptions.down.sql",
+        "sha256": "b4bc0c5659cfd742ed459108f5ca38b346df3c3bfff45bb6a5a377797eebe7f9"
+      }
+    },
+    {
+      "version": "0017",
+      "up": {
+        "path": "database/migrations/0017_active_session_reestablishment.up.sql",
+        "sha256": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0"
+      },
+      "down": {
+        "path": "database/migrations/0017_active_session_reestablishment.down.sql",
+        "sha256": "23da94c664ede634825a5d7ce0bae8e418e89ac706ae80c11ce5bccbde87ab93"
+      }
+    },
+    {
+      "version": "0018",
+      "up": {
+        "path": "database/migrations/0018_edge_web_push_provider_allowlist.up.sql",
+        "sha256": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277"
+      },
+      "down": {
+        "path": "database/migrations/0018_edge_web_push_provider_allowlist.down.sql",
+        "sha256": "2116fe23cef1c51b5a42eae6ec502c3ea7939385fecf05594e0ba899c6e4004e"
+      }
+    },
+    {
+      "version": "0019",
+      "up": {
+        "path": "database/migrations/0019_real_event_notifications.up.sql",
+        "sha256": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6"
+      },
+      "down": {
+        "path": "database/migrations/0019_real_event_notifications.down.sql",
+        "sha256": "f93b696bb30287bac5b9326074409d2143200f93a4d926dfa2c3708d0c71f177"
+      }
+    },
+    {
+      "version": "0020",
+      "up": {
+        "path": "database/migrations/0020_push_subscription_priority.up.sql",
+        "sha256": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f"
+      },
+      "down": {
+        "path": "database/migrations/0020_push_subscription_priority.down.sql",
+        "sha256": "9850745fa6f03fbc8a07eba19644d044f12d0cd735a6eb61991253c75019d5ad"
+      }
+    },
+    {
+      "version": "0021",
+      "up": {
+        "path": "database/migrations/0021_push_delivery_fallback.up.sql",
+        "sha256": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4"
+      },
+      "down": {
+        "path": "database/migrations/0021_push_delivery_fallback.down.sql",
+        "sha256": "c87188ee4a7b29fe6f68c4f77cc08a1ed11a2e0c465ee442a7ceb4ed78941e4e"
+      }
+    },
+    {
+      "version": "0022",
+      "up": {
+        "path": "database/migrations/0022_announcement_center.up.sql",
+        "sha256": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3"
+      },
+      "down": {
+        "path": "database/migrations/0022_announcement_center.down.sql",
+        "sha256": "7a114c0763a42e1f5bf0bbe8483a01cf482c25c63a8d711455a503226b0c92f7"
+      }
+    }
+  ],
+  "manifestSha256": "769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf"
+}

@@ -1,5 +1,14 @@
 # Production Release Checklist
 
+## Sprint 63 Repository-closable Migration Gates
+
+- [x] Validate required/tested/Production-observed/unknown runtime facts.
+- [x] Require API/worker/frontend drain for every intermediate `0008`-`0021` checkpoint; permit current runtime only after final `0022` parity.
+- [x] Create and hash the exact 21-version/42-file manifest and exact 13-version upgrade subset.
+- [x] Reject missing/unexpected/order/checksum/content/manifest drift and any executable `0010`.
+- [ ] Obtain candidate Commit authorization, event-time Production evidence, operator/runtime/monitoring configuration and mutation/event approvals.
+- [ ] Keep Technical Readiness NO-GO and authorization NOT_GRANTED until all 22 Gates pass.
+
 ## Sprint 62 Migration preflight closure
 
 - [x] Reconstruct all 22 Gates from the authoritative machine-readable package.

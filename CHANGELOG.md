@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-13 - Sprint 63 Repository-Closable Production Migration Gate Closure
+
+- Added a deterministic 21-version/42-file migration manifest with a 13-version upgrade subset, explicit `0010` exclusion and aggregate SHA-256 validation.
+- Added the Node/pnpm/driver/PostgreSQL/extension/transaction compatibility matrix and fail-closed checkpoint policy.
+- Added regression tests for missing/unexpected files, `0010`, order/content/checksum/manifest tampering and false Production/runtime claims.
+- Closed only the two Repository Gates, moving the matrix from 4/18 to 6/16 while preserving Production 70% / NOT READY, Technical NO-GO and authorization NOT_GRANTED.
+
 ## 2026-08-12 - Sprint 62 Production Migration Preflight Gate Closure
 
 - Reconstructed all 22 Migration Gates in the authoritative machine-readable package and classified every non-PASS Gate exactly once.

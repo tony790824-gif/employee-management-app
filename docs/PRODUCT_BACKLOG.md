@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 63 status - Repository-Closable Production Migration Gate Closure (2026-08-13)
+
+- **Sprint status:** COMPLETE for the two Repository-only target Gates.
+- **Closed:** `RUNTIME_COMPATIBILITY`, using a drained-intermediate-checkpoint contract; `IMMUTABLE_EXECUTION_ARTIFACT`, using the deterministic 21-version/42-file manifest.
+- **Manifest:** 21 approved versions, 13-version upgrade subset, `0010` excluded, SHA-256 `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`.
+- **Gate matrix:** 6 PASS / 16 non-PASS; candidate Commit authorization remains NOT_GRANTED.
+- **Decision:** Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; mutation NONE.
+- **Next unique Sprint:** prepare a narrowly authorized event-time dedicated-reader evidence run for target/TLS/ledger/unexpected-version/structural-baseline Gates; do not execute it without explicit read-only authority.
+
 ## Sprint 62 status - Production Migration Preflight Gate Closure (2026-08-12)
 
 - **Sprint status:** COMPLETE for Repository-only Gate reconstruction, classification and minimum-path planning.

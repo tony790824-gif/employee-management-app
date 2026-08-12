@@ -1,5 +1,18 @@
 # Sprint 53 Production Migration Final Execution Readiness Report
 
+## Sprint 63 Repository-closable Gate closure - 2026-08-13
+
+Status: **REPOSITORY GATES COMPLETE / PRODUCTION MIGRATION TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**
+
+Only `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT` changed from BLOCKED to PASS. The authoritative schema-v4 Gate now calculates **6 PASS / 16 non-PASS**. No other Gate changed.
+
+- Runtime contract: Node `>=20` (tested 24.14.0), pnpm 11.x (tested 11.16.0), `pg` 8.22.0, PostgreSQL 18 expected-catalog contract (tested 18.4) and `pgcrypto`. Production runtime versions remain **UNKNOWN / NOT_CONFIGURED**.
+- Checkpoint contract: at `0008`, `0009`, and every intermediate `0011`-`0021` checkpoint, API/worker/frontend traffic must remain drained. Current runtime may resume only after `0022` ledger and full catalog parity pass. Mixed-version and zero-downtime operation are **not proven and prohibited**.
+- Immutable manifest: `database/production-migration-exact-manifest.json`, 21 exact up/down pairs, 13-version upgrade subset, explicit `0010` exclusion, source commit/checksums and aggregate SHA-256 `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`.
+- Candidate authorization remains **NOT_GRANTED**. The manifest binds Migration sources; it does not close `REPOSITORY_COMMIT_IDENTITY` or authorize Production execution.
+- Validator rejects missing/unexpected files, duplicate/version/order drift, `0010`, changed SQL/checksums and manifest tampering.
+- Production Readiness **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**; Production mutation **NONE**.
+
 ## Sprint 62 preflight Gate closure - 2026-08-12
 
 Status: **REPOSITORY PREFLIGHT COMPLETE / PRODUCTION MIGRATION TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**

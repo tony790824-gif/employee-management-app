@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 63 Repository Migration controls
+
+- Use `pnpm db:migration:repository-closure` to validate the exact manifest and runtime checkpoint contract. It performs no Production connection or SQL.
+- Manifest SHA-256: `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`; `0010` is excluded and the candidate authorization is NOT_GRANTED.
+- At every intermediate checkpoint (`0008`, `0009`, `0011`-`0021`), keep API, push worker and PostgreSQL frontend drained. Resume only after `0022` ledger/catalog PASS and all separate traffic/authorization Gates pass.
+- Current count is 6 PASS / 16 non-PASS; Production remains 70% / NOT READY and Migration Technical Readiness NO-GO.
+
 ## Sprint 62 Migration Gate closure boundary
 
 - The authoritative package is schema v3 with 22 Gates and exactly one primary A-G category for each of 18 non-PASS Gates.

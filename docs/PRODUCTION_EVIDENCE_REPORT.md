@@ -1,5 +1,12 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 63 Repository-only Migration closure evidence - 2026-08-13
+
+- Gate package schema v4: **PASS**; `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT` closed, resulting in **6 PASS / 16 non-PASS**.
+- Runtime matrix: `database/production-migration-runtime-compatibility.expected.json`; required/tested/Production-observed/unknown facts are separated. Production runtime observation remains UNKNOWN/NOT_CONFIGURED.
+- Manifest: `database/production-migration-exact-manifest.json`; 21 exact migrations, 42 up/down files, 13-version upgrade subset, `0010` rejected, SHA-256 `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`.
+- Candidate Commit authorization remains NOT_GRANTED. No Production connection, SQL, Migration, deploy, resource/configuration, billing action or mutation occurred.
+
 ## Sprint 62 Migration preflight closure evidence - 2026-08-12
 
 - Machine-readable Gate package schema v3: **PASS** for completeness/classification validation.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Sprint 63 current state - 2026-08-13
+
+- Authoritative Migration Gate is schema v4: 6 PASS / 16 non-PASS. Only `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT` changed.
+- Runtime compatibility is fail-closed: all PostgreSQL application runtimes stay drained at `0008`-`0021`; current API/worker/frontend may resume only after `0022` ledger/catalog PASS. Production versions and mixed-runtime operation are not claimed.
+- Exact manifest has 21 versions/42 files, a 13-version upgrade subset, excludes `0010`, and hashes to `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`.
+- `REPOSITORY_COMMIT_IDENTITY`, event authorization and all Production evidence/configuration/mutation Gates remain non-PASS. Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Technical Readiness NO-GO; authorization NOT_GRANTED.
+- No Production connection, SQL, Migration, Restore, deploy, external configuration, billing action or mutation occurred.
+
 ## Sprint 62 current state - 2026-08-12
 
 - `database/production-migration-final-readiness.expected.json` schema v3 is authoritative for all 22 Gates and their closure metadata.
