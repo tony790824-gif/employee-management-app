@@ -2,6 +2,8 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
+Sprint 58 update: authenticated Console inspection reconfirmed PITR and the six-hour history window. The point-in-time selector default is not a latest recoverable-boundary guarantee, and the console exposed no verified WAL/data boundary. The dedicated Production read-only credential was absent from this process, so no privileged credential or database query was used. Latest Recoverable Boundary, Reference Production Boundary and Recovery Gap remain UNKNOWN; RPO <=15 minutes remains NOT_PROVEN. RTO remains PASS from Sprint 57.
+
 Sprint 57 update: one exactly authorized historical isolated Branch was created, verified using an explicit read-only transaction, and deleted. Database identity, ledger `0001`-`0008`, core-table presence, Production/restore separation and cleanup passed. RTO was 112.335 seconds and passes the 60-minute target. RPO <=15 minutes remains NOT_PROVEN because the 33.482-second restore-point age does not establish data-level continuity. Distinct process-only credentials and full restored owner/ACL/RLS parity remain partial; independent backup is blocked and scheduled snapshot is not configured. Production Recovery therefore remains NO-GO.
 
 Sprint 56 update: read-only console evidence confirms Free-plan Branch capacity 1/10 used with 9 available and the historical point-in-time Branch configuration capability. The Owner is now the configured Recovery Commander. Actual Restore remains NOT_EXECUTED, actual Restore cost UNKNOWN, independent backup BLOCKED, scheduled snapshot NOT_CONFIGURED, RPO BLOCKED/NOT PROVEN and RTO BLOCKED/NOT MEASURED. These facts do not change Recovery NO-GO or grant authorization.
@@ -27,7 +29,7 @@ This is capability evidence, not recovery-outcome evidence. It does not prove an
 | Isolated Restore | PASS | Authorized historical Branch created, verified and deleted |
 | Restore target traffic isolation | PASS | Distinct Branch; no Production traffic routed |
 | Restore endpoint/credential isolation | PARTIAL | Distinct Branch endpoint observed; distinct process-only credential not proven |
-| RPO <= 15 minutes | PARTIAL / NOT_PROVEN | Point age 33.482 seconds; no data-level continuity proof |
+| RPO <= 15 minutes | PARTIAL / NOT_PROVEN | Latest recoverable/reference boundaries and Recovery Gap are UNKNOWN |
 | RTO <= 60 minutes | PASS | Measured 112.335 seconds |
 | Pre-Migration restore point | BLOCKED | No authorized Migration event or restore point |
 | Restored ledger/catalog/ACL verification | PARTIAL | Identity, ledger and core tables pass; full owner/ACL/RLS not evaluated |

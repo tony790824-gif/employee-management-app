@@ -13,6 +13,8 @@ const CAPACITY_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTO
 const CAPACITY_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.sha256');
 const DRILL_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DRILL_EVIDENCE.json');
 const DRILL_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DRILL_EVIDENCE.sha256');
+const RPO_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_CONTINUITY_EVIDENCE.json');
+const RPO_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_CONTINUITY_EVIDENCE.sha256');
 const ALLOWED_STATUSES = new Set(['PASS', 'PARTIAL', 'BLOCKED', 'NOT_CONFIGURED', 'UNKNOWN', 'FAIL']);
 
 function sha256(value) {
@@ -83,6 +85,18 @@ export async function validateRecoveryReadinessPackage(input) {
   if (drill.productionReadiness !== '70_PERCENT_NOT_READY' || drill.productionStatus !== 'NOT_READY' || drill.gateA !== 'DEFER' || drill.productionProvisioning !== 'NO_GO' || drill.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_57_PRODUCTION_DECISION_DRIFT');
   if (value.sprint57Evidence?.isolatedRestore !== 'PASS' || value.sprint57Evidence?.providerForkDurationSeconds !== 2.85 || value.sprint57Evidence?.rtoSeconds !== 112.335 || value.sprint57Evidence?.rto60Minutes !== 'PASS' || value.sprint57Evidence?.rpo15Minutes !== 'NOT_PROVEN' || value.sprint57Evidence?.productionMutation !== false || value.sprint57Evidence?.temporaryBranchDeleted !== true || value.sprint57Evidence?.residualTemporaryBranchCount !== 0 || value.sprint57Evidence?.branchesUsedAfter !== 1 || value.sprint57Evidence?.actualRestoreCost !== 'UNKNOWN') failures.push('SPRINT_57_EVIDENCE_DRIFT');
 
+  const [rpoContent, rpoHashRecord] = await Promise.all([readFile(RPO_EVIDENCE_PATH), readFile(RPO_HASH_PATH, 'utf8')]);
+  const rpoHash = sha256(rpoContent);
+  if (rpoHash !== rpoHashRecord.trim().split(/\s+/)[0] || rpoHash !== value.sprint58Evidence?.sourceEvidenceSha256) failures.push('RPO_CONTINUITY_EVIDENCE_HASH_MISMATCH');
+  const rpo = JSON.parse(rpoContent.toString('utf8'));
+  if (rpo.pitr?.capability !== 'PASS' || rpo.pitr?.historyRetentionHours !== 6 || rpo.pitr?.latestRecoverableBoundaryUtc !== 'UNKNOWN') failures.push('RPO_PROVIDER_EVIDENCE_DRIFT');
+  if (rpo.measurement?.referenceProductionBoundaryUtc !== 'UNKNOWN' || rpo.measurement?.latestRecoverableBoundaryUtc !== 'UNKNOWN' || rpo.measurement?.measuredRecoveryGapSeconds !== 'UNKNOWN' || rpo.measurement?.rpoThresholdSeconds !== 900 || rpo.measurement?.rpo15Minutes !== 'NOT_PROVEN') failures.push('RPO_MEASUREMENT_DECISION_WEAKENED');
+  if (rpo.identity?.dedicatedReadOnlyCredentialAvailableToProcess !== false || rpo.identity?.productionDatabaseConnectionAttempted !== false || rpo.identity?.productionSqlExecuted !== false) failures.push('RPO_IDENTITY_BOUNDARY_DRIFT');
+  if (rpo.readOnlyBoundary?.consoleInspectionOnly !== true || rpo.readOnlyBoundary?.formSubmitted !== false || rpo.readOnlyBoundary?.previewDataRequested !== false || rpo.readOnlyBoundary?.restoreRequested !== false || rpo.readOnlyBoundary?.businessDataRead !== false) failures.push('RPO_READ_ONLY_BOUNDARY_FAILURE');
+  if (Object.values(rpo.mutation || {}).some(Boolean)) failures.push('RPO_PRODUCTION_MUTATION_BOUNDARY_FAILURE');
+  if (rpo.decision?.rpoEvidenceStatus !== 'NOT_PROVEN' || rpo.decision?.rto60Minutes !== 'PASS' || rpo.decision?.productionReadiness !== '70_PERCENT_NOT_READY' || rpo.decision?.productionStatus !== 'NOT_READY' || rpo.decision?.gateA !== 'DEFER' || rpo.decision?.productionProvisioning !== 'NO_GO' || rpo.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_58_PRODUCTION_DECISION_DRIFT');
+  if (value.sprint58Evidence?.pitrCapability !== 'PASS' || value.sprint58Evidence?.historyRetentionHours !== 6 || value.sprint58Evidence?.latestRecoverableBoundaryUtc !== 'UNKNOWN' || value.sprint58Evidence?.referenceProductionBoundaryUtc !== 'UNKNOWN' || value.sprint58Evidence?.measuredRecoveryGapSeconds !== 'UNKNOWN' || value.sprint58Evidence?.rpo15Minutes !== 'NOT_PROVEN' || value.sprint58Evidence?.productionConnectionAttempted !== false || value.sprint58Evidence?.productionSqlExecuted !== false || value.sprint58Evidence?.productionMutation !== false) failures.push('SPRINT_58_EVIDENCE_DRIFT');
+
   const [evidenceContent, hashRecord] = await Promise.all([readFile(EVIDENCE_PATH), readFile(EVIDENCE_HASH_PATH, 'utf8')]);
   const evidenceHash = sha256(evidenceContent);
   if (evidenceHash !== hashRecord.trim().split(/\s+/)[0]) failures.push('RECOVERY_EVIDENCE_HASH_MISMATCH');
@@ -92,7 +106,7 @@ export async function validateRecoveryReadinessPackage(input) {
 
   const decision = evaluateRecoveryReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (decision.status !== 'NO_GO') failures.push('CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED');
-  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash, drillEvidenceHash: drillHash });
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash, drillEvidenceHash: drillHash, rpoEvidenceHash: rpoHash });
 }
 
 export async function repositoryRecoveryReadinessGate() {
@@ -107,6 +121,7 @@ export async function repositoryRecoveryReadinessGate() {
     evidenceSha256: validation.evidenceHash,
     capacityEvidenceSha256: validation.capacityEvidenceHash,
     drillEvidenceSha256: validation.drillEvidenceHash,
+    rpoEvidenceSha256: validation.rpoEvidenceHash,
     productionConnectionAttempted: false,
     productionSqlExecuted: false,
     productionMutation: false

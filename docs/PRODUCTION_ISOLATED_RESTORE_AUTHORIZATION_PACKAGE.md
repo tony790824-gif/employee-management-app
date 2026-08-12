@@ -50,11 +50,13 @@ The target must have a distinct identity and credential boundary, never use an a
 
 ## Measurement contract
 
-RPO uses UTC timestamps:
+RPO uses UTC timestamps on a trustworthy common time basis:
 
-`RPO minutes = Restore operation accepted UTC - selected restore-point UTC`
+`Recovery Gap = Reference Production Boundary - Latest Verified Recoverable Boundary`
 
-A calculated value <=15 minutes is insufficient unless the provider continuity/retention evidence also covers that interval. Missing continuity evidence means BLOCKED.
+`RPO minutes = Recovery Gap seconds / 60`
+
+The reference boundary must represent the latest accepted Production state using a non-sensitive durable marker. The recoverable boundary must be verified at the restored data layer. A selected/requested restore timestamp, retention duration, provider capability or Branch creation time is insufficient. Unknown boundaries or missing continuity evidence means RPO remains NOT_PROVEN/BLOCKED.
 
 RTO uses UTC timestamps:
 

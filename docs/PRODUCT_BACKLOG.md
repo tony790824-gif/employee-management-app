@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 58 status - Production Data Continuity / RPO Evidence (2026-08-12)
+
+- **Sprint status:** COMPLETE for read-only evidence convergence; RPO remains NOT_PROVEN and Production Recovery remains NO-GO.
+- **Observed:** PITR capability PASS; history retention 6 hours; Production project/Branch labels verified through authenticated console.
+- **Unknown:** Latest Recoverable Boundary, Reference Production Boundary and measured Recovery Gap. The selector default is not recoverability proof.
+- **Boundary:** no dedicated read-only database inputs in process, no privileged substitution, SQL, business-data read, form submission, Preview, Restore, resource or Production mutation.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration authorization NOT_GRANTED.
+- **Next unique Sprint:** RPO boundary instrumentation decision and exact authorization package.
+
 ## Sprint 57 status - Authorized Neon Isolated Restore Drill (2026-08-12)
 
 - **Sprint status:** COMPLETE for the exact one-time drill; Production Recovery remains NO-GO.

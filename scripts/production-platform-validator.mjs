@@ -469,7 +469,7 @@ export async function validateProductionPlatform({
     result('operations.monitoring', 'Observability / Operations', VALIDATION_STATUS.BLOCKED,
       'Repository telemetry/runbooks exist, but external uptime, error tracking, alerts, on-call routing, and database monitoring lack platform evidence.', { repositoryEvidence: true, requiresHumanAction: true }),
     result('operations.recovery', 'Backup / Restore / RPO / RTO', VALIDATION_STATUS.BLOCKED,
-      'RPO 15 minutes and RTO 60 minutes are documented, but an independent backup and timed isolated restore are not externally evidenced.', { repositoryEvidence: true, requiresHumanAction: true }),
+      'An isolated Restore and 60-minute RTO are evidenced, but RPO 15 minutes, independent backup, scheduled snapshot, distinct verification credentials, and full restored security-catalog parity remain non-PASS.', { repositoryEvidence: true, requiresHumanAction: true }),
     result('environment.isolation', 'Environment Isolation', config.frontend && config.api && config.auth0PublicConfigured
       ? VALIDATION_STATUS.PASS : VALIDATION_STATUS.BLOCKED,
     config.frontend && config.api && config.auth0PublicConfigured

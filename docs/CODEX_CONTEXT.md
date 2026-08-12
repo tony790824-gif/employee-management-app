@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 58 Production RPO Evidence
+
+Sprint 58 completed the authorized read-only evidence scope without a database connection or Production mutation. Neon Console proves PITR capability and six-hour retention, but its current point-in-time selector is only a requested timestamp and does not expose the latest verified recoverable WAL/data boundary.
+
+The formal RPO gap is now the trusted Reference Production Boundary minus the Latest Verified Recoverable Boundary. Both values and the measured gap remain UNKNOWN, so RPO <=15 minutes is NOT_PROVEN. RTO remains PASS from Sprint 57. No privileged credential was substituted when protected read-only inputs were unavailable.
+
+Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. A future continuity marker/provider evidence method needs its own Repository review and exact authorization before any Production write, SQL, resource or Restore.
+
 ## 2026-08-12 current state - Sprint 57 Authorized Isolated Restore Drill
 
 Sprint 57 used exact Owner authorization to create one Neon historical isolated Branch, perform basic read-only verification, measure recovery, and delete the Branch. Production remained a distinct Branch, received no application traffic and had no database/schema/data/Migration mutation. Final Branch usage returned to 1/10 with zero residual Sprint 57 resource.

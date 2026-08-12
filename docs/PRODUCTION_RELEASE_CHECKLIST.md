@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Sprint 58 RPO evidence checkpoint
+
+- [x] Reconfirm PITR capability and six-hour history using authenticated read-only Console evidence.
+- [x] Define Recovery Gap as reference Production boundary minus latest verified recoverable boundary.
+- [x] Reject retention, selector defaults and requested timestamps as substitutes for recoverability proof.
+- [x] Preserve fail-closed UNKNOWN boundaries/gap and RPO NOT_PROVEN.
+- [x] Avoid privileged credential substitution when protected read-only inputs are absent.
+- [x] Verify no SQL, business-data read, form submission, Preview, Restore, resource/configuration or Production mutation.
+- [ ] Obtain a trusted non-sensitive Reference Production Boundary under separate authorization.
+- [ ] Obtain and verify the Latest Recoverable Boundary at the data layer under separate authorization.
+- [ ] Calculate a reproducible Recovery Gap <=900 seconds before marking RPO PASS.
+
 ## Sprint 57 isolated Restore checkpoint
 
 - [x] Create one exactly authorized historical isolated Branch without replacing Production.

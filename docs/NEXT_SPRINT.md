@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 58 proposal - RPO continuity and restored security-catalog evidence
+## Sprint 59 proposal - RPO boundary instrumentation decision
+
+Sprint 58 proved that authenticated Neon Console read-only evidence exposes PITR capability and a six-hour retention window, but not the latest verified recoverable WAL/data boundary. The point-in-time selector default is a requested timestamp, not recoverability proof. The protected Production read-only credential was unavailable to the process, so no privileged credential was substituted and no database query ran.
+
+The next unique gate is a Repository-first decision on a non-sensitive, Production-safe continuity marker and provider evidence source that can establish both a trusted reference boundary and latest verified recoverable boundary. Any marker write, new Branch/Restore, provider API credential, SQL, configuration or resource operation requires a separate exact authorization. Do not lower the RPO Gate or reuse Sprint 57 authority.
+
+## Historical Sprint 58 - Production Data Continuity / RPO Evidence
+
+- PITR capability PASS; retention observation 6 hours.
+- Latest Recoverable Boundary UNKNOWN; Reference Production Boundary UNKNOWN; measured Recovery Gap UNKNOWN.
+- RPO <=15 minutes NOT_PROVEN; RTO <=60 minutes remains PASS from Sprint 57.
+- Console inspection only: no form submission, Preview, Restore, SQL, business-data read or Production mutation.
+- Evidence SHA-256 `9ee8a3fd4337ce177556fb375be5a12f61da21443e9831616eae72b415bc1596`.
+
+## Historical Sprint 58 proposal - RPO continuity and restored security-catalog evidence
 
 Sprint 57 completed one explicitly authorized historical isolated-Branch drill: creation, read-only basic verification, measured RTO and zero-residual cleanup passed. RTO was 112.335 seconds and is PASS against 60 minutes. RPO remains NOT_PROVEN because the 33.482-second restore-point age is not data-level continuity evidence. Distinct process-only credentials and full restored owner/ACL/RLS parity also remain unproven.
 

@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 58 RPO evidence stop
+
+PITR and six-hour retention are evidenced, but the provider console does not expose the latest verified recoverable WAL/data boundary. The displayed point-in-time selector is a requested value only. Without a trusted Production reference boundary and a verified recoverable boundary, Recovery Gap is UNKNOWN and RPO <=15 minutes remains NOT_PROVEN.
+
+Do not create a marker, run Production SQL, use a privileged credential, create another Branch/Restore, change retention/snapshots, or call a protected provider API without a new exact authorization. RTO PASS from Sprint 57 does not close RPO.
+
 ## Sprint 57 completed drill and renewed stop
 
 The explicitly authorized historical isolated-Branch drill completed: basic read-only verification, RTO 112.335 seconds, traffic isolation and cleanup passed; final usage returned to 1/10. Production database mutation was NONE. RPO remains NOT_PROVEN, actual cost UNKNOWN, distinct process-only credential evidence incomplete, and full owner/ACL/RLS parity not evaluated.

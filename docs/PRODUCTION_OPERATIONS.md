@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 58 RPO evidence boundary
+
+- RPO is `Reference Production Boundary - Latest Verified Recoverable Boundary`; both must use a trustworthy common time basis and the recoverable boundary must be verified at the data layer.
+- PITR capability, retention duration, a selector default/requested timestamp and Branch fork speed are not sufficient evidence.
+- Current result: both boundaries and the Recovery Gap are UNKNOWN, so RPO <=15 minutes is NOT_PROVEN. Never coerce these values from the six-hour window or Sprint 57 timestamps.
+- No database credential was available to this process; do not substitute Owner/API/Migrator credentials. No SQL, Preview, Restore, resource, configuration or Production mutation occurred.
+
 ## Sprint 57 isolated Restore evidence boundary
 
 - The one-time Sprint 57 authorization is consumed and closed. It covered one historical isolated Branch, basic read-only verification and mandatory cleanup only.

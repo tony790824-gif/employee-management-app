@@ -1,5 +1,16 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 58 Production RPO continuity evidence - 2026-08-12
+
+- Authenticated Neon Console Production identity labels: **PASS (sanitized)**; dedicated read-only database inputs in this process: **NOT AVAILABLE**.
+- PITR capability: **PASS**; retention: **6 hours**.
+- Current selector default: observed but classified as a requested timestamp, not latest recoverable-boundary proof.
+- Latest Recoverable Boundary: **UNKNOWN**; Reference Production Boundary: **UNKNOWN**; measured Recovery Gap: **UNKNOWN**.
+- RPO <=15 minutes: **NOT_PROVEN**. RTO <=60 minutes remains **PASS** from Sprint 57 at 112.335 seconds.
+- Console inspection only; no SQL, business-data read, form submission, Preview, Restore, resource/configuration or Production mutation.
+- Evidence SHA-256: `9ee8a3fd4337ce177556fb375be5a12f61da21443e9831616eae72b415bc1596`.
+- Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**, Migration authorization **NOT_GRANTED**.
+
 ## Sprint 57 Authorized isolated Restore evidence - 2026-08-12
 
 - Isolated historical Branch creation and separation from Production: **PASS**.

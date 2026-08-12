@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 58 update - 2026-08-12
+
+- Read-only provider evidence reconfirms PITR and a six-hour retention window but does not expose the latest verified recoverable WAL/data boundary.
+- Latest Recoverable Boundary, Reference Production Boundary and measured Recovery Gap remain UNKNOWN; RPO <=15 minutes therefore remains NOT_PROVEN.
+- The protected dedicated read-only credential was unavailable to this process; no privileged credential was substituted and no Production SQL or mutation occurred.
+- RTO <=60 minutes remains PASS from Sprint 57. Production readiness remains **70% / NOT READY**; Gate A **DEFER**; Production Provisioning **NO-GO**.
+
 ## Sprint 57 update - 2026-08-12
 
 - One exactly authorized historical isolated-Branch drill completed with basic read-only verification, RTO 112.335 seconds PASS, and cleanup/zero residual PASS.

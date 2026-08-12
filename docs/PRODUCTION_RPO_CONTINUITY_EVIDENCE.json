@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "PRODUCTION_DATA_CONTINUITY_RPO_READ_ONLY",
+  "evidenceDate": "2026-08-12",
+  "evidenceRecordedUtc": "2026-08-12T12:41:05.820Z",
+  "authorizationSource": "OWNER_SPRINT_58_READ_ONLY_SCOPE",
+  "identity": {
+    "neonProjectIdentity": "PASS_SANITIZED_CONSOLE_LABEL",
+    "productionBranchIdentity": "PASS_SANITIZED_CONSOLE_LABEL",
+    "dedicatedReadOnlyCredentialAvailableToProcess": false,
+    "productionDatabaseConnectionAttempted": false,
+    "productionSqlExecuted": false
+  },
+  "readOnlyBoundary": {
+    "consoleInspectionOnly": true,
+    "formSubmitted": false,
+    "previewDataRequested": false,
+    "restoreRequested": false,
+    "businessDataRead": false,
+    "consoleTls": "HTTPS_PASS",
+    "databaseTls": "PRIOR_VERIFY_FULL_PASS_CURRENT_RUN_NOT_EXECUTED",
+    "databaseRoleBoundary": "PRIOR_DEDICATED_READONLY_PASS_CURRENT_RUN_NOT_EXECUTED"
+  },
+  "pitr": {
+    "capability": "PASS",
+    "historyRetentionHours": 6,
+    "earliestVisibleBoundaryUtc": "2026-08-12T06:39:00Z",
+    "pointInTimeSelectorDefaultUtc": "2026-08-12T12:39:00Z",
+    "selectorDefaultClassification": "REQUESTED_TIMESTAMP_NOT_RECOVERABILITY_PROOF",
+    "latestRecoverableBoundaryUtc": "UNKNOWN"
+  },
+  "measurement": {
+    "definition": "REFERENCE_PRODUCTION_BOUNDARY_MINUS_LATEST_VERIFIED_RECOVERABLE_BOUNDARY",
+    "referenceProductionBoundaryUtc": "UNKNOWN",
+    "latestRecoverableBoundaryUtc": "UNKNOWN",
+    "measuredRecoveryGapSeconds": "UNKNOWN",
+    "rpoThresholdSeconds": 900,
+    "rpo15Minutes": "NOT_PROVEN",
+    "reason": "PROVIDER_UI_EXPOSES_RETENTION_AND_A_REQUESTED_POINT_IN_TIME_BUT_NOT_THE_LATEST_VERIFIED_RECOVERABLE_WAL_OR_DATA_BOUNDARY;_NO_CURRENT_DEDICATED_READONLY_DATABASE_REFERENCE_BOUNDARY_WAS_AVAILABLE"
+  },
+  "mutation": {
+    "productionDataMutation": false,
+    "productionSchemaMutation": false,
+    "productionMigrationExecuted": false,
+    "productionConfigurationMutation": false,
+    "productionResourceCreated": false,
+    "deployPerformed": false
+  },
+  "decision": {
+    "sprintRepositoryScope": "COMPLETE",
+    "rpoEvidenceStatus": "NOT_PROVEN",
+    "rto60Minutes": "PASS",
+    "productionReadiness": "70_PERCENT_NOT_READY",
+    "productionStatus": "NOT_READY",
+    "gateA": "DEFER",
+    "productionProvisioning": "NO_GO",
+    "productionMigrationAuthorization": "NOT_GRANTED"
+  },
+  "secretsOrProviderIdentifiersRecorded": false
+}

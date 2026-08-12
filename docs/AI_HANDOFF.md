@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Sprint 58 current state - 2026-08-12
+
+- Authenticated Neon Console read-only evidence reconfirmed the Production project/Branch, PITR capability and a six-hour retention window. It exposed an earliest history boundary and a current point-in-time selector default, but not a latest verified recoverable WAL/data boundary.
+- Formal RPO contract is now `Reference Production Boundary - Latest Verified Recoverable Boundary`. A requested selector timestamp, retention duration, Branch fork speed or PITR capability cannot substitute for either boundary.
+- Protected dedicated Production read-only inputs were absent from this process; no Owner/API/Migrator credential was substituted and no Production SQL or business-data read occurred.
+- Latest Recoverable Boundary UNKNOWN; Reference Production Boundary UNKNOWN; Recovery Gap UNKNOWN; RPO <=15 minutes NOT_PROVEN. RTO <=60 minutes remains PASS at 112.335 seconds from Sprint 57.
+- Evidence SHA-256: `9ee8a3fd4337ce177556fb375be5a12f61da21443e9831616eae72b415bc1596`.
+- Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. Next work needs a separately authorized RPO boundary instrumentation/evidence decision.
+
 ## Sprint 57 current state - 2026-08-12
 
 - One exact Owner-authorized Neon historical isolated-Branch drill completed. The temporary Branch was distinct from Production, received no Production traffic, and was deleted; final usage returned to 1/10 with zero residual Sprint 57 Branches.

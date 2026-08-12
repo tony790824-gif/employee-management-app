@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-12 - Sprint 58 Production Data Continuity / RPO Evidence
+
+- Formalized RPO as the gap between a trusted Production reference boundary and the latest verified recoverable data boundary.
+- Recorded authenticated Neon Console evidence for PITR and six-hour retention while rejecting the requested point-in-time selector as recoverability proof.
+- Kept both boundaries and the recovery gap UNKNOWN, so RPO <=15 minutes remains NOT_PROVEN.
+- Added sanitized hash evidence and fail-closed tests; no Production SQL, resource, configuration, data, schema, Migration or deployment mutation occurred.
+
 ## 2026-08-12 - Sprint 57 Authorized Neon Isolated Restore Drill
 
 - Created one explicitly authorized historical isolated Branch, verified it read-only, measured RTO at 112.335 seconds, and deleted it with zero residual resources.

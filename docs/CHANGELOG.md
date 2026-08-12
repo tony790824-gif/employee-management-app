@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-12 - Sprint 58 Production RPO evidence
+
+- Added hash-verified read-only RPO continuity evidence and formal boundary/gap definitions.
+- PITR and six-hour retention are confirmed; latest recoverable/reference boundaries and gap remain UNKNOWN, therefore RPO is NOT_PROVEN.
+- Production remains 70% / NOT READY with no SQL or Production mutation.
+
 ## 2026-08-12 - Sprint 57 Authorized isolated Restore drill
 
 - Recorded the one-time historical Branch drill, 112.335-second RTO PASS, basic read-only restored-target verification and zero-residual cleanup.
