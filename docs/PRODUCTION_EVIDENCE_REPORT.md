@@ -1,5 +1,16 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 57 Authorized isolated Restore evidence - 2026-08-12
+
+- Isolated historical Branch creation and separation from Production: **PASS**.
+- Basic read-only verification: database identity, read-only transaction, ledger `0001`-`0008` and core-table presence **PASS**.
+- RTO <=60 minutes: **PASS**, measured 112.335 seconds. RPO <=15 minutes: **NOT_PROVEN**; 33.482-second point age is not data-level continuity proof.
+- Cleanup: **PASS**; temporary Branch deleted, zero residual, final usage 1/10.
+- Production database/schema/data/Migration mutation: **NONE**. Actual Restore cost: **UNKNOWN**; payment/upgrade: **NONE**.
+- Distinct process-only credential and full restored owner/ACL/RLS parity remain **PARTIAL / NOT_PROVEN**; independent backup **BLOCKED** and scheduled snapshot **NOT_CONFIGURED**.
+- Evidence SHA-256: `db122c7efb0aced04e2d79dfbf65f8a9008b7e7967794b35f402e63fa91c6ef9`.
+- Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**, Migration authorization **NOT_GRANTED**.
+
 ## Sprint 56 Restore capacity and ownership evidence - 2026-08-12
 
 - Evidence class: **HUMAN READ-ONLY NEON CAPACITY/CAPABILITY + OWNERSHIP**, not an executed Restore.

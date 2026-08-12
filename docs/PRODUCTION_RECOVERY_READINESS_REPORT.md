@@ -2,6 +2,8 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
+Sprint 57 update: one exactly authorized historical isolated Branch was created, verified using an explicit read-only transaction, and deleted. Database identity, ledger `0001`-`0008`, core-table presence, Production/restore separation and cleanup passed. RTO was 112.335 seconds and passes the 60-minute target. RPO <=15 minutes remains NOT_PROVEN because the 33.482-second restore-point age does not establish data-level continuity. Distinct process-only credentials and full restored owner/ACL/RLS parity remain partial; independent backup is blocked and scheduled snapshot is not configured. Production Recovery therefore remains NO-GO.
+
 Sprint 56 update: read-only console evidence confirms Free-plan Branch capacity 1/10 used with 9 available and the historical point-in-time Branch configuration capability. The Owner is now the configured Recovery Commander. Actual Restore remains NOT_EXECUTED, actual Restore cost UNKNOWN, independent backup BLOCKED, scheduled snapshot NOT_CONFIGURED, RPO BLOCKED/NOT PROVEN and RTO BLOCKED/NOT MEASURED. These facts do not change Recovery NO-GO or grant authorization.
 
 Historical Sprint 55 note: `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md` defined the exact future one-time boundary, measurement and cleanup contract. At that time cost/capacity and a named Recovery Commander were missing. Sprint 56 supersedes those two facts, but authorization remains DEFER / NOT_GRANTED because actual cost and recovery outcomes remain open.
@@ -22,14 +24,14 @@ This is capability evidence, not recovery-outcome evidence. It does not prove an
 | Six-hour history retention observation | PARTIAL | Observed, but migration detection/recovery window is not approved |
 | Independent encrypted backup | BLOCKED | No evidence |
 | Scheduled snapshot | NOT_CONFIGURED | Disabled; latest snapshot NONE |
-| Isolated Restore | BLOCKED | Not executed |
-| Restore target traffic isolation | BLOCKED | No restore target exists |
-| Restore endpoint/credential isolation | BLOCKED | No restore target exists |
-| RPO <= 15 minutes | BLOCKED | PITR availability does not prove recovery-point granularity/outcome |
-| RTO <= 60 minutes | BLOCKED | No start/ready/verification timestamps; elapsed time NOT MEASURED |
+| Isolated Restore | PASS | Authorized historical Branch created, verified and deleted |
+| Restore target traffic isolation | PASS | Distinct Branch; no Production traffic routed |
+| Restore endpoint/credential isolation | PARTIAL | Distinct Branch endpoint observed; distinct process-only credential not proven |
+| RPO <= 15 minutes | PARTIAL / NOT_PROVEN | Point age 33.482 seconds; no data-level continuity proof |
+| RTO <= 60 minutes | PASS | Measured 112.335 seconds |
 | Pre-Migration restore point | BLOCKED | No authorized Migration event or restore point |
-| Restored ledger/catalog/ACL verification | BLOCKED | No isolated restored target |
-| Cleanup | BLOCKED | No isolated target was created or destroyed |
+| Restored ledger/catalog/ACL verification | PARTIAL | Identity, ledger and core tables pass; full owner/ACL/RLS not evaluated |
+| Cleanup | PASS | Temporary Branch deleted; zero residual; final usage 1/10 |
 | Recovery commander | PASS | Owner nominated and accepted GO/NO-GO, abort, verification, cleanup and evidence duties; no exercise authority implied |
 | Sprint 54 Production mutation boundary | PASS | Repository-only; no connection, SQL, Restore or configuration change |
 

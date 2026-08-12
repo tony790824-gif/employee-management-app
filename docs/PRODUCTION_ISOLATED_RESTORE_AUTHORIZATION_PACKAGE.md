@@ -1,8 +1,10 @@
 # Sprint 55/56 Isolated Restore Authorization Package
 
-Status: **REPOSITORY SCOPE COMPLETE / AUTHORIZATION DEFERRED / EXERCISE NOT GRANTED**
+Status: **HISTORICAL AUTHORIZATION DEFERRED PACKAGE / SPRINT 57 ONE-TIME AUTHORIZATION CONSUMED AND CLOSED**
 
 Updated evidence: 2026-08-12
+
+Sprint 57 follow-up: the Owner's exact Sprint 57 request authorized one historical isolated-Branch drill under this boundary. The Branch was created, verified read-only and deleted with zero residual resources. RTO was 112.335 seconds PASS; RPO remains NOT_PROVEN. Actual cost remains UNKNOWN. This records the completed one-time scope and grants no continuing Restore, SQL, Migration, configuration or billing authority.
 
 ## Decision
 

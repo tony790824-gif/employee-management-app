@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-12 - Sprint 57 Authorized isolated Restore drill
+
+- Recorded the one-time historical Branch drill, 112.335-second RTO PASS, basic read-only restored-target verification and zero-residual cleanup.
+- Kept RPO NOT_PROVEN, actual cost UNKNOWN and Production 70% / NOT READY; no Production database mutation or Migration occurred.
+
 ## 2026-08-12 - Sprint 56 Restore capacity and ownership evidence
 
 - Added sanitized, hash-verified Neon capacity/capability evidence and recorded Owner/Recovery Commander nomination.

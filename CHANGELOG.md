@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-12 - Sprint 57 Authorized Neon Isolated Restore Drill
+
+- Created one explicitly authorized historical isolated Branch, verified it read-only, measured RTO at 112.335 seconds, and deleted it with zero residual resources.
+- Preserved Production Branch identity and traffic isolation; no Production database, schema, data or Migration mutation occurred.
+- Recorded RPO <=15 minutes as NOT_PROVEN, full owner/ACL/RLS and distinct credential verification as open, and actual Restore cost as UNKNOWN.
+- Added sanitized hash evidence and strengthened the Recovery Gate without changing Production 70% / NOT READY, Gate A DEFER or Provisioning NO-GO.
+
 ## 2026-08-12 - Sprint 56 Restore Capacity and Recovery Ownership Evidence
 
 - Recorded Neon Free-plan capacity, 1/10 Branch usage, 9 available slots and historical point-in-time Branch configuration capability from human read-only evidence.

@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 57 isolated Restore evidence boundary
+
+- The one-time Sprint 57 authorization is consumed and closed. It covered one historical isolated Branch, basic read-only verification and mandatory cleanup only.
+- RTO 112.335 seconds, target isolation and cleanup passed. RPO remains NOT_PROVEN; distinct process-only credential and full owner/ACL/RLS verification remain partial.
+- Final Branch usage is 1/10 with zero residual Sprint 57 resource. Production database/schema/data/Migration mutation and Production traffic routing were NONE.
+- Do not reuse this authority for another Branch, snapshot, Restore, SQL, Migration, retention/plan change or deploy. Actual Restore cost remains UNKNOWN.
+
 ## Sprint 56 recovery evidence boundary
 
 - Current Neon plan Free; Branch capacity 1/10 used with 9 available. Historical point-in-time Branch configuration is available and no configuration-stage upgrade prompt was observed.

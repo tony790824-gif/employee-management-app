@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 57 completed drill and renewed stop
+
+The explicitly authorized historical isolated-Branch drill completed: basic read-only verification, RTO 112.335 seconds, traffic isolation and cleanup passed; final usage returned to 1/10. Production database mutation was NONE. RPO remains NOT_PROVEN, actual cost UNKNOWN, distinct process-only credential evidence incomplete, and full owner/ACL/RLS parity not evaluated.
+
+Sprint 57 authority is exhausted. Do not create another Branch, execute SQL/Migration, change retention/snapshots/plan, deploy or alter Production without a new exact approval.
+
 ## Sprint 56 Restore capacity and commander stop
 
 Read-only provider evidence confirms 9 available Branch slots and the historical point-in-time Branch configuration capability. The Owner is the configured Recovery Commander. Actual Restore cost remains UNKNOWN and exact exercise authorization remains NOT_GRANTED.

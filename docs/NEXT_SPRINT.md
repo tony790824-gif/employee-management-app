@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 57 proposal - Exact Isolated Restore Cost and One-time Authorization Gate
+## Sprint 58 proposal - RPO continuity and restored security-catalog evidence
+
+Sprint 57 completed one explicitly authorized historical isolated-Branch drill: creation, read-only basic verification, measured RTO and zero-residual cleanup passed. RTO was 112.335 seconds and is PASS against 60 minutes. RPO remains NOT_PROVEN because the 33.482-second restore-point age is not data-level continuity evidence. Distinct process-only credentials and full restored owner/ACL/RLS parity also remain unproven.
+
+The next unique gate is a separately authorized, fail-closed recovery evidence closure for a non-sensitive data-level continuity marker, distinct process-only read-only verification credentials, and full restored catalog/owner/ACL/RLS checks. Do not create another Branch, change retention/snapshots, run SQL on Production, apply a Migration or infer permission from Sprint 57.
+
+## Historical Sprint 57 - Authorized Neon Isolated Restore Drill
+
+- Isolated historical Branch: PASS; Production remained distinct and received no traffic or database mutation.
+- Basic read-only verification: database identity, transaction read-only, ledger `0001`-`0008`, and core table existence PASS.
+- RTO: 112.335 seconds / PASS. RPO: NOT_PROVEN.
+- Cleanup: PASS; temporary Branch deleted, zero residual, final usage 1/10.
+- Actual Restore cost: UNKNOWN; no payment or upgrade was performed.
+
+## Historical Sprint 57 proposal - Exact Isolated Restore Cost and One-time Authorization Gate
 
 Sprint 56 recorded read-only evidence that Neon Free is the current plan, Branch capacity is 1/10 used with 9 available, historical point-in-time Branch configuration is available without an observed configuration-stage upgrade prompt, and the Owner is the nominated Recovery Commander. Actual Restore remains NOT_EXECUTED and actual Restore cost remains UNKNOWN.
 

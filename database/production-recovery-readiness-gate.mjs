@@ -11,6 +11,8 @@ const EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOVERY_READI
 const EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOVERY_READINESS_EVIDENCE.sha256');
 const CAPACITY_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.json');
 const CAPACITY_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.sha256');
+const DRILL_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DRILL_EVIDENCE.json');
+const DRILL_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DRILL_EVIDENCE.sha256');
 const ALLOWED_STATUSES = new Set(['PASS', 'PARTIAL', 'BLOCKED', 'NOT_CONFIGURED', 'UNKNOWN', 'FAIL']);
 
 function sha256(value) {
@@ -45,8 +47,10 @@ export async function validateRecoveryReadinessPackage(input) {
   if (value.observedEvidence?.historyRetentionHours !== 6 || value.observedEvidence?.pitrAvailable !== true) failures.push('OBSERVED_PITR_EVIDENCE_DRIFT');
   if (value.observedEvidence?.scheduledSnapshotEnabled !== false || value.observedEvidence?.latestSnapshot !== 'NONE') failures.push('SNAPSHOT_EVIDENCE_DRIFT');
   if (value.observedEvidence?.restoreExecuted !== false || value.observedEvidence?.branchCreated !== false || value.observedEvidence?.productionMutation !== false) failures.push('MUTATION_BOUNDARY_DRIFT');
-  if (value.currentGateEvidence?.RPO_15_MINUTES?.status === 'PASS' || value.currentGateEvidence?.RTO_60_MINUTES?.status === 'PASS') failures.push('RPO_RTO_UNSUPPORTED_PASS');
-  if (value.currentGateEvidence?.ISOLATED_RESTORE_TARGET?.status === 'PASS') failures.push('ISOLATED_RESTORE_UNSUPPORTED_PASS');
+  if (value.currentGateEvidence?.RPO_15_MINUTES?.status === 'PASS') failures.push('RPO_UNSUPPORTED_PASS');
+  if (value.currentGateEvidence?.RTO_60_MINUTES?.status !== 'PASS') failures.push('RTO_DRILL_EVIDENCE_MISSING');
+  if (value.currentGateEvidence?.ISOLATED_RESTORE_TARGET?.status !== 'PASS' || value.currentGateEvidence?.RESTORE_TARGET_TRAFFIC_ISOLATION?.status !== 'PASS' || value.currentGateEvidence?.RESTORE_CLEANUP_EVIDENCE?.status !== 'PASS') failures.push('ISOLATED_RESTORE_DRILL_EVIDENCE_MISSING');
+  if (value.currentGateEvidence?.RESTORE_CREDENTIAL_ISOLATION?.status !== 'PARTIAL' || value.currentGateEvidence?.RESTORED_DATABASE_VERIFICATION?.status !== 'PARTIAL') failures.push('RESTORE_VERIFICATION_LIMITS_WEAKENED');
   if (value.decision?.productionRecoveryTechnicalReadiness !== 'NO_GO' || value.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('RECOVERY_DECISION_WEAKENED');
   if (value.decision?.productionReadiness !== '70_PERCENT_NOT_READY' || value.decision?.gateA !== 'DEFER' || value.decision?.productionProvisioning !== 'NO_GO') failures.push('PRODUCTION_DECISION_DRIFT');
 
@@ -66,6 +70,19 @@ export async function validateRecoveryReadinessPackage(input) {
   if (capacity.recoveryOwnership?.status !== 'CONFIGURED' || capacity.recoveryOwnership?.restoreAuthorizationGranted !== false || capacity.productionMutation !== false) failures.push('RECOVERY_OWNERSHIP_OR_BOUNDARY_DRIFT');
   if (value.sprint56Evidence?.actualRestoreCost !== 'UNKNOWN' || value.sprint56Evidence?.restoreExecuted !== false || value.sprint56Evidence?.recoveryCommander !== 'OWNER_CONFIGURED' || value.sprint56Evidence?.restoreAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_56_DECISION_DRIFT');
 
+  const [drillContent, drillHashRecord] = await Promise.all([readFile(DRILL_EVIDENCE_PATH), readFile(DRILL_HASH_PATH, 'utf8')]);
+  const drillHash = sha256(drillContent);
+  if (drillHash !== drillHashRecord.trim().split(/\s+/)[0] || drillHash !== value.sprint57Evidence?.sourceEvidenceSha256) failures.push('ISOLATED_RESTORE_DRILL_EVIDENCE_HASH_MISMATCH');
+  const drill = JSON.parse(drillContent.toString('utf8'));
+  if (drill.restore?.status !== 'PASS' || drill.restore?.temporaryBranchCreated !== true || drill.restore?.temporaryBranchDistinctFromProduction !== true || drill.restore?.productionBranchReplacedOrReset !== false) failures.push('ISOLATED_RESTORE_DRILL_STATE_MISMATCH');
+  if (drill.verification?.transactionReadOnly !== true || drill.verification?.migrationLedgerCount !== 8 || drill.verification?.migrationLedgerVersions?.join(',') !== '0001,0002,0003,0004,0005,0006,0007,0008') failures.push('RESTORED_DATABASE_BASIC_VERIFICATION_MISMATCH');
+  if (drill.recoveryObjectives?.rtoSeconds !== 112.335 || drill.recoveryObjectives?.rto60Minutes !== 'PASS' || drill.recoveryObjectives?.rpo15Minutes !== 'NOT_PROVEN' || drill.recoveryObjectives?.restorePointAgeAtStartSeconds !== 33.482) failures.push('RESTORE_MEASUREMENT_EVIDENCE_DRIFT');
+  if (drill.isolation?.productionSchemaMutation !== false || drill.isolation?.productionDataMutation !== false || drill.isolation?.productionMigrationExecuted !== false || drill.isolation?.productionTrafficRoutedToTemporaryBranch !== false) failures.push('RESTORE_ISOLATION_BOUNDARY_FAILURE');
+  if (drill.cleanup?.temporaryBranchDeleted !== true || drill.cleanup?.residualTemporaryBranchCount !== 0 || drill.cleanup?.branchesUsedAfter !== 1 || drill.cleanup?.status !== 'PASS') failures.push('RESTORE_CLEANUP_EVIDENCE_MISMATCH');
+  if (drill.cost?.actualRestoreCost !== 'UNKNOWN' || drill.cost?.paymentPerformed !== false || drill.cost?.planUpgradePerformed !== false) failures.push('RESTORE_COST_OR_BILLING_BOUNDARY_DRIFT');
+  if (drill.productionReadiness !== '70_PERCENT_NOT_READY' || drill.productionStatus !== 'NOT_READY' || drill.gateA !== 'DEFER' || drill.productionProvisioning !== 'NO_GO' || drill.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_57_PRODUCTION_DECISION_DRIFT');
+  if (value.sprint57Evidence?.isolatedRestore !== 'PASS' || value.sprint57Evidence?.providerForkDurationSeconds !== 2.85 || value.sprint57Evidence?.rtoSeconds !== 112.335 || value.sprint57Evidence?.rto60Minutes !== 'PASS' || value.sprint57Evidence?.rpo15Minutes !== 'NOT_PROVEN' || value.sprint57Evidence?.productionMutation !== false || value.sprint57Evidence?.temporaryBranchDeleted !== true || value.sprint57Evidence?.residualTemporaryBranchCount !== 0 || value.sprint57Evidence?.branchesUsedAfter !== 1 || value.sprint57Evidence?.actualRestoreCost !== 'UNKNOWN') failures.push('SPRINT_57_EVIDENCE_DRIFT');
+
   const [evidenceContent, hashRecord] = await Promise.all([readFile(EVIDENCE_PATH), readFile(EVIDENCE_HASH_PATH, 'utf8')]);
   const evidenceHash = sha256(evidenceContent);
   if (evidenceHash !== hashRecord.trim().split(/\s+/)[0]) failures.push('RECOVERY_EVIDENCE_HASH_MISMATCH');
@@ -75,7 +92,7 @@ export async function validateRecoveryReadinessPackage(input) {
 
   const decision = evaluateRecoveryReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (decision.status !== 'NO_GO') failures.push('CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED');
-  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash });
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash, drillEvidenceHash: drillHash });
 }
 
 export async function repositoryRecoveryReadinessGate() {
@@ -89,6 +106,7 @@ export async function repositoryRecoveryReadinessGate() {
     blockerCount: validation.blockers.length,
     evidenceSha256: validation.evidenceHash,
     capacityEvidenceSha256: validation.capacityEvidenceHash,
+    drillEvidenceSha256: validation.drillEvidenceHash,
     productionConnectionAttempted: false,
     productionSqlExecuted: false,
     productionMutation: false

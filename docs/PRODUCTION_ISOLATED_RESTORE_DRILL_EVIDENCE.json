@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "AUTHORIZED_NEON_ISOLATED_HISTORICAL_RESTORE_DRILL",
+  "evidenceDate": "2026-08-12",
+  "authorizationSource": "OWNER_SPRINT_57_EXACT_SCOPE",
+  "preflight": {
+    "currentPlan": "FREE",
+    "branchesUsedBefore": 1,
+    "branchLimit": 10,
+    "productionBranchPresent": true,
+    "historicalPointInTimeBranchAvailable": true,
+    "paymentOrUpgradePromptObserved": false
+  },
+  "restore": {
+    "method": "ISOLATED_HISTORICAL_BRANCH_FROM_PRODUCTION_PARENT",
+    "restorePointUtc": "2026-08-12T12:16:46.974Z",
+    "operationStartedUtc": "2026-08-12T12:17:20.456Z",
+    "providerForkDurationSeconds": 2.85,
+    "temporaryBranchCreated": true,
+    "temporaryBranchDistinctFromProduction": true,
+    "productionBranchReplacedOrReset": false,
+    "status": "PASS"
+  },
+  "verification": {
+    "verificationCompletedUtc": "2026-08-12T12:19:12.791Z",
+    "databaseConnection": "PASS",
+    "databaseIdentity": "PASS",
+    "databaseName": "neondb",
+    "executionRoleClass": "CONSOLE_SQL_EDITOR_OWNER_ROLE",
+    "transactionReadOnly": true,
+    "migrationLedgerCount": 8,
+    "migrationLedgerVersions": [
+      "0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"
+    ],
+    "coreTablesPresent": [
+      "workspaces", "workspace_members", "employees", "shifts", "attendance_records"
+    ],
+    "fullOwnerAclRlsParity": "NOT_EVALUATED"
+  },
+  "recoveryObjectives": {
+    "rtoSeconds": 112.335,
+    "rtoMinutes": 1.87225,
+    "rto60Minutes": "PASS",
+    "restorePointAgeAtStartSeconds": 33.482,
+    "rpo15Minutes": "NOT_PROVEN",
+    "rpoReason": "NO_DATA_LEVEL_TIMESTAMP_MARKER_OR_INDEPENDENT_CONTINUITY_EVIDENCE"
+  },
+  "isolation": {
+    "productionBranchPresentDuringDrill": true,
+    "productionBranchIdentityUnchanged": true,
+    "productionSchemaMutation": false,
+    "productionDataMutation": false,
+    "productionMigrationExecuted": false,
+    "productionTrafficRoutedToTemporaryBranch": false
+  },
+  "cleanup": {
+    "startedUtc": "2026-08-12T12:20:07.533Z",
+    "verifiedUtc": "2026-08-12T12:20:11.619Z",
+    "temporaryBranchDeleted": true,
+    "residualTemporaryBranchCount": 0,
+    "branchesUsedAfter": 1,
+    "branchLimit": 10,
+    "status": "PASS"
+  },
+  "cost": {
+    "paymentPerformed": false,
+    "planUpgradePerformed": false,
+    "actualRestoreCost": "UNKNOWN"
+  },
+  "remainingRecoveryGates": {
+    "independentBackup": "BLOCKED",
+    "scheduledSnapshot": "NOT_CONFIGURED",
+    "distinctProcessOnlyVerificationCredential": "NOT_PROVEN",
+    "fullRestoredCatalogAclRlsVerification": "NOT_EVALUATED",
+    "rpo15Minutes": "NOT_PROVEN"
+  },
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "gateA": "DEFER",
+  "productionProvisioning": "NO_GO",
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "secretsOrProviderIdentifiersRecorded": false
+}

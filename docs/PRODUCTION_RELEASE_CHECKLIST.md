@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 57 isolated Restore checkpoint
+
+- [x] Create one exactly authorized historical isolated Branch without replacing Production.
+- [x] Verify database identity, read-only transaction, ledger `0001`-`0008` and core tables.
+- [x] Measure RTO: 112.335 seconds, <=60 minutes PASS.
+- [x] Verify zero Production traffic and no Production database/schema/data/Migration mutation.
+- [x] Delete the temporary Branch; zero residual and final usage 1/10.
+- [ ] Prove RPO <=15 minutes with data-level continuity evidence; current status NOT_PROVEN.
+- [ ] Prove distinct process-only credential and full restored owner/ACL/RLS parity.
+- [ ] Establish independent backup and accepted scheduled snapshot/equivalent controls.
+- [ ] Determine actual Restore cost; current status UNKNOWN.
+- [ ] Keep Production 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED.
+
 ## Sprint 56 Restore capacity and ownership checkpoint
 
 - [x] Record current Neon Free plan and Branch capacity: 1/10 used, 9 available.

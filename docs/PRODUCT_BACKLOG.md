@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 57 status - Authorized Neon Isolated Restore Drill (2026-08-12)
+
+- **Sprint status:** COMPLETE for the exact one-time drill; Production Recovery remains NO-GO.
+- **PASS:** isolated historical Branch creation, zero Production traffic, read-only identity/ledger/core-table verification, RTO 112.335 seconds, cleanup and zero residual Branches.
+- **Open:** RPO <=15 minutes NOT_PROVEN; distinct process-only restore credential and full owner/ACL/RLS parity not proven; independent backup BLOCKED; scheduled snapshot NOT_CONFIGURED; actual Restore cost UNKNOWN.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Production Migration authorization NOT_GRANTED.
+- **Next unique Sprint:** separately authorized RPO continuity plus restored security-catalog evidence; do not reuse Sprint 57 authority.
+
 ## Sprint 56 status - Neon Restore Capacity/Cost Evidence and Recovery Commander Nomination (2026-08-12)
 
 - **Sprint status:** COMPLETE for Repository evidence closure; Production Recovery remains NOT READY and the exercise remains NOT_GRANTED.

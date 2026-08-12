@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 57 Authorized Isolated Restore Drill
+
+Sprint 57 used exact Owner authorization to create one Neon historical isolated Branch, perform basic read-only verification, measure recovery, and delete the Branch. Production remained a distinct Branch, received no application traffic and had no database/schema/data/Migration mutation. Final Branch usage returned to 1/10 with zero residual Sprint 57 resource.
+
+RTO was 112.335 seconds and is PASS against 60 minutes. The selected point was 33.482 seconds old at start, but RPO <=15 minutes remains NOT_PROVEN because no data-level continuity marker was available. Distinct process-only credentials and full owner/ACL/RLS parity are not proven. Actual Restore cost remains UNKNOWN.
+
+Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. The next unique recovery gate requires separate authorization; Sprint 57 authority is consumed and closed.
+
 ## 2026-08-12 current state - Sprint 56 Restore capacity and ownership evidence
 
 Sprint 56 closes only two prerequisites with human read-only evidence: historical point-in-time Branch configuration capability is available with 9 of 10 Branch slots unused, and the Owner is the configured Recovery Commander. The current Neon plan is Free; no configuration-stage upgrade prompt was observed.
