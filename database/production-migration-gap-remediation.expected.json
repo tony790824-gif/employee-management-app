@@ -16,10 +16,16 @@
     "status": "BLOCKED",
     "requiredRpo": "15 minutes",
     "requiredRto": "60 minutes",
+    "isolatedRestoreStatus": "PASS",
+    "rtoStatus": "PASS_112_335_SECONDS",
+    "rpoStatus": "NOT_PROVEN",
+    "preMigrationRestorePointStatus": "BLOCKED",
     "reasons": [
+      "INDEPENDENT_BACKUP_NOT_PROVEN",
       "SCHEDULED_SNAPSHOT_NOT_ENABLED",
-      "ISOLATED_RESTORE_NOT_VERIFIED",
+      "RPO_15_MINUTES_NOT_PROVEN",
       "MIGRATION_RESTORE_POINT_NOT_CAPTURED",
+      "FULL_RESTORED_SECURITY_CATALOG_PARITY_NOT_PROVEN",
       "FORWARD_FIX_OWNER_NOT_ASSIGNED"
     ]
   },

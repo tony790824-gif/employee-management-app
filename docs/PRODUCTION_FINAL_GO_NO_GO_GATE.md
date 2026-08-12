@@ -2,6 +2,8 @@
 
 ## Sprint 60 decision — 2026-08-12
 
+Sprint 61 addendum: Repository Migration integrity and fresh disposable upgrade/fresh-install structural parity PASS, but actual Production Migration Technical Readiness remains NO-GO with 18 non-PASS Gates. RPO remains NOT_PROVEN, the pre-Migration restore point is BLOCKED, event-time read-only evidence was unavailable, and authorization remains NOT_GRANTED. The Final Production Launch decision therefore remains NO-GO.
+
 - Sprint 60 Repository scope: **COMPLETE**
 - Product completion: **98%**
 - Production readiness: **70% / NOT READY**

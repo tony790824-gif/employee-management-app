@@ -2,6 +2,8 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
+Sprint 61 Migration checkpoint: isolated Restore and RTO 112.335 seconds are PASS inputs, but RPO <=15 minutes remains NOT_PROVEN, the event-specific pre-Migration restore point is BLOCKED, and independent backup/scheduled snapshot/full restored security-catalog parity remain non-PASS. Recovery therefore continues to block Production Migration authorization.
+
 Sprint 60 final-launch update: Recovery remains a `MUST_BEFORE_GO` blocker. PITR and the isolated Restore/RTO drill pass, but RPO <=15 minutes remains NOT_PROVEN, independent backup remains BLOCKED, scheduled snapshot remains NOT_CONFIGURED, and complete restored owner/ACL/RLS/catalog verification is not closed. Final Production Launch remains NO-GO; no Recovery or Production operation occurred in Sprint 60.
 
 Sprint 59 update: authenticated Console and official Neon Project/Branch/Operations/Restore API contracts were reviewed read-only. They prove PITR/retention and describe metadata or caller-selected restore inputs, but provide no documented latest recoverable or reference Production data boundary. No protected database/API input was available or substituted; no connection, SQL, API request, new Restore or mutation occurred. Both boundaries and Recovery Gap remain UNKNOWN; RPO <=15 minutes remains NOT_PROVEN. RTO remains PASS from Sprint 57.

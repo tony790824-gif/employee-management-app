@@ -77,7 +77,7 @@
     "temporaryCredentialRemoved": true,
     "temporaryDataRemoved": true
   },
-  "commitSha": "82239e0ac0c3b8cdc8062102fdc3ff4330f92b78",
+  "commitSha": "acf654888fe9dd0b03c8d1cee42052cfda79d057",
   "comparison": {
     "fingerprintMatch": "MATCH",
     "freshFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e",
@@ -424,7 +424,7 @@
     "status": "PASS"
   },
   "gateA": "DEFER",
-  "generatedAt": "2026-08-10T13:26:30.557Z",
+  "generatedAt": "2026-08-12T14:07:12.118Z",
   "intentionalExcludedVersions": [
     "0010"
   ],

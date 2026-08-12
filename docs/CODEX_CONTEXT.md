@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 61 Production Migration Authorization Readiness
+
+Sprint 61 Repository inventory is PASS: 21 tracked versions (`0001`-`0009`, `0011`-`0022`), no duplicate/unexpected/checksum mismatch, and intentional unapproved gap `0010` remains excluded. The approved future sequence is exactly `0009`, `0011`-`0022`.
+
+A fresh disposable PostgreSQL 18.4 run proved upgrade/fresh-install structural parity with fingerprint `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e` and evidence SHA-256 `7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d`. A separate 22-Gate simulation passed with evidence SHA-256 `d811ce03f26d358e229cd86c0f4aad80c00b4b09f4531cea4bccd92f6c6c1c6a`; both cleaned to zero residual resources.
+
+No dedicated Production read-only process inputs were present, so event-time identity/TLS/ledger/catalog revalidation did not run and remains BLOCKED. Historical Sprint 49 identity/role/TLS and `0001`-`0008` ledger evidence remains provenance only. Isolated Restore and RTO 112.335 seconds PASS; RPO <=15 minutes NOT_PROVEN and the event-specific pre-Migration restore point BLOCKED. Technical Readiness is NO-GO with 18 non-PASS Gates; authorization NOT_GRANTED; Production remains 70% / NOT READY.
+
 ## 2026-08-12 current state - Sprint 60 Production Final Go/No-Go Gate
 
 Sprint 60 consolidates the current Production evidence into `PRODUCTION_FINAL_GO_NO_GO_GATE.md` and its machine-readable contract. All 20 required launch areas are `MUST_BEFORE_GO`; no complete area has sufficient current Production evidence to be promoted to PASS. Repository and Staging sub-controls remain valid but cannot substitute for Production configuration and launch evidence.
@@ -60,7 +68,7 @@ Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Product
 
 Sprint 53 finalized the future Production Migration Runbook and added a machine-readable 19-Gate package plus Repository-only evaluator. The current Gate has only two PASS items: exact sequence and explicit `0010` exclusion. Seventeen prerequisites remain non-PASS, so Production Migration Technical Readiness is NO-GO and authorization is NOT GRANTED.
 
-A new PostgreSQL 18.4 disposable simulation rebuilt `0001`-`0008`, applied exact `0009`, `0011`-`0022`, verified every transaction/precondition/postcondition, matched starting/final fingerprints and removed all temporary resources. Evidence SHA-256 is `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`.
+The historical Sprint 53 PostgreSQL 18.4 disposable simulation rebuilt `0001`-`0008`, applied exact `0009`, `0011`-`0022`, verified every transaction/precondition/postcondition, matched starting/final fingerprints and removed all temporary resources. Its evidence SHA-256 at that time was `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`; Sprint 61 current evidence is recorded above.
 
 The simulation is not Production evidence. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection, SQL, Migration, deploy, credential or external resource operation occurred. Next unique work is an explicitly authorized Backup/Restore/RPO/RTO and maintenance ownership evidence Sprint, without applying a Production Migration.
 
@@ -70,7 +78,7 @@ Sprint 52 created two independent loopback-only PostgreSQL 18.4 clusters. The up
 
 The comparator checks actual normalized catalog rows, not only the ledger. Schemas, tables/views, columns and types, nullability/defaults, constraints, indexes, Functions/signatures, triggers, sequences, Extensions, RLS/policies, ownership and ACL all match. Missing, unexpected, mismatched and PUBLIC privilege drift counts are zero.
 
-Both structural fingerprints are `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`. Sanitized evidence SHA-256 is `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`. Cleanup passed with zero residual disposable resources.
+Both structural fingerprints were `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`. Historical Sprint 52 sanitized evidence SHA-256 at that time was `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`; Sprint 61 current evidence is recorded above. Cleanup passed with zero residual disposable resources.
 
 This does not establish current Production structural parity. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection or mutation occurred. Next unique work is representative synthetic-data lock/runtime and disposable recovery rehearsal.
 

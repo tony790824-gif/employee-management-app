@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-12 - Sprint 61 Production Migration authorization readiness
+
+- Refreshed the machine-readable Migration Gate from 19 combined requirements to 22 explicit requirements.
+- New disposable PostgreSQL 18.4 upgrade/fresh-install and readiness simulations PASS; Production Gate remains NO-GO with 18 non-PASS items.
+- Preserved RPO NOT_PROVEN, restore-point BLOCKED, authorization NOT_GRANTED and zero Production mutation.
+
 ## 2026-08-12 - Sprint 60 Production Final Go/No-Go Gate
 
 - Added the single 20-area Final Production Launch inventory and machine-readable fail-closed contract.

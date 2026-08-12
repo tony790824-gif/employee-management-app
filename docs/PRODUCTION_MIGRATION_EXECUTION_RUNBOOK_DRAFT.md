@@ -2,6 +2,8 @@
 
 Status: **FINAL TECHNICAL RUNBOOK / NO-GO / NOT AN AUTHORIZATION**
 
+Sprint 61 revalidation keeps this Runbook fail-closed. The machine-readable package now separates isolated Restore PASS and RTO PASS from RPO NOT_PROVEN and the blocked event-specific pre-Migration restore point. A fresh disposable upgrade/fresh-install parity run and 22-Gate simulation pass, but the real Production Gate has 18 non-PASS items. No dedicated reader inputs were available for event-time revalidation, and no Production operation ran.
+
 This runbook describes a possible future maintenance event for `0009`, `0011`-`0022`. It must not be run until Gate A, recovery, tooling, structural preconditions and a separate exact owner approval all pass.
 
 Sprint 51 proved the exact one-version transaction sequence and failure stops only on empty disposable PostgreSQL 18.4 databases. Sprint 52 proved structural equality between upgraded and fresh-install disposable databases. Sprint 53 validated this Runbook and its fail-closed Gate on another disposable cluster. All rehearsal tools remain local/disposable-only and must not be pointed at Production. Representative lock/runtime evidence, recovery and every Production authorization checkpoint below remain open.

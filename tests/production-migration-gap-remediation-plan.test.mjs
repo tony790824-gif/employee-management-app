@@ -19,6 +19,10 @@ assert.equal(plan.migrations.some(item => item.version === '0010'), false);
 assert.equal(plan.executionAuthorization, 'NOT_GRANTED');
 assert.equal(plan.executionStatus, 'BLOCKED');
 assert.equal(plan.recoveryPrerequisite.status, 'BLOCKED');
+assert.equal(plan.recoveryPrerequisite.isolatedRestoreStatus, 'PASS');
+assert.equal(plan.recoveryPrerequisite.rtoStatus, 'PASS_112_335_SECONDS');
+assert.equal(plan.recoveryPrerequisite.rpoStatus, 'NOT_PROVEN');
+assert.equal(plan.recoveryPrerequisite.preMigrationRestorePointStatus, 'BLOCKED');
 assert.equal(plan.maintenanceWindow.status, 'REQUIRED');
 assert.equal(plan.maintenanceWindow.zeroDowntimeClaim, 'UNKNOWN');
 

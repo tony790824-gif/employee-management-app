@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 61 Migration authorization boundary
+
+- `pnpm db:migration:final-readiness` now validates 22 explicit Gates. Repository/package PASS still returns actual Production Technical Readiness NO-GO while any Gate is non-PASS.
+- Isolated Restore and RTO are PASS evidence; RPO, pre-Migration restore point, independent backup/full restored security parity and 14 other event/runtime/ownership Gates remain non-PASS.
+- Event-time dedicated reader inputs were absent. Never substitute Owner/Admin/Migrator/API/Push/Staging credentials or treat historical evidence as fresh.
+- All 13 versions are conditionally reversible; automatic down is prohibited. Before commit, roll back only the current transaction; after commit, stop and choose a reviewed forward-fix, compatible hold or explicitly proven rollback.
+- No Production Migration authorization exists. Repository/disposable PASS grants no connection, SQL, snapshot, restore point, Migration, deploy or traffic authority.
+
 ## Sprint 60 Final Launch operating boundary
 
 - `PRODUCTION_FINAL_GO_NO_GO_GATE.md` is the current consolidated launch decision: all 20 areas are `MUST_BEFORE_GO`; Final decision is NO-GO.

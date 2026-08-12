@@ -1,6 +1,12 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 61 proposal - Gate A Owner budget decision and narrow Auth0 authorization
+## Sprint 62 proposal - Pre-Migration Recovery and Event-time Evidence Gate
+
+Sprint 61 proves Repository Migration integrity and disposable upgrade/fresh-install behavior, but actual Production Migration Technical Readiness remains NO-GO with 18 non-PASS Gates. RPO <=15 minutes is NOT_PROVEN, the event-specific pre-Migration restore point is BLOCKED, current dedicated read-only inputs were absent, and Migration authorization is NOT_GRANTED.
+
+The next unique Migration-safe Sprint is a Repository/read-only authorization package for the pre-Migration Recovery checkpoint and event-time evidence bundle. It must define independent backup/snapshot/full restored security-catalog verification, a trusted RPO boundary, restore-point cost/retention/expiry, approved least-privilege operator, freshness window, maintenance/traffic/lock budget and immutable artifact identity. Stop before any marker, snapshot, Branch, Restore, SQL, Migration, deploy, resource, billing or Production configuration action. Migration execution remains separately unauthorized.
+
+## Historical Sprint 61 proposal - Gate A Owner budget decision and narrow Auth0 authorization
 
 Sprint 60 establishes the Final Production Launch decision as NO-GO with 20 `MUST_BEFORE_GO` areas. The project-specific dependency order still begins with Gate A identity isolation before creating the API, frontend, domain or executing Production migrations.
 

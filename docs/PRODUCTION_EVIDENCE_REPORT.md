@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 61 Migration readiness evidence - 2026-08-12
+
+- Repository inventory: **PASS**, expected 21; duplicate/unexpected/checksum mismatch NONE; `0010` excluded.
+- Production event-time reader inputs: **ABSENT**; revalidation **BLOCKED / NOT EXECUTED**; no credential substitution.
+- Historical Production ledger provenance: `0001`-`0008`; missing `0009`, `0011`-`0022`; unexpected/checksum mismatch NONE.
+- Disposable structural parity: **PASS**, evidence SHA-256 `7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d`.
+- Disposable final readiness simulation: **PASS**, evidence SHA-256 `d811ce03f26d358e229cd86c0f4aad80c00b4b09f4531cea4bccd92f6c6c1c6a`.
+- Actual Production Migration Gate: **NO-GO**, 18 non-PASS; authorization **NOT_GRANTED**; mutation **NONE**.
+
 ## Sprint 60 Final Go/No-Go evidence - 2026-08-12
 
 - Repository evidence inventory and 20-area completeness validation: **PASS as controls**.
@@ -73,7 +82,7 @@
 - Evidence class: **REPOSITORY CONTROL + DISPOSABLE NON-PRODUCTION SIMULATION**, not Production execution evidence.
 - Machine-readable package and evaluator validate 19 fail-closed Gates, source checksums, `0010` exclusion and Sprint 49-52 hash provenance.
 - Disposable simulation: PASS on PostgreSQL 18.4; starting fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, final fingerprint `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`.
-- Simulation evidence SHA-256: `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`; residual resources 0.
+- Historical Sprint 53 simulation evidence SHA-256 at that time: `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`; residual resources 0. Sprint 61 current evidence is recorded above.
 - Actual Production Gate: 2 PASS, 17 non-PASS; Technical Readiness NO-GO; authorization NOT GRANTED.
 - No Production credential, connection, SQL, Migration, data, deploy or external resource was used or modified.
 
@@ -83,7 +92,7 @@
 - Upgrade path (`0001`-`0008` then `0009`, `0011`-`0022`) and independent fresh install (`0001`-`0009`, `0011`-`0022`) both completed on loopback-only PostgreSQL 18.4; `0010` was excluded.
 - Ledger and every normalized catalog section match. Structural fingerprint: `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`.
 - Missing objects: NONE; unexpected objects: NONE; definition/signature mismatches: NONE; owner/ACL mismatches: NONE; unexpected PUBLIC privilege drift: NONE.
-- Sanitized evidence: `docs/PRODUCTION_STRUCTURAL_PARITY_REHEARSAL_EVIDENCE.json`; SHA-256 `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`.
+- Historical Sprint 52 sanitized evidence SHA-256 at that time: `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`. Sprint 61 current evidence is recorded above.
 - Processes and temporary data/config/credentials were removed; residual disposable resource count 0.
 - No Production credential, connection, SQL, Migration, data, deploy or external resource was used or modified. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO.
 

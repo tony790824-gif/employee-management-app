@@ -10,6 +10,8 @@ Sprint 51 update: the exact chain and fail-closed executor controls passed twice
 
 Sprint 53 update: the final Runbook, 19-Gate machine-readable readiness package and another disposable success-path simulation are complete. The current Production Gate still has 17 non-PASS items, so Production Migration Technical Readiness is NO-GO and authorization is NOT GRANTED. Repository controls do not close recovery, current Production structural baseline, runtime/environment or operational prerequisites.
 
+Sprint 61 update: the inventory and exact order remain PASS. A fresh disposable PostgreSQL 18.4 upgrade/fresh-install comparison and updated 22-Gate simulation pass with zero residual resources. Recovery evidence is now decomposed: isolated Restore and RTO PASS, but RPO NOT_PROVEN, independent backup/scheduled snapshot/full restored security parity and the event-specific restore point remain non-PASS. The actual Production Gate has 18 non-PASS items and remains NO-GO; authorization is NOT GRANTED.
+
 ## 1. Confirmed baseline
 
 The authorized Sprint 49 read-only evidence is the only current Production baseline:
@@ -81,14 +83,14 @@ Production table sizes, row distributions, concurrent write rates, lock wait dur
 
 ## 5. Backup, Restore and recovery prerequisite
 
-Status: **BLOCKED**.
+Status: **BLOCKED**. Isolated Restore and RTO 112.335 seconds are now PASS evidence, but they do not close RPO or the event-specific restore-point Gate.
 
 The current evidence shows only a six-hour PITR/history window, no scheduled snapshot and no isolated Restore rehearsal. Before any Migration:
 
 - meet the approved RPO target of 15 minutes and RTO target of 60 minutes;
 - capture an approved pre-change restore point and record its sanitized identifier/time;
 - produce independent backup/snapshot evidence appropriate to the chosen Production plan;
-- complete an isolated Restore and application verification rehearsal without touching Production;
+- retain the Sprint 57 isolated Restore/RTO evidence and separately complete full restored owner/ACL/RLS/catalog verification;
 - prove how schema, application code and secrets are restored together;
 - assign a recovery commander and forward-fix owner;
 - prove enough retained time remains to detect, stop and recover.

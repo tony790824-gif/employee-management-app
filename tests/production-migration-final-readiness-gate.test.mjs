@@ -15,6 +15,14 @@ assert.equal(validation.repositoryTruth, 'PASS');
 assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.ok(validation.blockerCount >= 10);
+assert.equal(readiness.schemaVersion, 2);
+assert.equal(readiness.lastReviewedSprint, 61);
+assert.equal(readiness.repositoryInventory.expectedCount, 21);
+assert.equal(readiness.repositoryInventory.result, 'PASS');
+assert.deepEqual(readiness.repositoryInventory.intentionalGaps, ['0010']);
+assert.deepEqual(readiness.repositoryInventory.duplicates, []);
+assert.deepEqual(readiness.repositoryInventory.unexpected, []);
+assert.deepEqual(readiness.repositoryInventory.checksumMismatch, []);
 
 assert.deepEqual(readiness.intentionalExcludedVersions, ['0010']);
 assert.equal(readiness.approvedExecutionOrder.includes('0010'), false);
@@ -24,9 +32,18 @@ assert.deepEqual(readiness.approvedExecutionOrder, [
 ]);
 assert.equal(readiness.currentGateEvidence['0010_ABSENT'].status, 'PASS');
 assert.equal(readiness.currentGateEvidence.EXACT_EXECUTION_SEQUENCE.status, 'PASS');
-assert.equal(readiness.currentGateEvidence.BACKUP_RESTORE_RPO_RTO.status, 'BLOCKED');
+assert.equal(readiness.currentGateEvidence.ISOLATED_RESTORE.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.RTO_60_MINUTES.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.RPO_15_MINUTES.status, 'BLOCKED');
+assert.equal(readiness.currentGateEvidence.PRE_MIGRATION_RESTORE_POINT.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.EXPLICIT_EVENT_AUTHORIZATION.status, 'NOT_GRANTED');
 assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 'BLOCKED');
+assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'ABSENT');
+assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'BLOCKED');
+assert.equal(readiness.rollbackAssessment.status, 'PARTIAL');
+assert.equal(readiness.rollbackAssessment.unconditionallyReversibleCount, 0);
+assert.equal(readiness.rollbackAssessment.conditionallyReversibleCount, 13);
+assert.equal(readiness.rollbackAssessment.automaticDownAllowed, false);
 
 const allPass = Object.fromEntries(readiness.requiredGateIds.map(gateId => [gateId, { status: 'PASS', reason: 'TEST_ONLY' }]));
 assert.equal(evaluateProductionMigrationReadiness(allPass, readiness.requiredGateIds).status, 'GO');
@@ -45,6 +62,12 @@ assert.equal((await validateFinalReadinessPackage(weakened)).status, 'BLOCKED');
 const includes0010 = structuredClone(readiness);
 includes0010.approvedExecutionOrder.splice(1, 0, '0010');
 assert.equal((await validateFinalReadinessPackage(includes0010)).status, 'BLOCKED');
+const falseRpoPass = structuredClone(readiness);
+falseRpoPass.currentGateEvidence.RPO_15_MINUTES.status = 'PASS';
+assert.equal((await validateFinalReadinessPackage(falseRpoPass)).status, 'BLOCKED');
+const falseRollback = structuredClone(readiness);
+falseRollback.rollbackAssessment.automaticDownAllowed = true;
+assert.equal((await validateFinalReadinessPackage(falseRollback)).status, 'BLOCKED');
 
 const gate = await repositoryFinalReadinessGate();
 assert.equal(gate.packageValidation, 'PASS');

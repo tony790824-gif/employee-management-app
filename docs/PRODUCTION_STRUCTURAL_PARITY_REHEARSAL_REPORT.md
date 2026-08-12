@@ -1,5 +1,7 @@
 # Sprint 52 Disposable Structural Schema Parity Report
 
+Sprint 61 revalidation: a new PostgreSQL 18.4 disposable upgrade and fresh-install pair again produced exact structural fingerprint `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`, with zero missing/unexpected objects and zero residual resources. Current sanitized evidence SHA-256 is `7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d`. This remains non-Production evidence and does not change Technical Readiness NO-GO.
+
 Status: **COMPLETE FOR DISPOSABLE NON-PRODUCTION EVIDENCE / PRODUCTION PARITY REMAINS BLOCKED**
 
 Date: 2026-08-10
@@ -71,7 +73,7 @@ Final tables: 27. Final views: 0. Relation metadata also compares RLS enabled/fo
 - residual disposable resource count: 0;
 - sensitive-information boundary: PASS;
 - sanitized evidence: `docs/PRODUCTION_STRUCTURAL_PARITY_REHEARSAL_EVIDENCE.json`;
-- evidence SHA-256: `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`.
+- evidence SHA-256: `7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d`.
 
 ## Production decision
 

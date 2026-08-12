@@ -7,7 +7,7 @@
     "temporaryDataRemoved": true
   },
   "currentProductionGate": {
-    "blockerCount": 17,
+    "blockerCount": 18,
     "blockers": [
       {
         "gateId": "EXPLICIT_EVENT_AUTHORIZATION",
@@ -50,8 +50,13 @@
         "status": "BLOCKED"
       },
       {
-        "gateId": "BACKUP_RESTORE_RPO_RTO",
-        "reason": "ISOLATED_RESTORE_AND_RPO_RTO_NOT_PROVEN",
+        "gateId": "RPO_15_MINUTES",
+        "reason": "REFERENCE_AND_LATEST_RECOVERABLE_BOUNDARIES_UNKNOWN_RPO_NOT_PROVEN",
+        "status": "BLOCKED"
+      },
+      {
+        "gateId": "PRE_MIGRATION_RESTORE_POINT",
+        "reason": "NO_EVENT_SPECIFIC_RESTORE_POINT_COST_PLAN_OR_EXACT_AUTHORIZATION",
         "status": "BLOCKED"
       },
       {
@@ -98,7 +103,7 @@
     "status": "NO_GO"
   },
   "gateA": "DEFER",
-  "generatedAt": "2026-08-10T13:42:48.820Z",
+  "generatedAt": "2026-08-12T14:09:13.189Z",
   "postgresMajorVersion": 18,
   "productionConnectionAttempted": false,
   "productionMigrationAuthorization": "NOT_GRANTED",
@@ -173,7 +178,7 @@
       {
         "blockingDetected": false,
         "checksum": "2ce9da48864efee5be3154f214c6e51bd73e19b66b5e969360a81c3b1d8ee54e",
-        "durationMs": 8.728,
+        "durationMs": 6.059,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -182,7 +187,7 @@
       {
         "blockingDetected": false,
         "checksum": "0218d807d58d5b112f4095ac6ac9dfa2652793082c2a6881babd0ad9751748bf",
-        "durationMs": 2.806,
+        "durationMs": 2.1,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -191,7 +196,7 @@
       {
         "blockingDetected": false,
         "checksum": "c81a450b5e0633d2b7efc3b2e7dc4f4d37ef87d9bde62ad408243455de911797",
-        "durationMs": 6.873,
+        "durationMs": 5.161,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -200,7 +205,7 @@
       {
         "blockingDetected": false,
         "checksum": "f6f059b83f5a0ce0cbd172bbff479d8b9b9bb74cd4b0a2a1adc373d52fb4fcd2",
-        "durationMs": 16.178,
+        "durationMs": 12.471,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -209,7 +214,7 @@
       {
         "blockingDetected": false,
         "checksum": "c966d0ee7ac3b09cfaffdb8ef8e92a126db411c5fa4ffcf719709dcf0d83c2bc",
-        "durationMs": 11.482,
+        "durationMs": 8.712,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -218,7 +223,7 @@
       {
         "blockingDetected": false,
         "checksum": "332ff5bbcaa447603f762f4a373a79bc87bbb41a5f706566844fdcd8e821d02f",
-        "durationMs": 3.46,
+        "durationMs": 2.305,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -227,7 +232,7 @@
       {
         "blockingDetected": false,
         "checksum": "31816e7e710a2b806dac0aed34329a268201b37456105a2b45f147d74ee0a476",
-        "durationMs": 17.928,
+        "durationMs": 13.569,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -236,7 +241,7 @@
       {
         "blockingDetected": false,
         "checksum": "16ff4e543cb531a1cc0ce9d0f2791c2ca6f2a55a4d11e542536ef0d36481bae0",
-        "durationMs": 2.194,
+        "durationMs": 2.103,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -245,7 +250,7 @@
       {
         "blockingDetected": false,
         "checksum": "48a4c66b94806198e8974c687c764d4b27c271a31f1e05361d3acc73f109f277",
-        "durationMs": 3.777,
+        "durationMs": 3.702,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -254,7 +259,7 @@
       {
         "blockingDetected": false,
         "checksum": "34ea99054d2e4484884ff0f8f89a4348dd0a8bed9fcaf8b57aceef03664b05d6",
-        "durationMs": 7.915,
+        "durationMs": 9.307,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -263,7 +268,7 @@
       {
         "blockingDetected": false,
         "checksum": "5accdcf763ef5bac72139d9cd8a5dc0d1ae49f70a3306467918f8154edc5733f",
-        "durationMs": 6.852,
+        "durationMs": 7.653,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -272,7 +277,7 @@
       {
         "blockingDetected": false,
         "checksum": "7ec470b263bda1c0677432f1a0f5cb255cefcd25fdf4e256ea6b7fb35f3105f4",
-        "durationMs": 3.31,
+        "durationMs": 3.375,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",
@@ -281,7 +286,7 @@
       {
         "blockingDetected": false,
         "checksum": "e5056c193598a4dcabcee961ce924caf428ca1207d059ed4448ae85dc9cfc8d3",
-        "durationMs": 13.113,
+        "durationMs": 11.225,
         "postcondition": "PASS",
         "precondition": "PASS",
         "transaction": "COMMITTED",

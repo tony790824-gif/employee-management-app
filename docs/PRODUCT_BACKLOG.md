@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 61 status - Production Migration Authorization Readiness (2026-08-12)
+
+- **Sprint status:** COMPLETE for Repository/disposable/read-only scope; actual Production Migration Technical Readiness remains NO-GO.
+- **Repository:** exact 21-version inventory/checksums/order PASS; `0010` is an intentional unapproved gap and excluded.
+- **Disposable:** PostgreSQL 18.4 upgrade, fresh install, structural parity and 22-Gate simulation PASS with zero residual resources.
+- **Production evidence:** process-only reader inputs absent; event-time identity/TLS/ledger/catalog revalidation BLOCKED. Historical ledger remains `0001`-`0008`, missing `0009`, `0011`-`0022`.
+- **Recovery:** isolated Restore PASS; RTO PASS; RPO NOT_PROVEN; pre-Migration restore point BLOCKED; rollback PARTIAL.
+- **Decision:** Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration authorization NOT_GRANTED; Production mutation NONE.
+
 ## Sprint 60 status - Production Launch Final Go/No-Go Gate (2026-08-12)
 
 - **Sprint status:** COMPLETE as Repository-only final launch inventory and fail-closed Gate definition.

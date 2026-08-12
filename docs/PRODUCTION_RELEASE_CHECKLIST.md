@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 61 Production Migration authorization readiness
+
+- [x] Revalidate exact 21-version tracked inventory/checksums; reject `0010`, duplicates and unexpected versions.
+- [x] Revalidate strict `0009`, `0011`-`0022` order and `0018`/`0020` Function dependencies.
+- [x] Rerun disposable PostgreSQL 18.4 upgrade and fresh-install structural parity; zero residual resources.
+- [x] Rerun the updated 22-Gate disposable success path while preserving actual Production NO-GO.
+- [x] Record isolated Restore PASS and RTO 112.335 seconds PASS separately from RPO NOT_PROVEN.
+- [x] Record rollback PARTIAL: zero unconditionally reversible versions; no automatic down.
+- [ ] Provide fresh dedicated read-only identity/TLS/ledger/catalog evidence within the approved event window.
+- [ ] Prove RPO <=15 minutes, independent backup/full restored security parity and an exact pre-Migration restore point.
+- [ ] Close the remaining operator, artifact, runtime, environment, maintenance, traffic/lock, monitoring/responder and authorization Gates.
+- [ ] Keep Production Migration Technical Readiness NO-GO and authorization NOT_GRANTED until all 22 Gates are PASS.
+
 ## Sprint 60 Final Production Launch Gate
 
 - [x] Consolidate all 20 required Production launch areas and current evidence.

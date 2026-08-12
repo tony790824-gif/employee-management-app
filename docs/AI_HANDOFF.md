@@ -1,5 +1,15 @@
 # AI Handoff
 
+## Sprint 61 current state - 2026-08-12
+
+- Repository Migration inventory/checksums/order: PASS for 21 tracked versions; `0010` remains unapproved and excluded.
+- Fresh disposable PostgreSQL 18.4 upgrade/fresh-install parity: PASS, fingerprint `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`, evidence `7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d`.
+- Updated 22-Gate disposable success-path simulation: PASS, evidence `d811ce03f26d358e229cd86c0f4aad80c00b4b09f4531cea4bccd92f6c6c1c6a`, zero residual resources.
+- Actual Production Migration Technical Readiness: NO-GO with 18 non-PASS Gates; authorization NOT_GRANTED.
+- Sprint 61 process had no dedicated Production read-only inputs. Do not substitute Owner/Admin/Migrator/API/Push/Staging credentials; event-time identity/TLS/ledger/catalog remains BLOCKED.
+- Isolated Restore PASS; RTO 112.335 seconds PASS; RPO NOT_PROVEN; pre-Migration restore point BLOCKED; rollback strategy PARTIAL with all 13 versions conditionally reversible only.
+- Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO. No Production connection, SQL, Migration, Restore, deploy, resource or billing mutation occurred.
+
 ## Sprint 60 current state - 2026-08-12
 
 - Final Production Launch Gate: **NO-GO**; all 20 required areas are `MUST_BEFORE_GO` and machine-validated in `docs/PRODUCTION_FINAL_GO_NO_GO_GATE.json`.
@@ -71,7 +81,7 @@
 - Authority: `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_READINESS_REPORT.md`, finalized `docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md`, and `database/production-migration-final-readiness.expected.json`.
 - `pnpm db:migration:final-readiness` is Repository-only. It validates 19 required Gates, exact order/checksums, evidence provenance and the current fail-closed decision without accepting a database URL or executing SQL.
 - Current Gate: 2 PASS (`0010_ABSENT`, `EXACT_EXECUTION_SEQUENCE`) and 17 non-PASS. Any non-PASS or missing Gate remains NO-GO.
-- `pnpm db:migration:final-readiness:simulate` passed on one new loopback-only PostgreSQL 18.4 cluster; evidence SHA-256 `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`, residual resources 0.
+- Historical Sprint 53 run: `pnpm db:migration:final-readiness:simulate` passed on one new loopback-only PostgreSQL 18.4 cluster; its evidence SHA-256 at that time was `cb5817d1977bf2cda0858d82223041f95d667c497824a43363a67ab9f340b68f`, residual resources 0. Sprint 61 current evidence is recorded above.
 - Disposable simulation GO is never Production GO. Readiness remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; authorization NOT GRANTED.
 - Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and untracked `0010` files.
 - Next unique work: separately authorized Backup/Restore/RPO/RTO and maintenance ownership evidence closure. Do not apply a Production Migration.
@@ -82,7 +92,7 @@
 - `database/rehearse-structural-schema-parity.mjs` compares one isolated `0001`-`0008` upgrade path with an independent fresh-install path using PostgreSQL 18.4 and exact tracked checksums.
 - Both final 21-row ledgers exclude `0010`. Every catalog section matches: schemas, relations, columns/types/defaults/nullability, constraints, indexes, Functions/signatures, triggers, sequences, policies/RLS, Extensions, owners and ACLs.
 - Structural fingerprint MATCH: `f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e`; missing/unexpected/mismatched objects and PUBLIC privilege drift are all zero.
-- Evidence/report: `docs/PRODUCTION_STRUCTURAL_PARITY_REHEARSAL_EVIDENCE.json`, `.sha256`, and `docs/PRODUCTION_STRUCTURAL_PARITY_REHEARSAL_REPORT.md`; evidence SHA-256 `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`.
+- Historical Sprint 52 evidence SHA-256 at that time was `0073aa972158e6ff65a999c083e94743f7881252e83dbadabb7c584a8483ae65`; Sprint 61 regenerated the current evidence recorded above.
 - Both clusters/processes/temporary credentials/config/data were removed; residual count 0.
 - This is disposable evidence only. Production remains 70% / NOT READY, Gate A DEFER and Provisioning NO-GO; no Production connection or mutation occurred.
 - Preserve/exclude `.codex`, `.netlify`, `dist-staging-postgres`, `production-function-owner-diagnostic.txt` and untracked `0010` files.

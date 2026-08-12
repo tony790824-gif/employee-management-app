@@ -85,6 +85,8 @@ export async function validateRemediationInventory(inventory) {
   if (plan.executionOrder?.includes('0010') || plan.migrations?.some(item => item.version === '0010')) failures.push('0010_INCLUDED');
   if (plan.executionAuthorization !== 'NOT_GRANTED' || plan.executionStatus !== 'BLOCKED') failures.push('EXECUTION_GATE_WEAKENED');
   if (plan.recoveryPrerequisite?.status !== 'BLOCKED') failures.push('RECOVERY_GATE_WEAKENED');
+  if (plan.recoveryPrerequisite?.isolatedRestoreStatus !== 'PASS' || plan.recoveryPrerequisite?.rtoStatus !== 'PASS_112_335_SECONDS') failures.push('RECOVERY_PASS_EVIDENCE_DRIFT');
+  if (plan.recoveryPrerequisite?.rpoStatus !== 'NOT_PROVEN' || plan.recoveryPrerequisite?.preMigrationRestorePointStatus !== 'BLOCKED') failures.push('RECOVERY_BLOCKER_EVIDENCE_DRIFT');
   if (plan.maintenanceWindow?.status !== 'REQUIRED' || plan.maintenanceWindow?.zeroDowntimeClaim !== 'UNKNOWN') failures.push('DOWNTIME_GATE_WEAKENED');
   if (plan.executionToolGate?.status !== 'BLOCKED') failures.push('EXECUTION_TOOL_GATE_WEAKENED');
   for (const stop of REQUIRED_STOP_CONDITIONS) {

@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 61 Production Migration stop
+
+Repository/disposable Migration validation is complete, but the actual 22-Gate Production decision is NO-GO with 18 non-PASS items. Do not request or execute Migration authorization until RPO, independent backup/full restored security parity, event-specific restore point, fresh dedicated-reader evidence, least-privilege operator, immutable artifact, maintenance/traffic/lock controls, monitoring/responders and runtime compatibility all pass.
+
+No version is unconditionally reversible. Never run automatic down, edit the ledger, skip a version or infer Production timing from disposable durations. `0010` remains prohibited.
+
 ## Sprint 60 Final Launch stop
 
 The Final Production Launch Gate is **NO-GO** with 20 `MUST_BEFORE_GO` areas. Do not purchase, create, configure, migrate, deploy or cut traffic on the strength of Repository completion, Staging evidence, PITR capability or the isolated Restore drill.
