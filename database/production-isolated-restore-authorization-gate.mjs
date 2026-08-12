@@ -10,6 +10,8 @@ const RECOVERY_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOV
 const RECOVERY_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOVERY_READINESS_EVIDENCE.sha256');
 const DECISION_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.json');
 const DECISION_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.sha256');
+const CAPACITY_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.json');
+const CAPACITY_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.sha256');
 const ALLOWED_STATUSES = new Set(['PASS', 'PARTIAL', 'BLOCKED', 'NOT_CONFIGURED', 'NOT_GRANTED', 'UNKNOWN', 'FAIL']);
 
 function sha256(value) {
@@ -49,7 +51,8 @@ export async function validateIsolatedRestoreAuthorizationPackage(input) {
   }
   const cost = value.costAndResourceBoundary || {};
   if (cost.currentPlan !== 'FREE' || cost.currentPlanChangeAuthorized !== false || cost.billingActionAuthorized !== false || cost.stopIfChargeOrUpgradeRequired !== true) failures.push('COST_BOUNDARY_WEAKENED');
-  if (cost.restoreTargetCost !== 'UNKNOWN_RECONFIRM_IN_PROVIDER_BEFORE_AUTHORIZATION' || cost.branchCapacityAvailable !== 'UNKNOWN_RECONFIRM_IN_PROVIDER_BEFORE_AUTHORIZATION') failures.push('UNKNOWN_COST_OR_CAPACITY_COERCED');
+  if (cost.restoreTargetCost !== 'UNKNOWN_RECONFIRM_IN_PROVIDER_BEFORE_AUTHORIZATION') failures.push('UNKNOWN_RESTORE_COST_COERCED');
+  if (cost.branchCapacityUsed !== 1 || cost.branchCapacityLimit !== 10 || cost.branchCapacityAvailable !== 9) failures.push('BRANCH_CAPACITY_EVIDENCE_DRIFT');
   const measurement = value.measurementContract || {};
   if (measurement.rpoTargetMinutes !== 15 || measurement.rtoTargetMinutes !== 60 || measurement.rpoRequiresProviderContinuityEvidence !== true) failures.push('RPO_RTO_CONTRACT_DRIFT');
   if (new Set(value.requiredGateIds || []).size !== value.requiredGateIds?.length) failures.push('DUPLICATE_GATE_ID');
@@ -62,7 +65,7 @@ export async function validateIsolatedRestoreAuthorizationPackage(input) {
   if (!Array.isArray(value.requiredVerification) || value.requiredVerification.length < 8) failures.push('VERIFICATION_PLAN_INCOMPLETE');
   const decision = value.decision || {};
   if (decision.isolatedRestore !== 'BLOCKED' || decision.rpo15Minutes !== 'BLOCKED' || decision.rto60Minutes !== 'BLOCKED_NOT_MEASURED') failures.push('RECOVERY_STATUS_WEAKENED');
-  if (decision.recoveryCommander !== 'NOT_CONFIGURED' || decision.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('OWNERSHIP_OR_MIGRATION_GATE_WEAKENED');
+  if (decision.recoveryCommander !== 'OWNER_CONFIGURED' || decision.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('OWNERSHIP_OR_MIGRATION_GATE_DRIFT');
   if (decision.productionReadiness !== '70_PERCENT_NOT_READY' || decision.productionStatus !== 'NOT_READY' || decision.gateA !== 'DEFER' || decision.productionProvisioning !== 'NO_GO') failures.push('PRODUCTION_DECISION_DRIFT');
 
   const recoveryEvidence = await verifiedHash(RECOVERY_EVIDENCE_PATH, RECOVERY_HASH_PATH);
@@ -70,14 +73,23 @@ export async function validateIsolatedRestoreAuthorizationPackage(input) {
   const recovery = JSON.parse(recoveryEvidence.content.toString('utf8'));
   if (recovery.isolatedRestore?.executed !== false || recovery.rpo15Minutes !== 'BLOCKED' || recovery.rto60Minutes !== 'BLOCKED') failures.push('SOURCE_RECOVERY_STATUS_MISMATCH');
 
+  const capacityEvidence = await verifiedHash(CAPACITY_EVIDENCE_PATH, CAPACITY_HASH_PATH);
+  if (capacityEvidence.sha256 !== value.sourceCapacityOwnershipEvidenceSha256) failures.push('SOURCE_CAPACITY_OWNERSHIP_EVIDENCE_HASH_MISMATCH');
+  const capacity = JSON.parse(capacityEvidence.content.toString('utf8'));
+  if (capacity.currentPlan?.name !== 'FREE' || capacity.observedCapacity?.branchesUsed !== 1 || capacity.observedCapacity?.branchLimit !== 10 || capacity.observedCapacity?.branchesAvailable !== 9) failures.push('SOURCE_BRANCH_CAPACITY_MISMATCH');
+  if (capacity.restoreCapability?.historicalBranchConfigurationAvailable !== true || capacity.restoreCapability?.historicalPointInTimeSelectorAvailable !== true) failures.push('SOURCE_RESTORE_CAPABILITY_MISMATCH');
+  if (capacity.costEvidence?.actualRestoreCost !== 'UNKNOWN' || capacity.recoveryOwnership?.status !== 'CONFIGURED' || capacity.recoveryOwnership?.restoreAuthorizationGranted !== false) failures.push('SOURCE_COST_OR_OWNERSHIP_MISMATCH');
+  if (capacity.restoreCapability?.branchCreated !== false || capacity.restoreCapability?.restoreExecuted !== false || capacity.productionMutation !== false || capacity.externalResourceCreated !== false) failures.push('SOURCE_CAPACITY_EVIDENCE_BOUNDARY_FAILURE');
+
   const decisionEvidence = await verifiedHash(DECISION_EVIDENCE_PATH, DECISION_HASH_PATH);
   const evidence = JSON.parse(decisionEvidence.content.toString('utf8'));
   if (evidence.authorizationDecision !== 'DEFER' || evidence.exerciseAuthorization !== 'NOT_GRANTED') failures.push('DECISION_EVIDENCE_AUTHORIZATION_MISMATCH');
+  if (evidence.sourceCapacityOwnershipEvidenceSha256 !== capacityEvidence.sha256 || evidence.availableBranchCapacity !== 9 || evidence.recoveryCommander !== 'OWNER_CONFIGURED') failures.push('DECISION_EVIDENCE_CAPACITY_OR_OWNERSHIP_MISMATCH');
   if (evidence.productionConnectionAttempted !== false || evidence.productionSqlExecuted !== false || evidence.productionMutation !== false || evidence.externalResourceCreated !== false) failures.push('DECISION_EVIDENCE_BOUNDARY_FAILURE');
 
   const evaluated = evaluateIsolatedRestoreAuthorization(value.currentGateEvidence, value.requiredGateIds);
   if (evaluated.decision !== 'DEFER') failures.push('CURRENT_AUTHORIZATION_GATE_MUST_DEFER');
-  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: evaluated.decision, blockers: evaluated.blockers, evidenceSha256: decisionEvidence.sha256 });
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: evaluated.decision, blockers: evaluated.blockers, evidenceSha256: capacityEvidence.sha256, decisionEvidenceSha256: decisionEvidence.sha256 });
 }
 
 export async function repositoryIsolatedRestoreAuthorizationGate() {
@@ -91,6 +103,7 @@ export async function repositoryIsolatedRestoreAuthorizationGate() {
     exerciseAuthorization: value.exerciseAuthorization,
     blockerCount: validation.blockers.length,
     evidenceSha256: validation.evidenceSha256,
+    decisionEvidenceSha256: validation.decisionEvidenceSha256,
     externalResourceCreated: false,
     productionConnectionAttempted: false,
     productionSqlExecuted: false,

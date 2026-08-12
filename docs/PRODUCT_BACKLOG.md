@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Sprint 56 status - Neon Restore Capacity/Cost Evidence and Recovery Commander Nomination (2026-08-12)
+
+- **Sprint status:** COMPLETE for Repository evidence closure; Production Recovery remains NOT READY and the exercise remains NOT_GRANTED.
+- **Closed prerequisites:** Branch capacity 1/10 used with 9 available; historical point-in-time Branch configuration capability PASS; Recovery Commander OWNER/CONFIGURED.
+- **Still open:** actual Restore cost UNKNOWN; isolated Restore NOT_EXECUTED; independent backup BLOCKED; scheduled snapshot NOT_CONFIGURED; RPO/RTO not proven/measured; exact one-time authorization NOT_GRANTED.
+- **Decision:** Production readiness 70% / NOT READY; Gate A DEFER; Production Provisioning NO-GO; Production Migration authorization NOT_GRANTED.
+- **Next unique Sprint:** exact isolated Restore cost/resource evidence and one-time Owner authorization gate; no resource creation or Restore without separate authority.
+
 ## Sprint 55 status - Isolated Restore Authorization Decision (2026-08-10)
 
 - **Sprint status:** COMPLETE for Repository authorization package and fail-closed decision; the external exercise remains BLOCKED / NOT GRANTED.

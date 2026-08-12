@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "HUMAN_READ_ONLY_NEON_CAPACITY_AND_RECOVERY_OWNERSHIP_EVIDENCE",
+  "evidenceDate": "2026-08-12",
+  "sourceEvidenceId": "manual.neon.production.restore_capacity_ownership",
+  "currentPlan": {
+    "name": "FREE",
+    "fixedMonthlyPlanFeeUsd": 0,
+    "computeHoursIncluded": 100,
+    "maximumComputeUnits": 2,
+    "projectsMaximum": 100,
+    "scaleToZeroAfterMinutes": 5,
+    "perProjectStorageGb": 0.5,
+    "perProjectBranchLimit": 10,
+    "perProjectPublicNetworkTransferGb": 5
+  },
+  "observedCapacity": {
+    "branchesUsed": 1,
+    "branchLimit": 10,
+    "branchesAvailable": 9,
+    "organizationComputeCuHours": 10.43,
+    "organizationStorageGb": 0.03,
+    "organizationHistoryGb": 0,
+    "organizationNetworkTransferGb": 0,
+    "productionBranchStorageMb": 32.84,
+    "productionOnlyCompute": "UNKNOWN",
+    "productionOnlyBillingStorage": "UNKNOWN",
+    "productionOnlyNetworkTransfer": "UNKNOWN"
+  },
+  "restoreCapability": {
+    "restoreFromHistoryAvailable": true,
+    "historyRetentionHours": 6,
+    "scheduledSnapshotEnabled": false,
+    "latestSnapshot": "NONE",
+    "historicalBranchConfigurationAvailable": true,
+    "historicalPointInTimeSelectorAvailable": true,
+    "upgradePromptAtConfigurationStage": "NONE_OBSERVED",
+    "branchCreated": false,
+    "restoreExecuted": false
+  },
+  "costEvidence": {
+    "instantRestoreDisplayedRateUsdPerGbMonth": 0.2,
+    "actualRestoreCost": "UNKNOWN",
+    "upgradeRequiredForHistoricalBranchConfiguration": "NONE_OBSERVED",
+    "costDecision": "RECONFIRM_BEFORE_EXACT_AUTHORIZATION"
+  },
+  "recoveryOwnership": {
+    "recoveryCommander": "OWNER",
+    "status": "CONFIGURED",
+    "acceptedResponsibilities": [
+      "GO_NO_GO_DECISION",
+      "ABORT_DECISION",
+      "RESTORE_VERIFICATION_COORDINATION",
+      "CLEANUP_CONFIRMATION",
+      "EVIDENCE_CLOSURE"
+    ],
+    "restoreAuthorizationGranted": false
+  },
+  "recoveryOutcome": {
+    "isolatedRestore": "NOT_EXECUTED",
+    "independentBackup": "BLOCKED",
+    "scheduledSnapshot": "NOT_CONFIGURED",
+    "rpo15Minutes": "BLOCKED_NOT_PROVEN",
+    "rto60Minutes": "BLOCKED_NOT_MEASURED"
+  },
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "gateA": "DEFER",
+  "productionProvisioning": "NO_GO",
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionConnectionAttempted": false,
+  "productionSqlExecuted": false,
+  "productionMutation": false,
+  "externalResourceCreated": false,
+  "billingActionPerformed": false,
+  "secretsOrIdentifiersRecorded": false
+}

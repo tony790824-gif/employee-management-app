@@ -13,6 +13,21 @@
     "branchCreated": false,
     "productionMutation": false
   },
+  "sprint56Evidence": {
+    "sourceEvidenceId": "manual.neon.production.restore_capacity_ownership",
+    "sourceEvidenceSha256": "2d35688d66b773f86e84ed9955f41b9258120cb3e9e04b340e3be271640f1e23",
+    "currentPlan": "FREE",
+    "branchesUsed": 1,
+    "branchLimit": 10,
+    "branchesAvailable": 9,
+    "historicalBranchConfigurationAvailable": true,
+    "historicalPointInTimeSelectorAvailable": true,
+    "actualRestoreCost": "UNKNOWN",
+    "restoreExecuted": false,
+    "recoveryCommander": "OWNER_CONFIGURED",
+    "restoreAuthorization": "NOT_GRANTED",
+    "productionMutation": false
+  },
   "requiredGateIds": [
     "PROVIDER_PITR_CAPABILITY", "RETENTION_FOR_MIGRATION_WINDOW", "INDEPENDENT_BACKUP",
     "SCHEDULED_SNAPSHOT", "ISOLATED_RESTORE_TARGET", "RESTORE_TARGET_TRAFFIC_ISOLATION",
@@ -33,7 +48,7 @@
     "MIGRATION_RESTORE_POINT": { "status": "BLOCKED", "reason": "NO_AUTHORIZED_PRODUCTION_MIGRATION_EVENT_OR_PRE_MIGRATION_RESTORE_POINT_EXISTS" },
     "RESTORED_DATABASE_VERIFICATION": { "status": "BLOCKED", "reason": "NO_ISOLATED_RESTORE_LEDGER_CATALOG_ACL_AND_APPLICATION_OBJECT_VERIFICATION" },
     "RESTORE_CLEANUP_EVIDENCE": { "status": "BLOCKED", "reason": "NO_ISOLATED_RESTORE_TARGET_WAS_CREATED_OR_CLEANED_UP" },
-    "RECOVERY_COMMANDER": { "status": "NOT_CONFIGURED", "reason": "NO_NAMED_RECOVERY_COMMANDER_OR_TIMED_DRILL_OWNER" },
+    "RECOVERY_COMMANDER": { "status": "PASS", "reason": "OWNER_NOMINATED_AND_ACCEPTED_RECOVERY_COMMANDER_RESPONSIBILITIES_FOR_A_FUTURE_SEPARATELY_AUTHORIZED_EXERCISE" },
     "PRODUCTION_MUTATION_BOUNDARY": { "status": "PASS", "reason": "SPRINT_54_REPOSITORY_ONLY_NO_PRODUCTION_CONNECTION_OR_MUTATION" }
   },
   "requiredStopConditions": [

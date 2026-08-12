@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 56 recovery evidence boundary
+
+- Current Neon plan Free; Branch capacity 1/10 used with 9 available. Historical point-in-time Branch configuration is available and no configuration-stage upgrade prompt was observed.
+- Owner is the configured Recovery Commander. The role nomination is not an authorization to create, Restore, migrate, deploy or change billing/configuration.
+- Actual Restore cost remains UNKNOWN. Stop before resource creation or billing action unless exact cost/resource scope and one-time authority are recorded.
+- Actual Restore NOT_EXECUTED; independent backup BLOCKED; scheduled snapshot NOT_CONFIGURED; RPO/RTO remain blocked. Production stays 70% / NOT READY and NO-GO.
+
 ## Sprint 55 isolated Restore authorization boundary
 
 - `pnpm production:recovery:authorize` validates a Repository-only package. PASS means the package is internally consistent; the external decision remains DEFER and authorization NOT_GRANTED.

@@ -22,6 +22,10 @@ assert.equal(readiness.currentGateEvidence.SCHEDULED_SNAPSHOT.status, 'NOT_CONFI
 assert.equal(readiness.currentGateEvidence.ISOLATED_RESTORE_TARGET.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.RPO_15_MINUTES.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.RTO_60_MINUTES.status, 'BLOCKED');
+assert.equal(readiness.currentGateEvidence.RECOVERY_COMMANDER.status, 'PASS');
+assert.equal(readiness.sprint56Evidence.branchesAvailable, 9);
+assert.equal(readiness.sprint56Evidence.actualRestoreCost, 'UNKNOWN');
+assert.equal(readiness.sprint56Evidence.restoreAuthorization, 'NOT_GRANTED');
 
 const allPass = Object.fromEntries(readiness.requiredGateIds.map(id => [id, { status: 'PASS', reason: 'TEST_ONLY' }]));
 assert.equal(evaluateRecoveryReadiness(allPass, readiness.requiredGateIds).status, 'GO');
@@ -43,6 +47,12 @@ assert.equal((await validateRecoveryReadinessPackage(falseRestore)).status, 'BLO
 const mutation = structuredClone(readiness);
 mutation.observedEvidence.productionMutation = true;
 assert.equal((await validateRecoveryReadinessPackage(mutation)).status, 'BLOCKED');
+const falseRestoreCost = structuredClone(readiness);
+falseRestoreCost.sprint56Evidence.actualRestoreCost = 'ZERO';
+assert.equal((await validateRecoveryReadinessPackage(falseRestoreCost)).status, 'BLOCKED');
+const falseCommander = structuredClone(readiness);
+falseCommander.sprint56Evidence.recoveryCommander = 'NOT_CONFIGURED';
+assert.equal((await validateRecoveryReadinessPackage(falseCommander)).status, 'BLOCKED');
 
 const gate = await repositoryRecoveryReadinessGate();
 assert.equal(gate.packageValidation, 'PASS');
@@ -57,5 +67,6 @@ assert.doesNotMatch(source, /DATABASE_(?:URL|MIGRATOR_URL|READONLY_URL)/);
 assert.doesNotMatch(source, /(?:INSERT|UPDATE|DELETE|ALTER|CREATE|DROP|GRANT|REVOKE)\s+/i);
 assert.match(source, /RPO_RTO_UNSUPPORTED_PASS/);
 assert.match(source, /CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED/);
+assert.match(source, /CAPACITY_OWNERSHIP_EVIDENCE_HASH_MISMATCH/);
 
 console.log('Production Recovery readiness package and fail-closed gate tests passed');

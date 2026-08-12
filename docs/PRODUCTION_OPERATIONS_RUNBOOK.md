@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 56 Restore capacity and commander stop
+
+Read-only provider evidence confirms 9 available Branch slots and the historical point-in-time Branch configuration capability. The Owner is the configured Recovery Commander. Actual Restore cost remains UNKNOWN and exact exercise authorization remains NOT_GRANTED.
+
+Do not click Create/Restore, create a credential, change retention/snapshots/plan, or perform SQL/Migration/deploy. The next gate may only establish exact cost/resource terms and request explicit one-time authority for the already bounded one-target exercise.
+
 ## Sprint 50 Migration execution stop
 
 `docs/PRODUCTION_MIGRATION_EXECUTION_RUNBOOK_DRAFT.md` defines a future one-version-at-a-time sequence, but is not authorized. The exact chain is `0009`, `0011`-`0022`; `0010` is prohibited. Do not use the generic directory-scanning migrator or begin a maintenance event.
@@ -34,7 +40,7 @@ This runbook defines the evidence required before Bankeban may leave the current
 
 ## Sprint 55 Isolated Restore authorization stop
 
-The exact proposed boundary is documented in `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md`, but authorization is **DEFER / NOT_GRANTED**. Do not create or Restore a target until the owner separately confirms current Neon capacity/cost, names the Recovery Commander and explicitly approves the one-target/one-credential scope.
+The exact proposed boundary is documented in `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md`, but authorization is **DEFER / NOT_GRANTED**. Capacity and commander prerequisites are now recorded; do not create or Restore a target until actual cost is resolved and the Owner separately approves the one-target/one-credential scope.
 
 Any provider charge, plan upgrade, overwrite/active-Production path, shared credential, Production traffic/application binding or scope difference is an immediate stop requiring a new decision. Repository validation is not external authorization.
 

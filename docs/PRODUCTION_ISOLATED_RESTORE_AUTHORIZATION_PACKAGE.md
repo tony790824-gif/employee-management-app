@@ -1,12 +1,12 @@
-# Sprint 55 Isolated Restore Authorization Package
+# Sprint 55/56 Isolated Restore Authorization Package
 
 Status: **REPOSITORY SCOPE COMPLETE / AUTHORIZATION DEFERRED / EXERCISE NOT GRANTED**
 
-Date: 2026-08-10
+Updated evidence: 2026-08-12
 
 ## Decision
 
-The proposed exercise is technically bounded, but it is not yet safe to authorize. Current Neon Branch/Restore capacity and incremental cost have not been re-verified, no human Recovery Commander has been named, and no exact one-time resource authorization exists. Therefore:
+The proposed exercise is technically bounded, but it is not yet authorized. Sprint 56 human read-only evidence confirms 9 available Branch slots, the historical point-in-time Branch configuration capability, and Owner acceptance of the Recovery Commander role. Actual Restore cost remains UNKNOWN, independent backup remains BLOCKED, scheduled snapshots remain NOT_CONFIGURED, and no exact one-time resource authorization exists. Therefore:
 
 - Isolated Restore: **BLOCKED**;
 - RPO <= 15 minutes: **BLOCKED**;
@@ -35,7 +35,7 @@ It does not cover active-Production Restore/overwrite, Production traffic, appli
 - Current evidenced Neon plan: Free.
 - Maximum new recovery targets: one.
 - Maximum temporary verification credentials: one.
-- Current available Branch capacity: **UNKNOWN; re-confirm in provider before authorization**.
+- Current observed Branch capacity: **1/10 used; 9 available**.
 - Restore/history/resource cost: **UNKNOWN; re-confirm before authorization**.
 - Maximum approved spend: **NOT SET**.
 - If the provider shows a charge, plan upgrade, capacity shortage or a different resource operation: **STOP**. The owner must separately approve the exact cost and changed scope.
@@ -80,19 +80,12 @@ The exercise must not proceed into `0009`, `0011`-`0022`; `0010` remains an inte
 
 ## Ownership
 
-Before authorization, the owner must name one human Recovery Commander who owns start/stop decisions, verification acceptance, incident escalation and final cleanup. A separate rollback/forward-fix owner is still required for any future Migration. Current Recovery Commander status is **NOT_CONFIGURED**.
+The Owner is the nominated Recovery Commander and has accepted GO/NO-GO, abort, verification coordination, cleanup confirmation and evidence closure responsibilities for a future separately authorized exercise. A separate rollback/forward-fix owner is still required for any future Migration. This nomination does not authorize a Restore.
 
 ## Stop conditions
 
-Stop on missing/stale authorization, absent commander, unknown/charged capacity, active-Production mutation, non-isolated target, reused credential, traffic exposure, TLS/identity failure, restore point older than 15 minutes, missing provider continuity evidence, RTO over 60 minutes, ledger/catalog/security mismatch, sensitive output, cleanup failure, or any request for SQL/Migration/deploy/configuration change.
+Stop on missing/stale authorization, absent commander, unknown/charged Restore cost, unavailable Branch capacity, active-Production mutation, non-isolated target, reused credential, traffic exposure, TLS/identity failure, restore point older than 15 minutes, missing provider continuity evidence, RTO over 60 minutes, ledger/catalog/security mismatch, sensitive output, cleanup failure, or any request for SQL/Migration/deploy/configuration change.
 
 ## Next owner decision
 
-Before any external operation, provide only non-secret console facts:
-
-- whether one isolated recovery target can be created without overwriting Production;
-- current available Branch/restore capacity;
-- whether creation incurs a charge or requires upgrade;
-- the proposed human Recovery Commander.
-
-Do not provide account/project/branch/endpoint IDs, hostnames, URLs, credentials or payment information. After those facts are recorded, request a separate exact authorization for the one-time operation described above.
+Before any external operation, resolve the remaining actual Restore cost as an exact provider decision and obtain a separate exact one-time Owner authorization for the bounded exercise. Do not provide account/project/branch/endpoint IDs, hostnames, URLs, credentials or payment information. Do not create a target merely to discover its cost.

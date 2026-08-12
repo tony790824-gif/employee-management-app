@@ -245,4 +245,9 @@ for (const file of [
   assert.doesNotMatch(sql, /(?:postgres(?:ql)?:\/\/|password\s*=|BEGIN (?:RSA|PRIVATE))/i);
 }
 
+const productionGateSource = await readFile('scripts/production-readiness-gate.mjs', 'utf8');
+assert.match(productionGateSource, /Owner is the nominated Recovery Commander/);
+assert.match(productionGateSource, /This nomination does not authorize a Restore/);
+assert.doesNotMatch(productionGateSource, /Recovery Commander status is \*\*NOT_CONFIGURED\*\*/);
+
 console.log('Production security and operations repository gates passed.');

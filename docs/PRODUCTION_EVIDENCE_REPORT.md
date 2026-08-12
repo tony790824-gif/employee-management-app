@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 56 Restore capacity and ownership evidence - 2026-08-12
+
+- Evidence class: **HUMAN READ-ONLY NEON CAPACITY/CAPABILITY + OWNERSHIP**, not an executed Restore.
+- Current plan Free; Branch capacity 1/10 used and 9 available; historical point-in-time Branch configuration and selector AVAILABLE; no configuration-stage upgrade prompt observed.
+- Recovery Commander: **OWNER / CONFIGURED**. Restore exercise authorization remains **NOT_GRANTED**.
+- Actual Restore: **NOT_EXECUTED**; actual Restore cost **UNKNOWN**; independent backup **BLOCKED**; scheduled snapshot **NOT_CONFIGURED**; RPO/RTO not proven/measured.
+- Sanitized evidence SHA-256: `2d35688d66b773f86e84ed9955f41b9258120cb3e9e04b340e3be271640f1e23`.
+- No Branch, Restore, snapshot, credential, Production connection, SQL, Migration, billing, deploy or configuration change occurred.
+
 ## Sprint 55 isolated Restore authorization evidence - 2026-08-10
 
 - Evidence class: **REPOSITORY-ONLY AUTHORIZATION DECISION**, not Restore/capacity/cost/RPO/RTO evidence.

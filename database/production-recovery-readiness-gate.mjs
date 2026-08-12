@@ -9,6 +9,8 @@ const PACKAGE_PATH = new URL('./production-recovery-readiness.expected.json', im
 const SOURCE_MANIFEST_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_EVIDENCE_HASHES.json');
 const EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOVERY_READINESS_EVIDENCE.json');
 const EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RECOVERY_READINESS_EVIDENCE.sha256');
+const CAPACITY_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.json');
+const CAPACITY_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RESTORE_CAPACITY_OWNERSHIP_EVIDENCE.sha256');
 const ALLOWED_STATUSES = new Set(['PASS', 'PARTIAL', 'BLOCKED', 'NOT_CONFIGURED', 'UNKNOWN', 'FAIL']);
 
 function sha256(value) {
@@ -55,6 +57,15 @@ export async function validateRecoveryReadinessPackage(input) {
   if (source.restoreExecuted !== false || source.scheduledSnapshotEnabled !== false || source.latestSnapshot !== 'NONE') failures.push('SOURCE_RECOVERY_STATE_MISMATCH');
   if (sourceEntry?.sha256 !== value.observedEvidence?.sourceEvidenceSha256) failures.push('SOURCE_EVIDENCE_HASH_MISMATCH');
 
+  const [capacityContent, capacityHashRecord] = await Promise.all([readFile(CAPACITY_EVIDENCE_PATH), readFile(CAPACITY_HASH_PATH, 'utf8')]);
+  const capacityHash = sha256(capacityContent);
+  if (capacityHash !== capacityHashRecord.trim().split(/\s+/)[0] || capacityHash !== value.sprint56Evidence?.sourceEvidenceSha256) failures.push('CAPACITY_OWNERSHIP_EVIDENCE_HASH_MISMATCH');
+  const capacity = JSON.parse(capacityContent.toString('utf8'));
+  if (capacity.currentPlan?.name !== 'FREE' || capacity.observedCapacity?.branchesUsed !== 1 || capacity.observedCapacity?.branchLimit !== 10 || capacity.observedCapacity?.branchesAvailable !== 9) failures.push('CAPACITY_EVIDENCE_DRIFT');
+  if (capacity.restoreCapability?.historicalBranchConfigurationAvailable !== true || capacity.restoreCapability?.restoreExecuted !== false || capacity.costEvidence?.actualRestoreCost !== 'UNKNOWN') failures.push('RESTORE_CAPABILITY_OR_COST_EVIDENCE_DRIFT');
+  if (capacity.recoveryOwnership?.status !== 'CONFIGURED' || capacity.recoveryOwnership?.restoreAuthorizationGranted !== false || capacity.productionMutation !== false) failures.push('RECOVERY_OWNERSHIP_OR_BOUNDARY_DRIFT');
+  if (value.sprint56Evidence?.actualRestoreCost !== 'UNKNOWN' || value.sprint56Evidence?.restoreExecuted !== false || value.sprint56Evidence?.recoveryCommander !== 'OWNER_CONFIGURED' || value.sprint56Evidence?.restoreAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_56_DECISION_DRIFT');
+
   const [evidenceContent, hashRecord] = await Promise.all([readFile(EVIDENCE_PATH), readFile(EVIDENCE_HASH_PATH, 'utf8')]);
   const evidenceHash = sha256(evidenceContent);
   if (evidenceHash !== hashRecord.trim().split(/\s+/)[0]) failures.push('RECOVERY_EVIDENCE_HASH_MISMATCH');
@@ -64,7 +75,7 @@ export async function validateRecoveryReadinessPackage(input) {
 
   const decision = evaluateRecoveryReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (decision.status !== 'NO_GO') failures.push('CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED');
-  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash });
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash });
 }
 
 export async function repositoryRecoveryReadinessGate() {
@@ -77,6 +88,7 @@ export async function repositoryRecoveryReadinessGate() {
     productionRecoveryTechnicalReadiness: validation.decision,
     blockerCount: validation.blockers.length,
     evidenceSha256: validation.evidenceHash,
+    capacityEvidenceSha256: validation.capacityEvidenceHash,
     productionConnectionAttempted: false,
     productionSqlExecuted: false,
     productionMutation: false

@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-12 - Sprint 56 Restore capacity and ownership evidence
+
+- Added sanitized, hash-verified Neon capacity/capability evidence and recorded Owner/Recovery Commander nomination.
+- Kept actual Restore cost UNKNOWN, Restore NOT_EXECUTED, authorization NOT_GRANTED and Production 70% / NOT READY.
+
 ## 2026-08-10 - Sprint 53 Production Migration final execution readiness
 
 - Added a 19-condition machine-readable fail-closed Gate and finalized the future execution Runbook.

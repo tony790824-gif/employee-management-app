@@ -1,8 +1,14 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 56 proposal - Neon Restore Capacity/Cost Evidence and Recovery Commander Nomination
+## Sprint 57 proposal - Exact Isolated Restore Cost and One-time Authorization Gate
 
-Sprint 55 defined the exact one-time isolated Restore authorization boundary, but did not authorize or operate it. Before a Restore can be proposed for approval, the owner must perform a read-only Neon console check and provide only non-secret facts: whether one isolated target can be created without overwriting Production, current available Branch/Restore capacity, whether a charge or plan upgrade is required, and the nominated human Recovery Commander.
+Sprint 56 recorded read-only evidence that Neon Free is the current plan, Branch capacity is 1/10 used with 9 available, historical point-in-time Branch configuration is available without an observed configuration-stage upgrade prompt, and the Owner is the nominated Recovery Commander. Actual Restore remains NOT_EXECUTED and actual Restore cost remains UNKNOWN.
+
+The next unique gate is to obtain an exact, non-secret provider cost/resource decision for one disposable isolated recovery target and then ask the Owner for an explicit one-time authorization covering exactly that resource, the distinct credential, zero Production traffic, verification and cleanup. If determining cost would itself create a Branch, Restore, billing action or configuration change, stop and request a separately bounded approval. Production Migration authorization remains NOT_GRANTED.
+
+## Historical Sprint 56 - Neon Restore Capacity/Cost Evidence and Recovery Commander Nomination
+
+Read-only evidence confirms one Production Branch out of ten, nine available slots, historical point-in-time Branch configuration capability, no upgrade prompt observed at configuration stage, and Owner/Recovery Commander nomination. It does not prove actual Restore cost or execution. Authorization remains NOT_GRANTED.
 
 Do not create a Branch/target, click Restore, change retention/snapshots, upgrade/pay, reveal identifiers, run SQL/Migration or deploy. If capability or cost cannot be proven safely, keep Isolated Restore/RPO/RTO BLOCKED.
 

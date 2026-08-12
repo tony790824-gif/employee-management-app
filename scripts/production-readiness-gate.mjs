@@ -56,7 +56,8 @@ export async function runProductionRepositoryGate() {
   ], failures);
   await existsAndContains('docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md', [
     'AUTHORIZATION DEFERRED', 'Maximum new recovery targets: one',
-    'RPO minutes =', 'RTO minutes =', 'Recovery Commander status is **NOT_CONFIGURED**'
+    'RPO minutes =', 'RTO minutes =', 'Owner is the nominated Recovery Commander',
+    'This nomination does not authorize a Restore'
   ], failures);
   await existsAndContains('database/production-isolated-restore-authorization-gate.mjs', [
     'REPOSITORY_ONLY_ISOLATED_RESTORE_AUTHORIZATION_GATE', 'CURRENT_AUTHORIZATION_GATE_MUST_DEFER',

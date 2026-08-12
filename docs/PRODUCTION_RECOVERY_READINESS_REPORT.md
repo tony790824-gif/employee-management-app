@@ -2,7 +2,9 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
-Sprint 55 follow-up: `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md` now defines the exact future one-time boundary, measurement and cleanup contract. Authorization remains DEFER / NOT_GRANTED because cost/capacity and a named Recovery Commander are missing. No Recovery Gate below changed to PASS.
+Sprint 56 update: read-only console evidence confirms Free-plan Branch capacity 1/10 used with 9 available and the historical point-in-time Branch configuration capability. The Owner is now the configured Recovery Commander. Actual Restore remains NOT_EXECUTED, actual Restore cost UNKNOWN, independent backup BLOCKED, scheduled snapshot NOT_CONFIGURED, RPO BLOCKED/NOT PROVEN and RTO BLOCKED/NOT MEASURED. These facts do not change Recovery NO-GO or grant authorization.
+
+Historical Sprint 55 note: `docs/PRODUCTION_ISOLATED_RESTORE_AUTHORIZATION_PACKAGE.md` defined the exact future one-time boundary, measurement and cleanup contract. At that time cost/capacity and a named Recovery Commander were missing. Sprint 56 supersedes those two facts, but authorization remains DEFER / NOT_GRANTED because actual cost and recovery outcomes remain open.
 
 Date: 2026-08-10
 
@@ -28,7 +30,7 @@ This is capability evidence, not recovery-outcome evidence. It does not prove an
 | Pre-Migration restore point | BLOCKED | No authorized Migration event or restore point |
 | Restored ledger/catalog/ACL verification | BLOCKED | No isolated restored target |
 | Cleanup | BLOCKED | No isolated target was created or destroyed |
-| Recovery commander | NOT_CONFIGURED | No named owner/timed drill |
+| Recovery commander | PASS | Owner nominated and accepted GO/NO-GO, abort, verification, cleanup and evidence duties; no exercise authority implied |
 | Sprint 54 Production mutation boundary | PASS | Repository-only; no connection, SQL, Restore or configuration change |
 
 ## Fail-closed preflight

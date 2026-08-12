@@ -1,13 +1,25 @@
 # Production Release Checklist
 
+## Sprint 56 Restore capacity and ownership checkpoint
+
+- [x] Record current Neon Free plan and Branch capacity: 1/10 used, 9 available.
+- [x] Confirm historical point-in-time Branch configuration capability without creating a Branch.
+- [x] Name Owner as Recovery Commander and record accepted responsibilities.
+- [ ] Confirm exact actual Restore cost; current status UNKNOWN.
+- [ ] Obtain exact one-time isolated-Restore authorization; current status NOT_GRANTED.
+- [ ] Execute/verify/clean up an isolated Restore; current status NOT_EXECUTED.
+- [ ] Prove RPO <=15 minutes and RTO <=60 minutes; currently blocked/not measured.
+- [ ] Establish independent backup and accepted scheduled snapshot/equivalent controls.
+- [ ] Keep Production 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED.
+
 ## Sprint 55 Isolated Restore authorization checkpoint
 
 - [x] Define exact one-target/one-temporary-credential authorization boundary.
 - [x] Define zero Production traffic/application binding and sensitive-data boundary.
 - [x] Define RPO/RTO UTC measurement, restored catalog/security verification and cleanup contract.
 - [x] Add a fail-closed Repository authorization Gate and hash evidence.
-- [ ] Name and accept a human Recovery Commander/cleanup owner.
-- [ ] Re-confirm current Neon Branch/Restore capacity and exact cost without creating a resource.
+- [x] Name and accept a human Recovery Commander/cleanup owner.
+- [ ] Re-confirm current Neon Branch/Restore capacity and exact cost without creating a resource. Capacity is confirmed; exact cost remains UNKNOWN.
 - [ ] Obtain exact one-time Owner authorization; currently NOT_GRANTED.
 - [ ] Execute and time the isolated Restore only after that separate authorization.
 - [ ] Keep RPO/RTO BLOCKED and RTO NOT MEASURED until actual evidence passes.

@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-12 - Sprint 56 Restore Capacity and Recovery Ownership Evidence
+
+- Recorded Neon Free-plan capacity, 1/10 Branch usage, 9 available slots and historical point-in-time Branch configuration capability from human read-only evidence.
+- Configured the Owner as Recovery Commander while preserving exact Restore and Migration authorization as NOT_GRANTED.
+- Added hash-verified evidence and strengthened the fail-closed authorization validator so actual Restore cost cannot be coerced from UNKNOWN to zero.
+- Kept isolated Restore NOT_EXECUTED, RPO/RTO blocked, independent backup blocked, scheduled snapshot not configured and Production 70% / NOT READY; no Production or external resource operation occurred.
+
 ## 2026-08-10 - Sprint 55 Isolated Restore Authorization Decision
 
 - Added a fail-closed authorization package limiting any future exercise to one disposable target and one distinct temporary credential with zero Production traffic and mandatory cleanup.
