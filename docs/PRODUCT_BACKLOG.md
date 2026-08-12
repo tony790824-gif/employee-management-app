@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 62 status - Production Migration Preflight Gate Closure (2026-08-12)
+
+- **Sprint status:** COMPLETE for Repository-only Gate reconstruction, classification and minimum-path planning.
+- **Gate matrix:** 22 total, 4 PASS and 18 non-PASS; every non-PASS Gate has exactly one primary closure category plus required evidence/action/authorization/resource/cost/dependencies.
+- **Classification:** Repository 2; read-only Production 5; external configuration 3; Production mutation 3; commercial-only 0; human authorization 3; dependency-blocked 2.
+- **Evidence:** approved inventory/checksums/order/disposable parity remain PASS; Production historical ledger remains 8 of expected 21; `0010` excluded; RPO NOT_PROVEN and restore point BLOCKED.
+- **Decision:** Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED; Production mutation NONE.
+- **Next unique Sprint:** close only Repository runtime compatibility and immutable artifact Gates; no Production use or candidate authorization.
+
 ## Sprint 61 status - Production Migration Authorization Readiness (2026-08-12)
 
 - **Sprint status:** COMPLETE for Repository/disposable/read-only scope; actual Production Migration Technical Readiness remains NO-GO.

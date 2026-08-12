@@ -1,5 +1,14 @@
 # Production Release Checklist
 
+## Sprint 62 Migration preflight closure
+
+- [x] Reconstruct all 22 Gates from the authoritative machine-readable package.
+- [x] Classify every non-PASS Gate exactly once and record evidence/action/authorization/resource/cost/dependencies.
+- [x] Revalidate approved 21-version inventory, checksums, dependencies, `0010` rejection and disposable evidence hashes.
+- [x] Preserve isolated Restore and RTO PASS without promoting RPO or the event-specific restore point.
+- [ ] Close 2 Repository, 5 read-only, 3 external-configuration, 3 mutation, 3 human-authorization and 2 dependency Gates.
+- [ ] Keep Migration Technical Readiness NO-GO and authorization NOT_GRANTED until every one of the 22 Gates is PASS.
+
 ## Sprint 61 Production Migration authorization readiness
 
 - [x] Revalidate exact 21-version tracked inventory/checksums; reject `0010`, duplicates and unexpected versions.

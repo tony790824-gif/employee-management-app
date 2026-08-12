@@ -15,6 +15,16 @@ const UPGRADE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_MIGRATION_
 const PRODUCTION_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_SCHEMA_PARITY_EVIDENCE.json');
 const PRODUCTION_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_SCHEMA_PARITY_EVIDENCE.sha256');
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'BLOCKED', 'NOT_GRANTED', 'UNKNOWN', 'NOT_CONFIGURED', 'FAIL']);
+const CLOSURE_CATEGORIES = Object.freeze([
+  'REPOSITORY_CLOSABLE',
+  'READONLY_PRODUCTION_CLOSABLE',
+  'EXTERNAL_CONFIGURATION_REQUIRED',
+  'PRODUCTION_MUTATION_REQUIRED',
+  'COMMERCIAL_DECISION_REQUIRED',
+  'HUMAN_AUTHORIZATION_REQUIRED',
+  'BLOCKED_BY_DEPENDENCY'
+]);
+const ALLOWED_CLOSURE_CATEGORIES = new Set([...CLOSURE_CATEGORIES, 'CLOSED_PASS']);
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -49,7 +59,7 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
 export async function validateFinalReadinessPackage(input) {
   const value = input || await loadFinalReadinessPackage();
   const failures = [];
-  if (value.schemaVersion !== 2 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 61) failures.push('PACKAGE_FORMAT_MISMATCH');
+  if (value.schemaVersion !== 3 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 62) failures.push('PACKAGE_FORMAT_MISMATCH');
   const inventory = value.repositoryInventory || {};
   if (inventory.expectedCount !== 21 || inventory.result !== 'PASS') failures.push('REPOSITORY_INVENTORY_STATUS_MISMATCH');
   if (JSON.stringify(inventory.approvedVersions) !== JSON.stringify([...value.productionBaseline.expectedVersions, ...REQUIRED_MISSING_VERSIONS])) failures.push('REPOSITORY_INVENTORY_VERSION_MISMATCH');
@@ -62,6 +72,52 @@ export async function validateFinalReadinessPackage(input) {
   for (const [gateId, gate] of Object.entries(value.currentGateEvidence || {})) {
     if (!ALLOWED_GATE_STATUSES.has(gate?.status)) failures.push(`INVALID_GATE_STATUS:${gateId}`);
     if (!gate?.reason) failures.push(`GATE_REASON_MISSING:${gateId}`);
+  }
+  const matrix = value.gateClosureMatrix || {};
+  if (Object.keys(matrix).sort().join('|') !== [...(value.requiredGateIds || [])].sort().join('|')) failures.push('CLOSURE_MATRIX_GATE_SET_MISMATCH');
+  const classificationCounts = Object.fromEntries(CLOSURE_CATEGORIES.map(category => [category, 0]));
+  for (const gateId of value.requiredGateIds || []) {
+    const gate = value.currentGateEvidence?.[gateId];
+    const closure = matrix[gateId];
+    if (!closure || !ALLOWED_CLOSURE_CATEGORIES.has(closure.category)) {
+      failures.push(`CLOSURE_CLASSIFICATION_MISSING_OR_INVALID:${gateId}`);
+      continue;
+    }
+    if (gate?.status === 'PASS' && closure.category !== 'CLOSED_PASS') failures.push(`PASS_GATE_NOT_CLOSED:${gateId}`);
+    if (gate?.status !== 'PASS') {
+      if (!CLOSURE_CATEGORIES.includes(closure.category)) failures.push(`NON_PASS_GATE_CLASSIFICATION_INVALID:${gateId}`);
+      else classificationCounts[closure.category] += 1;
+    }
+    if (![0, 1, 2, 3].includes(closure.phase)) failures.push(`CLOSURE_PHASE_INVALID:${gateId}`);
+    for (const field of ['existingEvidence', 'evidenceSource', 'requiredAction', 'requiredAuthorization', 'requiredExternalResource', 'costImplication']) {
+      if (!closure[field]) failures.push(`CLOSURE_FIELD_MISSING:${gateId}:${field}`);
+    }
+    if (typeof closure.canCloseWithoutProductionMutation !== 'boolean') failures.push(`CLOSURE_MUTATION_BOUNDARY_MISSING:${gateId}`);
+    if (!Array.isArray(closure.dependencies)) failures.push(`CLOSURE_DEPENDENCIES_MISSING:${gateId}`);
+    for (const dependency of closure.dependencies || []) {
+      if (!value.requiredGateIds?.includes(dependency) || dependency === gateId) failures.push(`CLOSURE_DEPENDENCY_INVALID:${gateId}:${dependency}`);
+    }
+  }
+  const visiting = new Set();
+  const visited = new Set();
+  const visitDependency = gateId => {
+    if (visiting.has(gateId)) {
+      failures.push(`CLOSURE_DEPENDENCY_CYCLE:${gateId}`);
+      return;
+    }
+    if (visited.has(gateId)) return;
+    visiting.add(gateId);
+    for (const dependency of matrix[gateId]?.dependencies || []) visitDependency(dependency);
+    visiting.delete(gateId);
+    visited.add(gateId);
+  };
+  for (const gateId of value.requiredGateIds || []) visitDependency(gateId);
+  if (JSON.stringify(classificationCounts) !== JSON.stringify(value.classificationSummary)) failures.push('CLASSIFICATION_SUMMARY_MISMATCH');
+  if (Object.values(classificationCounts).reduce((sum, count) => sum + count, 0) !== 18) failures.push('NON_PASS_CLASSIFICATION_COUNT_MISMATCH');
+  for (const gateId of ['RPO_15_MINUTES', 'PRE_MIGRATION_RESTORE_POINT', 'TRAFFIC_AND_LONG_TRANSACTION_CONTROL']) {
+    if (matrix[gateId]?.category !== 'PRODUCTION_MUTATION_REQUIRED' || matrix[gateId]?.canCloseWithoutProductionMutation !== false) {
+      failures.push(`PRODUCTION_MUTATION_BOUNDARY_WEAKENED:${gateId}`);
+    }
   }
   if (!Array.isArray(value.requiredStopConditions) || value.requiredStopConditions.length < 10) failures.push('STOP_CONDITIONS_INCOMPLETE');
   if (value.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('AUTHORIZATION_GATE_WEAKENED');

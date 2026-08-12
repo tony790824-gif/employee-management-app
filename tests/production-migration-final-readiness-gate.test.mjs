@@ -15,8 +15,8 @@ assert.equal(validation.repositoryTruth, 'PASS');
 assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.ok(validation.blockerCount >= 10);
-assert.equal(readiness.schemaVersion, 2);
-assert.equal(readiness.lastReviewedSprint, 61);
+assert.equal(readiness.schemaVersion, 3);
+assert.equal(readiness.lastReviewedSprint, 62);
 assert.equal(readiness.repositoryInventory.expectedCount, 21);
 assert.equal(readiness.repositoryInventory.result, 'PASS');
 assert.deepEqual(readiness.repositoryInventory.intentionalGaps, ['0010']);
@@ -44,6 +44,31 @@ assert.equal(readiness.rollbackAssessment.status, 'PARTIAL');
 assert.equal(readiness.rollbackAssessment.unconditionallyReversibleCount, 0);
 assert.equal(readiness.rollbackAssessment.conditionallyReversibleCount, 13);
 assert.equal(readiness.rollbackAssessment.automaticDownAllowed, false);
+assert.deepEqual(readiness.classificationSummary, {
+  REPOSITORY_CLOSABLE: 2,
+  READONLY_PRODUCTION_CLOSABLE: 5,
+  EXTERNAL_CONFIGURATION_REQUIRED: 3,
+  PRODUCTION_MUTATION_REQUIRED: 3,
+  COMMERCIAL_DECISION_REQUIRED: 0,
+  HUMAN_AUTHORIZATION_REQUIRED: 3,
+  BLOCKED_BY_DEPENDENCY: 2
+});
+assert.equal(Object.keys(readiness.gateClosureMatrix).length, 22);
+for (const gateId of readiness.requiredGateIds) {
+  const gate = readiness.currentGateEvidence[gateId];
+  const closure = readiness.gateClosureMatrix[gateId];
+  assert.ok(closure);
+  assert.ok(closure.existingEvidence);
+  assert.ok(closure.evidenceSource);
+  assert.ok(closure.requiredAction);
+  assert.ok(closure.requiredAuthorization);
+  assert.ok(closure.requiredExternalResource);
+  assert.ok(closure.costImplication);
+  assert.equal(typeof closure.canCloseWithoutProductionMutation, 'boolean');
+  assert.ok(Array.isArray(closure.dependencies));
+  if (gate.status === 'PASS') assert.equal(closure.category, 'CLOSED_PASS');
+  else assert.notEqual(closure.category, 'CLOSED_PASS');
+}
 
 const allPass = Object.fromEntries(readiness.requiredGateIds.map(gateId => [gateId, { status: 'PASS', reason: 'TEST_ONLY' }]));
 assert.equal(evaluateProductionMigrationReadiness(allPass, readiness.requiredGateIds).status, 'GO');
@@ -68,6 +93,18 @@ assert.equal((await validateFinalReadinessPackage(falseRpoPass)).status, 'BLOCKE
 const falseRollback = structuredClone(readiness);
 falseRollback.rollbackAssessment.automaticDownAllowed = true;
 assert.equal((await validateFinalReadinessPackage(falseRollback)).status, 'BLOCKED');
+const missingClassification = structuredClone(readiness);
+delete missingClassification.gateClosureMatrix.TARGET_IDENTITY;
+assert.equal((await validateFinalReadinessPackage(missingClassification)).status, 'BLOCKED');
+const duplicatedClassification = structuredClone(readiness);
+duplicatedClassification.gateClosureMatrix.TARGET_IDENTITY.category = 'CLOSED_PASS';
+assert.equal((await validateFinalReadinessPackage(duplicatedClassification)).status, 'BLOCKED');
+const weakenedMutationBoundary = structuredClone(readiness);
+weakenedMutationBoundary.gateClosureMatrix.RPO_15_MINUTES.canCloseWithoutProductionMutation = true;
+assert.equal((await validateFinalReadinessPackage(weakenedMutationBoundary)).status, 'BLOCKED');
+const cyclicClosurePlan = structuredClone(readiness);
+cyclicClosurePlan.gateClosureMatrix.PRE_MIGRATION_RESTORE_POINT.dependencies.push('EXPLICIT_EVENT_AUTHORIZATION');
+assert.equal((await validateFinalReadinessPackage(cyclicClosurePlan)).status, 'BLOCKED');
 
 const gate = await repositoryFinalReadinessGate();
 assert.equal(gate.packageValidation, 'PASS');

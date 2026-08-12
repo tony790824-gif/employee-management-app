@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 62 Production Migration Preflight Gate Closure
+
+The existing authoritative Migration Gate is now schema v3 and reviewed for Sprint 62. All 22 Gates include evidence/source, blocking reason, exactly one primary closure classification when non-PASS, required action/authorization/resource, cost implication and dependencies. Current result remains 4 PASS / 18 non-PASS and fail-closed NO-GO.
+
+The dependency-safe path is: Phase 1 Repository plus separately authorized dedicated-reader evidence; Phase 2 least-privilege operator/runtime/monitoring configuration; Phase 3 RPO/restore-point/traffic mutations and exact maintenance/candidate/event authorization. No commercial decision is the sole primary blocker, but several external/mutation Gates retain UNKNOWN or known-plus-unknown cost implications.
+
+Production remains 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. No Production connection, SQL, Migration, Restore, deploy, configuration, resource or billing action occurred.
+
 ## 2026-08-12 current state - Sprint 61 Production Migration Authorization Readiness
 
 Sprint 61 Repository inventory is PASS: 21 tracked versions (`0001`-`0009`, `0011`-`0022`), no duplicate/unexpected/checksum mismatch, and intentional unapproved gap `0010` remains excluded. The approved future sequence is exactly `0009`, `0011`-`0022`.

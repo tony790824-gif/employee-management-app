@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Sprint 62 current state - 2026-08-12
+
+- `database/production-migration-final-readiness.expected.json` schema v3 is authoritative for all 22 Gates and their closure metadata.
+- Gate count remains 4 PASS / 18 non-PASS. Primary categories: Repository 2, read-only Production 5, external configuration 3, Production mutation 3, commercial-only 0, human authorization 3, dependency-blocked 2.
+- Phase 1 may close immutable-artifact/runtime-compatibility work and, under separate dedicated-reader authority, target/TLS/ledger/unexpected-version/structural-baseline evidence. Phase 2 needs external configuration; Phase 3 needs exact mutation and event authority.
+- Inventory remains expected 21, historical Production 8, missing `0009`, `0011`-`0022`, unexpected/checksum mismatch NONE; `0010` is excluded.
+- Recovery inheritance is limited to PITR, isolated Restore and RTO PASS. RPO is NOT_PROVEN and the event-specific restore point is BLOCKED.
+- Production remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED; Sprint 62 Production mutation NONE.
+
 ## Sprint 61 current state - 2026-08-12
 
 - Repository Migration inventory/checksums/order: PASS for 21 tracked versions; `0010` remains unapproved and excluded.

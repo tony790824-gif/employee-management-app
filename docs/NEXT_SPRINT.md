@@ -1,6 +1,12 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 62 proposal - Pre-Migration Recovery and Event-time Evidence Gate
+## Sprint 63 proposal - Repository Runtime Compatibility and Immutable Artifact Closure
+
+Sprint 62 proves exactly which Gates can close without Production mutation. The next smallest safe scope is only the two `REPOSITORY_CLOSABLE` Gates: complete the API/worker/frontend compatibility matrix at every `0008` through `0022` checkpoint and produce a clean, exact-manifest, hash-verified candidate artifact that excludes `0010`.
+
+Sprint 63 must remain Repository/disposable-only. It must not authorize a candidate Commit for Production, connect to Production, create a Migration operator, configure a platform, create an RPO marker/restore point, drain traffic or execute a Migration. Event-time read-only evidence is a separate later authorization boundary.
+
+## Historical Sprint 62 proposal - Pre-Migration Recovery and Event-time Evidence Gate
 
 Sprint 61 proves Repository Migration integrity and disposable upgrade/fresh-install behavior, but actual Production Migration Technical Readiness remains NO-GO with 18 non-PASS Gates. RPO <=15 minutes is NOT_PROVEN, the event-specific pre-Migration restore point is BLOCKED, current dedicated read-only inputs were absent, and Migration authorization is NOT_GRANTED.
 

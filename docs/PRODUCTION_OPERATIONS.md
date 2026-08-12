@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 62 Migration Gate closure boundary
+
+- The authoritative package is schema v3 with 22 Gates and exactly one primary A-G category for each of 18 non-PASS Gates.
+- Phase 1 permits Repository work and separately authorized dedicated-reader evidence only. Phase 2 requires separate role/platform/monitoring configuration approvals. Phase 3 requires exact RPO, restore-point, traffic, maintenance, candidate and Migration-event authority.
+- A closure-plan PASS is not Migration authorization. Stop before any Production read when dedicated-reader authority/inputs are absent, and stop before every configuration, resource, billing, mutation or traffic action until its exact approval exists.
+- Current state: 4 PASS / 18 non-PASS, Technical Readiness NO-GO, authorization NOT_GRANTED, Production 70% / NOT READY.
+
 ## Sprint 61 Migration authorization boundary
 
 - `pnpm db:migration:final-readiness` now validates 22 explicit Gates. Repository/package PASS still returns actual Production Technical Readiness NO-GO while any Gate is non-PASS.
