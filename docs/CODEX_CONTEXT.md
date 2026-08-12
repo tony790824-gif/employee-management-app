@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 59 Production RPO Evidence Closure
+
+Sprint 59 exhausted the currently safe read-only evidence paths. Authenticated Neon Console reconfirmed Production identity, PITR and six-hour retention. Official Project, Branch, Operations and Restore API contracts were reviewed: they expose configuration/metadata and accept caller-selected restore timestamps or LSNs, but do not document a latest verified recoverable WAL/data boundary or reference Production data boundary.
+
+No dedicated Production read-only database input, Neon API credential or CLI was available to the process. No credential was substituted, no database/API call ran, and Sprint 57's consumed Restore authority was not reused. Reference Boundary, Latest Recoverable Boundary and Recovery Gap remain UNKNOWN; RPO <=15 minutes is NOT_PROVEN. RTO remains PASS at 112.335 seconds.
+
+Production stays 70% / NOT READY, Gate A DEFER, Provisioning NO-GO and Migration authorization NOT_GRANTED. The next unique work is a Repository-first continuity-boundary instrumentation and exact authorization package; it must not write a marker or create a Restore without separate Owner authority.
+
 ## 2026-08-12 current state - Sprint 58 Production RPO Evidence
 
 Sprint 58 completed the authorized read-only evidence scope without a database connection or Production mutation. Neon Console proves PITR capability and six-hour retention, but its current point-in-time selector is only a requested timestamp and does not expose the latest verified recoverable WAL/data boundary.

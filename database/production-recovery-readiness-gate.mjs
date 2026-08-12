@@ -15,6 +15,8 @@ const DRILL_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED
 const DRILL_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_ISOLATED_RESTORE_DRILL_EVIDENCE.sha256');
 const RPO_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_CONTINUITY_EVIDENCE.json');
 const RPO_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_CONTINUITY_EVIDENCE.sha256');
+const RPO_CLOSURE_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_EVIDENCE_CLOSURE.json');
+const RPO_CLOSURE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_RPO_EVIDENCE_CLOSURE.sha256');
 const ALLOWED_STATUSES = new Set(['PASS', 'PARTIAL', 'BLOCKED', 'NOT_CONFIGURED', 'UNKNOWN', 'FAIL']);
 
 function sha256(value) {
@@ -97,6 +99,20 @@ export async function validateRecoveryReadinessPackage(input) {
   if (rpo.decision?.rpoEvidenceStatus !== 'NOT_PROVEN' || rpo.decision?.rto60Minutes !== 'PASS' || rpo.decision?.productionReadiness !== '70_PERCENT_NOT_READY' || rpo.decision?.productionStatus !== 'NOT_READY' || rpo.decision?.gateA !== 'DEFER' || rpo.decision?.productionProvisioning !== 'NO_GO' || rpo.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_58_PRODUCTION_DECISION_DRIFT');
   if (value.sprint58Evidence?.pitrCapability !== 'PASS' || value.sprint58Evidence?.historyRetentionHours !== 6 || value.sprint58Evidence?.latestRecoverableBoundaryUtc !== 'UNKNOWN' || value.sprint58Evidence?.referenceProductionBoundaryUtc !== 'UNKNOWN' || value.sprint58Evidence?.measuredRecoveryGapSeconds !== 'UNKNOWN' || value.sprint58Evidence?.rpo15Minutes !== 'NOT_PROVEN' || value.sprint58Evidence?.productionConnectionAttempted !== false || value.sprint58Evidence?.productionSqlExecuted !== false || value.sprint58Evidence?.productionMutation !== false) failures.push('SPRINT_58_EVIDENCE_DRIFT');
 
+  const [rpoClosureContent, rpoClosureHashRecord] = await Promise.all([readFile(RPO_CLOSURE_EVIDENCE_PATH), readFile(RPO_CLOSURE_HASH_PATH, 'utf8')]);
+  const rpoClosureHash = sha256(rpoClosureContent);
+  if (rpoClosureHash !== rpoClosureHashRecord.trim().split(/\s+/)[0] || rpoClosureHash !== value.sprint59Evidence?.sourceEvidenceSha256) failures.push('RPO_EVIDENCE_CLOSURE_HASH_MISMATCH');
+  const rpoClosure = JSON.parse(rpoClosureContent.toString('utf8'));
+  if (rpoClosure.sources?.authenticatedNeonConsole !== 'READ_ONLY_OBSERVED' || rpoClosure.sources?.officialNeonApiContract !== 'PUBLIC_DOCUMENTATION_REVIEWED' || rpoClosure.sources?.productionDatabase !== 'NOT_CONNECTED' || rpoClosure.sources?.neonApi !== 'NOT_CALLED_NO_PROTECTED_PROCESS_CREDENTIAL' || rpoClosure.sources?.neonCli !== 'NOT_AVAILABLE') failures.push('RPO_CLOSURE_SOURCE_EVIDENCE_DRIFT');
+  if (rpoClosure.providerMetadataReview?.projectGetDocumentsHistoryRetention !== true || rpoClosure.providerMetadataReview?.branchGetDocumentsBranchAndParentMetadata !== true || rpoClosure.providerMetadataReview?.operationsGetDocumentsOperationMetadata !== true || rpoClosure.providerMetadataReview?.restorePostAcceptsCallerSelectedTimestampOrLsn !== true || rpoClosure.providerMetadataReview?.documentedLatestRecoverableWalOrDataBoundaryField !== false || rpoClosure.providerMetadataReview?.documentedReferenceProductionDataBoundaryField !== false) failures.push('RPO_PROVIDER_CONTRACT_REVIEW_DRIFT');
+  if (rpoClosure.productionIdentity?.dedicatedReadOnlyDatabaseCredentialAvailableToProcess !== false || rpoClosure.productionIdentity?.neonApiCredentialAvailableToProcess !== false || rpoClosure.productionIdentity?.productionDatabaseConnectionAttempted !== false || rpoClosure.productionIdentity?.productionSqlExecuted !== false) failures.push('RPO_CLOSURE_IDENTITY_BOUNDARY_DRIFT');
+  if (rpoClosure.consoleObservation?.pitrCapability !== 'PASS' || rpoClosure.consoleObservation?.historyRetentionHours !== 6 || rpoClosure.consoleObservation?.selectorDefaultClassification !== 'REQUESTED_TIMESTAMP_NOT_RECOVERABILITY_PROOF' || rpoClosure.consoleObservation?.previewDataRequested !== false || rpoClosure.consoleObservation?.restoreRequested !== false || rpoClosure.consoleObservation?.formSubmitted !== false || rpoClosure.consoleObservation?.businessDataRead !== false) failures.push('RPO_CLOSURE_CONSOLE_BOUNDARY_FAILURE');
+  if (rpoClosure.measurement?.referenceProductionBoundaryUtc !== 'UNKNOWN' || rpoClosure.measurement?.latestRecoverableBoundaryUtc !== 'UNKNOWN' || rpoClosure.measurement?.measuredRecoveryGapSeconds !== 'UNKNOWN' || rpoClosure.measurement?.rpoThresholdSeconds !== 900 || rpoClosure.measurement?.rpo15Minutes !== 'NOT_PROVEN') failures.push('RPO_CLOSURE_MEASUREMENT_DECISION_WEAKENED');
+  if (rpoClosure.isolatedVerification?.newRestoreAuthorized !== false || rpoClosure.isolatedVerification?.newRestoreExecuted !== false || rpoClosure.isolatedVerification?.sprint57IsolatedRestore !== 'PASS' || rpoClosure.isolatedVerification?.sprint57RtoSeconds !== 112.335 || rpoClosure.isolatedVerification?.sprint57Rto60Minutes !== 'PASS' || rpoClosure.isolatedVerification?.sprint57Rpo15Minutes !== 'NOT_PROVEN') failures.push('RPO_CLOSURE_RESTORE_BOUNDARY_DRIFT');
+  if (Object.values(rpoClosure.mutation || {}).some(Boolean)) failures.push('RPO_CLOSURE_PRODUCTION_MUTATION_BOUNDARY_FAILURE');
+  if (rpoClosure.decision?.sprintStatus !== 'COMPLETE' || rpoClosure.decision?.rpoEvidenceStatus !== 'NOT_PROVEN' || rpoClosure.decision?.productionReadiness !== '70_PERCENT_NOT_READY' || rpoClosure.decision?.productionStatus !== 'NOT_READY' || rpoClosure.decision?.gateA !== 'DEFER' || rpoClosure.decision?.productionProvisioning !== 'NO_GO' || rpoClosure.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_59_PRODUCTION_DECISION_DRIFT');
+  if (value.sprint59Evidence?.authenticatedConsoleReviewed !== true || value.sprint59Evidence?.officialApiContractReviewed !== true || value.sprint59Evidence?.documentedLatestRecoverableBoundaryField !== false || value.sprint59Evidence?.dedicatedReadOnlyDatabaseCredentialAvailable !== false || value.sprint59Evidence?.neonApiCredentialAvailable !== false || value.sprint59Evidence?.referenceProductionBoundaryUtc !== 'UNKNOWN' || value.sprint59Evidence?.latestRecoverableBoundaryUtc !== 'UNKNOWN' || value.sprint59Evidence?.measuredRecoveryGapSeconds !== 'UNKNOWN' || value.sprint59Evidence?.rpo15Minutes !== 'NOT_PROVEN' || value.sprint59Evidence?.newRestoreAuthorized !== false || value.sprint59Evidence?.productionConnectionAttempted !== false || value.sprint59Evidence?.productionSqlExecuted !== false || value.sprint59Evidence?.productionMutation !== false) failures.push('SPRINT_59_EVIDENCE_DRIFT');
+
   const [evidenceContent, hashRecord] = await Promise.all([readFile(EVIDENCE_PATH), readFile(EVIDENCE_HASH_PATH, 'utf8')]);
   const evidenceHash = sha256(evidenceContent);
   if (evidenceHash !== hashRecord.trim().split(/\s+/)[0]) failures.push('RECOVERY_EVIDENCE_HASH_MISMATCH');
@@ -106,7 +122,7 @@ export async function validateRecoveryReadinessPackage(input) {
 
   const decision = evaluateRecoveryReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (decision.status !== 'NO_GO') failures.push('CURRENT_RECOVERY_GATE_MUST_FAIL_CLOSED');
-  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash, drillEvidenceHash: drillHash, rpoEvidenceHash: rpoHash });
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'PASS', failures: Object.freeze(failures), decision: decision.status, blockers: decision.blockers, evidenceHash, capacityEvidenceHash: capacityHash, drillEvidenceHash: drillHash, rpoEvidenceHash: rpoHash, rpoClosureEvidenceHash: rpoClosureHash });
 }
 
 export async function repositoryRecoveryReadinessGate() {
@@ -122,6 +138,7 @@ export async function repositoryRecoveryReadinessGate() {
     capacityEvidenceSha256: validation.capacityEvidenceHash,
     drillEvidenceSha256: validation.drillEvidenceHash,
     rpoEvidenceSha256: validation.rpoEvidenceHash,
+    rpoClosureEvidenceSha256: validation.rpoClosureEvidenceHash,
     productionConnectionAttempted: false,
     productionSqlExecuted: false,
     productionMutation: false

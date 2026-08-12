@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 59 RPO closure boundary
+
+- Official Project/Branch/Operations/Restore metadata plus authenticated Console evidence do not establish the latest durable recoverable data boundary. A caller-selected timestamp or LSN is an input, not provider proof.
+- With no protected database/API input, do not substitute a privileged credential or infer a boundary from retention, selector defaults, operation timestamps or Branch creation.
+- Current result is Reference Boundary UNKNOWN, Latest Recoverable Boundary UNKNOWN, Recovery Gap UNKNOWN and RPO NOT_PROVEN. RTO remains PASS.
+- Sprint 57 authority is closed. No marker, SQL, API call, Branch, Restore, configuration or Production mutation is authorized by Sprint 59.
+
 ## Sprint 58 RPO evidence boundary
 
 - RPO is `Reference Production Boundary - Latest Verified Recoverable Boundary`; both must use a trustworthy common time basis and the recoverable boundary must be verified at the data layer.

@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Sprint 59 RPO closure checkpoint
+
+- [x] Recheck authenticated Console PITR/retention without submitting Preview, Restore or configuration actions.
+- [x] Review official Project, Branch, Operations and Restore API contracts.
+- [x] Confirm no documented metadata field establishes both required data boundaries.
+- [x] Refuse credential substitution when protected database/API inputs are absent.
+- [x] Preserve UNKNOWN boundaries/gap, RPO NOT_PROVEN and Production Recovery NO-GO.
+- [x] Hash and validate sanitized Sprint 59 evidence.
+- [ ] Obtain an exactly authorized, trusted Reference Production Boundary.
+- [ ] Obtain an exactly authorized, data-layer Latest Recoverable Boundary.
+- [ ] Calculate a reproducible Recovery Gap between 0 and 900 seconds before RPO PASS.
+
 ## Sprint 58 RPO evidence checkpoint
 
 - [x] Reconfirm PITR capability and six-hour history using authenticated read-only Console evidence.

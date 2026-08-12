@@ -1,6 +1,20 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 59 proposal - RPO boundary instrumentation decision
+## Sprint 60 proposal - continuity-boundary instrumentation authorization package
+
+Sprint 59 completed all currently safe read-only evidence paths. The authenticated Console and official Neon API contract provide PITR, retention, Branch/parent and operation metadata, but no provider-attested latest recoverable data boundary. Protected database/API inputs were unavailable and no credential was substituted. RPO therefore remains NOT_PROVEN.
+
+The next unique Sprint is Repository-only design and authorization preparation for a non-sensitive, durable continuity boundary on a shared trusted time basis. It must compare at least two solutions, define data minimization, retention, query/credential boundaries, Restore verification and rollback/cleanup, and stop before any Production marker write, SQL, API credential, Branch/Restore, configuration or resource operation. Execution requires a later exact Owner authorization.
+
+## Historical Sprint 59 - Production RPO <=15 Minutes Evidence Closure
+
+- Authenticated Console plus official Project/Branch/Operations/Restore API contract review completed read-only.
+- PITR capability PASS; retention 6 hours; no documented latest recoverable or reference data-boundary field.
+- Reference Boundary UNKNOWN; Latest Recoverable Boundary UNKNOWN; Recovery Gap UNKNOWN; RPO NOT_PROVEN.
+- No database/API credential, connection, SQL, Preview, Restore, resource or Production mutation.
+- Evidence SHA-256 `f2b60ecc459df2db14edc96618ee7923cb488a951504c865aa248f16c90df72c`.
+
+## Historical Sprint 59 proposal - RPO boundary instrumentation decision
 
 Sprint 58 proved that authenticated Neon Console read-only evidence exposes PITR capability and a six-hour retention window, but not the latest verified recoverable WAL/data boundary. The point-in-time selector default is a requested timestamp, not recoverability proof. The protected Production read-only credential was unavailable to the process, so no privileged credential was substituted and no database query ran.
 

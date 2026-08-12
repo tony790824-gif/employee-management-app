@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 59 RPO evidence closure stop
+
+Current safe read-only paths are exhausted: authenticated Console and official Project/Branch/Operations/Restore metadata do not attest both required data boundaries. Protected database/API inputs were absent and no credential was substituted. RPO remains NOT_PROVEN.
+
+Do not repeat Console checks, treat caller-selected timestamp/LSN as durability proof, reuse Sprint 57 authority, write a continuity marker, run SQL/API mutation, or create a Branch/Restore. The next permitted work is Repository-only instrumentation/authorization design. Any execution requires a new exact Owner authorization.
+
 ## Sprint 58 RPO evidence stop
 
 PITR and six-hour retention are evidenced, but the provider console does not expose the latest verified recoverable WAL/data boundary. The displayed point-in-time selector is a requested value only. Without a trusted Production reference boundary and a verified recoverable boundary, Recovery Gap is UNKNOWN and RPO <=15 minutes remains NOT_PROVEN.

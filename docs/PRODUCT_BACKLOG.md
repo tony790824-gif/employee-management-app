@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 59 status - Production RPO <=15 Minutes Evidence Closure (2026-08-12)
+
+- **Sprint status:** COMPLETE for all currently safe read-only evidence paths; RPO remains NOT_PROVEN and Production Recovery remains NO-GO.
+- **Evidence:** authenticated Console reconfirmed PITR and six-hour retention; official Project/Branch/Operations/Restore API contracts expose no documented latest recoverable/reference data-boundary field.
+- **Unknown:** Reference Production Boundary, Latest Recoverable Boundary and measured Recovery Gap.
+- **Safety:** no dedicated database/API input was available or substituted; no database connection, SQL, API call, Preview, Restore, resource/configuration or Production mutation.
+- **Decision:** readiness 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration authorization NOT_GRANTED.
+- **Next unique Sprint:** Repository-only continuity-boundary instrumentation and exact authorization package.
+
 ## Sprint 58 status - Production Data Continuity / RPO Evidence (2026-08-12)
 
 - **Sprint status:** COMPLETE for read-only evidence convergence; RPO remains NOT_PROVEN and Production Recovery remains NO-GO.

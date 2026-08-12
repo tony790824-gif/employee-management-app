@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-12 - Sprint 59 Production RPO evidence closure
+
+- Audited authenticated Console and official Neon Project/Branch/Operations/Restore metadata contracts read-only.
+- No documented provider field establishes the latest recoverable WAL/data boundary; no protected API/database credential was available or substituted.
+- Added hash-verified closure evidence and kept RPO NOT_PROVEN, Recovery NO-GO and Production 70% / NOT READY.
+
 ## 2026-08-12 - Sprint 58 Production RPO evidence
 
 - Added hash-verified read-only RPO continuity evidence and formal boundary/gap definitions.

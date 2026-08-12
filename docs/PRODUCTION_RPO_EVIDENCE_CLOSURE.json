@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "PRODUCTION_RPO_15_MINUTES_EVIDENCE_CLOSURE",
+  "evidenceDate": "2026-08-12",
+  "evidenceRecordedUtc": "2026-08-12T12:57:43.624Z",
+  "authorizationSource": "OWNER_SPRINT_59_READ_ONLY_SCOPE",
+  "sources": {
+    "authenticatedNeonConsole": "READ_ONLY_OBSERVED",
+    "officialNeonApiContract": "PUBLIC_DOCUMENTATION_REVIEWED",
+    "productionDatabase": "NOT_CONNECTED",
+    "neonApi": "NOT_CALLED_NO_PROTECTED_PROCESS_CREDENTIAL",
+    "neonCli": "NOT_AVAILABLE"
+  },
+  "productionIdentity": {
+    "projectIdentity": "PASS_SANITIZED_CONSOLE_LABEL",
+    "branchIdentity": "PASS_SANITIZED_CONSOLE_LABEL",
+    "dedicatedReadOnlyDatabaseCredentialAvailableToProcess": false,
+    "neonApiCredentialAvailableToProcess": false,
+    "productionDatabaseConnectionAttempted": false,
+    "productionSqlExecuted": false
+  },
+  "transportVerification": {
+    "consoleTls": "HTTPS_PASS",
+    "databaseTls": "PRIOR_VERIFY_FULL_PASS_CURRENT_RUN_NOT_EXECUTED",
+    "databaseRoleBoundary": "PRIOR_DEDICATED_READONLY_PASS_CURRENT_RUN_NOT_EXECUTED"
+  },
+  "providerMetadataReview": {
+    "projectGetDocumentsHistoryRetention": true,
+    "branchGetDocumentsBranchAndParentMetadata": true,
+    "operationsGetDocumentsOperationMetadata": true,
+    "restorePostAcceptsCallerSelectedTimestampOrLsn": true,
+    "documentedLatestRecoverableWalOrDataBoundaryField": false,
+    "documentedReferenceProductionDataBoundaryField": false,
+    "conclusion": "PUBLIC_API_CONTRACT_DOES_NOT_DOCUMENT_THE_TWO_DATA_BOUNDARIES_REQUIRED_FOR_RPO_MEASUREMENT"
+  },
+  "consoleObservation": {
+    "pitrCapability": "PASS",
+    "historyRetentionHours": 6,
+    "earliestVisibleBoundaryUtc": "2026-08-12T06:39:00Z",
+    "pointInTimeSelectorDefaultUtc": "2026-08-12T12:39:00Z",
+    "selectorDefaultClassification": "REQUESTED_TIMESTAMP_NOT_RECOVERABILITY_PROOF",
+    "previewDataRequested": false,
+    "restoreRequested": false,
+    "formSubmitted": false,
+    "businessDataRead": false
+  },
+  "measurement": {
+    "definition": "REFERENCE_PRODUCTION_BOUNDARY_MINUS_LATEST_VERIFIED_RECOVERABLE_BOUNDARY",
+    "referenceProductionBoundaryUtc": "UNKNOWN",
+    "latestRecoverableBoundaryUtc": "UNKNOWN",
+    "measuredRecoveryGapSeconds": "UNKNOWN",
+    "rpoThresholdSeconds": 900,
+    "rpo15Minutes": "NOT_PROVEN",
+    "reason": "NO_MACHINE_READABLE_OR_DATA_LAYER_EVIDENCE_ESTABLISHES_BOTH_REQUIRED_BOUNDARIES;_RETENTION_SELECTOR_AND_CALLER_SELECTED_RESTORE_INPUTS_ARE_NOT_DURABILITY_PROOF"
+  },
+  "isolatedVerification": {
+    "newRestoreAuthorized": false,
+    "newRestoreExecuted": false,
+    "sprint57IsolatedRestore": "PASS",
+    "sprint57RestoreSourceTimestampUtc": "2026-08-12T12:16:46.974Z",
+    "sprint57RtoSeconds": 112.335,
+    "sprint57Rto60Minutes": "PASS",
+    "sprint57Rpo15Minutes": "NOT_PROVEN"
+  },
+  "mutation": {
+    "productionDataMutation": false,
+    "productionSchemaMutation": false,
+    "productionMigrationExecuted": false,
+    "productionConfigurationMutation": false,
+    "productionResourceCreated": false,
+    "deployPerformed": false
+  },
+  "decision": {
+    "sprintStatus": "COMPLETE",
+    "rpoEvidenceStatus": "NOT_PROVEN",
+    "productionReadiness": "70_PERCENT_NOT_READY",
+    "productionStatus": "NOT_READY",
+    "gateA": "DEFER",
+    "productionProvisioning": "NO_GO",
+    "productionMigrationAuthorization": "NOT_GRANTED"
+  },
+  "secretsOrProviderIdentifiersRecorded": false
+}

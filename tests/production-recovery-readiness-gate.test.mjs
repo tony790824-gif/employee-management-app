@@ -40,6 +40,14 @@ assert.equal(readiness.sprint58Evidence.latestRecoverableBoundaryUtc, 'UNKNOWN')
 assert.equal(readiness.sprint58Evidence.referenceProductionBoundaryUtc, 'UNKNOWN');
 assert.equal(readiness.sprint58Evidence.measuredRecoveryGapSeconds, 'UNKNOWN');
 assert.equal(readiness.sprint58Evidence.rpo15Minutes, 'NOT_PROVEN');
+assert.equal(readiness.sprint59Evidence.authenticatedConsoleReviewed, true);
+assert.equal(readiness.sprint59Evidence.officialApiContractReviewed, true);
+assert.equal(readiness.sprint59Evidence.documentedLatestRecoverableBoundaryField, false);
+assert.equal(readiness.sprint59Evidence.referenceProductionBoundaryUtc, 'UNKNOWN');
+assert.equal(readiness.sprint59Evidence.latestRecoverableBoundaryUtc, 'UNKNOWN');
+assert.equal(readiness.sprint59Evidence.measuredRecoveryGapSeconds, 'UNKNOWN');
+assert.equal(readiness.sprint59Evidence.rpo15Minutes, 'NOT_PROVEN');
+assert.equal(readiness.sprint59Evidence.newRestoreAuthorized, false);
 
 const allPass = Object.fromEntries(readiness.requiredGateIds.map(id => [id, { status: 'PASS', reason: 'TEST_ONLY' }]));
 assert.equal(evaluateRecoveryReadiness(allPass, readiness.requiredGateIds).status, 'GO');
@@ -61,6 +69,15 @@ assert.equal((await validateRecoveryReadinessPackage(fabricatedRpoBoundary)).sta
 const fabricatedRpoPass = structuredClone(readiness);
 fabricatedRpoPass.sprint58Evidence.rpo15Minutes = 'PASS';
 assert.equal((await validateRecoveryReadinessPackage(fabricatedRpoPass)).status, 'BLOCKED');
+const fabricatedClosureBoundary = structuredClone(readiness);
+fabricatedClosureBoundary.sprint59Evidence.latestRecoverableBoundaryUtc = '2026-08-12T12:39:00Z';
+assert.equal((await validateRecoveryReadinessPackage(fabricatedClosureBoundary)).status, 'BLOCKED');
+const fabricatedClosurePass = structuredClone(readiness);
+fabricatedClosurePass.sprint59Evidence.rpo15Minutes = 'PASS';
+assert.equal((await validateRecoveryReadinessPackage(fabricatedClosurePass)).status, 'BLOCKED');
+const fabricatedProviderField = structuredClone(readiness);
+fabricatedProviderField.sprint59Evidence.documentedLatestRecoverableBoundaryField = true;
+assert.equal((await validateRecoveryReadinessPackage(fabricatedProviderField)).status, 'BLOCKED');
 const falseRestore = structuredClone(readiness);
 falseRestore.currentGateEvidence.ISOLATED_RESTORE_TARGET.status = 'BLOCKED';
 assert.equal((await validateRecoveryReadinessPackage(falseRestore)).status, 'BLOCKED');
@@ -86,6 +103,7 @@ assert.equal(gate.productionRecoveryTechnicalReadiness, 'NO_GO');
 assert.equal(gate.blockerCount, 7);
 assert.equal(gate.drillEvidenceSha256, readiness.sprint57Evidence.sourceEvidenceSha256);
 assert.equal(gate.rpoEvidenceSha256, readiness.sprint58Evidence.sourceEvidenceSha256);
+assert.equal(gate.rpoClosureEvidenceSha256, readiness.sprint59Evidence.sourceEvidenceSha256);
 assert.equal(gate.productionConnectionAttempted, false);
 assert.equal(gate.productionSqlExecuted, false);
 assert.equal(gate.productionMutation, false);
@@ -100,5 +118,8 @@ assert.match(source, /CAPACITY_OWNERSHIP_EVIDENCE_HASH_MISMATCH/);
 assert.match(source, /ISOLATED_RESTORE_DRILL_EVIDENCE_HASH_MISMATCH/);
 assert.match(source, /RPO_CONTINUITY_EVIDENCE_HASH_MISMATCH/);
 assert.match(source, /RPO_MEASUREMENT_DECISION_WEAKENED/);
+assert.match(source, /RPO_EVIDENCE_CLOSURE_HASH_MISMATCH/);
+assert.match(source, /RPO_PROVIDER_CONTRACT_REVIEW_DRIFT/);
+assert.match(source, /RPO_CLOSURE_MEASUREMENT_DECISION_WEAKENED/);
 
 console.log('Production Recovery readiness package and fail-closed gate tests passed');
