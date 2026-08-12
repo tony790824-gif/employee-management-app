@@ -2,6 +2,12 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 60 Final Launch stop
+
+The Final Production Launch Gate is **NO-GO** with 20 `MUST_BEFORE_GO` areas. Do not purchase, create, configure, migrate, deploy or cut traffic on the strength of Repository completion, Staging evidence, PITR capability or the isolated Restore drill.
+
+Follow the dependency order in `PRODUCTION_FINAL_GO_NO_GO_GATE.md`. Stop whenever target identity, evidence, cost, owner, rollback, recovery, authorization or environment isolation is missing. The next possible authorization is limited to an Owner Gate A budget decision after price revalidation; it does not authorize Auth0 resource creation.
+
 ## Sprint 59 RPO evidence closure stop
 
 Current safe read-only paths are exhausted: authenticated Console and official Project/Branch/Operations/Restore metadata do not attest both required data boundaries. Protected database/API inputs were absent and no credential was substituted. RPO remains NOT_PROVEN.

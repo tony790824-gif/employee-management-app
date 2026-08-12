@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Sprint 60 Final Launch operating boundary
+
+- `PRODUCTION_FINAL_GO_NO_GO_GATE.md` is the current consolidated launch decision: all 20 areas are `MUST_BEFORE_GO`; Final decision is NO-GO.
+- Close read-only governance first, then Gate A identity, Gate B recovery/capacity, Gate C Render, Gate D Netlify, Gate E domain/DNS/TLS, observability/secrets/ownership, Gate F migrations, final verification and Gate G traffic.
+- Each Gate needs its own exact authorization. Payment, resource creation, migration, deployment and traffic permissions are non-transitive.
+- `0010` remains prohibited. Missing `0009`, `0011`-`0022` must not run before recovery/RPO and the Migration Gate pass.
+- Current RPO is NOT_PROVEN; RTO is PASS. No operational checklist may reinterpret PITR or the Restore drill as RPO proof.
+
 ## Sprint 59 RPO closure boundary
 
 - Official Project/Branch/Operations/Restore metadata plus authenticated Console evidence do not establish the latest durable recoverable data boundary. A caller-selected timestamp or LSN is an input, not provider proof.

@@ -1,5 +1,9 @@
 # Sprint 42 — Production Gate A Blocker Closure Plan
 
+## Sprint 60 superseding final launch view
+
+This Gate A plan remains historical input. The current consolidated launch inventory is `PRODUCTION_FINAL_GO_NO_GO_GATE.md` and its machine-readable contract. Final decision is NO-GO; all 20 complete Production areas remain `MUST_BEFORE_GO`; Gate A remains DEFER. No Sprint 60 action purchased a plan or created an Auth0 resource.
+
 ## Sprint 45 exact domain quote update
 
 - `DNS-01` quote evidence is now PASS for owner-selected `bankeban.com` / `.com`: available and ordinary non-Premium at the evidence time, Porkbun US$11.08 first year and US$11.08/year renewal.

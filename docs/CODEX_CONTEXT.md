@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-12 current state - Sprint 60 Production Final Go/No-Go Gate
+
+Sprint 60 consolidates the current Production evidence into `PRODUCTION_FINAL_GO_NO_GO_GATE.md` and its machine-readable contract. All 20 required launch areas are `MUST_BEFORE_GO`; no complete area has sufficient current Production evidence to be promoted to PASS. Repository and Staging sub-controls remain valid but cannot substitute for Production configuration and launch evidence.
+
+Product completion remains 98%. Production remains 70% / NOT READY, Final decision NO-GO, Gate A DEFER, Provisioning NO-GO, Migration authorization NOT_GRANTED, RPO NOT_PROVEN and RTO PASS at 112.335 seconds. The ledger remains `0001`-`0008`; `0009` and `0011`-`0022` are missing and `0010` is prohibited.
+
+The next smallest authorization is an Owner Gate A budget decision only: after same-day price revalidation, at most authorize Auth0 Essentials billing capped at US$35/month. It does not authorize Tenant, SPA or API creation. No Production connection, mutation, deployment, resource creation or payment occurred in Sprint 60.
+
 ## 2026-08-12 current state - Sprint 59 Production RPO Evidence Closure
 
 Sprint 59 exhausted the currently safe read-only evidence paths. Authenticated Neon Console reconfirmed Production identity, PITR and six-hour retention. Official Project, Branch, Operations and Restore API contracts were reviewed: they expose configuration/metadata and accept caller-selected restore timestamps or LSNs, but do not document a latest verified recoverable WAL/data boundary or reference Production data boundary.

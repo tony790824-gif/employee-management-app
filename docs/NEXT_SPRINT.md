@@ -1,6 +1,12 @@
 # Next external gate — Production evidence and authorization
 
-## Sprint 60 proposal - continuity-boundary instrumentation authorization package
+## Sprint 61 proposal - Gate A Owner budget decision and narrow Auth0 authorization
+
+Sprint 60 establishes the Final Production Launch decision as NO-GO with 20 `MUST_BEFORE_GO` areas. The project-specific dependency order still begins with Gate A identity isolation before creating the API, frontend, domain or executing Production migrations.
+
+The next unique action is an Owner decision on the Gate A budget boundary. Revalidate the Auth0 quote on the decision date and request authorization for at most the Essentials billing action capped at US$35/month. The authorization must explicitly exclude Tenant, Application and API creation; those mutations require a second, exact authorization after billing capacity is confirmed. If the Owner keeps Gate A DEFER, continue only Repository/read-only ownership, observability, environment-inventory and RPO instrumentation design work.
+
+## Historical Sprint 60 proposal - continuity-boundary instrumentation authorization package
 
 Sprint 59 completed all currently safe read-only evidence paths. The authenticated Console and official Neon API contract provide PITR, retention, Branch/parent and operation metadata, but no provider-attested latest recoverable data boundary. Protected database/API inputs were unavailable and no credential was substituted. RPO therefore remains NOT_PROVEN.
 

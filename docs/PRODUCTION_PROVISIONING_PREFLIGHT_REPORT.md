@@ -8,6 +8,12 @@ Product completion: **98%**
 
 Production readiness: **70% / NOT READY**
 
+## Sprint 60 Final Launch addendum
+
+The preflight remains NO-GO. The authoritative final inventory is `PRODUCTION_FINAL_GO_NO_GO_GATE.md`: 20 complete Production areas are `MUST_BEFORE_GO`, while the safe sequence remains governance -> Auth0 -> Neon recovery/capacity -> Render -> Netlify -> domain/DNS/TLS -> observability/secrets/owners -> migrations -> final verification -> traffic.
+
+No Gate approval is transitive. Gate A remains DEFER, Production Provisioning remains NO-GO and no billing/resource/deploy/migration/traffic action occurred.
+
 ## Sprint 43 Neon billing evidence addendum
 
 Current Neon organization plan and fixed plan fee are now directly evidenced as Free / US$0. Organization-wide usage and per-project Free limits are recorded, but Production-only usage, charges, capacity and recovery remain unproved. The prior US$15/month figure remains a public future-planning example only.

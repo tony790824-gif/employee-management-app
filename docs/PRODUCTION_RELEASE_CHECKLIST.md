@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Sprint 60 Final Production Launch Gate
+
+- [x] Consolidate all 20 required Production launch areas and current evidence.
+- [x] Classify every area by `MUST_BEFORE_GO`, read-only closure, payment and Production mutation.
+- [x] Preserve Production readiness 70% / NOT READY, Final NO-GO, Gate A DEFER and Provisioning NO-GO.
+- [x] Preserve Migration authorization NOT_GRANTED and exclude `0010`.
+- [x] Preserve RPO NOT_PROVEN and RTO PASS at 112.335 seconds.
+- [x] Add a fail-closed machine-readable Final Gate and regression test.
+- [ ] Close every `MUST_BEFORE_GO` item with current Production evidence.
+- [ ] Obtain separate authorization for each payment, resource, Migration, deploy and traffic Gate.
+- [ ] Run the final immutable Production security, recovery, device and rollback verification.
+- [ ] Approve traffic cutover only through a separate Gate G decision.
+
 ## Sprint 59 RPO closure checkpoint
 
 - [x] Recheck authenticated Console PITR/retention without submitting Preview, Restore or configuration actions.

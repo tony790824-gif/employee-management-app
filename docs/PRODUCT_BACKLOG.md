@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 60 status - Production Launch Final Go/No-Go Gate (2026-08-12)
+
+- **Sprint status:** COMPLETE as Repository-only final launch inventory and fail-closed Gate definition.
+- **Decision:** Product 98%; Production readiness 70% / NOT READY; Final NO-GO; Gate A DEFER; Provisioning NO-GO; Migration authorization NOT_GRANTED.
+- **Inventory:** 20 complete Production areas, all `MUST_BEFORE_GO`; classifications cover read-only closure, payment, Production mutation and deferrable enhancements.
+- **Recovery:** RPO <=15 minutes NOT_PROVEN; RTO <=60 minutes PASS at 112.335 seconds.
+- **Safety:** no Production connection, SQL, Migration, Restore, deploy, resource/configuration mutation or payment.
+- **Next unique Sprint:** Owner Gate A budget decision and narrowly scoped Auth0 billing authorization package; do not create identity resources in the same approval.
+
 ## Sprint 59 status - Production RPO <=15 Minutes Evidence Closure (2026-08-12)
 
 - **Sprint status:** COMPLETE for all currently safe read-only evidence paths; RPO remains NOT_PROVEN and Production Recovery remains NO-GO.

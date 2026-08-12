@@ -1,5 +1,13 @@
 # Production Total Cost Model and Final Gate A Authorization Package
 
+## Sprint 60 Final Go/No-Go cost boundary
+
+- Final Production Launch remains **NO-GO**; Gate A remains **DEFER**; no billing action or purchase occurred.
+- Known fixed planning lower bound remains **US$49/month / US$588/year**, excluding the domain and UNKNOWN/usage-based items.
+- The dated `bankeban.com` quote remains US$11.08 first year and renewal, but it is not reserved and must be revalidated.
+- Next minimal authorization is only an Owner Gate A budget decision: after same-day quote verification, cap any Auth0 Essentials billing authorization at US$35/month and keep Tenant/Application/API creation separately unauthorized.
+- Neon paid capacity/backup, observability capacity, Netlify paid capacity and usage overage remain UNKNOWN/conditional; no UNKNOWN is treated as zero.
+
 ## Sprint 45 exact domain quote addendum
 
 - Owner-selected quote candidate: **`bankeban.com`** (`.com`), Porkbun public unauthenticated search.

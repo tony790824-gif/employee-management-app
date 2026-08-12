@@ -2,6 +2,8 @@
 
 Status: **REPOSITORY SCOPE COMPLETE / PRODUCTION RECOVERY NO-GO**
 
+Sprint 60 final-launch update: Recovery remains a `MUST_BEFORE_GO` blocker. PITR and the isolated Restore/RTO drill pass, but RPO <=15 minutes remains NOT_PROVEN, independent backup remains BLOCKED, scheduled snapshot remains NOT_CONFIGURED, and complete restored owner/ACL/RLS/catalog verification is not closed. Final Production Launch remains NO-GO; no Recovery or Production operation occurred in Sprint 60.
+
 Sprint 59 update: authenticated Console and official Neon Project/Branch/Operations/Restore API contracts were reviewed read-only. They prove PITR/retention and describe metadata or caller-selected restore inputs, but provide no documented latest recoverable or reference Production data boundary. No protected database/API input was available or substituted; no connection, SQL, API request, new Restore or mutation occurred. Both boundaries and Recovery Gap remain UNKNOWN; RPO <=15 minutes remains NOT_PROVEN. RTO remains PASS from Sprint 57.
 
 Sprint 58 update: authenticated Console inspection reconfirmed PITR and the six-hour history window. The point-in-time selector default is not a latest recoverable-boundary guarantee, and the console exposed no verified WAL/data boundary. The dedicated Production read-only credential was absent from this process, so no privileged credential or database query was used. Latest Recoverable Boundary, Reference Production Boundary and Recovery Gap remain UNKNOWN; RPO <=15 minutes remains NOT_PROVEN. RTO remains PASS from Sprint 57.

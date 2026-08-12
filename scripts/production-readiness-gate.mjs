@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { expectedTrackedMigrations } from '../database/inspect-migration-status.mjs';
+import { runFinalGoNoGoGate } from './production-final-go-no-go-gate.mjs';
 
 async function existsAndContains(file, values, failures) {
   const content = await readFile(file, 'utf8').catch(() => '');
@@ -14,6 +15,13 @@ async function existsAndContains(file, values, failures) {
 
 export async function runProductionRepositoryGate() {
   const failures = [];
+  const finalGate = await runFinalGoNoGoGate().catch(error => {
+    failures.push(`Final Production Go/No-Go gate failed: ${error.message}`);
+    return null;
+  });
+  if (finalGate && (finalGate.finalDecision !== 'NO_GO' || finalGate.productionReadinessPercent !== 70 || finalGate.productionMutation !== false)) {
+    failures.push('Final Production Go/No-Go gate must remain fail-closed at 70% / NO-GO without Production mutation.');
+  }
   const migrations = await expectedTrackedMigrations();
   const versions = migrations.map(item => item.version);
   if (versions.includes('0010')) failures.push('Unapproved Migration 0010 must not enter the Production manifest.');
@@ -75,6 +83,15 @@ export async function runProductionRepositoryGate() {
   await existsAndContains('docs/PRODUCTION_RELEASE_CHECKLIST.md', [
     'Netlify', 'Render', 'Neon', 'Auth0', 'RPO 15 minutes', 'RTO 60 minutes'
   ], failures);
+  await existsAndContains('docs/PRODUCTION_FINAL_GO_NO_GO_GATE.md', [
+    'Final Production Launch decision: **NO-GO**', 'Production readiness: **70% / NOT READY**',
+    'All 20 areas are currently `MUST_BEFORE_GO`', 'Next minimal safe authorization',
+    '`0010` is never part of the approved migration chain'
+  ], failures);
+  await existsAndContains('docs/PRODUCTION_FINAL_GO_NO_GO_GATE.json', [
+    'REPOSITORY_ONLY_FINAL_PRODUCTION_LAUNCH_GATE', '"finalDecision": "NO_GO"',
+    '"productionMutation": false', '"paymentExecuted": false'
+  ], failures);
   await existsAndContains('docs/PRODUCTION_OPERATIONS.md', [
     'read-only', 'BLOCKED', 'NOT_CONFIGURED', 'Stop conditions'
   ], failures);
@@ -123,6 +140,8 @@ export async function runProductionRepositoryGate() {
     ok: true,
     trackedMigrations: migrations.length,
     latestMigration: versions.at(-1),
+    finalGoNoGo: finalGate.finalDecision,
+    finalBlockerCount: finalGate.blockerCount,
     productionMutation: false
   });
 }
