@@ -1,5 +1,12 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2E Preflight evidence - 2026-08-13
+
+- Repository is ready for a separate minimal read-only authorization decision; this is not live evidence or authorization.
+- Future command validates fixed target/reader, PostgreSQL 18, temporary-CA TLS, clean commit provenance, exact baseline hashes, exact `0001`-`0008` ledger, catalog-only queries, single connection/no retry and sanitized split evidence.
+- Future files are exclusively `PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_EVIDENCE.json` and its companion hash; historical and final-`0022` evidence remain immutable.
+- Production connections/mutations during Preflight: **NONE**. Existing live Gates stay BLOCKED; matrix 9/13 and Production 70% / NOT READY.
+
 ## Production Closure Phase 2D semantic ACL evidence - 2026-08-13
 
 - Derived evidence references immutable Phase 2B SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`; source evidence was not rewritten.

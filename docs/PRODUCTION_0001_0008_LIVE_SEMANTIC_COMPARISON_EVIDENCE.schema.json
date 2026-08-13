@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bankeban Production 0001-0008 live semantic comparison evidence",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "phase",
+    "sprintNumberingCappedAt",
+    "generatedAt",
+    "repositoryCommitSha",
+    "comparatorModelVersion",
+    "expectedStructuralArtifactSha256",
+    "expectedStructuralFingerprint",
+    "expectedAclArtifactSha256",
+    "expectedAclSemanticFingerprint",
+    "expectedMigrationSequence",
+    "identityResult",
+    "tlsVerification",
+    "roleBoundaryResult",
+    "transactionReadOnlyResult",
+    "ledgerResult",
+    "structuralNonAclResult",
+    "semanticAclResult",
+    "expectedStructuralSectionCounts",
+    "observedStructuralSectionCounts",
+    "expectedAclObjectCount",
+    "observedAclObjectCount",
+    "expectedNonAclFingerprint",
+    "observedNonAclFingerprint",
+    "observedAclSemanticFingerprint",
+    "structuralMismatchSummary",
+    "semanticAclMismatchSummary",
+    "structuralStartingBaseline",
+    "connectionAttemptCount",
+    "retryCount",
+    "productionConnectionAttempted",
+    "productionMutation",
+    "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_PHASE_2E" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "comparatorModelVersion": { "const": "bankeban-acl-semantics-v1" },
+    "expectedStructuralArtifactSha256": { "const": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076" },
+    "expectedStructuralFingerprint": { "const": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e" },
+    "expectedAclArtifactSha256": { "const": "485097ac88f068cc46a73583ceff4ac6d64ad97e007c4ac20262fda0bf8394ec" },
+    "expectedAclSemanticFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "expectedMigrationSequence": {
+      "const": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"]
+    },
+    "identityResult": { "const": "PASS" },
+    "tlsVerification": { "const": "VERIFY_FULL_PASS" },
+    "roleBoundaryResult": { "const": "PASS" },
+    "transactionReadOnlyResult": { "const": "PASS" },
+    "ledgerResult": {
+      "type": "object",
+      "required": ["status", "expectedCount", "observedCount", "differences"],
+      "properties": {
+        "status": { "const": "PASS" },
+        "expectedCount": { "const": 8 },
+        "observedCount": { "const": 8 },
+        "differences": { "type": "array", "maxItems": 0 }
+      },
+      "additionalProperties": false
+    },
+    "structuralNonAclResult": { "enum": ["PASS", "MISMATCH", "BLOCKED"] },
+    "semanticAclResult": { "enum": ["SEMANTIC_MATCH", "SEMANTIC_MISMATCH", "BLOCKED"] },
+    "expectedStructuralSectionCounts": { "$ref": "#/$defs/counts" },
+    "observedStructuralSectionCounts": { "$ref": "#/$defs/counts" },
+    "expectedAclObjectCount": { "type": "integer", "minimum": 0 },
+    "observedAclObjectCount": { "type": ["integer", "null"], "minimum": 0 },
+    "expectedNonAclFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "observedNonAclFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "observedAclSemanticFingerprint": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "structuralMismatchSummary": {
+      "type": "object",
+      "required": ["missing", "unexpected", "mismatched"],
+      "properties": {
+        "missing": { "type": "array" },
+        "unexpected": { "type": "array" },
+        "mismatched": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    "semanticAclMismatchSummary": {
+      "type": "object",
+      "required": ["blockers", "differences"],
+      "properties": {
+        "blockers": { "type": "array" },
+        "differences": { "type": "array" }
+      },
+      "additionalProperties": false
+    },
+    "structuralStartingBaseline": { "enum": ["PASS", "MISMATCH", "BLOCKED"] },
+    "connectionAttemptCount": { "const": 1 },
+    "retryCount": { "const": 0 },
+    "productionConnectionAttempted": { "const": true },
+    "productionMutation": { "const": false },
+    "finalStatus": { "enum": ["PASS", "BLOCKED"] }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "required": ["migrationLedger", "schemas", "relations", "columns", "constraints", "indexes", "functions", "triggers", "sequences", "policies", "extensions"],
+      "propertyNames": { "enum": ["migrationLedger", "schemas", "relations", "columns", "constraints", "indexes", "functions", "triggers", "sequences", "policies", "extensions"] },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    }
+  },
+  "additionalProperties": false
+}

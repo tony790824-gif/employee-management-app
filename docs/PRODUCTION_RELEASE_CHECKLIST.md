@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Production Closure Phase 2E minimal live semantic Preflight
+
+- [x] Dedicated semantic command/token cannot invoke the final `0022` comparator.
+- [x] Fixed target/database/reader, PostgreSQL 18, role boundary and authenticated temporary-CA TLS are enforced.
+- [x] Clean `main == origin/main` authorized commit and exact baseline hashes are enforced before connect.
+- [x] Exact `0001`-`0008` ledger and static catalog-only query surface reject `0009`, `0010`, `0011+`, drift and business tables.
+- [x] One Client, one connect attempt, zero retries and READ ONLY transaction verification covered by mocks.
+- [x] Split structural/ACL evidence, sanitization and dedicated future file boundary documented.
+- [ ] New single-use Owner Production read authorization: **NOT_GRANTED**.
+- [ ] Live structural non-ACL and semantic ACL matches: **BLOCKED / NOT_EXECUTED**.
+- [ ] Final `0022` parity and Migration authorization: independently **BLOCKED / NOT_GRANTED**.
+
 ## Production Closure Phase 2D ACL semantic Gate
 
 - [x] Versioned semantic ACL model and deterministic canonical fingerprint implemented.

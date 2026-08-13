@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-13 current state - Production Closure Phase 2E Preflight
+
+The semantic live comparator is technically prepared but not authorized. It requires fixed `neondb` / `banke_production_readonly`, PostgreSQL 18, temporary-CA hostname-verifying TLS, a clean explicitly authorized commit equal to `main` and `origin/main`, immutable structural/ACL baseline hashes and exact `0001`-`0008` ledger metadata.
+
+One Client performs at most one attempt and has no retry. Only identity/role catalogs, ledger metadata and reviewed structural/ACL catalogs are read; business rows and arbitrary relation selection are blocked. Evidence separates non-ACL structure from ACL semantics and writes only a new dedicated JSON/hash pair. No Production connection or mutation occurred; 9/13 and 70% / NOT READY remain unchanged. Do not create Sprint 66.
+
 ## 2026-08-13 current state - Production Closure Phase 2D
 
 Phase 2D adds `bankeban-acl-semantics-v1` and a dual-fingerprint architecture: non-ACL structure plus semantic ACL. The semantic side expands NULL defaults with `acldefault/aclexplode`, models owner-implied rights, PUBLIC, runtime/reader/Extension categories, grant options, default privileges, outbound membership reachability, and PostgreSQL 18 relation `MAINTAIN`. Unknown principals, owners, grantors, privilege types, model versions or sensitive evidence block.

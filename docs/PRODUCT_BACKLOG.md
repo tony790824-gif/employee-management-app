@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2E - Minimal live semantic evidence Preflight (2026-08-13)
+
+- **Status:** COMPLETE for Repository/local Preflight; live execution NOT_AUTHORIZED; Sprint numbering capped at 65.
+- **Hardening:** fixed target/reader, PostgreSQL 18, authenticated TLS, clean authorized commit, immutable baselines, exact ledger, static catalog-only reads, one connection/no retry and split sanitized evidence.
+- **Decision:** Repository ready for an Owner authorization decision, not automatic execution. `STRUCTURAL_STARTING_BASELINE` remains BLOCKED, 9/13, Production 70% / NOT READY.
+- **Next action:** authorize exactly one minimal semantic read or defer; never migrate, repair or create Sprint 66.
+
 ## Production Closure Phase 2D - ACL Semantic Comparator (2026-08-13)
 
 - **Status:** COMPLETE for Repository/disposable scope; live Gate remains BLOCKED; Sprint numbering capped at 65.

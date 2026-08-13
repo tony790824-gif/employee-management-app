@@ -1,6 +1,12 @@
 # Next Production Closure gate — Production evidence and authorization
 
-## Production Closure Phase 2E proposal - Minimum semantic ACL evidence authorization
+## Production Closure Phase 2E decision - separately authorize or defer one semantic read
+
+Repository Preflight is complete. The smallest possible next action is an Owner decision on exactly one attempt of `pnpm run db:parity:production-starting-baseline-semantic` at an explicitly authorized clean commit. Possible side effects are Neon wake/unarchive, compute/network/I/O, one session, catalog locks/logs and overwrite of the dedicated live semantic evidence/hash.
+
+No authority exists yet. Any authorization must exclude Migration, repair, writes, Restore, deploy, role/ACL/configuration changes, billing changes and non-reader credentials. If deferred, no connection occurs. Sprint numbering remains capped at 65.
+
+## Historical Production Closure Phase 2E proposal - Minimum semantic ACL evidence authorization
 
 Phase 2D completed `bankeban-acl-semantics-v1` locally. Existing Phase 2B evidence lacks privilege/grantee/grant-option/default/membership facts, so 0/57 ACL-only differences can be reclassified and the live Gate remains BLOCKED.
 

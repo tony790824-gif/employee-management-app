@@ -1,5 +1,12 @@
 # AI Handoff
 
+## Production Closure Phase 2E Preflight current state - 2026-08-13
+
+- Future-only command: `pnpm run db:parity:production-starting-baseline-semantic`; token: `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE_SEMANTICS`. Never execute without new single-use Owner authorization.
+- It locks `neondb` / `banke_production_readonly`, PostgreSQL 18, temporary-CA TLS, exact baseline hashes, clean `main == origin/main` provenance, exact `0001`-`0008` ledger and one Client/one connect/no retry.
+- Reads are limited to ledger metadata, reviewed catalogs and role-boundary facts. Evidence stores categorized ACL semantics and hashed structure, never raw ACL/principal values or business rows.
+- Preflight made zero Production connections/mutations. Gate state remains 9/13, Production 70% / NOT READY, authorization NOT_GRANTED, and Sprint numbering remains capped at 65.
+
 ## Production Closure Phase 2D current state - 2026-08-13
 
 - Repository/disposable scope is complete. `bankeban-acl-semantics-v1` models schema/relation/function/sequence privileges, PostgreSQL 18 `MAINTAIN`, owner-implied/default ACLs, grant options, reviewed principal categories and outbound read-only membership reachability.

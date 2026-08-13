@@ -1,5 +1,11 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2E execution boundary - 2026-08-13
+
+The hardened future command is `pnpm run db:parity:production-starting-baseline-semantic` with confirmation `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE_SEMANTICS`. It accepts only fixed `neondb` / `banke_production_readonly`, authenticated PostgreSQL 18, a clean explicitly authorized commit, exact immutable structural/ACL artifacts and exact ordered `0001`-`0008` ledger metadata.
+
+Identity and role-boundary SELECTs precede one `BEGIN TRANSACTION READ ONLY`; transaction read-only is then verified again. Static structural and ACL queries use only reviewed catalogs plus ledger metadata. Evidence separately records non-ACL and ACL results, counts, fingerprints and sanitized mismatch categories. It cannot imply final `0022` parity. No execution is authorized by this plan.
+
 ## Production Closure Phase 2D ACL semantic comparison - 2026-08-13
 
 Raw `aclitem[]::text` is retained only as historical provenance, not as sufficient future Gate evidence. The approved Repository model is `bankeban-acl-semantics-v1`, producing a semantic ACL fingerprint separately from the non-ACL structural fingerprint.

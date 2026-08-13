@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 2E minimal live semantic evidence preflight
+
+- Hardened the unexecuted semantic starting-baseline comparator with fixed Production target identities, a dedicated token, exact baseline hashes, clean commit provenance, one-connection/no-retry controls and an explicit READ ONLY transaction check.
+- Added a static catalog-only query surface, separated non-ACL and ACL evidence contracts, strict sanitization, future evidence schema and a comprehensive mock fail-closed matrix.
+- Kept Production untouched and all live Gates unchanged at 9 PASS / 13 non-PASS, 70% / NOT READY; any execution still requires a new single-use Owner authorization.
+
 ## 2026-08-13 - Production Closure Phase 2D ACL Semantic Comparator
 
 - Added versioned `bankeban-acl-semantics-v1`, expanding PostgreSQL defaults and categorizing principals, effective privileges, grant options, default privileges and dedicated-reader membership paths without persisting raw Production identities.
