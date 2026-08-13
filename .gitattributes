@@ -15,3 +15,5 @@ docs/PRODUCTION_RECOVERY_READINESS_EVIDENCE.sha256 text eol=lf
 database/production-isolated-restore-authorization.expected.json text eol=lf
 docs/PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.json text eol=lf
 docs/PRODUCTION_ISOLATED_RESTORE_DECISION_EVIDENCE.sha256 text eol=lf
+docs/PRODUCTION_MIGRATION_EVENT_TIME_READONLY_EVIDENCE.json text eol=lf
+docs/PRODUCTION_MIGRATION_EVENT_TIME_READONLY_EVIDENCE.sha256 text eol=lf

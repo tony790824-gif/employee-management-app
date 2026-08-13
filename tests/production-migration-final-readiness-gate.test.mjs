@@ -16,7 +16,7 @@ assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.ok(validation.blockerCount >= 10);
 assert.equal(readiness.schemaVersion, 4);
-assert.equal(readiness.lastReviewedSprint, 63);
+assert.equal(readiness.lastReviewedSprint, 64);
 assert.equal(readiness.repositoryInventory.expectedCount, 21);
 assert.equal(readiness.repositoryInventory.result, 'PASS');
 assert.deepEqual(readiness.repositoryInventory.intentionalGaps, ['0010']);

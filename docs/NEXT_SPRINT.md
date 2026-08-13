@@ -1,5 +1,11 @@
 # Next external gate — Production evidence and authorization
 
+## Sprint 65 proposal - Protected dedicated-reader availability and exact read-only rerun
+
+Sprint 64 stopped fail-closed because the already-approved dedicated Production read-only inputs were absent from the execution process. The next smallest action is for the Owner/operator to expose the existing reader only through the approved process-level secret mechanism, without pasting values into chat, files, logs or Git.
+
+After presence is confirmed, authorize one fresh process to run only target identity, TLS verify-full, ledger/checksum, unexpected-version and structural starting-baseline metadata checks. Do not substitute higher-privilege credentials, close `ROLE_BOUNDARY`, claim `EVIDENCE_FRESHNESS`, create a restore point, configure roles/platforms, drain traffic or execute any Migration.
+
 ## Sprint 64 proposal - Event-time dedicated-reader evidence authorization
 
 Sprint 63 closed only `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT`, producing 6 PASS / 16 non-PASS. The next smallest safe scope is an authorization package for a single event-time, dedicated Production read-only run covering only target identity, TLS verify-full, fresh ledger/checksums, zero unexpected versions and structural starting baseline.

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Sprint 64 Event-Time Production Read-Only Evidence Attempt
+
+- Stopped before Production connection because the approved process lacked the dedicated reader inputs; no alternative credential was used.
+- Added a sanitized, SHA-256-verified BLOCKED evidence artifact and regression test proving no connection, SQL, catalog collection or mutation occurred.
+- Kept all five target Gates BLOCKED, left `ROLE_BOUNDARY` and `EVIDENCE_FRESHNESS` unchanged, and preserved the 6 PASS / 16 non-PASS matrix and 70% / NOT READY decision.
+
 ## 2026-08-13 - Sprint 63 Repository-Closable Production Migration Gate Closure
 
 - Added a deterministic 21-version/42-file migration manifest with a 13-version upgrade subset, explicit `0010` exclusion and aggregate SHA-256 validation.

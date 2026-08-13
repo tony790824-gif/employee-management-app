@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 64 event-time dedicated-reader evidence - 2026-08-13
+
+- Collection status: **BLOCKED - DEDICATED READ-ONLY CREDENTIAL UNAVAILABLE** in the approved process.
+- Sanitized artifact: `PRODUCTION_MIGRATION_EVENT_TIME_READONLY_EVIDENCE.json`; companion SHA-256: `a65541dac1a1bfc221c9d4ab62fe534a6ae88953c584949f5dab959b556fdd68`.
+- Connection attempted: **NO**; SQL/catalog query executed: **NO**; substitute credential used: **NO**; Production mutation: **NONE**.
+- Five target Gates remain BLOCKED. No Sprint 64 Production inventory was observed; historical `0001`-`0008`, missing `0009`/`0011`-`0022`, unexpected NONE and checksum mismatch NONE remain provenance only.
+- `ROLE_BOUNDARY` and `EVIDENCE_FRESHNESS` were not evaluated and retain their authoritative BLOCKED state/dependencies.
+
 ## Sprint 63 Repository-only Migration closure evidence - 2026-08-13
 
 - Gate package schema v4: **PASS**; `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT` closed, resulting in **6 PASS / 16 non-PASS**.

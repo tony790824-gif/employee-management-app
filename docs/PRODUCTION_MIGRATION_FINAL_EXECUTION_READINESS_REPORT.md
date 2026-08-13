@@ -1,5 +1,15 @@
 # Sprint 53 Production Migration Final Execution Readiness Report
 
+## Sprint 64 event-time read-only Gate attempt - 2026-08-13
+
+Status: **BLOCKED BEFORE CONNECTION / TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**
+
+The approved process did not contain the dedicated Production read-only URL, expected database identity, expected reader role or trusted CA input. The run stopped before connection as required; no SQL or catalog collection occurred and no substitute credential was used.
+
+No Gate transitioned. `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, `FRESH_LEDGER_AND_CHECKSUM`, `ZERO_UNEXPECTED_MIGRATIONS`, and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED. `ROLE_BOUNDARY` was out of scope because it depends on the approved Migration operator. `EVIDENCE_FRESHNESS` also depends on the event-specific restore point and remains BLOCKED.
+
+The matrix remains **6 PASS / 16 non-PASS**. Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**; Production mutation **NONE**.
+
 ## Sprint 63 Repository-closable Gate closure - 2026-08-13
 
 Status: **REPOSITORY GATES COMPLETE / PRODUCTION MIGRATION TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**

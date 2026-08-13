@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Sprint 64 current state - 2026-08-13
+
+- The authorized event-time read-only attempt stopped before connection: the dedicated reader URL, expected database identity, expected reader role and CA input were absent from the current protected process.
+- No substitute Owner/Admin/Migrator/API/Push/Staging credential was used. No Production connection, SQL, catalog read, Migration or mutation occurred.
+- All five read-only targets remain BLOCKED. `ROLE_BOUNDARY` was not evaluated because it is a Migration-operator Gate; `EVIDENCE_FRESHNESS` was not evaluated because it also requires the event-specific restore point.
+- Sanitized evidence: `PRODUCTION_MIGRATION_EVENT_TIME_READONLY_EVIDENCE.json`; its companion SHA-256 record must verify before use.
+- Gate count remains 6 PASS / 16 non-PASS. Production remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Technical Readiness NO-GO; authorization NOT_GRANTED.
+
 ## Sprint 63 current state - 2026-08-13
 
 - Authoritative Migration Gate is schema v4: 6 PASS / 16 non-PASS. Only `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT` changed.

@@ -1,5 +1,14 @@
 # Production Release Checklist
 
+## Sprint 64 event-time read-only evidence
+
+- [x] Stop before connection when the dedicated reader inputs are absent; do not substitute privileged or Staging credentials.
+- [x] Record a sanitized, hash-verified BLOCKED evidence artifact with connection, SQL and mutation all false.
+- [ ] Reconfirm event-time target identity and TLS verify-full using the protected dedicated reader.
+- [ ] Collect fresh ledger/checksum and zero-unexpected-version evidence.
+- [ ] Collect structural starting-baseline metadata only after identity/TLS/ledger prerequisites pass.
+- [ ] Keep `ROLE_BOUNDARY` and `EVIDENCE_FRESHNESS` non-PASS until their separate dependencies are satisfied.
+
 ## Sprint 63 Repository-closable Migration Gates
 
 - [x] Validate required/tested/Production-observed/unknown runtime facts.

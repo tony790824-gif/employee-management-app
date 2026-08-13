@@ -60,7 +60,7 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
 export async function validateFinalReadinessPackage(input) {
   const value = input || await loadFinalReadinessPackage();
   const failures = [];
-  if (value.schemaVersion !== 4 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 63) failures.push('PACKAGE_FORMAT_MISMATCH');
+  if (value.schemaVersion !== 4 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 64) failures.push('PACKAGE_FORMAT_MISMATCH');
   const inventory = value.repositoryInventory || {};
   if (inventory.expectedCount !== 21 || inventory.result !== 'PASS') failures.push('REPOSITORY_INVENTORY_STATUS_MISMATCH');
   if (JSON.stringify(inventory.approvedVersions) !== JSON.stringify([...value.productionBaseline.expectedVersions, ...REQUIRED_MISSING_VERSIONS])) failures.push('REPOSITORY_INVENTORY_VERSION_MISMATCH');

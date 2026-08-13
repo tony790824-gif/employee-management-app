@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 64 protected-reader stop
+
+- The event-time collector must inspect only process-level presence and stop before connection when any approved dedicated-reader input is missing.
+- Never source a replacement from `.env`, chat, logs, Owner/Admin/Migrator/API/Push/Staging credentials or another process.
+- Sprint 64 stopped with all protected inputs absent; no connection or SQL ran. The only artifact is sanitized status metadata plus SHA-256.
+- A future rerun requires the Owner/operator to place the existing reader in the approved protected process. Presence confirmation is not Migration authorization and does not permit role changes, restore points, traffic control or writes.
+
 ## Sprint 63 Repository Migration controls
 
 - Use `pnpm db:migration:repository-closure` to validate the exact manifest and runtime checkpoint contract. It performs no Production connection or SQL.

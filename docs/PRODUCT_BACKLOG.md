@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Sprint 64 status - Event-Time Production Read-Only Migration Evidence Closure (2026-08-13)
+
+- **Sprint status:** BLOCKED fail-closed before any Production connection because the approved process did not contain the dedicated reader inputs.
+- **Attempted scope:** only `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, `FRESH_LEDGER_AND_CHECKSUM`, `ZERO_UNEXPECTED_MIGRATIONS`, and `STRUCTURAL_STARTING_BASELINE`.
+- **Result:** no target Gate changed; the matrix remains **6 PASS / 16 non-PASS**. Historical Sprint 49 ledger data is provenance only and was not promoted to fresh evidence.
+- **Excluded:** `ROLE_BOUNDARY` still requires the approved Migration operator; `EVIDENCE_FRESHNESS` still depends on the event-specific restore point.
+- **Decision:** Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED; Production mutation NONE.
+- **Next unique priority:** make the existing dedicated Production reader available to one newly approved process through the protected secret mechanism, then rerun only the five read-only Gate checks. Never paste the credential into chat or source.
+
 ## Sprint 63 status - Repository-Closable Production Migration Gate Closure (2026-08-13)
 
 - **Sprint status:** COMPLETE for the two Repository-only target Gates.

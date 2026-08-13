@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-13 current state - Sprint 64 event-time read-only attempt
+
+Sprint 64 had authorization to observe five dedicated-reader Gates, but the current process did not contain the approved Production reader inputs. The collection therefore stopped before connection and emitted only a sanitized BLOCKED evidence contract. Historical Sprint 49 evidence must not be treated as current.
+
+`TARGET_IDENTITY`, `TLS_VERIFY_FULL`, `FRESH_LEDGER_AND_CHECKSUM`, `ZERO_UNEXPECTED_MIGRATIONS`, and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED. `ROLE_BOUNDARY` still depends on a separately approved least-privilege Migration operator. `EVIDENCE_FRESHNESS` also depends on an event-specific restore point and remains BLOCKED.
+
+The authoritative matrix remains 6 PASS / 16 non-PASS. Production is 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED. Production connection, SQL and mutation: NONE.
+
 ## 2026-08-13 current state - Sprint 63 Repository Migration Gate closure
 
 The two Repository-closable Gates now pass. The runtime matrix proves a safe checkpoint policy, not live mixed-version operation: API, worker and PostgreSQL frontend must stay drained through `0021`, and the current runtime may resume only after `0022` ledger/catalog PASS. Production runtime observation remains UNKNOWN/NOT_CONFIGURED.

@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 64 event-time read-only evidence attempt - 2026-08-13
+
+- Dedicated Production reader inputs in the approved process: **ABSENT**; collection stopped before connection.
+- Target identity, TLS verify-full, fresh ledger/checksums, zero unexpected versions and structural starting baseline: **BLOCKED / NOT OBSERVED**.
+- `ROLE_BOUNDARY`: unchanged BLOCKED because the authoritative Gate requires an approved Migration operator. `EVIDENCE_FRESHNESS`: unchanged BLOCKED because the event-specific restore point is also required.
+- Gate matrix: **6 PASS / 16 non-PASS**, with zero transitions. Historical `0001`-`0008` evidence is not current Sprint 64 evidence.
+- Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**, Migration Technical Readiness **NO-GO**, authorization **NOT_GRANTED**. Production connection/SQL/mutation: **NONE**.
+
 ## Sprint 63 Repository Migration Gate closure - 2026-08-13
 
 - `RUNTIME_COMPATIBILITY` and `IMMUTABLE_EXECUTION_ARTIFACT`: **PASS** from deterministic Repository evidence; 22-Gate result is now **6 PASS / 16 non-PASS**.
