@@ -23,7 +23,7 @@
     ],
     "status": "BLOCKED"
   },
-  "commitSha": "1286bde12ecd8ac1313cf24043d4802d96055adc",
+  "commitSha": "ea2c94cf0f401802395ec3e7f53d2f100686845f",
   "expectedBaselineHash": "28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df",
   "expectedMigrationRange": {
     "count": 21,
@@ -65,6 +65,6 @@
   "stopReasons": [
     "MIGRATION_LEDGER_MISMATCH"
   ],
-  "timestamp": "2026-08-10T12:10:39.881Z",
+  "timestamp": "2026-08-13T10:24:11.488Z",
   "tlsVerification": "VERIFY_FULL_PASS"
 }

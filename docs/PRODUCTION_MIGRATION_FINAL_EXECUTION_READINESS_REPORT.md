@@ -1,5 +1,15 @@
 # Sprint 53 Production Migration Final Execution Readiness Report
 
+## Sprint 65 authorized read-only evidence analysis - 2026-08-13
+
+Status: **READ-ONLY EVIDENCE ANALYZED / TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**
+
+The Owner consumed one explicit dedicated Production reader connection. Sanitized evidence SHA-256 `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba` proves protected database/current-user/session-user identity matching, the dedicated-reader boundary and TLS trusted-CA/hostname verification. Literal observed database/role strings were deliberately omitted; the protected expectations were `neondb` and `banke_production_readonly`.
+
+The ledger has observed count 8/range `0001`-`0008`; missing `0009`, `0011`-`0022`; unexpected NONE; checksum mismatch NONE. Exit code 2 was caused exactly by `MIGRATION_LEDGER_MISMATCH`. Structural collection did not start, so no structural mismatch was observed.
+
+Gate transitions: `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS` BLOCKED -> PASS. `FRESH_LEDGER_AND_CHECKSUM` and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED. The matrix is **9 PASS / 13 non-PASS**. Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**.
+
 ## Sprint 64 event-time read-only Gate attempt - 2026-08-13
 
 Status: **BLOCKED BEFORE CONNECTION / TECHNICAL READINESS NO-GO / AUTHORIZATION NOT GRANTED**

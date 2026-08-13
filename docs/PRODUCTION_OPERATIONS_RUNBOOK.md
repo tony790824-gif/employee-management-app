@@ -2,6 +2,10 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Sprint 65 Production read-only evidence checkpoint
+
+The single authorized dedicated-reader event is consumed. Current target identity, TLS verify-full and zero-unexpected-Migration evidence pass; ledger parity remains BLOCKED and structural starting-baseline collection did not run. The authoritative result is 9 PASS / 13 non-PASS. Do not reconnect, migrate, repair or reuse the consumed authority. A later connection needs a new exact approval, including Neon wake/usage effects.
+
 ## Sprint 63 Production Migration stop
 
 The Repository runtime checkpoint contract and exact immutable manifest are PASS, moving the 22-Gate result to 6 PASS / 16 non-PASS. This does not authorize a candidate Commit or Production execution. Keep API/worker/frontend drained at intermediate checkpoints and do not resume until final `0022` ledger/catalog parity and all separate event Gates pass.

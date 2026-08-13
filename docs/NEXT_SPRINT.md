@@ -1,10 +1,14 @@
 # Next external gate — Production evidence and authorization
 
+## Sprint 66 proposal - Current `0001`-`0008` structural starting-baseline contract
+
+Sprint 65 consumed the one authorized dedicated-reader connection and closed only `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`. The comparator correctly stopped because the final 21-version expected ledger differs from the current eight-version Production ledger, but that stop also prevented evaluation of the separately required current structural starting baseline.
+
+The next smallest safe Sprint is Repository-only: materialize or bind the reviewed expected `0001`-`0008` catalog, separate current starting-baseline checks from final `0022` parity, and add fail-closed tests proving no Production connection occurs. It must not reconnect, migrate, repair, deploy, authorize a candidate, or convert `FRESH_LEDGER_AND_CHECKSUM`/`STRUCTURAL_STARTING_BASELINE` to PASS without new evidence. Any later Production read requires a new explicit single-use authorization.
+
 ## Sprint 65 proposal - Protected dedicated-reader availability and exact read-only rerun
 
-Sprint 64 stopped fail-closed because the already-approved dedicated Production read-only inputs were absent from the execution process. The next smallest action is for the Owner/operator to expose the existing reader only through the approved process-level secret mechanism, without pasting values into chat, files, logs or Git.
-
-After presence is confirmed, authorize one fresh process to run only target identity, TLS verify-full, ledger/checksum, unexpected-version and structural starting-baseline metadata checks. Do not substitute higher-privilege credentials, close `ROLE_BOUNDARY`, claim `EVIDENCE_FRESHNESS`, create a restore point, configure roles/platforms, drain traffic or execute any Migration.
+Sprint 64 stopped fail-closed because the already-approved dedicated Production read-only inputs were absent from the execution process. The next smallest action was for the Owner/operator to expose the existing reader only through the approved process-level secret mechanism, without pasting values into chat, files, logs or Git. Sprint 65 consumed that authorization; it must not be reused.
 
 ## Sprint 64 proposal - Event-time dedicated-reader evidence authorization
 

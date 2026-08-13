@@ -1,5 +1,15 @@
 # AI Handoff
 
+## Sprint 65 current state - 2026-08-13
+
+- One dedicated Production read-only connection was manually executed under explicit Owner authority; that authority is consumed and no second connection is allowed.
+- Sanitized source evidence hash: `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`; Sprint 65 analysis evidence hash is maintained by its companion SHA-256 file.
+- PASS: `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, `ZERO_UNEXPECTED_MIGRATIONS`; the dedicated reader boundary also passed but does not close the separate Migration-operator `ROLE_BOUNDARY` Gate.
+- BLOCKED: `FRESH_LEDGER_AND_CHECKSUM` because 13 expected versions are missing; `STRUCTURAL_STARTING_BASELINE` because collection stopped before catalog queries. Do not call this a structural mismatch.
+- Sanitized ledger: count 8/range `0001`-`0008`; missing `0009`, `0011`-`0022`; unexpected NONE; checksum mismatch NONE.
+- Gate count: 9 PASS / 13 non-PASS. Production remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED.
+- Next work should be Repository-only current-baseline/final-parity separation. Never reuse the consumed connection authority.
+
 ## Sprint 64 current state - 2026-08-13
 
 - The authorized event-time read-only attempt stopped before connection: the dedicated reader URL, expected database identity, expected reader role and CA input were absent from the current protected process.

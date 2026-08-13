@@ -1,5 +1,14 @@
 # Production Schema Parity Report
 
+## Sprint 65 current authorized evidence - 2026-08-13
+
+- Source evidence SHA-256: `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`.
+- Identity and TLS `verify-full`: PASS against protected expectations; literal observed names are intentionally omitted from the sanitized source.
+- Ledger parity: BLOCKED; observed count/range 8/`0001`-`0008`, missing `0009` and `0011`-`0022`, unexpected NONE, checksum mismatch NONE.
+- Structural parity: BLOCKED / NOT EVALUATED after ledger failure; no independent structural mismatch was observed.
+- Exit code 2 reason: `MIGRATION_LEDGER_MISMATCH`.
+- One-time read-only authorization consumed; no second connection, Migration, repair or Production mutation occurred during analysis.
+
 ## Sprint 49 authorized Production-side result - 2026-08-10
 
 - Sprint evidence scope: **COMPLETE**; final parity status: **BLOCKED**.

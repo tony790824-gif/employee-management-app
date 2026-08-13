@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-13 - Sprint 65 authorized Production read-only evidence analysis
+
+- Verified the single-use sanitized Production evidence and updated the authoritative Migration Gate from 6 PASS / 16 non-PASS to 9 PASS / 13 non-PASS.
+- Closed only target identity, TLS verify-full and zero-unexpected-Migration Gates; kept ledger parity and structural starting baseline BLOCKED.
+- Recorded exit code 2 as the fail-closed ledger mismatch, consumed authorization and zero database/schema mutation without making a second connection.
+
 ## 2026-08-12 - Sprint 62 Production Migration preflight closure
 
 - Added the full 22-Gate evidence/action/authorization/resource/cost/dependency matrix to the existing authoritative Migration report and machine-readable contract.

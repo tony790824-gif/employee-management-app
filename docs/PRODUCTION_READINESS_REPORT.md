@@ -1,5 +1,15 @@
 # Production Readiness Report — Sprint 33A
 
+## Sprint 65 authorized read-only evidence analysis - 2026-08-13
+
+- The single authorized dedicated-reader connection completed and its sanitized evidence hash verifies as `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`.
+- `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`: **PASS**.
+- `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED** - observed count/range is 8/`0001`-`0008`; 13 expected versions are missing. Unexpected versions and checksum mismatches are NONE.
+- `STRUCTURAL_STARTING_BASELINE`: **BLOCKED / NOT EVALUATED** - the comparator stopped after ledger mismatch; this is not an observed structural mismatch.
+- 22-Gate matrix: **6 PASS / 16 non-PASS -> 9 PASS / 13 non-PASS**.
+- Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**.
+- Production database/schema mutation, Migration, Restore, deploy and configuration change: **NONE**. The successful connection necessarily created a read-only session and compute/network usage; archived-Branch wake is implied but was not separately provider-audited.
+
 ## Sprint 64 event-time read-only evidence attempt - 2026-08-13
 
 - Dedicated Production reader inputs in the approved process: **ABSENT**; collection stopped before connection.

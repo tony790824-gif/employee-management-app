@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Sprint 65 consumed read-only evidence event
+
+- The one-time dedicated Production reader authorization was consumed. Do not reconnect or reuse its process inputs.
+- Evidence hash `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba` proves identity/TLS and zero unexpected Migrations, but ledger parity remains BLOCKED and structural collection did not start.
+- Current Gate count is 9 PASS / 13 non-PASS; Production remains 70% / NOT READY and Migration Technical Readiness NO-GO.
+- The connection caused a read-only database session and provider usage; automatic archived-Branch wake is treated as an authorized external state effect, not a database mutation. No second connection, Migration, DDL/DML, Restore, deploy, role/configuration change or external-resource operation is authorized.
+
 ## Sprint 64 protected-reader stop
 
 - The event-time collector must inspect only process-level presence and stop before connection when any approved dedicated-reader input is missing.

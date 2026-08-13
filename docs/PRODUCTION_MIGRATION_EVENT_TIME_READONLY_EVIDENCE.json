@@ -1,80 +1,119 @@
 {
-  "schemaVersion": 1,
-  "mode": "SPRINT_64_EVENT_TIME_PRODUCTION_READONLY_EVIDENCE",
-  "collectedAt": "2026-08-12T23:59:14.0663319Z",
-  "repositoryCommitSha": "6a1d69fe9e3a6579536253103cdf2cd29312d137",
-  "manifestSha256": "769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf",
+  "schemaVersion": 2,
+  "mode": "SPRINT_65_AUTHORIZED_PRODUCTION_READONLY_EVIDENCE_ANALYSIS",
+  "collectedAt": "2026-08-13T10:24:11.488Z",
+  "repositoryCommitSha": "ea2c94cf0f401802395ec3e7f53d2f100686845f",
+  "sourceEvidence": {
+    "path": "docs/PRODUCTION_SCHEMA_PARITY_EVIDENCE.json",
+    "sha256": "2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba",
+    "expectedBaselineSha256": "28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df"
+  },
   "authorization": {
-    "scope": "DEDICATED_PRODUCTION_READONLY_EVIDENCE_ONLY",
+    "scope": "ONE_DEDICATED_PRODUCTION_READONLY_CONNECTION",
+    "consumed": true,
+    "secondConnectionAuthorized": false,
     "productionMigrationAuthorized": false,
     "productionMutationAuthorized": false
   },
-  "processInputs": {
-    "DATABASE_READONLY_URL": "ABSENT",
-    "BANK_PRODUCTION_DATABASE_NAME": "ABSENT",
-    "BANK_PRODUCTION_READONLY_ROLE": "ABSENT",
-    "PGSSLROOTCERT": "ABSENT"
-  },
   "collectionBoundary": {
-    "productionConnectionAttempted": false,
-    "productionSqlExecuted": false,
-    "productionCatalogCollected": false,
+    "productionConnectionAttempted": true,
+    "productionReadOnlyMetadataSqlExecuted": true,
+    "migrationLedgerCollected": true,
+    "structuralCatalogCollected": false,
     "productionMutation": false,
+    "secondProductionConnectionAttemptedBySprint65Analysis": false,
     "substituteCredentialUsed": false
+  },
+  "identityObservation": {
+    "databaseExpected": "neondb",
+    "databaseLiteralPersistedBySource": false,
+    "databaseMatchedProtectedExpectation": true,
+    "roleExpected": "banke_production_readonly",
+    "roleLiteralPersistedBySource": false,
+    "currentAndSessionRoleMatchedProtectedExpectation": true,
+    "dedicatedReaderBoundary": "PASS"
+  },
+  "tlsObservation": {
+    "status": "PASS",
+    "mode": "TRUSTED_CA_AND_HOSTNAME_VERIFICATION",
+    "sourceValue": "VERIFY_FULL_PASS"
   },
   "results": {
     "TARGET_IDENTITY": {
-      "status": "BLOCKED",
-      "reason": "DEDICATED_READ_ONLY_CREDENTIAL_UNAVAILABLE"
+      "status": "PASS",
+      "reason": "CURRENT_DATABASE_CURRENT_USER_AND_SESSION_USER_MATCHED_PROTECTED_EXPECTATIONS"
     },
     "TLS_VERIFY_FULL": {
-      "status": "BLOCKED",
-      "reason": "DEDICATED_READ_ONLY_CREDENTIAL_UNAVAILABLE"
+      "status": "PASS",
+      "reason": "TRUSTED_CA_AND_HOSTNAME_VERIFICATION_ESTABLISHED"
     },
     "FRESH_LEDGER_AND_CHECKSUM": {
       "status": "BLOCKED",
-      "reason": "TARGET_IDENTITY_AND_TLS_NOT_OBSERVED"
+      "reason": "MIGRATION_LEDGER_MISMATCH_13_EXPECTED_VERSIONS_MISSING"
     },
     "ZERO_UNEXPECTED_MIGRATIONS": {
-      "status": "BLOCKED",
-      "reason": "FRESH_LEDGER_NOT_OBSERVED"
+      "status": "PASS",
+      "reason": "NO_UNEXPECTED_VERSION_AND_NO_0010_OBSERVED"
     },
     "STRUCTURAL_STARTING_BASELINE": {
       "status": "BLOCKED",
-      "reason": "LEDGER_PREREQUISITES_NOT_OBSERVED"
+      "reason": "NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH"
     },
     "ROLE_BOUNDARY": {
       "status": "NOT_EVALUATED",
-      "reason": "AUTHORITATIVE_GATE_REQUIRES_APPROVED_MIGRATION_OPERATOR"
+      "reason": "DEDICATED_READER_BOUNDARY_PASSED_BUT_MIGRATION_OPERATOR_GATE_REMAINS_SEPARATE"
     },
     "EVIDENCE_FRESHNESS": {
       "status": "NOT_EVALUATED",
-      "reason": "AUTHORITATIVE_GATE_ALSO_REQUIRES_PRE_MIGRATION_RESTORE_POINT"
+      "reason": "FULL_GATE_ALSO_REQUIRES_EVENT_SPECIFIC_RESTORE_POINT"
     }
   },
   "productionMigrationInventory": {
-    "currentSprintObservation": "NOT_OBSERVED",
-    "historicalProvenanceOnly": {
-      "observedVersions": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"],
-      "missingExpectedVersions": ["0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
-      "unexpectedVersions": [],
-      "checksumMismatchVersions": [],
-      "mayBeUsedAsFreshEvidence": false
-    }
+    "expectedCount": 21,
+    "observedRange": {
+      "start": "0001",
+      "end": "0008",
+      "count": 8
+    },
+    "observedVersionsDerivedFromSanitizedRangeAndDifferences": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"],
+    "missingExpectedVersions": ["0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
+    "unexpectedVersions": [],
+    "checksumMismatchVersions": [],
+    "structuralCollection": "NOT_STARTED",
+    "structuralMismatchObserved": false
+  },
+  "executionResult": {
+    "exitCode": 2,
+    "finalStatus": "BLOCKED",
+    "stopReason": "MIGRATION_LEDGER_MISMATCH"
+  },
+  "productionSideEffects": {
+    "databaseConnectionAndReadOnlySession": "OCCURRED",
+    "metadataReadTransaction": "OCCURRED",
+    "neonArchivedBranchWake": "IMPLIED_BY_SUCCESSFUL_CONNECTION_NOT_PROVIDER_AUDITED",
+    "computeNetworkAndConnectionUsage": "OCCURRED_AMOUNT_UNKNOWN",
+    "providerLogsAndMetrics": "EXPECTED_NOT_COLLECTED",
+    "databaseOrSchemaMutation": "NONE",
+    "migration": "NONE",
+    "deployOrConfigurationChange": "NONE"
   },
   "gateMatrix": {
     "before": { "pass": 6, "nonPass": 16 },
-    "after": { "pass": 6, "nonPass": 16 },
-    "transitions": []
+    "after": { "pass": 9, "nonPass": 13 },
+    "transitions": [
+      { "gateId": "TARGET_IDENTITY", "from": "BLOCKED", "to": "PASS" },
+      { "gateId": "TLS_VERIFY_FULL", "from": "BLOCKED", "to": "PASS" },
+      { "gateId": "ZERO_UNEXPECTED_MIGRATIONS", "from": "BLOCKED", "to": "PASS" }
+    ]
   },
   "decision": {
-    "sprintStatus": "BLOCKED",
+    "sprintStatus": "COMPLETE",
     "productionReadinessPercent": 70,
     "productionStatus": "NOT_READY",
     "gateA": "DEFER",
     "productionProvisioning": "NO_GO",
     "productionMigrationAuthorization": "NOT_GRANTED",
     "productionMigrationTechnicalReadiness": "NO_GO",
-    "blocker": "DEDICATED_READ_ONLY_CREDENTIAL_UNAVAILABLE"
+    "nextBlocker": "FRESH_LEDGER_AND_CHECKSUM_MISSING_0009_AND_0011_TO_0022"
   }
 }

@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Sprint 65 status - Authorized Production read-only evidence analysis (2026-08-13)
+
+- **Sprint status:** COMPLETE for analysis of the single consumed Production read-only connection; no second connection was made.
+- **Evidence:** SHA-256 `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`; target identity, dedicated-reader boundary and TLS trusted-CA/hostname verification passed.
+- **Ledger:** observed sanitized range/count implies `0001`-`0008`; missing `0009` and `0011`-`0022`; unexpected versions and checksum mismatches NONE. Exit `2` was the required `MIGRATION_LEDGER_MISMATCH` stop.
+- **Structural:** NOT EVALUATED after the ledger stop; no independent structural mismatch was observed.
+- **Gate matrix:** `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS` moved to PASS; authoritative result is **9 PASS / 13 non-PASS**.
+- **Decision:** Production 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED; database/schema mutation NONE.
+- **Next unique priority:** Repository-only separation of current `0001`-`0008` starting-baseline verification from final `0022` parity, followed only later by a new explicit read-only authorization if required.
+
 ## Sprint 64 status - Event-Time Production Read-Only Migration Evidence Closure (2026-08-13)
 
 - **Sprint status:** BLOCKED fail-closed before any Production connection because the approved process did not contain the dedicated reader inputs.

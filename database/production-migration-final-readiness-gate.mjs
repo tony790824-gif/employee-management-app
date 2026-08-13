@@ -60,7 +60,7 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
 export async function validateFinalReadinessPackage(input) {
   const value = input || await loadFinalReadinessPackage();
   const failures = [];
-  if (value.schemaVersion !== 4 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 64) failures.push('PACKAGE_FORMAT_MISMATCH');
+  if (value.schemaVersion !== 4 || value.mode !== 'PRODUCTION_MIGRATION_FINAL_READINESS_PACKAGE' || value.lastReviewedSprint !== 65) failures.push('PACKAGE_FORMAT_MISMATCH');
   const inventory = value.repositoryInventory || {};
   if (inventory.expectedCount !== 21 || inventory.result !== 'PASS') failures.push('REPOSITORY_INVENTORY_STATUS_MISMATCH');
   if (JSON.stringify(inventory.approvedVersions) !== JSON.stringify([...value.productionBaseline.expectedVersions, ...REQUIRED_MISSING_VERSIONS])) failures.push('REPOSITORY_INVENTORY_VERSION_MISMATCH');
@@ -129,7 +129,18 @@ export async function validateFinalReadinessPackage(input) {
   const current = evaluateProductionMigrationReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (current.status !== 'NO_GO') failures.push('CURRENT_GATE_MUST_FAIL_CLOSED');
   const revalidation = value.productionReadOnlyRevalidation || {};
-  if (revalidation.processInputs !== 'ABSENT' || revalidation.currentStatus !== 'BLOCKED') failures.push('READONLY_REVALIDATION_FALSE_PASS');
+  if (revalidation.processInputs !== 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS'
+      || revalidation.currentStatus !== 'PARTIAL' || revalidation.authorizationConsumed !== true
+      || revalidation.lastAttemptConnection !== true || revalidation.currentIdentity !== 'PASS'
+      || revalidation.currentReaderRoleBoundary !== 'PASS' || revalidation.currentTlsVerifyFull !== 'PASS') {
+    failures.push('SPRINT_65_READONLY_REVALIDATION_PROVENANCE_MISMATCH');
+  }
+  if (JSON.stringify(revalidation.currentObservedLedgerRange) !== JSON.stringify({ start: '0001', end: '0008', count: 8 })
+      || JSON.stringify(revalidation.currentMissing) !== JSON.stringify(REQUIRED_MISSING_VERSIONS)
+      || revalidation.currentUnexpected?.length || revalidation.currentChecksumMismatch?.length
+      || revalidation.structuralCollection !== 'NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH') {
+    failures.push('SPRINT_65_LEDGER_PROVENANCE_MISMATCH');
+  }
   if (revalidation.historicalIdentity !== 'PASS' || revalidation.historicalRoleBoundary !== 'PASS' || revalidation.historicalTlsVerifyFull !== 'PASS') failures.push('HISTORICAL_IDENTITY_PROVENANCE_DRIFT');
   if (JSON.stringify(revalidation.historicalLedger) !== JSON.stringify(value.productionBaseline.expectedVersions) || JSON.stringify(revalidation.historicalMissing) !== JSON.stringify(REQUIRED_MISSING_VERSIONS)) failures.push('HISTORICAL_LEDGER_PROVENANCE_DRIFT');
   const rollback = value.rollbackAssessment || {};
@@ -152,6 +163,30 @@ export async function validateFinalReadinessPackage(input) {
   if (productionHash !== value.sourceEvidence?.productionReadOnlyEvidenceSha256) failures.push('PRODUCTION_EVIDENCE_PROVENANCE_MISMATCH');
   if (upgradeHash !== value.sourceEvidence?.upgradeRehearsalEvidenceSha256) failures.push('UPGRADE_EVIDENCE_PROVENANCE_MISMATCH');
   if (structuralHash !== value.sourceEvidence?.structuralParityEvidenceSha256) failures.push('STRUCTURAL_EVIDENCE_PROVENANCE_MISMATCH');
+
+  const productionEvidence = JSON.parse(await readFile(PRODUCTION_EVIDENCE_PATH, 'utf8'));
+  const requiredMissing = REQUIRED_MISSING_VERSIONS.map(version => `MISSING:${version}`);
+  if (productionEvidence.identityResult !== 'PASS' || productionEvidence.tlsVerification !== 'VERIFY_FULL_PASS'
+      || productionEvidence.finalStatus !== 'BLOCKED'
+      || JSON.stringify(productionEvidence.stopReasons) !== JSON.stringify(['MIGRATION_LEDGER_MISMATCH'])) {
+    failures.push('SPRINT_65_IDENTITY_TLS_OR_STOP_REASON_MISMATCH');
+  }
+  if (productionEvidence.checksumResult?.status !== 'BLOCKED'
+      || JSON.stringify(productionEvidence.checksumResult?.differences) !== JSON.stringify(requiredMissing)
+      || JSON.stringify(productionEvidence.observedMigrationRange) !== JSON.stringify({ count: 8, end: '0008', start: '0001' })) {
+    failures.push('SPRINT_65_PRODUCTION_LEDGER_EVIDENCE_MISMATCH');
+  }
+  if (productionEvidence.productionCatalogHash !== null
+      || productionEvidence.schemaParityResult?.status !== 'BLOCKED'
+      || !productionEvidence.schemaParityResult?.differences?.includes('NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH')) {
+    failures.push('SPRINT_65_STRUCTURAL_DEPENDENCY_STOP_MISMATCH');
+  }
+  for (const gateId of ['TARGET_IDENTITY', 'TLS_VERIFY_FULL', 'ZERO_UNEXPECTED_MIGRATIONS']) {
+    if (value.currentGateEvidence?.[gateId]?.status !== 'PASS') failures.push(`SPRINT_65_PROVEN_GATE_NOT_PASS:${gateId}`);
+  }
+  for (const gateId of ['FRESH_LEDGER_AND_CHECKSUM', 'STRUCTURAL_STARTING_BASELINE']) {
+    if (value.currentGateEvidence?.[gateId]?.status !== 'BLOCKED') failures.push(`SPRINT_65_BLOCKED_GATE_WEAKENED:${gateId}`);
+  }
 
   const structural = JSON.parse(await readFile(STRUCTURAL_EVIDENCE_PATH, 'utf8'));
   if (structural.baseline?.fingerprint !== value.productionBaseline?.expectedStructuralFingerprint) failures.push('STARTING_FINGERPRINT_MISMATCH');

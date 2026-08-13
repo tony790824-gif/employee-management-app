@@ -2,6 +2,8 @@
 
 Status: **FINAL TECHNICAL RUNBOOK / NO-GO / NOT AN AUTHORIZATION**
 
+Sprint 65 update: one authorized dedicated-reader connection closed `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`, producing 9 PASS / 13 non-PASS. `FRESH_LEDGER_AND_CHECKSUM` remains BLOCKED because Production retains only `0001`-`0008`; `STRUCTURAL_STARTING_BASELINE` was not evaluated after the ledger stop. The authority is consumed. This Runbook still does not authorize a second read, Migration, candidate Commit, maintenance event or Production mutation.
+
 Sprint 63 closes only the Repository runtime-contract and immutable-manifest Gates. The matrix is now 6 PASS / 16 non-PASS. The exact manifest hash is `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`; its candidate authorization remains NOT_GRANTED.
 
 Sprint 62 closure review classified every non-PASS Gate exactly once and recorded the dependency-ordered minimum path in `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_READINESS_REPORT.md`. Sprint 63 closed only the two Repository targets, leaving 6 PASS / 16 non-PASS. Repository-only and read-only closure work cannot authorize a Migration; external configuration, RPO/restore-point/traffic mutations and exact Owner decisions remain separate stops.

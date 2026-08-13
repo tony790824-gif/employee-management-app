@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-13 current state - Sprint 65 authorized read-only evidence analysis
+
+The Owner consumed one explicit dedicated Production read-only connection. The generated sanitized artifact and SHA-256 verify. It proves the protected database/current-user/session-user expectations matched, the dedicated reader boundary passed, and trusted-CA plus hostname verification passed. The artifact deliberately omits literal observed identities; the protected expectations were `neondb` and `banke_production_readonly`.
+
+The current ledger evidence has count 8, range `0001`-`0008`, missing `0009` and `0011`-`0022`, with no unexpected version and no checksum mismatch. Exit code 2 means `MIGRATION_LEDGER_MISMATCH`. Structural catalog collection did not start, so `STRUCTURAL_STARTING_BASELINE` remains BLOCKED by dependency rather than by an observed structural mismatch.
+
+`TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS` are now PASS. The authoritative matrix is 9 PASS / 13 non-PASS. Production remains 70% / NOT READY; Gate A DEFER; Provisioning NO-GO; Migration Technical Readiness NO-GO; authorization NOT_GRANTED. The one-time connection authority is consumed; do not reconnect without new explicit authority.
+
 ## 2026-08-13 current state - Sprint 64 event-time read-only attempt
 
 Sprint 64 had authorization to observe five dedicated-reader Gates, but the current process did not contain the approved Production reader inputs. The collection therefore stopped before connection and emitted only a sanitized BLOCKED evidence contract. Historical Sprint 49 evidence must not be treated as current.

@@ -16,7 +16,7 @@ assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.ok(validation.blockerCount >= 10);
 assert.equal(readiness.schemaVersion, 4);
-assert.equal(readiness.lastReviewedSprint, 64);
+assert.equal(readiness.lastReviewedSprint, 65);
 assert.equal(readiness.repositoryInventory.expectedCount, 21);
 assert.equal(readiness.repositoryInventory.result, 'PASS');
 assert.deepEqual(readiness.repositoryInventory.intentionalGaps, ['0010']);
@@ -39,24 +39,38 @@ assert.equal(readiness.currentGateEvidence.PRE_MIGRATION_RESTORE_POINT.status, '
 assert.equal(readiness.currentGateEvidence.IMMUTABLE_EXECUTION_ARTIFACT.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.RUNTIME_COMPATIBILITY.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.EXPLICIT_EVENT_AUTHORIZATION.status, 'NOT_GRANTED');
+assert.equal(readiness.currentGateEvidence.TARGET_IDENTITY.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.TLS_VERIFY_FULL.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.ZERO_UNEXPECTED_MIGRATIONS.status, 'PASS');
+assert.equal(readiness.currentGateEvidence.FRESH_LEDGER_AND_CHECKSUM.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 'BLOCKED');
-assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'ABSENT');
-assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'BLOCKED');
+assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS');
+assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'PARTIAL');
+assert.equal(readiness.productionReadOnlyRevalidation.authorizationConsumed, true);
+assert.equal(readiness.productionReadOnlyRevalidation.lastAttemptConnection, true);
+assert.equal(readiness.productionReadOnlyRevalidation.currentIdentity, 'PASS');
+assert.equal(readiness.productionReadOnlyRevalidation.currentReaderRoleBoundary, 'PASS');
+assert.equal(readiness.productionReadOnlyRevalidation.currentTlsVerifyFull, 'PASS');
+assert.deepEqual(readiness.productionReadOnlyRevalidation.currentObservedLedgerRange, {
+  start: '0001', end: '0008', count: 8
+});
+assert.deepEqual(readiness.productionReadOnlyRevalidation.currentUnexpected, []);
+assert.deepEqual(readiness.productionReadOnlyRevalidation.currentChecksumMismatch, []);
 assert.equal(readiness.rollbackAssessment.status, 'PARTIAL');
 assert.equal(readiness.rollbackAssessment.unconditionallyReversibleCount, 0);
 assert.equal(readiness.rollbackAssessment.conditionallyReversibleCount, 13);
 assert.equal(readiness.rollbackAssessment.automaticDownAllowed, false);
 assert.deepEqual(readiness.classificationSummary, {
   REPOSITORY_CLOSABLE: 0,
-  READONLY_PRODUCTION_CLOSABLE: 5,
+  READONLY_PRODUCTION_CLOSABLE: 2,
   EXTERNAL_CONFIGURATION_REQUIRED: 3,
   PRODUCTION_MUTATION_REQUIRED: 3,
   COMMERCIAL_DECISION_REQUIRED: 0,
   HUMAN_AUTHORIZATION_REQUIRED: 3,
   BLOCKED_BY_DEPENDENCY: 2
 });
-assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status === 'PASS').length, 6);
-assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status !== 'PASS').length, 16);
+assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status === 'PASS').length, 9);
+assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status !== 'PASS').length, 13);
 assert.equal(Object.keys(readiness.gateClosureMatrix).length, 22);
 for (const gateId of readiness.requiredGateIds) {
   const gate = readiness.currentGateEvidence[gateId];
@@ -97,11 +111,17 @@ assert.equal((await validateFinalReadinessPackage(falseRpoPass)).status, 'BLOCKE
 const falseRollback = structuredClone(readiness);
 falseRollback.rollbackAssessment.automaticDownAllowed = true;
 assert.equal((await validateFinalReadinessPackage(falseRollback)).status, 'BLOCKED');
+const falseLedgerPass = structuredClone(readiness);
+falseLedgerPass.currentGateEvidence.FRESH_LEDGER_AND_CHECKSUM.status = 'PASS';
+assert.equal((await validateFinalReadinessPackage(falseLedgerPass)).status, 'BLOCKED');
+const falseStructuralPass = structuredClone(readiness);
+falseStructuralPass.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status = 'PASS';
+assert.equal((await validateFinalReadinessPackage(falseStructuralPass)).status, 'BLOCKED');
 const missingClassification = structuredClone(readiness);
 delete missingClassification.gateClosureMatrix.TARGET_IDENTITY;
 assert.equal((await validateFinalReadinessPackage(missingClassification)).status, 'BLOCKED');
 const duplicatedClassification = structuredClone(readiness);
-duplicatedClassification.gateClosureMatrix.TARGET_IDENTITY.category = 'CLOSED_PASS';
+duplicatedClassification.gateClosureMatrix.FRESH_LEDGER_AND_CHECKSUM.category = 'CLOSED_PASS';
 assert.equal((await validateFinalReadinessPackage(duplicatedClassification)).status, 'BLOCKED');
 const weakenedMutationBoundary = structuredClone(readiness);
 weakenedMutationBoundary.gateClosureMatrix.RPO_15_MINUTES.canCloseWithoutProductionMutation = true;

@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Sprint 65 authorized read-only evidence analysis
+
+- [x] Verify the generated sanitized evidence and companion SHA-256 without reconnecting.
+- [x] Close only `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`.
+- [x] Keep `FRESH_LEDGER_AND_CHECKSUM` BLOCKED for missing `0009` and `0011`-`0022`.
+- [x] Keep `STRUCTURAL_STARTING_BASELINE` BLOCKED / NOT EVALUATED; do not report an independent structural mismatch.
+- [x] Record the authority as consumed and prohibit a second Production connection.
+- [x] Recalculate the authoritative matrix as 9 PASS / 13 non-PASS while preserving 70% / NOT READY and Migration authorization NOT_GRANTED.
+- [ ] Close the remaining 13 Gates with their separately required evidence and authorization.
+
 ## Sprint 64 event-time read-only evidence
 
 - [x] Stop before connection when the dedicated reader inputs are absent; do not substitute privileged or Staging credentials.

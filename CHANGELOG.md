@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Sprint 65 Authorized Production Read-only Evidence Analysis
+
+- Verified the single-use sanitized evidence and its SHA-256 without making a second Production connection.
+- Closed only target identity, TLS verify-full and zero-unexpected-Migration Gates, moving the authoritative matrix from 6/16 to 9/13.
+- Kept ledger parity and structural starting baseline BLOCKED, Production 70% / NOT READY, Technical NO-GO and Migration authorization NOT_GRANTED.
+
 ## 2026-08-13 - Sprint 64 Event-Time Production Read-Only Evidence Attempt
 
 - Stopped before Production connection because the approved process lacked the dedicated reader inputs; no alternative credential was used.

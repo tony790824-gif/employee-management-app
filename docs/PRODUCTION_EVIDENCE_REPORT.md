@@ -1,5 +1,15 @@
 # Production Evidence Report - Sprint 33D
 
+## Sprint 65 single-use Production reader evidence - 2026-08-13
+
+- Source artifact: `PRODUCTION_SCHEMA_PARITY_EVIDENCE.json`; SHA-256 `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba` (**PASS**).
+- Identity: protected database, current-user and session-user expectations matched; source omits literal observed values by design. Expected values were `neondb` and `banke_production_readonly` (**PASS**).
+- TLS: trusted CA plus hostname verification, recorded as `VERIFY_FULL_PASS` (**PASS**).
+- Ledger: expected 21, observed count 8/range `0001`-`0008`; missing `0009`, `0011`-`0022`; unexpected NONE; checksum mismatch NONE (**BLOCKED parity / PASS zero-unexpected sub-gate**).
+- Structural catalog: `productionCatalogHash=null`; every structural section is `NOT_EVALUATED_AFTER_MIGRATION_LEDGER_MISMATCH`. This is a dependency stop, not an independently observed mismatch.
+- Execution: exit 2 is exactly `MIGRATION_LEDGER_MISMATCH`; one-time authority consumed; Sprint 65 analysis made no second connection.
+- Side effects: dedicated read-only session and metadata transaction occurred; compute/network/connection usage occurred with amount UNKNOWN; archived-Branch wake is implied by successful access but not provider-audited. Production mutation/Migration/deploy/configuration change: NONE.
+
 ## Sprint 64 event-time dedicated-reader evidence - 2026-08-13
 
 - Collection status: **BLOCKED - DEDICATED READ-ONLY CREDENTIAL UNAVAILABLE** in the approved process.

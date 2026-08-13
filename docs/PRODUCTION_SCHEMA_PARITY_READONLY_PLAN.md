@@ -1,5 +1,9 @@
 # Production Schema Parity Read-only Plan
 
+## Sprint 65 current evidence update - 2026-08-13
+
+The single authorized reader connection produced hash-verified evidence `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`. Protected target identity and TLS trusted-CA/hostname verification passed. The ledger retained count 8/range `0001`-`0008`, missing `0009` and `0011`-`0022`, with no unexpected or checksum mismatch. Final-ledger comparison stopped fail-closed before catalog collection, so structural starting-baseline parity remains NOT EVALUATED. The authority is consumed and cannot be reused.
+
 ## Sprint 49 executed evidence outcome - 2026-08-10
 
 The authorized human run proved the dedicated read-only identity, corrected outbound-only role boundary and TLS `verify-full`, then compared only the Migration ledger. Expected 21 entries; Production observed `0001`-`0008`. Missing `0009` and `0011`-`0022`; unexpected versions and checksum mismatches are NONE. The runner stopped before structural catalog collection. Evidence SHA-256: `07673403458f4ae58c35d2a64a6c3fcdf698a7fe80fbf0e7773679cfa92f6d3a`. This result authorizes no repair or Migration.
