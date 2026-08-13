@@ -21,6 +21,8 @@ const STARTING_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_
 const STARTING_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.sha256');
 const LIVE_STARTING_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json');
 const LIVE_STARTING_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.sha256');
+const ACL_SEMANTIC_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_CLOSURE_PHASE_2D_ACL_SEMANTIC_EVIDENCE.json');
+const ACL_SEMANTIC_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_CLOSURE_PHASE_2D_ACL_SEMANTIC_EVIDENCE.sha256');
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'BLOCKED', 'NOT_GRANTED', 'UNKNOWN', 'NOT_CONFIGURED', 'FAIL']);
 const CLOSURE_CATEGORIES = Object.freeze([
   'REPOSITORY_CLOSABLE',
@@ -274,6 +276,22 @@ export async function validateFinalReadinessPackage(input) {
       || JSON.stringify(liveStartingEvidence.stopReasons) !== JSON.stringify(['STRUCTURAL_FINGERPRINT_MISMATCH'])) {
     failures.push('PHASE_2B_LIVE_MISMATCH_PROVENANCE_MISMATCH');
   }
+  const aclSemanticEvidence = JSON.parse(await readFile(ACL_SEMANTIC_EVIDENCE_PATH, 'utf8'));
+  if (aclSemanticEvidence.phase !== 'PRODUCTION_CLOSURE_PHASE_2D'
+      || aclSemanticEvidence.derivedEvidence !== true
+      || aclSemanticEvidence.sourcePhase2BEvidenceSha256 !== await verifiedEvidenceHash(LIVE_STARTING_EVIDENCE_PATH, LIVE_STARTING_EVIDENCE_HASH_PATH)
+      || aclSemanticEvidence.aclSemanticModelVersion !== 'bankeban-acl-semantics-v1'
+      || aclSemanticEvidence.historicalAclDifferences?.total !== 57
+      || aclSemanticEvidence.historicalAclDifferences?.semanticallyReclassifiable !== 0
+      || aclSemanticEvidence.historicalAclDifferences?.classification !== 'INSUFFICIENT_EVIDENCE'
+      || aclSemanticEvidence.structuralStartingBaseline !== 'BLOCKED'
+      || aclSemanticEvidence.freshLedgerAndChecksum !== 'BLOCKED'
+      || aclSemanticEvidence.productionConnectionAttempted !== false
+      || aclSemanticEvidence.productionMutation !== false
+      || aclSemanticEvidence.cleanup?.residualDisposableResourceCount !== 0) {
+    failures.push('PHASE_2D_ACL_SEMANTIC_EVIDENCE_CONTRACT_MISMATCH');
+  }
+  await verifiedEvidenceHash(ACL_SEMANTIC_EVIDENCE_PATH, ACL_SEMANTIC_EVIDENCE_HASH_PATH).catch(() => failures.push('PHASE_2D_ACL_SEMANTIC_EVIDENCE_HASH_MISMATCH'));
   if (startingEvidence.repository00010008StructuralBaseline !== 'PASS'
       || startingEvidence.liveProductionStructuralStartingBaseline !== 'NOT_EVALUATED'
       || startingEvidence.authoritativeStructuralStartingBaseline !== 'BLOCKED'

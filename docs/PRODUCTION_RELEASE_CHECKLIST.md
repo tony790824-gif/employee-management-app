@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Production Closure Phase 2D ACL semantic Gate
+
+- [x] Versioned semantic ACL model and deterministic canonical fingerprint implemented.
+- [x] PostgreSQL defaults, PUBLIC, owner-implied privileges, grant options, default ACLs and outbound reader memberships modeled.
+- [x] Schema/relation/function/sequence privileges include PostgreSQL 18 `MAINTAIN`.
+- [x] Unknown principal/grantor/Extension/model/sanitization states fail closed.
+- [x] Disposable PostgreSQL 18.4 matrix and pgcrypto behavior verified; temporary resources removed.
+- [x] Historical Phase 2B source hash preserved; derived evidence has a separate hash.
+- [ ] Corrected live non-ACL structural evidence: requires a new explicit single-use read-only authorization.
+- [ ] Live ACL semantic match: BLOCKED; existing evidence lacks privilege-level facts.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: BLOCKED until both live sub-gates pass.
+- [ ] `FRESH_LEDGER_AND_CHECKSUM`: independently BLOCKED.
+
 ## Production Closure Phase 2C sanitized drift analysis
 
 - [x] Verify and preserve the Phase 2B source evidence and companion SHA-256 unchanged.

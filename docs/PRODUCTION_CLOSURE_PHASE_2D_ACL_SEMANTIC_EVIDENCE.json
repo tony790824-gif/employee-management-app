@@ -1,0 +1,2898 @@
+{
+  "aclSemanticModelVersion": "bankeban-acl-semantics-v1",
+  "cleanup": {
+    "residualDisposableResourceCount": 0,
+    "temporaryCredentialsRemoved": true,
+    "temporaryDataRemoved": true
+  },
+  "derivedEvidence": true,
+  "disposablePostgres18": {
+    "blockerTypes": [],
+    "disposableMatrix": {
+      "extensionOwnerEquivalent": "SEMANTIC_MATCH",
+      "grantOptionAdded": "SEMANTIC_MISMATCH",
+      "identicalRaw": "SEMANTIC_MATCH",
+      "membershipExpansion": "SEMANTIC_MISMATCH",
+      "nullVsExplicitDefault": "SEMANTIC_MATCH",
+      "nullVsPublicRevoked": "SEMANTIC_MISMATCH",
+      "ownerIdentityEquivalent": "SEMANTIC_MATCH",
+      "publicPrivilegeAdded": "SEMANTIC_MISMATCH",
+      "readonlyWriteAdded": "SEMANTIC_MISMATCH",
+      "sequenceModel": "PASS",
+      "unexpectedPrincipal": "BLOCKED"
+    },
+    "expectedPolicySnapshot": {
+      "audit": {
+        "explicitAclCount": 18,
+        "nullAclCount": 50,
+        "objectCount": 68,
+        "rawPrincipalNamesPersisted": false
+      },
+      "blockers": [],
+      "defaultPrivileges": [],
+      "fingerprint": "693df2f51f8bf2d14492ff378f374016619232bdf7b917940f5526eb93db1f9d",
+      "modelVersion": "bankeban-acl-semantics-v1",
+      "objects": [
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.api_establish_session(signed_payload text, signed_s",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_RUNTIME_ROLE",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.api_execute_command(signed_payload text, signed_sig",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_RUNTIME_ROLE",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.api_list_employees(signed_payload text, signed_sign",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_RUNTIME_ROLE",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.api_logout_session(signed_payload text, signed_sign",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_RUNTIME_ROLE",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.base64url_decode(value text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.current_role()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.current_user_id()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.current_workspace_id()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.raise_auth_error(code text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.touch_updated_at()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.verify_tenant_context(signed_payload text, signed_s",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.armor(bytea, text[], text[])",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.armor(bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.crypt(text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.dearmor(text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.decrypt_iv(bytea, bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.decrypt(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.digest(bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.digest(text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.encrypt_iv(bytea, bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.encrypt(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.fips_mode()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.gen_random_bytes(integer)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.gen_random_uuid()",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.gen_salt(text, integer)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.gen_salt(text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.hmac(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.hmac(text, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_armor_headers(text, OUT key text, OUT value text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_key_id(bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt_bytea(bytea, bytea, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt_bytea(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt_bytea(bytea, bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt(bytea, bytea, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_decrypt(bytea, bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_encrypt_bytea(bytea, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_encrypt_bytea(bytea, bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_encrypt(text, bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_pub_encrypt(text, bytea)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_decrypt_bytea(bytea, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_decrypt_bytea(bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_decrypt(bytea, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_decrypt(bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_encrypt_bytea(bytea, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_encrypt_bytea(bytea, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_encrypt(text, text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "EXTENSION_MANAGED",
+          "extensionName": "pgcrypto",
+          "objectIdentity": "public.pgp_sym_encrypt(text, text)",
+          "objectType": "FUNCTION",
+          "ownerCategory": "EXTENSION_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXTENSION_OWNER",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "EXECUTE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.auth_sessions",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.identity_principals",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.tenant_context_keys",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private.tenant_context_nonces",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.attendance_records",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.audit_logs",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.command_receipts",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.employees",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.leave_selections",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.organizations",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.outbox_events",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.payroll_adjustments",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.schema_migrations",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_READONLY_ROLE",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.shifts",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.snapshot_imports",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.users",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.workspace_members",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public.workspaces",
+          "objectType": "RELATION",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "DELETE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "INSERT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "MAINTAIN",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "REFERENCES",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "SELECT",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRIGGER",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "TRUNCATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "UPDATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "app_private",
+          "objectType": "SCHEMA",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "CREATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "USAGE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_READONLY_ROLE",
+              "privilege": "USAGE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "EXPECTED_RUNTIME_ROLE",
+              "privilege": "USAGE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "app_private"
+        },
+        {
+          "extensionClass": "APPLICATION_MANAGED",
+          "extensionName": "",
+          "objectIdentity": "public",
+          "objectType": "SCHEMA",
+          "ownerCategory": "EXPECTED_OWNER",
+          "privileges": [
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "CREATE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": true,
+              "granteeCategory": "EXPECTED_OWNER",
+              "privilege": "USAGE",
+              "sources": [
+                "ACL_EFFECTIVE",
+                "OWNER_IMPLIED"
+              ]
+            },
+            {
+              "grantOption": false,
+              "granteeCategory": "PUBLIC",
+              "privilege": "USAGE",
+              "sources": [
+                "ACL_EFFECTIVE"
+              ]
+            }
+          ],
+          "schemaName": "public"
+        }
+      ],
+      "readonlyMemberships": [],
+      "status": "PASS"
+    },
+    "independentRebuildEquivalent": true,
+    "independentRebuildPolicyFingerprint": "693df2f51f8bf2d14492ff378f374016619232bdf7b917940f5526eb93db1f9d",
+    "independentRebuildSemanticFingerprint": "0aaa027953e7cd57f804a982f148a8644a6c4cfa2adaf72efb83b031c71fbe2c",
+    "pgcryptoFunctionCount": 37,
+    "pgcryptoOwnerCategories": [
+      "EXTENSION_OWNER"
+    ],
+    "pgcryptoPublicExecuteCount": 37,
+    "rawPrincipalNamesPersisted": false,
+    "repeatedFingerprint": "0aaa027953e7cd57f804a982f148a8644a6c4cfa2adaf72efb83b031c71fbe2c",
+    "semanticFingerprint": "0aaa027953e7cd57f804a982f148a8644a6c4cfa2adaf72efb83b031c71fbe2c",
+    "status": "PASS"
+  },
+  "expectedAclSemanticArtifactSha256": "485097ac88f068cc46a73583ceff4ac6d64ad97e007c4ac20262fda0bf8394ec",
+  "expectedAclSemanticFingerprint": "693df2f51f8bf2d14492ff378f374016619232bdf7b917940f5526eb93db1f9d",
+  "fingerprintArchitecture": "NON_ACL_STRUCTURAL_FINGERPRINT_PLUS_SEMANTIC_ACL_FINGERPRINT",
+  "freshLedgerAndChecksum": "BLOCKED",
+  "gateState": {
+    "nonPass": 13,
+    "pass": 9
+  },
+  "generatedAt": "2026-08-13T12:55:54.742Z",
+  "historicalAclDifferences": {
+    "classification": "INSUFFICIENT_EVIDENCE",
+    "semanticallyReclassifiable": 0,
+    "total": 57
+  },
+  "phase": "PRODUCTION_CLOSURE_PHASE_2D",
+  "productionAuthorization": "NOT_GRANTED",
+  "productionConnectionAttempted": false,
+  "productionMutation": false,
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "repositoryCommitSha": "e455cc210b38ee00f1340cac0650f884b47dcdcb",
+  "schemaVersion": 1,
+  "sourcePhase2BEvidencePreserved": true,
+  "sourcePhase2BEvidenceSha256": "373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7",
+  "sprintNumberingCappedAt": 65,
+  "structuralStartingBaseline": "BLOCKED",
+  "syntheticMatrix": {
+    "differentTrustedGrantorEquivalent": "SEMANTIC_MATCH",
+    "extensionOwnerEquivalent": "SEMANTIC_MATCH",
+    "grantOptionAdded": "SEMANTIC_MISMATCH",
+    "identicalRaw": "SEMANTIC_MATCH",
+    "membershipExpansion": "SEMANTIC_MISMATCH",
+    "modelVersionMismatch": "BLOCKED",
+    "nullVsExplicitDefault": "SEMANTIC_MATCH",
+    "nullVsPublicRevoked": "SEMANTIC_MISMATCH",
+    "ownerIdentityEquivalent": "SEMANTIC_MATCH",
+    "publicPrivilegeAdded": "SEMANTIC_MISMATCH",
+    "readonlyWriteAdded": "SEMANTIC_MISMATCH",
+    "unexpectedPrincipal": "BLOCKED",
+    "unknownAcl": "BLOCKED"
+  }
+}

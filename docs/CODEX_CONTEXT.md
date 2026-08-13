@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-13 current state - Production Closure Phase 2D
+
+Phase 2D adds `bankeban-acl-semantics-v1` and a dual-fingerprint architecture: non-ACL structure plus semantic ACL. The semantic side expands NULL defaults with `acldefault/aclexplode`, models owner-implied rights, PUBLIC, runtime/reader/Extension categories, grant options, default privileges, outbound membership reachability, and PostgreSQL 18 relation `MAINTAIN`. Unknown principals, owners, grantors, privilege types, model versions or sensitive evidence block.
+
+Disposable PostgreSQL 18.4 tests PASS. Equivalent owner/Extension/grantor serialization matches; PUBLIC, readonly-write, grant-option and membership expansion mismatch; unknown data blocks. Local pgcrypto shows 37 Functions with PUBLIC EXECUTE and deterministic semantic collection.
+
+The immutable Phase 2B source contains no grantee/privilege/grant-option facts, so none of its 57 ACL-only differences can be reclassified. `STRUCTURAL_STARTING_BASELINE` and final ledger stay BLOCKED; matrix 9/13; Production 70% / NOT READY. Phase 2D made no Production connection or mutation. A future read requires new single-use authority; never create Sprint 66.
+
 ## 2026-08-13 current state - Production Closure Phase 2C
 
 The consumed Phase 2B reader run produced immutable sanitized evidence SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`: exact starting ledger PASS, observed fingerprint `01761d441417806c60d0e706d16ae0f3b45bee23e9819d23ecb2f9dc56e97fb2`, expected `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, final BLOCKED.

@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2D - ACL Semantic Comparator (2026-08-13)
+
+- **Status:** COMPLETE for Repository/disposable scope; live Gate remains BLOCKED; Sprint numbering capped at 65.
+- **Model:** `bankeban-acl-semantics-v1`; dual non-ACL structural and semantic ACL fingerprints.
+- **Coverage:** principal categories, PostgreSQL default/owner-implied privileges, PUBLIC, grant options, default ACLs, outbound reader membership, pgcrypto and PostgreSQL 18 `MAINTAIN`.
+- **Evidence:** disposable matrix PASS; historical Phase 2B source preserved; 0/57 ACL differences reclassifiable because privilege-level facts were not stored.
+- **Decision:** 9 PASS / 13 non-PASS; Production 70% / NOT READY; authorization NOT_GRANTED. Next action is an Owner decision on a minimum single-use semantic read, not Production repair or Sprint 66.
+
 ## Production Closure Phase 2C - Sanitized structural drift analysis (2026-08-13)
 
 - **Status:** COMPLETE for Repository/local analysis; live structural Gate remains BLOCKED. Sprint numbering remains capped at 65.

@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2D ACL semantic model - 2026-08-13
+
+- Repository/disposable ACL semantic comparator: **PASS**, model `bankeban-acl-semantics-v1`.
+- Gate architecture: non-ACL structural PASS **and** semantic ACL PASS are both required. Final ledger/checksum remains independent.
+- Existing Phase 2B evidence cannot supply semantic privilege facts; 0 of 57 ACL changes are reclassifiable. This does not close the live Gate.
+- `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**; `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**; 22-Gate state remains **9 PASS / 13 non-PASS**.
+- Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning and Technical Readiness **NO-GO**; authorization **NOT_GRANTED**. Production connection/mutation: **NONE**.
+
 ## Production Closure Phase 2C structural drift analysis - 2026-08-13
 
 - Phase 2B source integrity: **PASS**; exact starting ledger: **PASS**; structural fingerprint: **MISMATCH / BLOCKED**.

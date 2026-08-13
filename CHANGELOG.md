@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 2D ACL Semantic Comparator
+
+- Added versioned `bankeban-acl-semantics-v1`, expanding PostgreSQL defaults and categorizing principals, effective privileges, grant options, default privileges and dedicated-reader membership paths without persisting raw Production identities.
+- Added a dual-fingerprint Gate contract: non-ACL structural match plus semantic ACL match; raw ACL text is no longer considered sufficient proof.
+- Disposable PostgreSQL 18.4 tests cover equivalent serialization/owner/grantor/Extension cases and fail closed on PUBLIC, write, grant-option, membership, unknown-principal, model-version and sanitization regressions.
+- Preserved all Phase 2B source bytes; 0/57 historical ACL-only differences can be semantically resolved from the redacted evidence, so the Gate remains BLOCKED and Production remains 70% / NOT READY.
+
 ## 2026-08-13 - Production Closure Phase 2C Sanitized Structural Drift Analysis
 
 - Preserved and hash-verified the single Phase 2B source evidence, then classified its 136 column omissions as a permission-filtered catalog query defect and its 57 ACL-only changes as unresolved operational/extension ACL semantics.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Production Closure Phase 2D current state - 2026-08-13
+
+- Repository/disposable scope is complete. `bankeban-acl-semantics-v1` models schema/relation/function/sequence privileges, PostgreSQL 18 `MAINTAIN`, owner-implied/default ACLs, grant options, reviewed principal categories and outbound read-only membership reachability.
+- Fingerprints are split into non-ACL structure plus semantic ACL. Both must pass; final ledger remains independent.
+- Disposable PostgreSQL 18.4 proved raw-different/semantic-equal cases and dangerous expansion failures. pgcrypto has 37 Functions with default PUBLIC EXECUTE locally; owner identity may normalize only through an explicit reviewed Extension-owner category.
+- Historical Phase 2B evidence hash remains `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`. It lacks privilege-level facts, so 0/57 ACL changes are reclassifiable and `STRUCTURAL_STARTING_BASELINE` remains BLOCKED.
+- No Production connection or mutation occurred. Matrix 9/13, Production 70% / NOT READY, authorization NOT_GRANTED. Do not create Sprint 66. The next action is an Owner decision on one separately authorized minimum semantic metadata read, not a repair.
+
 ## Production Closure Phase 2C current state - 2026-08-13
 
 - Phase 2B ran exactly once; its authorization is consumed. Immutable sanitized evidence SHA-256 is `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`.

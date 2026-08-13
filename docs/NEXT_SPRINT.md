@@ -1,6 +1,12 @@
 # Next Production Closure gate — Production evidence and authorization
 
-## Production Closure Phase 2D proposal - ACL semantic comparator design
+## Production Closure Phase 2E proposal - Minimum semantic ACL evidence authorization
+
+Phase 2D completed `bankeban-acl-semantics-v1` locally. Existing Phase 2B evidence lacks privilege/grantee/grant-option/default/membership facts, so 0/57 ACL-only differences can be reclassified and the live Gate remains BLOCKED.
+
+The next smallest action is an Owner decision—not an automatic execution—on one single-use dedicated Production read-only collection of corrected non-ACL metadata plus categorized semantic ACL facts. Authorization must include possible Neon wake/compute/network/audit effects and exclude Migration, repair, writes, Restore, deploy, role/ACL mutation and all non-reader credentials. Until explicitly approved, no Production connection is allowed. Sprint numbering remains capped at 65; do not create Sprint 66.
+
+## Historical Production Closure Phase 2D proposal - ACL semantic comparator design
 
 Phase 2C proved the Phase 2B mismatch is mixed: 136 false missing columns came from permission-filtered `information_schema.columns`, while 57 remaining changes are ACL-only and their values were intentionally omitted. The corrected shared `pg_catalog` column query is locally byte-compatible, but the current raw ACL fingerprint cannot distinguish owner-inherent privileges, explicit runtime/read-only hardening, extension-managed ACLs and unknown privilege drift.
 

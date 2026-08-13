@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2D semantic ACL evidence - 2026-08-13
+
+- Derived evidence references immutable Phase 2B SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`; source evidence was not rewritten.
+- `bankeban-acl-semantics-v1` and its disposable PostgreSQL 18.4 matrix: **PASS**. It retains PUBLIC, effective privilege, grant option, default ACL and membership expansion signals and fails closed on unknown categories.
+- pgcrypto disposable observation: 37 Functions and 37 PUBLIC EXECUTE grants; repeated semantic collection deterministic. This is local behavior, not live Production evidence.
+- Historical live ACL differences semantically reclassifiable: **0/57**. Classification: `INSUFFICIENT_EVIDENCE`.
+- Production connection/mutation: **NONE**. `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**; matrix 9/13; Production 70% / NOT READY.
+
 ## Production Closure Phase 2C drift evidence - 2026-08-13
 
 - Immutable Phase 2B source evidence SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`: schema/provenance/sanitization PASS; ledger PASS; fingerprint MISMATCH/BLOCKED.

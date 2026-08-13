@@ -1,5 +1,13 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2D ACL semantic comparison - 2026-08-13
+
+Raw `aclitem[]::text` is retained only as historical provenance, not as sufficient future Gate evidence. The approved Repository model is `bankeban-acl-semantics-v1`, producing a semantic ACL fingerprint separately from the non-ACL structural fingerprint.
+
+The future collector must use catalog-only SELECTs and `aclexplode(COALESCE(raw_acl, acldefault(...)))`, classify owner/grantee/grantor before sanitization, retain privilege and grant-option facts, collect relevant `pg_default_acl` and dedicated-reader outbound membership paths, and fail closed on unknown principals or Extensions. Raw Production names and ACL text must not be persisted.
+
+Future Gate rule: `STRUCTURAL_NON_ACL_MATCH=PASS AND ACL_SEMANTIC_MATCH=PASS => STRUCTURAL_STARTING_BASELINE=PASS`. Final ledger/checksum remains separate. Existing Phase 2B evidence lacks the required facts, so current status stays BLOCKED and no connection or repair is authorized.
+
 ## Production Closure Phase 2C correction and drift boundary - 2026-08-13
 
 Phase 2B evidence is immutable and hash-valid. It reports exact ledger PASS but fingerprint MISMATCH: expected `885b29...596e`, observed `01761d...97fb2`. Phase 2C made no Production connection.
