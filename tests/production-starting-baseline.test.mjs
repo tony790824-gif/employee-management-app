@@ -64,7 +64,13 @@ assert.equal(readiness.repositoryStartingBaseline.status, 'PASS');
 assert.equal(readiness.repositoryStartingBaseline.artifactSha256, artifactHash);
 assert.equal(readiness.repositoryStartingBaseline.structuralFingerprint, artifact.structuralFingerprint);
 assert.equal(readiness.repositoryStartingBaseline.liveProductionComparison, 'NOT_EVALUATED');
+assert.equal(readiness.liveStartingBaselineComparison.status, 'NOT_EVALUATED');
+assert.equal(readiness.liveStartingBaselineComparison.productionAuthorization, 'NOT_GRANTED');
+assert.equal(readiness.liveStartingBaselineComparison.productionConnectionAttempted, false);
+assert.deepEqual(readiness.liveStartingBaselineComparison.exactLedger, STARTING_BASELINE_VERSIONS);
 assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 'BLOCKED');
+assert.equal(readiness.currentGateEvidence.FRESH_LEDGER_AND_CHECKSUM.status, 'BLOCKED');
+assert.deepEqual(readiness.gateClosureMatrix.STRUCTURAL_STARTING_BASELINE.dependencies, ['ZERO_UNEXPECTED_MIGRATIONS']);
 assert.equal(readiness.decision.productionReadiness, '70_PERCENT_NOT_READY');
 assert.equal(readiness.decision.productionMigrationTechnicalReadiness, 'NO_GO');
 

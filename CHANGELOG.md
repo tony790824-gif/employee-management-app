@@ -1,5 +1,12 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 2A Dedicated Starting-Baseline Comparator
+
+- Added a dedicated, confirmation-gated exact-`0001`-`0008` Production starting-baseline comparator without executing it.
+- Reused authenticated TLS and dedicated-reader safety boundaries, restricted catalog access to metadata, and added separate sanitized evidence/schema/hash files.
+- Refactored the Gate contract so a future live starting-structure MATCH can close only `STRUCTURAL_STARTING_BASELINE` while final ledger parity remains BLOCKED.
+- Kept Sprint numbering capped at 65, the matrix at 9/13 and Production at 70% / NOT READY; no Production connection or mutation occurred.
+
 ## 2026-08-13 - Production Closure Phase 1 Structural Starting Baseline
 
 - Materialized exactly `0001`-`0008` in two independent disposable PostgreSQL 18.4 clusters and committed the byte-identical normalized baseline.

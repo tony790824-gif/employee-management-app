@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2A implementation evidence - 2026-08-13
+
+- Dedicated live-comparison contract: `PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json` with companion SHA-256 and schema.
+- Current evidence is an explicit **BLOCKED / NOT_EVALUATED** placeholder: identity, TLS, role boundary and live fingerprint were not observed because no Production authority exists.
+- Expected artifact SHA-256 is `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`; expected fingerprint is `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`.
+- Synthetic tests cover exact ledger, identity/TLS/role boundaries, artifact tampering, query allowlist, evidence sanitization and MATCH/MISMATCH paths without a real network connection.
+- Production connection, SQL, Branch wake, mutation, Migration, Restore, deploy and external-resource operation: **NONE**.
+
 ## Production Closure Phase 1 repository baseline evidence - 2026-08-13
 
 - Artifact: `database/production-0001-0008-structural-baseline.json`; SHA-256 `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076` (**PASS**).

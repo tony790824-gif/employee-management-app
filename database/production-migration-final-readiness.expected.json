@@ -30,6 +30,18 @@
     "liveProductionComparison": "NOT_EVALUATED",
     "authoritativeGate": "BLOCKED"
   },
+  "liveStartingBaselineComparison": {
+    "status": "NOT_EVALUATED",
+    "command": "pnpm run db:parity:production-starting-baseline",
+    "confirmationToken": "COMPARE_BANKE_PRODUCTION_STARTING_BASELINE",
+    "evidencePath": "docs/PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json",
+    "evidenceSha256": "484bf8801c4974fd58a6f60f4a3d02dcbfa465ad17024624c3929e9659cd3abb",
+    "expectedArtifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
+    "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "exactLedger": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"],
+    "productionAuthorization": "NOT_GRANTED",
+    "productionConnectionAttempted": false
+  },
   "approvedExecutionOrder": ["0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
   "intentionalExcludedVersions": ["0010"],
   "expectedFinalStructuralFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e",
@@ -37,6 +49,7 @@
   "sourceEvidence": {
     "productionReadOnlyEvidenceSha256": "2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba",
     "repositoryStartingBaselineEvidenceSha256": "045081c4a0bcbcbdd8f58ed5a42d8170455c5ed9017b38c86b17d6d09b1d3353",
+    "liveStartingBaselineComparisonEvidenceSha256": "484bf8801c4974fd58a6f60f4a3d02dcbfa465ad17024624c3929e9659cd3abb",
     "upgradeRehearsalEvidenceSha256": "0192da56bc53ac60f882463a231e1edcac74980477b40a3f65c67043e91eb359",
     "structuralParityEvidenceSha256": "7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d"
   },
@@ -238,7 +251,7 @@
       "requiredAuthorization": "READONLY_CATALOG_EVIDENCE_AUTHORIZATION",
       "requiredExternalResource": "DEDICATED_PRODUCTION_READONLY_CONNECTION",
       "costImplication": "NONE_KNOWN",
-      "dependencies": ["FRESH_LEDGER_AND_CHECKSUM", "ZERO_UNEXPECTED_MIGRATIONS"]
+      "dependencies": ["ZERO_UNEXPECTED_MIGRATIONS"]
     },
     "ISOLATED_RESTORE": {
       "category": "CLOSED_PASS",

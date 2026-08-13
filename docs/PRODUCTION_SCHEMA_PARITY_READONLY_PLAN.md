@@ -1,5 +1,15 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2A dedicated live comparator - 2026-08-13
+
+The Repository now has a separate `pnpm run db:parity:production-starting-baseline` path. It never falls through to `db:parity:production` and requires the dedicated `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE` confirmation.
+
+Before any connection it validates the tracked Phase 1 artifact, companion SHA-256, exact `0001`-`0008` sequence, PostgreSQL 18 normalization contract and fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`. A live run accepts only the eight exact ledger rows including name/checksum/order; `0009`, `0010`, `0011`-`0022`, duplicates and unknown versions fail closed.
+
+The live catalog uses the identical Phase 1 structural queries and normalization. It reads `public.schema_migrations` and PostgreSQL/information-schema metadata only, hashes Function/view definitions, and writes separate sanitized evidence plus SHA-256. It requires expected target/reader identities, the existing reader role boundary, PostgreSQL 18, a temporary CA with hostname-verifying TLS and `BEGIN TRANSACTION READ ONLY`.
+
+Phase 2A did not execute this command or connect to Production. The live sub-evidence therefore remains NOT_EVALUATED and authoritative `STRUCTURAL_STARTING_BASELINE` remains BLOCKED. The Gate is now defined as Repository baseline PASS plus live structural MATCH PASS; final 21-version `FRESH_LEDGER_AND_CHECKSUM` remains an independent BLOCKED Gate.
+
 ## Production Closure Phase 1 expected starting baseline - 2026-08-13
 
 The repository now contains a dedicated, reproducible `0001`-`0008` structural artifact. Two independent PostgreSQL 18.4 rebuilds produced the same normalized fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`; artifact SHA-256 is `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`.

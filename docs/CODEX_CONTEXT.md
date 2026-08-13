@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-13 current state - Production Closure Phase 2A
+
+Repository support now separates live `0001`-`0008` starting-structure comparison from final `0022` parity. The dedicated command is `pnpm run db:parity:production-starting-baseline` and refuses the final comparator token; it requires `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`.
+
+The comparator verifies the tracked Phase 1 artifact/hash/fingerprint and Gate provenance before connection, requires the protected Production database/dedicated-reader identities and temporary trusted CA, uses authenticated TLS and PostgreSQL 18, checks the existing no-dangerous-attribute/NOINHERIT/outbound-membership/no-ownership boundary, and runs only `schema_migrations` plus catalog metadata SELECTs in a READ ONLY transaction. Evidence is separate and sanitized.
+
+Current live status remains NOT_EVALUATED because Phase 2A had no Production authorization and made no connection. The Gate contract now permits Repository PASS plus a future live MATCH to close only `STRUCTURAL_STARTING_BASELINE`; final `FRESH_LEDGER_AND_CHECKSUM` remains independent and BLOCKED. Matrix 9/13, Production 70% / NOT READY, authorization NOT_GRANTED. Do not create Sprint 66.
+
 ## 2026-08-13 current state - Production Closure Phase 1
 
 Sprint numbering ends at Sprint 65. Production Closure Phase 1 used two independent disposable PostgreSQL 18.4 clusters and applied only `0001`-`0008`. Both canonical catalogs were byte-identical with structural fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`; all temporary resources were removed.

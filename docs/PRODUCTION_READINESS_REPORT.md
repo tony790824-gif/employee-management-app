@@ -9,6 +9,14 @@
 - Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**.
 - Production connection/mutation: **NONE**. Disposable cleanup: **PASS**, zero residual resources.
 
+## Production Closure Phase 2A comparator implementation - 2026-08-13
+
+- Added a dedicated exact-`0001`-`0008` starting-baseline comparator, separate from final `0022` parity.
+- Added artifact/hash/Gate provenance, authenticated TLS, target/dedicated-reader/role boundary, PostgreSQL 18, READ ONLY transaction, metadata-only query allowlist and sanitized evidence controls.
+- Gate semantics now permit Repository baseline PASS plus future live structural MATCH PASS to close only `STRUCTURAL_STARTING_BASELINE`; final ledger parity remains independent.
+- Live comparison: **NOT_EVALUATED**. No Production authorization, connection, SQL, wake, mutation, Migration or deploy occurred.
+- Authoritative state remains **9 PASS / 13 non-PASS**, **70% / NOT READY**, Gate A **DEFER**, Provisioning and Migration Technical Readiness **NO-GO**, authorization **NOT_GRANTED**.
+
 ## Sprint 65 authorized read-only evidence analysis - 2026-08-13
 
 - The single authorized dedicated-reader connection completed and its sanitized evidence hash verifies as `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`.

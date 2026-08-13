@@ -60,9 +60,11 @@ function safeIdentifier(value) {
   return /^[A-Za-z_][A-Za-z0-9_-]*$/.test(value);
 }
 
-export function productionConnectionConfig(env = process.env) {
-  if (env.BANK_PRODUCTION_PARITY_CONFIRMATION !== CONFIRMATION) {
-    throw new Error('PRODUCTION_PARITY_CONFIRMATION_REQUIRED');
+export function productionConnectionConfig(env = process.env, options = {}) {
+  const requiredConfirmation = options.confirmation || CONFIRMATION;
+  const confirmationError = options.confirmationError || 'PRODUCTION_PARITY_CONFIRMATION_REQUIRED';
+  if (env.BANK_PRODUCTION_PARITY_CONFIRMATION !== requiredConfirmation) {
+    throw new Error(confirmationError);
   }
   if (String(env.BANK_ENV || '').trim().toLowerCase() !== 'production') {
     throw new Error('PRODUCTION_ENVIRONMENT_REQUIRED');
@@ -99,6 +101,11 @@ export function productionConnectionConfig(env = process.env) {
     caPath,
     client: Object.freeze({ host, port: parsed.port ? Number(parsed.port) : 5432, database, user, password, connectionTimeoutMillis: 10_000 })
   });
+}
+
+export function authenticatedTlsConfig(config, ca) {
+  if (!ca.includes('-----BEGIN CERTIFICATE-----')) throw new Error('PRODUCTION_CA_BUNDLE_INVALID');
+  return Object.freeze({ ca, rejectUnauthorized: true, servername: config.client.host });
 }
 
 export function compareMigrationLedger(expected, observed) {
@@ -236,9 +243,8 @@ async function collectCatalog(client, expectedRole, expectedDatabase, baseline) 
 export async function compareProductionCatalog(env = process.env) {
   const config = productionConnectionConfig(env);
   const ca = await readFile(config.caPath, 'utf8');
-  if (!ca.includes('-----BEGIN CERTIFICATE-----')) throw new Error('PRODUCTION_CA_BUNDLE_INVALID');
   const { baseline, hash: baselineHash } = await loadBaseline();
-  const client = new Client({ ...config.client, ssl: { ca, rejectUnauthorized: true } });
+  const client = new Client({ ...config.client, ssl: authenticatedTlsConfig(config, ca) });
   await client.connect();
   try {
     const collected = await collectCatalog(client, config.expectedRole, config.expectedDatabase, baseline);

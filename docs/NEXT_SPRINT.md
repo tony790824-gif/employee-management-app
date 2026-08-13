@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure Phase 2B proposal - Exact single-use live comparison authorization
+
+Phase 2A added the dedicated `pnpm run db:parity:production-starting-baseline` command. It is separate from final `0022` parity, requires `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`, exact ordered `0001`-`0008` ledger/name/checksum metadata, the committed Phase 1 artifact/hash, authenticated TLS, the dedicated reader boundary and a read-only metadata transaction. Synthetic fail-closed tests pass; the command was not executed against Production.
+
+The next smallest action is a separate Owner decision on one single-use Production read-only execution. Authorization must explicitly cover possible Neon Branch unarchive/compute wake, one TLS/database session, catalog and `schema_migrations` metadata reads, compute/network/I/O and provider/audit logs, plus local overwrite of the dedicated sanitized evidence/hash. It must exclude Migration, writes, Restore, deploy, role/configuration changes and all other credentials. Sprint numbering remains capped at 65; do not create Sprint 66.
+
 ## Production Closure Phase 2 proposal - Authorized live starting-baseline comparison
 
 Production Closure Phase 1 materialized exactly `0001`-`0008` twice in independent disposable PostgreSQL 18.4 clusters. The canonical artifacts were byte-identical and produced fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`. This closes only `REPOSITORY_0001_0008_STRUCTURAL_BASELINE`; the authoritative live `STRUCTURAL_STARTING_BASELINE` remains BLOCKED.

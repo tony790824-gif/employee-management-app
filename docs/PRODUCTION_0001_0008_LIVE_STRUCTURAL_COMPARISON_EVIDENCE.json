@@ -1,0 +1,57 @@
+{
+  "authoritativeStructuralStartingBaseline": "BLOCKED",
+  "expectedArtifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
+  "expectedMigrationSequence": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008"
+  ],
+  "expectedSectionCounts": {
+    "columns": 140,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+  "finalStatus": "BLOCKED",
+  "fingerprintComparison": "BLOCKED",
+  "generatedAt": "2026-08-13T00:00:00.000Z",
+  "identityResult": "BLOCKED",
+  "ledgerResult": {
+    "differences": [
+      "NOT_EXECUTED_NO_PRODUCTION_AUTHORIZATION"
+    ],
+    "expectedCount": 8,
+    "observedCount": 0,
+    "status": "BLOCKED"
+  },
+  "liveProduction00010008StructuralMatch": "BLOCKED",
+  "mismatchedObjects": [],
+  "missingObjectKeys": [],
+  "observedSectionCounts": null,
+  "observedStructuralFingerprint": null,
+  "phase": "PRODUCTION_CLOSURE_PHASE_2A",
+  "productionConnectionAttempted": false,
+  "productionMutation": false,
+  "repository00010008StructuralBaseline": "PASS",
+  "repositoryCommitSha": "d65797291b05ec47883e32998849241ff81505db",
+  "roleBoundaryResult": "BLOCKED",
+  "schemaVersion": 1,
+  "sprintNumberingCappedAt": 65,
+  "stopReasons": [
+    "LIVE_PRODUCTION_COMPARISON_NOT_AUTHORIZED"
+  ],
+  "tlsVerification": "BLOCKED",
+  "unexpectedObjectKeys": []
+}

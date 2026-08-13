@@ -1,5 +1,15 @@
 # AI Handoff
 
+## Production Closure Phase 2A current state - 2026-08-13
+
+- Sprint numbering remains capped at 65; this is a post-Sprint Closure phase, not Sprint 66.
+- Dedicated command: `pnpm run db:parity:production-starting-baseline`; confirmation: `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`.
+- It validates the Git-tracked Phase 1 artifact SHA-256 `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076` and fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, then accepts only exact `0001`-`0008` metadata.
+- It uses the Phase 1 structural queries/normalization, authenticated TLS, dedicated-reader identity/role checks and a READ ONLY transaction; business rows are disallowed.
+- Dedicated evidence remains `NOT_EVALUATED`; no Production connection or mutation occurred. `STRUCTURAL_STARTING_BASELINE` and final `FRESH_LEDGER_AND_CHECKSUM` both remain BLOCKED for different reasons.
+- Gate matrix remains 9 PASS / 13 non-PASS; Production 70% / NOT READY; Gate A DEFER; Provisioning and Migration Technical Readiness NO-GO; authorization NOT_GRANTED.
+- Phase 2B requires a new explicit single-use Owner authorization. Never run the command merely because its tooling now exists.
+
 ## Production Closure Phase 1 current state - 2026-08-13
 
 - Sprint numbering is capped at 65; do not create Sprint 66.

@@ -19,6 +19,8 @@ const STARTING_BASELINE_PATH = path.join(PROJECT_ROOT, 'database', 'production-0
 const STARTING_BASELINE_HASH_PATH = path.join(PROJECT_ROOT, 'database', 'production-0001-0008-structural-baseline.sha256');
 const STARTING_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.json');
 const STARTING_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.sha256');
+const LIVE_STARTING_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json');
+const LIVE_STARTING_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.sha256');
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'BLOCKED', 'NOT_GRANTED', 'UNKNOWN', 'NOT_CONFIGURED', 'FAIL']);
 const CLOSURE_CATEGORIES = Object.freeze([
   'REPOSITORY_CLOSABLE',
@@ -59,6 +61,10 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
     status: blockers.length ? 'NO_GO' : 'GO',
     blockers: Object.freeze(blockers.map(item => Object.freeze(item)))
   });
+}
+
+export function evaluateStructuralStartingBaseline(repositoryStatus, liveStatus) {
+  return repositoryStatus === 'PASS' && liveStatus === 'PASS' ? 'PASS' : 'BLOCKED';
 }
 
 export async function validateFinalReadinessPackage(input) {
@@ -153,15 +159,28 @@ export async function validateFinalReadinessPackage(input) {
   if (value.currentGateEvidence?.RPO_15_MINUTES?.status !== 'BLOCKED' || value.currentGateEvidence?.PRE_MIGRATION_RESTORE_POINT?.status !== 'BLOCKED') failures.push('RECOVERY_BLOCKER_WEAKENED');
   if (value.currentGateEvidence?.IMMUTABLE_EXECUTION_ARTIFACT?.status !== 'PASS' || value.currentGateEvidence?.RUNTIME_COMPATIBILITY?.status !== 'PASS') failures.push('SPRINT_63_REPOSITORY_CLOSURE_DRIFT');
   const repositoryStartingBaseline = value.repositoryStartingBaseline || {};
+  const liveStartingBaseline = value.liveStartingBaselineComparison || {};
+  const liveStartingStatusAllowed = ['NOT_EVALUATED', 'PASS', 'BLOCKED'].includes(liveStartingBaseline.status);
+  const authoritativeStartingPass = evaluateStructuralStartingBaseline(repositoryStartingBaseline.status, liveStartingBaseline.status) === 'PASS';
   if (repositoryStartingBaseline.status !== 'PASS'
       || JSON.stringify(repositoryStartingBaseline.migrationSequence) !== JSON.stringify(value.productionBaseline.expectedVersions)
       || repositoryStartingBaseline.structuralFingerprint !== value.productionBaseline.expectedStructuralFingerprint
       || repositoryStartingBaseline.independentRebuildCount !== 2
       || repositoryStartingBaseline.determinism !== 'PASS'
       || repositoryStartingBaseline.cleanup !== 'PASS'
-      || repositoryStartingBaseline.liveProductionComparison !== 'NOT_EVALUATED'
-      || repositoryStartingBaseline.authoritativeGate !== 'BLOCKED') {
+      || repositoryStartingBaseline.liveProductionComparison !== liveStartingBaseline.status
+      || repositoryStartingBaseline.authoritativeGate !== (authoritativeStartingPass ? 'PASS' : 'BLOCKED')
+      || !liveStartingStatusAllowed
+      || liveStartingBaseline.command !== 'pnpm run db:parity:production-starting-baseline'
+      || liveStartingBaseline.confirmationToken !== 'COMPARE_BANKE_PRODUCTION_STARTING_BASELINE'
+      || liveStartingBaseline.expectedArtifactSha256 !== repositoryStartingBaseline.artifactSha256
+      || liveStartingBaseline.expectedStructuralFingerprint !== repositoryStartingBaseline.structuralFingerprint
+      || JSON.stringify(liveStartingBaseline.exactLedger) !== JSON.stringify(value.productionBaseline.expectedVersions)
+      || value.currentGateEvidence?.STRUCTURAL_STARTING_BASELINE?.status !== (authoritativeStartingPass ? 'PASS' : 'BLOCKED')) {
     failures.push('REPOSITORY_STARTING_BASELINE_CONTRACT_MISMATCH');
+  }
+  if (matrix.STRUCTURAL_STARTING_BASELINE?.dependencies?.includes('FRESH_LEDGER_AND_CHECKSUM')) {
+    failures.push('STARTING_BASELINE_INCORRECTLY_DEPENDS_ON_FINAL_LEDGER');
   }
 
   const repositoryClosure = await repositoryClosureGate();
@@ -170,12 +189,13 @@ export async function validateFinalReadinessPackage(input) {
   const remediation = await validateRemediationInventory();
   if (remediation.status !== 'PASS') failures.push(...remediation.failures.map(item => `REMEDIATION:${item}`));
 
-  const [productionHash, upgradeHash, structuralHash, startingArtifactHash, startingEvidenceHash] = await Promise.all([
+  const [productionHash, upgradeHash, structuralHash, startingArtifactHash, startingEvidenceHash, liveStartingEvidenceHash] = await Promise.all([
     verifiedEvidenceHash(PRODUCTION_EVIDENCE_PATH, PRODUCTION_HASH_PATH),
     verifiedEvidenceHash(UPGRADE_EVIDENCE_PATH, UPGRADE_HASH_PATH),
     verifiedEvidenceHash(STRUCTURAL_EVIDENCE_PATH, STRUCTURAL_HASH_PATH),
     verifiedEvidenceHash(STARTING_BASELINE_PATH, STARTING_BASELINE_HASH_PATH),
-    verifiedEvidenceHash(STARTING_EVIDENCE_PATH, STARTING_EVIDENCE_HASH_PATH)
+    verifiedEvidenceHash(STARTING_EVIDENCE_PATH, STARTING_EVIDENCE_HASH_PATH),
+    verifiedEvidenceHash(LIVE_STARTING_EVIDENCE_PATH, LIVE_STARTING_EVIDENCE_HASH_PATH)
   ]);
   if (productionHash !== value.sourceEvidence?.productionReadOnlyEvidenceSha256) failures.push('PRODUCTION_EVIDENCE_PROVENANCE_MISMATCH');
   if (upgradeHash !== value.sourceEvidence?.upgradeRehearsalEvidenceSha256) failures.push('UPGRADE_EVIDENCE_PROVENANCE_MISMATCH');
@@ -184,6 +204,10 @@ export async function validateFinalReadinessPackage(input) {
   if (startingEvidenceHash !== value.sourceEvidence?.repositoryStartingBaselineEvidenceSha256
       || startingEvidenceHash !== repositoryStartingBaseline.evidenceSha256) {
     failures.push('STARTING_BASELINE_EVIDENCE_PROVENANCE_MISMATCH');
+  }
+  if (liveStartingEvidenceHash !== value.sourceEvidence?.liveStartingBaselineComparisonEvidenceSha256
+      || liveStartingEvidenceHash !== liveStartingBaseline.evidenceSha256) {
+    failures.push('LIVE_STARTING_BASELINE_EVIDENCE_PROVENANCE_MISMATCH');
   }
 
   const productionEvidence = JSON.parse(await readFile(PRODUCTION_EVIDENCE_PATH, 'utf8'));
@@ -206,9 +230,7 @@ export async function validateFinalReadinessPackage(input) {
   for (const gateId of ['TARGET_IDENTITY', 'TLS_VERIFY_FULL', 'ZERO_UNEXPECTED_MIGRATIONS']) {
     if (value.currentGateEvidence?.[gateId]?.status !== 'PASS') failures.push(`SPRINT_65_PROVEN_GATE_NOT_PASS:${gateId}`);
   }
-  for (const gateId of ['FRESH_LEDGER_AND_CHECKSUM', 'STRUCTURAL_STARTING_BASELINE']) {
-    if (value.currentGateEvidence?.[gateId]?.status !== 'BLOCKED') failures.push(`SPRINT_65_BLOCKED_GATE_WEAKENED:${gateId}`);
-  }
+  if (value.currentGateEvidence?.FRESH_LEDGER_AND_CHECKSUM?.status !== 'BLOCKED') failures.push('SPRINT_65_BLOCKED_GATE_WEAKENED:FRESH_LEDGER_AND_CHECKSUM');
 
   const structural = JSON.parse(await readFile(STRUCTURAL_EVIDENCE_PATH, 'utf8'));
   if (structural.baseline?.fingerprint !== value.productionBaseline?.expectedStructuralFingerprint) failures.push('STARTING_FINGERPRINT_MISMATCH');
@@ -224,6 +246,22 @@ export async function validateFinalReadinessPackage(input) {
       || startingArtifact.structuralFingerprint !== value.productionBaseline.expectedStructuralFingerprint
       || startingArtifact.catalog?.migrationLedger?.some(item => item.version === '0010')) {
     failures.push('STARTING_BASELINE_ARTIFACT_CONTENT_MISMATCH');
+  }
+
+  const liveStartingEvidence = JSON.parse(await readFile(LIVE_STARTING_EVIDENCE_PATH, 'utf8'));
+  const evidenceDerivedStatus = liveStartingEvidence.finalStatus === 'PASS' ? 'PASS'
+    : liveStartingEvidence.productionConnectionAttempted ? 'BLOCKED' : 'NOT_EVALUATED';
+  if (liveStartingEvidence.phase !== 'PRODUCTION_CLOSURE_PHASE_2A'
+      || liveStartingEvidence.sprintNumberingCappedAt !== 65
+      || liveStartingEvidence.expectedArtifactSha256 !== repositoryStartingBaseline.artifactSha256
+      || liveStartingEvidence.expectedStructuralFingerprint !== repositoryStartingBaseline.structuralFingerprint
+      || JSON.stringify(liveStartingEvidence.expectedMigrationSequence) !== JSON.stringify(value.productionBaseline.expectedVersions)
+      || liveStartingEvidence.repository00010008StructuralBaseline !== 'PASS'
+      || liveStartingEvidence.productionMutation !== false
+      || liveStartingBaseline.status !== evidenceDerivedStatus
+      || liveStartingEvidence.liveProduction00010008StructuralMatch !== (authoritativeStartingPass ? 'PASS' : 'BLOCKED')
+      || liveStartingEvidence.authoritativeStructuralStartingBaseline !== (authoritativeStartingPass ? 'PASS' : 'BLOCKED')) {
+    failures.push('LIVE_STARTING_BASELINE_EVIDENCE_CONTRACT_MISMATCH');
   }
   if (startingEvidence.repository00010008StructuralBaseline !== 'PASS'
       || startingEvidence.liveProductionStructuralStartingBaseline !== 'NOT_EVALUATED'

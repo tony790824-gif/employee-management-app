@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-0001-0008-live-structural-comparison-v1.json",
+  "title": "Bankeban Production 0001-0008 Live Structural Comparison Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "phase", "sprintNumberingCappedAt", "generatedAt",
+    "repositoryCommitSha", "expectedArtifactSha256", "expectedStructuralFingerprint",
+    "observedStructuralFingerprint", "expectedMigrationSequence", "identityResult",
+    "tlsVerification", "roleBoundaryResult", "ledgerResult", "expectedSectionCounts",
+    "observedSectionCounts", "fingerprintComparison", "missingObjectKeys",
+    "unexpectedObjectKeys", "mismatchedObjects", "repository00010008StructuralBaseline",
+    "liveProduction00010008StructuralMatch", "authoritativeStructuralStartingBaseline",
+    "productionConnectionAttempted", "productionMutation", "finalStatus", "stopReasons"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_PHASE_2A" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "expectedArtifactSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "expectedStructuralFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "observedStructuralFingerprint": { "anyOf": [{ "type": "string", "pattern": "^[a-f0-9]{64}$" }, { "type": "null" }] },
+    "expectedMigrationSequence": { "type": "array", "items": { "type": "string", "pattern": "^[0-9]{4}$" }, "minItems": 8, "maxItems": 8 },
+    "identityResult": { "enum": ["PASS", "BLOCKED"] },
+    "tlsVerification": { "enum": ["VERIFY_FULL_PASS", "BLOCKED"] },
+    "roleBoundaryResult": { "enum": ["PASS", "BLOCKED"] },
+    "ledgerResult": { "$ref": "#/$defs/ledgerResult" },
+    "expectedSectionCounts": { "$ref": "#/$defs/counts" },
+    "observedSectionCounts": { "anyOf": [{ "$ref": "#/$defs/counts" }, { "type": "null" }] },
+    "fingerprintComparison": { "enum": ["MATCH", "MISMATCH", "BLOCKED"] },
+    "missingObjectKeys": { "type": "array", "items": { "type": "string" } },
+    "unexpectedObjectKeys": { "type": "array", "items": { "type": "string" } },
+    "mismatchedObjects": { "type": "array", "items": { "$ref": "#/$defs/mismatch" } },
+    "repository00010008StructuralBaseline": { "const": "PASS" },
+    "liveProduction00010008StructuralMatch": { "enum": ["PASS", "BLOCKED"] },
+    "authoritativeStructuralStartingBaseline": { "enum": ["PASS", "BLOCKED"] },
+    "productionConnectionAttempted": { "type": "boolean" },
+    "productionMutation": { "const": false },
+    "finalStatus": { "enum": ["PASS", "BLOCKED"] },
+    "stopReasons": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+  },
+  "$defs": {
+    "ledgerResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "expectedCount", "observedCount", "differences"],
+      "properties": {
+        "status": { "enum": ["PASS", "BLOCKED"] },
+        "expectedCount": { "const": 8 },
+        "observedCount": { "type": "integer", "minimum": 0 },
+        "differences": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "counts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemas", "relations", "columns", "constraints", "indexes", "functions", "triggers", "sequences", "policies", "extensions"],
+      "properties": {
+        "schemas": { "type": "integer", "minimum": 0 }, "relations": { "type": "integer", "minimum": 0 },
+        "columns": { "type": "integer", "minimum": 0 }, "constraints": { "type": "integer", "minimum": 0 },
+        "indexes": { "type": "integer", "minimum": 0 }, "functions": { "type": "integer", "minimum": 0 },
+        "triggers": { "type": "integer", "minimum": 0 }, "sequences": { "type": "integer", "minimum": 0 },
+        "policies": { "type": "integer", "minimum": 0 }, "extensions": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "mismatch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["section", "key", "changedFields"],
+      "properties": {
+        "section": { "type": "string" }, "key": { "type": "string" },
+        "changedFields": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -1,5 +1,15 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2A - Dedicated starting-baseline comparator (2026-08-13)
+
+- **Status:** COMPLETE for Repository implementation; Sprint numbering remains capped at 65.
+- **Command:** `pnpm run db:parity:production-starting-baseline`, guarded by the distinct `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE` confirmation value.
+- **Boundary:** accepts only exact ordered `0001`-`0008` ledger/name/checksum metadata, rejects `0009`, forbidden `0010`, `0011`-`0022`, duplicates, reorder and unknown versions, then compares the Phase 1 canonical structural model.
+- **Evidence:** a separate sanitized live-comparison contract and SHA-256 placeholder record `NOT_EVALUATED`; no Production connection was authorized or attempted.
+- **Gate semantics:** Repository baseline PASS plus future live structural match PASS may close `STRUCTURAL_STARTING_BASELINE`; final `FRESH_LEDGER_AND_CHECKSUM` stays independently BLOCKED.
+- **Decision:** 9 PASS / 13 non-PASS; Production 70% / NOT READY; Gate A DEFER; Provisioning and Migration Technical Readiness NO-GO; Migration authorization NOT_GRANTED.
+- **Next unique priority:** Production Closure Phase 2B may request one explicit, single-use dedicated-reader authorization for this exact command and its Neon wake/usage side effects. Do not create Sprint 66.
+
 ## Production Closure Phase 1 - Repository `0001`-`0008` structural baseline (2026-08-13)
 
 - **Status:** COMPLETE for Repository/disposable scope; Sprint numbering remains capped at 65.

@@ -1,5 +1,16 @@
 # Production Release Checklist
 
+## Production Closure Phase 2A dedicated starting-baseline comparator
+
+- [x] Add a command distinct from final `db:parity:production` with a dedicated confirmation value.
+- [x] Require exact ordered `0001`-`0008` ledger/name/checksum and reject `0009`, forbidden `0010`, `0011`-`0022`, duplicates and unknown versions.
+- [x] Verify Phase 1 artifact/hash/fingerprint and Gate provenance without regenerating the baseline.
+- [x] Reuse target/dedicated-reader/role protections, authenticated TLS and PostgreSQL 18 checks.
+- [x] Restrict reads to `schema_migrations` and catalog metadata inside a READ ONLY transaction.
+- [x] Add separate sanitized evidence/schema/hash and synthetic fail-closed tests.
+- [x] Keep live comparison NOT_EVALUATED, `STRUCTURAL_STARTING_BASELINE` BLOCKED and final ledger parity independently BLOCKED.
+- [ ] Obtain exact single-use Owner authorization before running the new command.
+
 ## Production Closure Phase 1 repository structural baseline
 
 - [x] Materialize exactly `0001`-`0008` in two independent disposable PostgreSQL 18.4 clusters.

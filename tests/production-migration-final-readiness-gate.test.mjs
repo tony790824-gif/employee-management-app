@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
   evaluateProductionMigrationReadiness,
+  evaluateStructuralStartingBaseline,
   loadFinalReadinessPackage,
   repositoryFinalReadinessGate,
   validateFinalReadinessPackage
@@ -14,6 +15,10 @@ assert.deepEqual(validation.failures, []);
 assert.equal(validation.repositoryTruth, 'PASS');
 assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
+assert.equal(evaluateStructuralStartingBaseline('PASS', 'NOT_EVALUATED'), 'BLOCKED');
+assert.equal(evaluateStructuralStartingBaseline('PASS', 'BLOCKED'), 'BLOCKED');
+assert.equal(evaluateStructuralStartingBaseline('BLOCKED', 'PASS'), 'BLOCKED');
+assert.equal(evaluateStructuralStartingBaseline('PASS', 'PASS'), 'PASS');
 assert.ok(validation.blockerCount >= 10);
 assert.equal(readiness.schemaVersion, 4);
 assert.equal(readiness.lastReviewedSprint, 65);
@@ -54,6 +59,11 @@ assert.equal(readiness.repositoryStartingBaseline.determinism, 'PASS');
 assert.equal(readiness.repositoryStartingBaseline.cleanup, 'PASS');
 assert.equal(readiness.repositoryStartingBaseline.liveProductionComparison, 'NOT_EVALUATED');
 assert.equal(readiness.repositoryStartingBaseline.authoritativeGate, 'BLOCKED');
+assert.equal(readiness.liveStartingBaselineComparison.status, 'NOT_EVALUATED');
+assert.equal(readiness.liveStartingBaselineComparison.confirmationToken, 'COMPARE_BANKE_PRODUCTION_STARTING_BASELINE');
+assert.equal(readiness.liveStartingBaselineComparison.productionAuthorization, 'NOT_GRANTED');
+assert.equal(readiness.liveStartingBaselineComparison.productionConnectionAttempted, false);
+assert.deepEqual(readiness.gateClosureMatrix.STRUCTURAL_STARTING_BASELINE.dependencies, ['ZERO_UNEXPECTED_MIGRATIONS']);
 assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS');
 assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'PARTIAL');
 assert.equal(readiness.productionReadOnlyRevalidation.authorizationConsumed, true);
