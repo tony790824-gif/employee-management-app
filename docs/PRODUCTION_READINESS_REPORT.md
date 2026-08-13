@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 1 repository starting baseline - 2026-08-13
+
+- Two independent PostgreSQL 18.4 rebuilds applied exactly `0001`-`0008` and produced byte-identical normalized catalogs.
+- `REPOSITORY_0001_0008_STRUCTURAL_BASELINE`: **PASS**; fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`.
+- `LIVE_PRODUCTION_STRUCTURAL_STARTING_BASELINE`: **NOT_EVALUATED**; authoritative `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- 22-Gate matrix remains **9 PASS / 13 non-PASS**. Repository reproducibility is a prerequisite, not live Production evidence.
+- Production remains **70% / NOT READY**; Gate A **DEFER**; Provisioning **NO-GO**; Migration Technical Readiness **NO-GO**; authorization **NOT_GRANTED**.
+- Production connection/mutation: **NONE**. Disposable cleanup: **PASS**, zero residual resources.
+
 ## Sprint 65 authorized read-only evidence analysis - 2026-08-13
 
 - The single authorized dedicated-reader connection completed and its sanitized evidence hash verifies as `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`.

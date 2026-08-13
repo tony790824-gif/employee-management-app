@@ -1,10 +1,10 @@
-# Next external gate — Production evidence and authorization
+# Next Production Closure gate — Production evidence and authorization
 
-## Sprint 66 proposal - Current `0001`-`0008` structural starting-baseline contract
+## Production Closure Phase 2 proposal - Authorized live starting-baseline comparison
 
-Sprint 65 consumed the one authorized dedicated-reader connection and closed only `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`. The comparator correctly stopped because the final 21-version expected ledger differs from the current eight-version Production ledger, but that stop also prevented evaluation of the separately required current structural starting baseline.
+Production Closure Phase 1 materialized exactly `0001`-`0008` twice in independent disposable PostgreSQL 18.4 clusters. The canonical artifacts were byte-identical and produced fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`. This closes only `REPOSITORY_0001_0008_STRUCTURAL_BASELINE`; the authoritative live `STRUCTURAL_STARTING_BASELINE` remains BLOCKED.
 
-The next smallest safe Sprint is Repository-only: materialize or bind the reviewed expected `0001`-`0008` catalog, separate current starting-baseline checks from final `0022` parity, and add fail-closed tests proving no Production connection occurs. It must not reconnect, migrate, repair, deploy, authorize a candidate, or convert `FRESH_LEDGER_AND_CHECKSUM`/`STRUCTURAL_STARTING_BASELINE` to PASS without new evidence. Any later Production read requires a new explicit single-use authorization.
+The next smallest closure phase is to prepare and separately authorize a current-state structural comparison that accepts the exact observed `0001`-`0008` ledger as the starting-state prerequisite and compares only sanitized live catalog metadata to the committed Phase 1 artifact. Tool review and authorization preparation may be Repository-only; the comparison itself must not run without a new explicit single-use dedicated-reader authorization. It must not migrate, repair, deploy, or convert final-ledger parity to PASS.
 
 ## Sprint 65 proposal - Protected dedicated-reader availability and exact read-only rerun
 

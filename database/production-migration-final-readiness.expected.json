@@ -17,12 +17,26 @@
     "freshEvidenceRequiredBeforeExecution": true,
     "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e"
   },
+  "repositoryStartingBaseline": {
+    "status": "PASS",
+    "scope": "REPOSITORY_0001_0008_STRUCTURAL_BASELINE",
+    "migrationSequence": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"],
+    "artifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
+    "evidenceSha256": "045081c4a0bcbcbdd8f58ed5a42d8170455c5ed9017b38c86b17d6d09b1d3353",
+    "structuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "independentRebuildCount": 2,
+    "determinism": "PASS",
+    "cleanup": "PASS",
+    "liveProductionComparison": "NOT_EVALUATED",
+    "authoritativeGate": "BLOCKED"
+  },
   "approvedExecutionOrder": ["0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
   "intentionalExcludedVersions": ["0010"],
   "expectedFinalStructuralFingerprint": "f7fcde233753d0d09ed0a3adf796fb2c814afd866ece1542e556b465ce322e9e",
   "expectedCatalogBaselineSha256": "28b2c33eb1ede2bee8433a9721c3e2d7779edd8b0bd80d616fdbc99e87f125df",
   "sourceEvidence": {
     "productionReadOnlyEvidenceSha256": "2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba",
+    "repositoryStartingBaselineEvidenceSha256": "045081c4a0bcbcbdd8f58ed5a42d8170455c5ed9017b38c86b17d6d09b1d3353",
     "upgradeRehearsalEvidenceSha256": "0192da56bc53ac60f882463a231e1edcac74980477b40a3f65c67043e91eb359",
     "structuralParityEvidenceSha256": "7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d"
   },
@@ -91,7 +105,7 @@
     "ZERO_UNEXPECTED_MIGRATIONS": { "status": "PASS", "reason": "SPRINT_65_CURRENT_LEDGER_HAS_NO_UNEXPECTED_VERSION_AND_NO_0010" },
     "0010_ABSENT": { "status": "PASS", "reason": "REPOSITORY_ALLOWLIST_AND_HISTORICAL_PRODUCTION_LEDGER_EXCLUDE_0010" },
     "EXACT_EXECUTION_SEQUENCE": { "status": "PASS", "reason": "REPOSITORY_MANIFEST_VALIDATED" },
-    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "NOT_EVALUATED_AFTER_SPRINT_65_MIGRATION_LEDGER_MISMATCH" },
+    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "REPOSITORY_0001_TO_0008_BASELINE_PASS_BUT_LIVE_PRODUCTION_COMPARISON_NOT_EVALUATED" },
     "ISOLATED_RESTORE": { "status": "PASS", "reason": "SPRINT_57_ISOLATED_RESTORE_AND_ZERO_RESIDUAL_CLEANUP_EVIDENCED" },
     "RTO_60_MINUTES": { "status": "PASS", "reason": "SPRINT_57_MEASURED_112_335_SECONDS" },
     "RPO_15_MINUTES": { "status": "BLOCKED", "reason": "REFERENCE_AND_LATEST_RECOVERABLE_BOUNDARIES_UNKNOWN_RPO_NOT_PROVEN" },
@@ -217,8 +231,8 @@
     "STRUCTURAL_STARTING_BASELINE": {
       "category": "READONLY_PRODUCTION_CLOSABLE",
       "phase": 1,
-      "existingEvidence": "EXPECTED_BASELINE_EXISTS_PRODUCTION_COLLECTION_NOT_STARTED",
-      "evidenceSource": "PRODUCTION_SCHEMA_PARITY_READONLY_PLAN",
+      "existingEvidence": "REPOSITORY_0001_TO_0008_BASELINE_REPRODUCIBLE_LIVE_PRODUCTION_COLLECTION_NOT_STARTED",
+      "evidenceSource": "PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE",
       "canCloseWithoutProductionMutation": true,
       "requiredAction": "COLLECT_SANITIZED_PRODUCTION_CATALOG_METADATA_AND_COMPARE_TO_0001_TO_0008_BASELINE",
       "requiredAuthorization": "READONLY_CATALOG_EVIDENCE_AUTHORIZATION",

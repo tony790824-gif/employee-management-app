@@ -15,6 +15,10 @@ const UPGRADE_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_MIGRAT
 const UPGRADE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_MIGRATION_UPGRADE_REHEARSAL_EVIDENCE.sha256');
 const PRODUCTION_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_SCHEMA_PARITY_EVIDENCE.json');
 const PRODUCTION_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_SCHEMA_PARITY_EVIDENCE.sha256');
+const STARTING_BASELINE_PATH = path.join(PROJECT_ROOT, 'database', 'production-0001-0008-structural-baseline.json');
+const STARTING_BASELINE_HASH_PATH = path.join(PROJECT_ROOT, 'database', 'production-0001-0008-structural-baseline.sha256');
+const STARTING_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.json');
+const STARTING_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.sha256');
 const ALLOWED_GATE_STATUSES = new Set(['PASS', 'BLOCKED', 'NOT_GRANTED', 'UNKNOWN', 'NOT_CONFIGURED', 'FAIL']);
 const CLOSURE_CATEGORIES = Object.freeze([
   'REPOSITORY_CLOSABLE',
@@ -148,6 +152,17 @@ export async function validateFinalReadinessPackage(input) {
   if (value.currentGateEvidence?.ISOLATED_RESTORE?.status !== 'PASS' || value.currentGateEvidence?.RTO_60_MINUTES?.status !== 'PASS') failures.push('RECOVERY_PASS_PROVENANCE_DRIFT');
   if (value.currentGateEvidence?.RPO_15_MINUTES?.status !== 'BLOCKED' || value.currentGateEvidence?.PRE_MIGRATION_RESTORE_POINT?.status !== 'BLOCKED') failures.push('RECOVERY_BLOCKER_WEAKENED');
   if (value.currentGateEvidence?.IMMUTABLE_EXECUTION_ARTIFACT?.status !== 'PASS' || value.currentGateEvidence?.RUNTIME_COMPATIBILITY?.status !== 'PASS') failures.push('SPRINT_63_REPOSITORY_CLOSURE_DRIFT');
+  const repositoryStartingBaseline = value.repositoryStartingBaseline || {};
+  if (repositoryStartingBaseline.status !== 'PASS'
+      || JSON.stringify(repositoryStartingBaseline.migrationSequence) !== JSON.stringify(value.productionBaseline.expectedVersions)
+      || repositoryStartingBaseline.structuralFingerprint !== value.productionBaseline.expectedStructuralFingerprint
+      || repositoryStartingBaseline.independentRebuildCount !== 2
+      || repositoryStartingBaseline.determinism !== 'PASS'
+      || repositoryStartingBaseline.cleanup !== 'PASS'
+      || repositoryStartingBaseline.liveProductionComparison !== 'NOT_EVALUATED'
+      || repositoryStartingBaseline.authoritativeGate !== 'BLOCKED') {
+    failures.push('REPOSITORY_STARTING_BASELINE_CONTRACT_MISMATCH');
+  }
 
   const repositoryClosure = await repositoryClosureGate();
   if (repositoryClosure.immutableExactManifest !== 'PASS' || repositoryClosure.runtimeCompatibility !== 'PASS' || repositoryClosure.candidateCommitAuthorization !== 'NOT_GRANTED') failures.push('SPRINT_63_REPOSITORY_CLOSURE_EVIDENCE_MISMATCH');
@@ -155,14 +170,21 @@ export async function validateFinalReadinessPackage(input) {
   const remediation = await validateRemediationInventory();
   if (remediation.status !== 'PASS') failures.push(...remediation.failures.map(item => `REMEDIATION:${item}`));
 
-  const [productionHash, upgradeHash, structuralHash] = await Promise.all([
+  const [productionHash, upgradeHash, structuralHash, startingArtifactHash, startingEvidenceHash] = await Promise.all([
     verifiedEvidenceHash(PRODUCTION_EVIDENCE_PATH, PRODUCTION_HASH_PATH),
     verifiedEvidenceHash(UPGRADE_EVIDENCE_PATH, UPGRADE_HASH_PATH),
-    verifiedEvidenceHash(STRUCTURAL_EVIDENCE_PATH, STRUCTURAL_HASH_PATH)
+    verifiedEvidenceHash(STRUCTURAL_EVIDENCE_PATH, STRUCTURAL_HASH_PATH),
+    verifiedEvidenceHash(STARTING_BASELINE_PATH, STARTING_BASELINE_HASH_PATH),
+    verifiedEvidenceHash(STARTING_EVIDENCE_PATH, STARTING_EVIDENCE_HASH_PATH)
   ]);
   if (productionHash !== value.sourceEvidence?.productionReadOnlyEvidenceSha256) failures.push('PRODUCTION_EVIDENCE_PROVENANCE_MISMATCH');
   if (upgradeHash !== value.sourceEvidence?.upgradeRehearsalEvidenceSha256) failures.push('UPGRADE_EVIDENCE_PROVENANCE_MISMATCH');
   if (structuralHash !== value.sourceEvidence?.structuralParityEvidenceSha256) failures.push('STRUCTURAL_EVIDENCE_PROVENANCE_MISMATCH');
+  if (startingArtifactHash !== repositoryStartingBaseline.artifactSha256) failures.push('STARTING_BASELINE_ARTIFACT_PROVENANCE_MISMATCH');
+  if (startingEvidenceHash !== value.sourceEvidence?.repositoryStartingBaselineEvidenceSha256
+      || startingEvidenceHash !== repositoryStartingBaseline.evidenceSha256) {
+    failures.push('STARTING_BASELINE_EVIDENCE_PROVENANCE_MISMATCH');
+  }
 
   const productionEvidence = JSON.parse(await readFile(PRODUCTION_EVIDENCE_PATH, 'utf8'));
   const requiredMissing = REQUIRED_MISSING_VERSIONS.map(version => `MISSING:${version}`);
@@ -192,6 +214,26 @@ export async function validateFinalReadinessPackage(input) {
   if (structural.baseline?.fingerprint !== value.productionBaseline?.expectedStructuralFingerprint) failures.push('STARTING_FINGERPRINT_MISMATCH');
   if (structural.comparison?.upgradeFingerprint !== value.expectedFinalStructuralFingerprint || structural.comparison?.fingerprintMatch !== 'MATCH') failures.push('FINAL_FINGERPRINT_MISMATCH');
   if (structural.productionConnectionAttempted !== false || structural.productionMutation !== false) failures.push('DISPOSABLE_EVIDENCE_BOUNDARY_FAILURE');
+
+  const [startingArtifact, startingEvidence] = await Promise.all([
+    readFile(STARTING_BASELINE_PATH, 'utf8').then(JSON.parse),
+    readFile(STARTING_EVIDENCE_PATH, 'utf8').then(JSON.parse)
+  ]);
+  if (startingArtifact.scope !== 'REPOSITORY_0001_0008_STRUCTURAL_BASELINE'
+      || JSON.stringify(startingArtifact.appliedMigrations) !== JSON.stringify(value.productionBaseline.expectedVersions)
+      || startingArtifact.structuralFingerprint !== value.productionBaseline.expectedStructuralFingerprint
+      || startingArtifact.catalog?.migrationLedger?.some(item => item.version === '0010')) {
+    failures.push('STARTING_BASELINE_ARTIFACT_CONTENT_MISMATCH');
+  }
+  if (startingEvidence.repository00010008StructuralBaseline !== 'PASS'
+      || startingEvidence.liveProductionStructuralStartingBaseline !== 'NOT_EVALUATED'
+      || startingEvidence.authoritativeStructuralStartingBaseline !== 'BLOCKED'
+      || startingEvidence.determinism?.status !== 'PASS'
+      || startingEvidence.cleanup?.residualDisposableResourceCount !== 0
+      || startingEvidence.productionConnectionAttempted !== false
+      || startingEvidence.productionMutation !== false) {
+    failures.push('STARTING_BASELINE_EVIDENCE_BOUNDARY_MISMATCH');
+  }
 
   return Object.freeze({
     status: failures.length ? 'BLOCKED' : 'PASS',

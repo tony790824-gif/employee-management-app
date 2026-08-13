@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-13 - Production Closure Phase 1 structural baseline
+
+- Recorded two independent PostgreSQL 18.4 `0001`-`0008` rebuilds, byte-identical catalog evidence and zero-residual cleanup.
+- Distinguished Repository baseline PASS from live Production baseline NOT_EVALUATED and preserved the authoritative structural Gate as BLOCKED.
+- Replaced the prohibited Sprint 66 proposal with an unnumbered Production Closure Phase 2 objective.
+
 ## 2026-08-13 - Sprint 65 authorized Production read-only evidence analysis
 
 - Verified the single-use sanitized Production evidence and updated the authoritative Migration Gate from 6 PASS / 16 non-PASS to 9 PASS / 13 non-PASS.

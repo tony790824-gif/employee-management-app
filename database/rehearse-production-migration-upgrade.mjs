@@ -523,7 +523,8 @@ export async function runOneRehearsal({
   expectedCatalog,
   runLabel,
   includeCatalog = false,
-  structuralQueries = CATALOG_QUERIES
+  structuralQueries = CATALOG_QUERIES,
+  baselineOnly = false
 }) {
   const rootDirectory = path.join(os.tmpdir(), `${TEMP_PREFIX}${randomBytes(8).toString('hex')}`);
   const dataDirectory = path.join(rootDirectory, 'data');
@@ -566,6 +567,21 @@ export async function runOneRehearsal({
         ? baselineCatalog
         : await collectNormalizedCatalog(client, structuralQueries);
       const baselineCatalogHash = sha256(canonicalJson(baselineCatalog));
+      if (baselineOnly) {
+        const baselineResult = {
+          run: runLabel,
+          environment: 'DISPOSABLE_LOCAL_NON_PRODUCTION',
+          postgresMajorVersion: 18,
+          identityVerification: 'PASS',
+          baselineLedger,
+          baselineCatalogHash
+        };
+        return {
+          ...baselineResult,
+          ...(includeCatalog ? { baselineCatalog: structuralBaselineCatalog } : {}),
+          deterministicSummary: canonicalValue(baselineResult)
+        };
+      }
       const failureProbes = await runFailureProbes(client, migrationSet.upgrade[0], migrationSet.baseline);
       const applied = [...migrationSet.baseline];
       const upgrades = [];

@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 1 - Repository `0001`-`0008` structural baseline (2026-08-13)
+
+- **Status:** COMPLETE for Repository/disposable scope; Sprint numbering remains capped at 65.
+- **Execution:** two independent PostgreSQL 18.4 loopback-only rebuilds applied exactly `0001`-`0008`; `0009`, `0010`, and `0011`-`0022` were not applied.
+- **Evidence:** byte-identical catalogs, structural fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, artifact SHA-256 `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`.
+- **Gate boundary:** repository baseline PASS; live Production baseline NOT_EVALUATED; authoritative `STRUCTURAL_STARTING_BASELINE` remains BLOCKED.
+- **Decision:** 9 PASS / 13 non-PASS; Production 70% / NOT READY; Gate A DEFER; Provisioning and Migration Technical Readiness NO-GO; Migration authorization NOT_GRANTED.
+- **Next unique priority:** Production Closure Phase 2 prepares a narrowly authorized live comparison against this baseline. Do not create Sprint 66 or reconnect without new authority.
+
 ## Sprint 65 status - Authorized Production read-only evidence analysis (2026-08-13)
 
 - **Sprint status:** COMPLETE for analysis of the single consumed Production read-only connection; no second connection was made.

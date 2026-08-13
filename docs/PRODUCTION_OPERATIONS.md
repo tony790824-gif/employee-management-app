@@ -1,5 +1,12 @@
 # Production Operations Evidence Guide
 
+## Production Closure Phase 1 operating boundary
+
+- `pnpm db:parity:starting-baseline` is a local/disposable-only command. It rejects Production inputs and requires an explicit disposable confirmation value.
+- It creates two independent PostgreSQL 18 loopback-only clusters, applies only `0001`-`0008`, writes sanitized repository artifacts, then removes all temporary data and credentials.
+- Its PASS result proves repository reproducibility only. Operators must not use it to label live Production structural parity PASS.
+- Sprint numbering remains capped at 65. Any future live catalog read is Production Closure work requiring new explicit single-use authority.
+
 ## Sprint 65 consumed read-only evidence event
 
 - The one-time dedicated Production reader authorization was consumed. Do not reconnect or reuse its process inputs.

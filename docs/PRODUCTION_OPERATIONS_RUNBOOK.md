@@ -2,6 +2,13 @@
 
 Status: **PENDING EXTERNAL APPROVAL**
 
+## Production Closure Phase 1 baseline boundary
+
+- The committed `0001`-`0008` artifact is an expected repository baseline, not live Production evidence.
+- Do not reuse the consumed Sprint 65 reader authorization. A live comparison requires a new exact single-use approval.
+- Never apply `0009`, `0010`, or `0011`-`0022` while running the starting-baseline materializer.
+- Preserve 9 PASS / 13 non-PASS and fail closed while live structural metadata is absent.
+
 ## Sprint 65 Production read-only evidence checkpoint
 
 The single authorized dedicated-reader event is consumed. Current target identity, TLS verify-full and zero-unexpected-Migration evidence pass; ledger parity remains BLOCKED and structural starting-baseline collection did not run. The authoritative result is 9 PASS / 13 non-PASS. Do not reconnect, migrate, repair or reuse the consumed authority. A later connection needs a new exact approval, including Neon wake/usage effects.

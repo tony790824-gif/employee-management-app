@@ -1,5 +1,14 @@
 # Production Schema Parity Report
 
+## Production Closure Phase 1 repository starting baseline - 2026-08-13
+
+- Applied disposable sequence: exactly `0001`-`0008`; `0009`, `0010`, and `0011`-`0022` not applied.
+- PostgreSQL: 18.4; independent rebuilds: 2; determinism: PASS; cleanup residuals: 0.
+- Structural fingerprint A/B: `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e` / same.
+- Artifact SHA-256: `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`.
+- Repository expected starting baseline: PASS. Live Production structural starting baseline: NOT_EVALUATED.
+- Authoritative structural Gate remains BLOCKED; no Production connection or independent mismatch evidence exists.
+
 ## Sprint 65 current authorized evidence - 2026-08-13
 
 - Source evidence SHA-256: `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`.

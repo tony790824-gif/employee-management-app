@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 1 Structural Starting Baseline
+
+- Materialized exactly `0001`-`0008` in two independent disposable PostgreSQL 18.4 clusters and committed the byte-identical normalized baseline.
+- Added a hash-verified repository artifact/evidence contract and fail-closed regression tests, preserving explicit `0010` exclusion.
+- Kept live Production structural parity BLOCKED, the 22-Gate matrix at 9/13, Production 70% / NOT READY and Migration authorization NOT_GRANTED.
+
 ## 2026-08-13 - Sprint 65 Authorized Production Read-only Evidence Analysis
 
 - Verified the single-use sanitized evidence and its SHA-256 without making a second Production connection.

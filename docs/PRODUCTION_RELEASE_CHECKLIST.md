@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Production Closure Phase 1 repository structural baseline
+
+- [x] Materialize exactly `0001`-`0008` in two independent disposable PostgreSQL 18.4 clusters.
+- [x] Reject application of `0009`, `0010`, and `0011`-`0022` in the starting-baseline path.
+- [x] Verify exact eight-row ledger, normalized catalog coverage, byte-identical output and fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`.
+- [x] Remove temporary clusters/data/credentials and verify zero residual resources.
+- [x] Mark only the Repository starting-baseline prerequisite PASS.
+- [ ] Obtain new explicit single-use authority before any live Production structural comparison.
+- [ ] Keep authoritative `STRUCTURAL_STARTING_BASELINE` BLOCKED until sanitized live metadata matches this artifact.
+
 ## Sprint 65 authorized read-only evidence analysis
 
 - [x] Verify the generated sanitized evidence and companion SHA-256 without reconnecting.

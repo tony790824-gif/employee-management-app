@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-13 current state - Production Closure Phase 1
+
+Sprint numbering ends at Sprint 65. Production Closure Phase 1 used two independent disposable PostgreSQL 18.4 clusters and applied only `0001`-`0008`. Both canonical catalogs were byte-identical with structural fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`; all temporary resources were removed.
+
+This proves the repository-derived expected starting structure only. Live Production structural metadata was not collected, no Production connection occurred, and the consumed Sprint 65 authorization was not reused. Therefore the repository prerequisite is PASS while authoritative `STRUCTURAL_STARTING_BASELINE` remains BLOCKED / NOT_EVALUATED. The 22-Gate state remains 9 PASS / 13 non-PASS and Production remains 70% / NOT READY.
+
 ## 2026-08-13 current state - Sprint 65 authorized read-only evidence analysis
 
 The Owner consumed one explicit dedicated Production read-only connection. The generated sanitized artifact and SHA-256 verify. It proves the protected database/current-user/session-user expectations matched, the dedicated reader boundary passed, and trusted-CA plus hostname verification passed. The artifact deliberately omits literal observed identities; the protected expectations were `neondb` and `banke_production_readonly`.

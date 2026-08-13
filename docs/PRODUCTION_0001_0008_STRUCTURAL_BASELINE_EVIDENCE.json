@@ -1,0 +1,173 @@
+{
+  "appliedMigrations": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008"
+  ],
+  "artifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
+  "authoritativeStructuralStartingBaseline": "BLOCKED",
+  "cleanup": {
+    "postgresProcessesTerminated": true,
+    "residualDisposableResourceCount": 0,
+    "temporaryCredentialsRemoved": true,
+    "temporaryDataRemoved": true
+  },
+  "determinism": {
+    "byteIdenticalArtifacts": true,
+    "fingerprintMatch": true,
+    "status": "PASS"
+  },
+  "gateA": "DEFER",
+  "generatedAt": "2026-08-13T11:07:34.624Z",
+  "independentRebuilds": [
+    {
+      "catalogSha256": "593c597a21120d844c06669c234db266b6acdd34637b0a46109352cd7730a6bd",
+      "identityVerification": "PASS",
+      "label": "INDEPENDENT_REBUILD_A",
+      "ledger": [
+        {
+          "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa",
+          "name": "core",
+          "version": "0001"
+        },
+        {
+          "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9",
+          "name": "business",
+          "version": "0002"
+        },
+        {
+          "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f",
+          "name": "commands",
+          "version": "0003"
+        },
+        {
+          "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5",
+          "name": "identity_tenant_boundary",
+          "version": "0004"
+        },
+        {
+          "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3",
+          "name": "identity_context_name_resolution",
+          "version": "0005"
+        },
+        {
+          "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be",
+          "name": "session_token_boundary",
+          "version": "0006"
+        },
+        {
+          "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff",
+          "name": "leave_resource_id_precedence",
+          "version": "0007"
+        },
+        {
+          "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf",
+          "name": "session_subject_binding",
+          "version": "0008"
+        }
+      ],
+      "structuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e"
+    },
+    {
+      "catalogSha256": "593c597a21120d844c06669c234db266b6acdd34637b0a46109352cd7730a6bd",
+      "identityVerification": "PASS",
+      "label": "INDEPENDENT_REBUILD_B",
+      "ledger": [
+        {
+          "checksum": "3e18c54f12063c8fb65a6007133074436a6f579811f66cc43eabd89a6b25a6aa",
+          "name": "core",
+          "version": "0001"
+        },
+        {
+          "checksum": "395339c97e67682e7d9bf6a6b00b96239adfdf7533b2a9c8ff4918be5ae202f9",
+          "name": "business",
+          "version": "0002"
+        },
+        {
+          "checksum": "5c4c4f8090ff8b518e455dd3e714f8a93f0327d63a05e2082508ec47791f3d5f",
+          "name": "commands",
+          "version": "0003"
+        },
+        {
+          "checksum": "e91c39eb6dcc3d2b2be538423e268948cce14c614e580aa0375485911868d8b5",
+          "name": "identity_tenant_boundary",
+          "version": "0004"
+        },
+        {
+          "checksum": "9377087d0a13537e8480df2e027877915b94f0acb54eb6985e48bfd288f810c3",
+          "name": "identity_context_name_resolution",
+          "version": "0005"
+        },
+        {
+          "checksum": "fb2475483d8bf368c8d8f97f62291696a3c7ebf32f95a16bbe32b46e4e4b32be",
+          "name": "session_token_boundary",
+          "version": "0006"
+        },
+        {
+          "checksum": "8e338059039cd7008fdb754e6cbdf6aa3e390f9519f5b3075a0689ac544407ff",
+          "name": "leave_resource_id_precedence",
+          "version": "0007"
+        },
+        {
+          "checksum": "9a74e2a2c91592f1c18d7d73273fc865eaa718f27436f5798cbc985c99e37ecf",
+          "name": "session_subject_binding",
+          "version": "0008"
+        }
+      ],
+      "structuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e"
+    }
+  ],
+  "liveProductionStructuralStartingBaseline": "NOT_EVALUATED",
+  "migration0010Excluded": true,
+  "objectCounts": {
+    "columns": 140,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "migrationLedger": 8,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "tables": 18,
+    "triggers": 9,
+    "views": 0
+  },
+  "phase": "PRODUCTION_CLOSURE_PHASE_1",
+  "postgresMajorVersion": 18,
+  "productionConnectionAttempted": false,
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionMigrationTechnicalReadiness": "NO_GO",
+  "productionMutation": false,
+  "productionProvisioning": "NO_GO",
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "repository00010008StructuralBaseline": "PASS",
+  "schemaVersion": 1,
+  "scope": "DISPOSABLE_LOCAL_NON_PRODUCTION",
+  "sourceCommitSha": "e09f35b81648aed62687c877c774e22cc20377c6",
+  "sprintNumberingCappedAt": 65,
+  "structuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+  "unappliedVersions": [
+    "0009",
+    "0010",
+    "0011",
+    "0012",
+    "0013",
+    "0014",
+    "0015",
+    "0016",
+    "0017",
+    "0018",
+    "0019",
+    "0020",
+    "0021",
+    "0022"
+  ]
+}

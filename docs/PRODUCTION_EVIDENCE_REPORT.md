@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 1 repository baseline evidence - 2026-08-13
+
+- Artifact: `database/production-0001-0008-structural-baseline.json`; SHA-256 `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076` (**PASS**).
+- Evidence: `PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE.json`; SHA-256 `045081c4a0bcbcbdd8f58ed5a42d8170455c5ed9017b38c86b17d6d09b1d3353` (**PASS**).
+- Two independent PostgreSQL 18.4 rebuilds applied exactly `0001`-`0008`; canonical output and structural fingerprint matched.
+- Repository baseline: **PASS**. Live Production comparison: **NOT_EVALUATED**. Authoritative Gate: **BLOCKED**.
+- `0010` remained excluded; `0009` and `0011`-`0022` were not applied.
+- Production connection/mutation: **NONE**; disposable resource residual count: **0**.
+
 ## Sprint 65 single-use Production reader evidence - 2026-08-13
 
 - Source artifact: `PRODUCTION_SCHEMA_PARITY_EVIDENCE.json`; SHA-256 `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba` (**PASS**).

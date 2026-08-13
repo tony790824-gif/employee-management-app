@@ -1,5 +1,11 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 1 expected starting baseline - 2026-08-13
+
+The repository now contains a dedicated, reproducible `0001`-`0008` structural artifact. Two independent PostgreSQL 18.4 rebuilds produced the same normalized fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`; artifact SHA-256 is `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`.
+
+This is the expected-side prerequisite only. It does not supersede the final `0022` expected catalog and does not prove live Production parity. A future separately authorized comparison must first prove the live ledger is exactly `0001`-`0008`, then collect sanitized catalog metadata and compare it to this artifact without applying a Migration.
+
 ## Sprint 65 current evidence update - 2026-08-13
 
 The single authorized reader connection produced hash-verified evidence `2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba`. Protected target identity and TLS trusted-CA/hostname verification passed. The ledger retained count 8/range `0001`-`0008`, missing `0009` and `0011`-`0022`, with no unexpected or checksum mismatch. Final-ledger comparison stopped fail-closed before catalog collection, so structural starting-baseline parity remains NOT EVALUATED. The authority is consumed and cannot be reused.

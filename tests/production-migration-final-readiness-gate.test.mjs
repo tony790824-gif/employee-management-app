@@ -44,6 +44,16 @@ assert.equal(readiness.currentGateEvidence.TLS_VERIFY_FULL.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.ZERO_UNEXPECTED_MIGRATIONS.status, 'PASS');
 assert.equal(readiness.currentGateEvidence.FRESH_LEDGER_AND_CHECKSUM.status, 'BLOCKED');
 assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 'BLOCKED');
+assert.equal(readiness.repositoryStartingBaseline.status, 'PASS');
+assert.deepEqual(readiness.repositoryStartingBaseline.migrationSequence, [
+  '0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008'
+]);
+assert.equal(readiness.repositoryStartingBaseline.structuralFingerprint, readiness.productionBaseline.expectedStructuralFingerprint);
+assert.equal(readiness.repositoryStartingBaseline.independentRebuildCount, 2);
+assert.equal(readiness.repositoryStartingBaseline.determinism, 'PASS');
+assert.equal(readiness.repositoryStartingBaseline.cleanup, 'PASS');
+assert.equal(readiness.repositoryStartingBaseline.liveProductionComparison, 'NOT_EVALUATED');
+assert.equal(readiness.repositoryStartingBaseline.authoritativeGate, 'BLOCKED');
 assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS');
 assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'PARTIAL');
 assert.equal(readiness.productionReadOnlyRevalidation.authorizationConsumed, true);
@@ -117,6 +127,9 @@ assert.equal((await validateFinalReadinessPackage(falseLedgerPass)).status, 'BLO
 const falseStructuralPass = structuredClone(readiness);
 falseStructuralPass.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status = 'PASS';
 assert.equal((await validateFinalReadinessPackage(falseStructuralPass)).status, 'BLOCKED');
+const falseRepositoryBaseline = structuredClone(readiness);
+falseRepositoryBaseline.repositoryStartingBaseline.liveProductionComparison = 'PASS';
+assert.equal((await validateFinalReadinessPackage(falseRepositoryBaseline)).status, 'BLOCKED');
 const missingClassification = structuredClone(readiness);
 delete missingClassification.gateClosureMatrix.TARGET_IDENTITY;
 assert.equal((await validateFinalReadinessPackage(missingClassification)).status, 'BLOCKED');
