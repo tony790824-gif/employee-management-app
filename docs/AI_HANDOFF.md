@@ -1,12 +1,21 @@
 # AI Handoff
 
-## Production Closure Phase 2A current state - 2026-08-13
+## Production Closure Phase 2C current state - 2026-08-13
+
+- Phase 2B ran exactly once; its authorization is consumed. Immutable sanitized evidence SHA-256 is `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`.
+- Exact `0001`-`0008` ledger PASS coexists with fingerprint MISMATCH (`01761d...97fb2` observed versus `885b29...596e` expected).
+- The 136 missing column keys are a confirmed comparator defect: `information_schema.columns` returned only four `schema_migrations` columns to the intentionally restricted reader. The shared query now uses permission-independent `pg_catalog` metadata.
+- All remaining reported differences are 57 ACL-only fields: 37 Neon `pgcrypto`, four Bankeban API Functions, 14 relations and two schemas. Sanitized evidence omits ACL values, so genuine Production drift is NOT_PROVEN and ACL safety/equivalence is unresolved.
+- Same-database PostgreSQL 18.4 A/B fingerprints both equal `885b29...596e`; corrected reader metadata returns all 140 columns and core-without-ACL matches exactly. Disposable cleanup PASS.
+- Selected path D: design an ACL semantic comparator Repository-only before considering any new read-only authorization. `STRUCTURAL_STARTING_BASELINE` remains BLOCKED; matrix 9/13; Production 70% / NOT READY; no Phase 2C Production connection or mutation. Do not create Sprint 66.
+
+## Historical Production Closure Phase 2A implementation state - 2026-08-13
 
 - Sprint numbering remains capped at 65; this is a post-Sprint Closure phase, not Sprint 66.
 - Dedicated command: `pnpm run db:parity:production-starting-baseline`; confirmation: `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`.
 - It validates the Git-tracked Phase 1 artifact SHA-256 `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076` and fingerprint `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, then accepts only exact `0001`-`0008` metadata.
 - It uses the Phase 1 structural queries/normalization, authenticated TLS, dedicated-reader identity/role checks and a READ ONLY transaction; business rows are disallowed.
-- Dedicated evidence remains `NOT_EVALUATED`; no Production connection or mutation occurred. `STRUCTURAL_STARTING_BASELINE` and final `FRESH_LEDGER_AND_CHECKSUM` both remain BLOCKED for different reasons.
+- At Phase 2A completion, dedicated evidence was `NOT_EVALUATED`; Phase 2B later consumed one authorized read and produced the immutable MISMATCH evidence analyzed above.
 - Gate matrix remains 9 PASS / 13 non-PASS; Production 70% / NOT READY; Gate A DEFER; Provisioning and Migration Technical Readiness NO-GO; authorization NOT_GRANTED.
 - Phase 2B requires a new explicit single-use Owner authorization. Never run the command merely because its tooling now exists.
 

@@ -1,5 +1,16 @@
 # Production Release Checklist
 
+## Production Closure Phase 2C sanitized drift analysis
+
+- [x] Verify and preserve the Phase 2B source evidence and companion SHA-256 unchanged.
+- [x] Confirm exact starting ledger PASS and fingerprint MISMATCH without reconnecting.
+- [x] Reproduce the four-versus-140 column visibility issue in disposable PostgreSQL 18.4.
+- [x] Replace the shared permission-filtered column query with catalog-only metadata and prove Phase 1/Phase 2A byte equivalence.
+- [x] Classify all 57 remaining differences as ACL-only and avoid asserting unobserved ACL values.
+- [x] Keep `STRUCTURAL_STARTING_BASELINE` BLOCKED and preserve 9/13, 70% / NOT READY.
+- [ ] Define and review a semantic ACL comparison contract before requesting any further live read.
+- [ ] Require a separate explicit Owner authorization for any future corrected Production comparison.
+
 ## Production Closure Phase 2A dedicated starting-baseline comparator
 
 - [x] Add a command distinct from final `db:parity:production` with a dedicated confirmation value.
@@ -8,8 +19,8 @@
 - [x] Reuse target/dedicated-reader/role protections, authenticated TLS and PostgreSQL 18 checks.
 - [x] Restrict reads to `schema_migrations` and catalog metadata inside a READ ONLY transaction.
 - [x] Add separate sanitized evidence/schema/hash and synthetic fail-closed tests.
-- [x] Keep live comparison NOT_EVALUATED, `STRUCTURAL_STARTING_BASELINE` BLOCKED and final ledger parity independently BLOCKED.
-- [ ] Obtain exact single-use Owner authorization before running the new command.
+- [x] Phase 2A kept live comparison NOT_EVALUATED and final ledger parity independently BLOCKED; Phase 2B later consumed the single-use authorization and produced MISMATCH/BLOCKED evidence.
+- [x] Record the Phase 2B authorization as consumed; no reuse is permitted.
 
 ## Production Closure Phase 1 repository structural baseline
 

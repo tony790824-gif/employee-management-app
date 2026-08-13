@@ -33,7 +33,8 @@ const TRACKED_ARTIFACTS = Object.freeze([
   'database/production-0001-0008-structural-baseline.sha256'
 ]);
 const ALLOWED_QUERY_RELATIONS = new Set([
-  'pg_catalog.pg_namespace', 'pg_catalog.pg_class', 'information_schema.columns',
+  'pg_catalog.pg_namespace', 'pg_catalog.pg_class', 'pg_catalog.pg_attribute',
+  'pg_catalog.pg_type', 'pg_catalog.pg_attrdef',
   'pg_catalog.pg_constraint', 'pg_catalog.pg_index', 'pg_catalog.pg_proc',
   'pg_catalog.pg_language', 'pg_catalog.pg_depend', 'pg_catalog.pg_extension',
   'pg_catalog.pg_trigger', 'pg_catalog.pg_sequence', 'pg_catalog.pg_policies'

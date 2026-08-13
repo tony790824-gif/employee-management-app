@@ -1,11 +1,19 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2C - Sanitized structural drift analysis (2026-08-13)
+
+- **Status:** COMPLETE for Repository/local analysis; live structural Gate remains BLOCKED. Sprint numbering remains capped at 65.
+- **Source:** Phase 2B evidence hash PASS; exact `0001`-`0008` ledger PASS; fingerprint MISMATCH.
+- **Finding:** 136 missing columns are a confirmed least-privilege metadata visibility defect; 57 remaining differences are ACL-only with insufficient sanitized values.
+- **Local proof:** same PostgreSQL 18.4 database A/B fingerprints equal `885b29...596e`; corrected reader columns 140/140; core-without-ACL matches; cleanup PASS.
+- **Decision:** path D. Build an ACL semantic comparator Repository-only; do not repair or reconnect. Matrix 9/13, Production 70% / NOT READY, authorization NOT_GRANTED.
+
 ## Production Closure Phase 2A - Dedicated starting-baseline comparator (2026-08-13)
 
 - **Status:** COMPLETE for Repository implementation; Sprint numbering remains capped at 65.
 - **Command:** `pnpm run db:parity:production-starting-baseline`, guarded by the distinct `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE` confirmation value.
 - **Boundary:** accepts only exact ordered `0001`-`0008` ledger/name/checksum metadata, rejects `0009`, forbidden `0010`, `0011`-`0022`, duplicates, reorder and unknown versions, then compares the Phase 1 canonical structural model.
-- **Evidence:** a separate sanitized live-comparison contract and SHA-256 placeholder record `NOT_EVALUATED`; no Production connection was authorized or attempted.
+- **Evidence at Phase 2A completion:** the separate contract was a `NOT_EVALUATED` placeholder. Phase 2B later consumed one authorization and Phase 2C preserved/analyzed its MISMATCH evidence.
 - **Gate semantics:** Repository baseline PASS plus future live structural match PASS may close `STRUCTURAL_STARTING_BASELINE`; final `FRESH_LEDGER_AND_CHECKSUM` stays independently BLOCKED.
 - **Decision:** 9 PASS / 13 non-PASS; Production 70% / NOT READY; Gate A DEFER; Provisioning and Migration Technical Readiness NO-GO; Migration authorization NOT_GRANTED.
 - **Next unique priority:** Production Closure Phase 2B may request one explicit, single-use dedicated-reader authorization for this exact command and its Neon wake/usage side effects. Do not create Sprint 66.

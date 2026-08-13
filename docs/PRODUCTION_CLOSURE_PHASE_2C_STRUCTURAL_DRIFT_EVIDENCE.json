@@ -1,0 +1,1483 @@
+{
+  "cleanup": {
+    "disposablePostgresTerminated": true,
+    "residualDisposableResourceCount": 0,
+    "temporaryCredentialsRemoved": true,
+    "temporaryDataRemoved": true
+  },
+  "comparatorDefects": [
+    "INFORMATION_SCHEMA_COLUMNS_PRIVILEGE_FILTER_FALSE_MISSING_OBJECTS",
+    "RAW_ACL_FINGERPRINT_DOES_NOT_MODEL_POST_MIGRATION_OPERATIONAL_ACL_SEMANTICS"
+  ],
+  "expectedFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+  "expectedSectionCounts": {
+    "columns": 140,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "gateA": "DEFER",
+  "gateState": {
+    "nonPass": 13,
+    "pass": 9
+  },
+  "generatedAt": "2026-08-13T12:07:47.676Z",
+  "genuineProductionStructuralDrift": "NOT_PROVEN",
+  "localDisposablePostgresMajorVersion": 18,
+  "localEquivalence": {
+    "expectedColumnCount": 140,
+    "expectedCoreWithoutAclFingerprint": "f5494c62b46a12b47f0fa6a1dee31aeb6d26999d7bd4f3d9f32fb4d8f690dfb3",
+    "legacyPermissionFilteredColumnCount": 4,
+    "pgCatalogColumnCount": 140,
+    "phaseAAndBByteEquivalent": true,
+    "phaseAFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "phaseBFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+    "readerCoreWithoutAclFingerprint": "f5494c62b46a12b47f0fa6a1dee31aeb6d26999d7bd4f3d9f32fb4d8f690dfb3",
+    "readerCoreWithoutAclMatch": true,
+    "readerFullFingerprint": "4aa6c70ba93ec0ea2177b413e1b9d5a90fec9caecc2022e3a5a9cc89d6cda5f9",
+    "readerMismatchFields": [
+      "acl"
+    ],
+    "readerMissingObjectCount": 0,
+    "readerUnexpectedObjectCount": 0
+  },
+  "observedFingerprint": "01761d441417806c60d0e706d16ae0f3b45bee23e9819d23ecb2f9dc56e97fb2",
+  "observedSectionCounts": {
+    "columns": 4,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "phase": "PRODUCTION_CLOSURE_PHASE_2C",
+  "phase2BAuthorization": "CONSUMED",
+  "phase2BFingerprintComparison": "MISMATCH",
+  "phase2BSourceEvidenceIntegrity": "PASS",
+  "phase2BSourceEvidenceSha256": "373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7",
+  "phase2BStartingLedger": "PASS",
+  "productionConnectionAttemptedDuringPhase2C": false,
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionMutation": false,
+  "productionProvisioning": "NO_GO",
+  "productionReadiness": "70_PERCENT_NOT_READY",
+  "productionStatus": "NOT_READY",
+  "repositoryCommitSha": "c3653add472211a27e929c9194f540fb00d11ee6",
+  "sanitizedDrift": {
+    "conclusion": "MIXED_COMPARATOR_DEFECT_AND_ACL_EVIDENCE_INSUFFICIENT",
+    "mismatchByField": {
+      "acl": 57
+    },
+    "mismatchBySection": {
+      "functions": 41,
+      "relations": 14,
+      "schemas": 2
+    },
+    "mismatchClassifications": [
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "app_private",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "schemas"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "schemas"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|attendance_records",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|audit_logs",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|command_receipts",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|employees",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|leave_selections",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|organizations",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|outbox_events",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|payroll_adjustments",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|schema_migrations",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|shifts",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|snapshot_imports",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|users",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|workspace_members",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|workspaces",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "relations"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "app_private|api_establish_session|signed_payload text, signed_signature text, signing_key_id text",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "app_private|api_execute_command|signed_payload text, signed_signature text, signing_key_id text, command_name text, command_input jsonb, idempotency_key text, request_hash text, request_id text",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "app_private|api_list_employees|signed_payload text, signed_signature text, signing_key_id text",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "OWNER_OR_ACL_PLACEHOLDER_MISMATCH",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "app_private|api_logout_session|signed_payload text, signed_signature text, signing_key_id text",
+        "reason": "RAW_ACL_MODEL_INCLUDES_POST_MIGRATION_OPERATIONAL_GRANTS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|armor|bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|armor|bytea, text[], text[]",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|crypt|text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|dearmor|text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|decrypt_iv|bytea, bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|decrypt|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|digest|bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|digest|text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|encrypt_iv|bytea, bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|encrypt|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|fips_mode|",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|gen_random_bytes|integer",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|gen_random_uuid|",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|gen_salt|text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|gen_salt|text, integer",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|hmac|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|hmac|text, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_armor_headers|text, OUT key text, OUT value text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_key_id|bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt_bytea|bytea, bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt_bytea|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt_bytea|bytea, bytea, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt|bytea, bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_decrypt|bytea, bytea, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_encrypt_bytea|bytea, bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_encrypt_bytea|bytea, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_encrypt|text, bytea",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_pub_encrypt|text, bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_decrypt_bytea|bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_decrypt_bytea|bytea, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_decrypt|bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_decrypt|bytea, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_encrypt_bytea|bytea, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_encrypt_bytea|bytea, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_encrypt|text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      },
+      {
+        "changedFields": [
+          "acl"
+        ],
+        "classifications": [
+          "EXTENSION_ENVIRONMENT_DIFFERENCE",
+          "EVIDENCE_INSUFFICIENT"
+        ],
+        "key": "public|pgp_sym_encrypt|text, text, text",
+        "reason": "PGCRYPTO_ACL_DIFFERS_BUT_SANITIZED_EVIDENCE_OMITS_VALUES",
+        "section": "functions"
+      }
+    ],
+    "missingBySection": {
+      "columns": 136
+    },
+    "missingClassifications": [
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|expires_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|issuer",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|last_seen_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|provider_session_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|revoke_reason",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|revoked_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|subject",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|user_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|auth_sessions|valid_after",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|issuer",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|subject",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|identity_principals|user_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|expires_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|key_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|not_before",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|secret",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_keys|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_nonces|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_nonces|expires_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_nonces|nonce",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:app_private|tenant_context_nonces|session_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|attendance_type",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|clock_in",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|clock_out",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|employee_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|hours",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|note",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|work_date",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|attendance_records|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|action",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|actor_user_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|payload",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|request_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|resource_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|resource_type",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|audit_logs|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|actor_user_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|command_name",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|expires_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|idempotency_key",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|request_hash",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|response_body",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|command_receipts|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|deleted_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|hourly_rate",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|job_title",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|leave_quota",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|name",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|phone",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|purge_after",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|employees|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|employee_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|leave_date",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|leave_type",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|note",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|leave_selections|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|organizations|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|organizations|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|organizations|name",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|organizations|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|aggregate_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|aggregate_type",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|attempts",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|event_type",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|payload",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|published_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|outbox_events|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|adjustment_date",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|amount",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|employee_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|note",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|payroll_month",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|payroll_adjustments|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|employee_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|end_time",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|note",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|start_time",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|work_date",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|shifts|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|snapshot_imports|imported_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|snapshot_imports|imported_counts",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|snapshot_imports|source_checksum",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|snapshot_imports|source_revision",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|snapshot_imports|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|users|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|users|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|users|phone",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|users|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|users|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|auth_status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|employee_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|joined_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|role",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|user_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspace_members|workspace_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|created_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|name",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|organization_id",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|status",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      },
+      {
+        "classification": "COMPARATOR_IMPLEMENTATION_DEFECT",
+        "key": "columns:public|workspaces|updated_at",
+        "reason": "LEGACY_INFORMATION_SCHEMA_COLUMNS_IS_PRIVILEGE_FILTERED_FOR_THE_DEDICATED_READER"
+      }
+    ],
+    "missingColumnRelationCounts": {
+      "app_private|auth_sessions": 12,
+      "app_private|identity_principals": 6,
+      "app_private|tenant_context_keys": 6,
+      "app_private|tenant_context_nonces": 4,
+      "public|attendance_records": 12,
+      "public|audit_logs": 9,
+      "public|command_receipts": 8,
+      "public|employees": 13,
+      "public|leave_selections": 9,
+      "public|organizations": 4,
+      "public|outbox_events": 9,
+      "public|payroll_adjustments": 10,
+      "public|shifts": 10,
+      "public|snapshot_imports": 5,
+      "public|users": 5,
+      "public|workspace_members": 8,
+      "public|workspaces": 6
+    },
+    "selectedPath": "D",
+    "unexpectedClassifications": []
+  },
+  "schemaVersion": 1,
+  "selectedNextPath": "D",
+  "sprintNumberingCappedAt": 65,
+  "structuralStartingBaselineGate": "BLOCKED"
+}

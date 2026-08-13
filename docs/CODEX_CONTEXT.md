@@ -1,12 +1,20 @@
 # Codex Context
 
-## 2026-08-13 current state - Production Closure Phase 2A
+## 2026-08-13 current state - Production Closure Phase 2C
+
+The consumed Phase 2B reader run produced immutable sanitized evidence SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`: exact starting ledger PASS, observed fingerprint `01761d441417806c60d0e706d16ae0f3b45bee23e9819d23ecb2f9dc56e97fb2`, expected `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`, final BLOCKED.
+
+Phase 2C proved the 136 reported missing columns were caused by the privilege-filtered `information_schema.columns` view: the dedicated reader sees only four ledger columns. The shared collector now uses `pg_catalog` and returns all 140 columns without business-row access. A same-database PostgreSQL 18.4 A/B rehearsal produced byte-identical expected fingerprints; corrected reader core metadata also matches after excluding ACL.
+
+The 57 remaining differences are ACL-only (37 Neon pgcrypto Functions, four Bankeban API Functions, 14 relations, two schemas). Phase 2B evidence intentionally lacks raw ACL values, so neither safe equivalence nor genuine Production drift is proven. Selected path D is Repository-only ACL semantic-model work before any new authorization. Gate stays BLOCKED, matrix 9/13, Production 70% / NOT READY, authorization NOT_GRANTED. Phase 2C made no Production connection or mutation; never rerun Phase 2B or create Sprint 66.
+
+## 2026-08-13 historical implementation state - Production Closure Phase 2A
 
 Repository support now separates live `0001`-`0008` starting-structure comparison from final `0022` parity. The dedicated command is `pnpm run db:parity:production-starting-baseline` and refuses the final comparator token; it requires `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`.
 
 The comparator verifies the tracked Phase 1 artifact/hash/fingerprint and Gate provenance before connection, requires the protected Production database/dedicated-reader identities and temporary trusted CA, uses authenticated TLS and PostgreSQL 18, checks the existing no-dangerous-attribute/NOINHERIT/outbound-membership/no-ownership boundary, and runs only `schema_migrations` plus catalog metadata SELECTs in a READ ONLY transaction. Evidence is separate and sanitized.
 
-Current live status remains NOT_EVALUATED because Phase 2A had no Production authorization and made no connection. The Gate contract now permits Repository PASS plus a future live MATCH to close only `STRUCTURAL_STARTING_BASELINE`; final `FRESH_LEDGER_AND_CHECKSUM` remains independent and BLOCKED. Matrix 9/13, Production 70% / NOT READY, authorization NOT_GRANTED. Do not create Sprint 66.
+At Phase 2A completion, live status was NOT_EVALUATED because that implementation phase had no Production authorization. Phase 2B later consumed one read and produced MISMATCH/BLOCKED evidence; see the Phase 2C section above. The Gate contract still permits only Repository PASS plus a valid live MATCH to close `STRUCTURAL_STARTING_BASELINE`; final `FRESH_LEDGER_AND_CHECKSUM` remains independent and BLOCKED.
 
 ## 2026-08-13 current state - Production Closure Phase 1
 

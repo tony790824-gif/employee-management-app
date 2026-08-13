@@ -1,6 +1,12 @@
 # Next Production Closure gate — Production evidence and authorization
 
-## Production Closure Phase 2B proposal - Exact single-use live comparison authorization
+## Production Closure Phase 2D proposal - ACL semantic comparator design
+
+Phase 2C proved the Phase 2B mismatch is mixed: 136 false missing columns came from permission-filtered `information_schema.columns`, while 57 remaining changes are ACL-only and their values were intentionally omitted. The corrected shared `pg_catalog` column query is locally byte-compatible, but the current raw ACL fingerprint cannot distinguish owner-inherent privileges, explicit runtime/read-only hardening, extension-managed ACLs and unknown privilege drift.
+
+The next smallest action is Repository/disposable-only: define a reviewed ACL semantic evidence model, role-class placeholders and fail-closed tests. It must preserve detection of PUBLIC or unknown-principal expansion, keep Neon `pgcrypto` separate from Bankeban Functions and avoid raw role names. No Production connection or authorization is currently required. A future live read must be separately authorized only after this model passes. Sprint numbering remains capped at 65; do not create Sprint 66.
+
+## Historical Production Closure Phase 2B proposal - Exact single-use live comparison authorization
 
 Phase 2A added the dedicated `pnpm run db:parity:production-starting-baseline` command. It is separate from final `0022` parity, requires `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE`, exact ordered `0001`-`0008` ledger/name/checksum metadata, the committed Phase 1 artifact/hash, authenticated TLS, the dedicated reader boundary and a read-only metadata transaction. Synthetic fail-closed tests pass; the command was not executed against Production.
 

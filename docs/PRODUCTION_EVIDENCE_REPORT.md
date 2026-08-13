@@ -1,9 +1,17 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2C drift evidence - 2026-08-13
+
+- Immutable Phase 2B source evidence SHA-256 `373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7`: schema/provenance/sanitization PASS; ledger PASS; fingerprint MISMATCH/BLOCKED.
+- Sanitized drift: 136 missing column keys, no unexpected objects and 57 ACL-only changes. Counts for every other structural section match.
+- Local PostgreSQL 18.4 evidence proved old reader visibility 4 columns versus corrected `pg_catalog` 140, A/B fingerprint equality `885b29...596e`, and exact core-without-ACL equality.
+- Classification: confirmed comparator defect plus unresolved ACL semantics/extension environment evidence. Genuine Production structural drift is NOT_PROVEN.
+- Phase 2C evidence SHA-256 is maintained by `PRODUCTION_CLOSURE_PHASE_2C_STRUCTURAL_DRIFT_EVIDENCE.sha256`; disposable cleanup PASS, Production connection/mutation NONE.
+
 ## Production Closure Phase 2A implementation evidence - 2026-08-13
 
 - Dedicated live-comparison contract: `PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json` with companion SHA-256 and schema.
-- Current evidence is an explicit **BLOCKED / NOT_EVALUATED** placeholder: identity, TLS, role boundary and live fingerprint were not observed because no Production authority exists.
+- The initial Phase 2A artifact was a **BLOCKED / NOT_EVALUATED** placeholder. Phase 2B later replaced it once under explicit authority; its immutable result is documented in the Phase 2C section above.
 - Expected artifact SHA-256 is `6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076`; expected fingerprint is `885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e`.
 - Synthetic tests cover exact ledger, identity/TLS/role boundaries, artifact tampering, query allowlist, evidence sanitization and MATCH/MISMATCH paths without a real network connection.
 - Production connection, SQL, Branch wake, mutation, Migration, Restore, deploy and external-resource operation: **NONE**.

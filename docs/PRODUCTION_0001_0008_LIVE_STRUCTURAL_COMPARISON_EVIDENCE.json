@@ -25,33 +25,579 @@
   },
   "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
   "finalStatus": "BLOCKED",
-  "fingerprintComparison": "BLOCKED",
-  "generatedAt": "2026-08-13T00:00:00.000Z",
-  "identityResult": "BLOCKED",
+  "fingerprintComparison": "MISMATCH",
+  "generatedAt": "2026-08-13T11:54:32.510Z",
+  "identityResult": "PASS",
   "ledgerResult": {
-    "differences": [
-      "NOT_EXECUTED_NO_PRODUCTION_AUTHORIZATION"
-    ],
+    "differences": [],
     "expectedCount": 8,
-    "observedCount": 0,
-    "status": "BLOCKED"
+    "observedCount": 8,
+    "status": "PASS"
   },
   "liveProduction00010008StructuralMatch": "BLOCKED",
-  "mismatchedObjects": [],
-  "missingObjectKeys": [],
-  "observedSectionCounts": null,
-  "observedStructuralFingerprint": null,
+  "mismatchedObjects": [
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "app_private",
+      "section": "schemas"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public",
+      "section": "schemas"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|attendance_records",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|audit_logs",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|command_receipts",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|employees",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|leave_selections",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|organizations",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|outbox_events",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|payroll_adjustments",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|schema_migrations",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|shifts",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|snapshot_imports",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|users",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|workspace_members",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|workspaces",
+      "section": "relations"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "app_private|api_establish_session|signed_payload text, signed_signature text, signing_key_id text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "app_private|api_execute_command|signed_payload text, signed_signature text, signing_key_id text, command_name text, command_input jsonb, idempotency_key text, request_hash text, request_id text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "app_private|api_list_employees|signed_payload text, signed_signature text, signing_key_id text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "app_private|api_logout_session|signed_payload text, signed_signature text, signing_key_id text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|armor|bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|armor|bytea, text[], text[]",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|crypt|text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|dearmor|text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|decrypt_iv|bytea, bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|decrypt|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|digest|bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|digest|text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|encrypt_iv|bytea, bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|encrypt|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|fips_mode|",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|gen_random_bytes|integer",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|gen_random_uuid|",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|gen_salt|text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|gen_salt|text, integer",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|hmac|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|hmac|text, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_armor_headers|text, OUT key text, OUT value text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_key_id|bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt_bytea|bytea, bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt_bytea|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt_bytea|bytea, bytea, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt|bytea, bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_decrypt|bytea, bytea, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_encrypt_bytea|bytea, bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_encrypt_bytea|bytea, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_encrypt|text, bytea",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_pub_encrypt|text, bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_decrypt_bytea|bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_decrypt_bytea|bytea, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_decrypt|bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_decrypt|bytea, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_encrypt_bytea|bytea, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_encrypt_bytea|bytea, text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_encrypt|text, text",
+      "section": "functions"
+    },
+    {
+      "changedFields": [
+        "acl"
+      ],
+      "key": "public|pgp_sym_encrypt|text, text, text",
+      "section": "functions"
+    }
+  ],
+  "missingObjectKeys": [
+    "columns:app_private|auth_sessions|created_at",
+    "columns:app_private|auth_sessions|expires_at",
+    "columns:app_private|auth_sessions|id",
+    "columns:app_private|auth_sessions|issuer",
+    "columns:app_private|auth_sessions|last_seen_at",
+    "columns:app_private|auth_sessions|provider_session_id",
+    "columns:app_private|auth_sessions|revoke_reason",
+    "columns:app_private|auth_sessions|revoked_at",
+    "columns:app_private|auth_sessions|status",
+    "columns:app_private|auth_sessions|subject",
+    "columns:app_private|auth_sessions|user_id",
+    "columns:app_private|auth_sessions|valid_after",
+    "columns:app_private|identity_principals|created_at",
+    "columns:app_private|identity_principals|issuer",
+    "columns:app_private|identity_principals|status",
+    "columns:app_private|identity_principals|subject",
+    "columns:app_private|identity_principals|updated_at",
+    "columns:app_private|identity_principals|user_id",
+    "columns:app_private|tenant_context_keys|created_at",
+    "columns:app_private|tenant_context_keys|expires_at",
+    "columns:app_private|tenant_context_keys|key_id",
+    "columns:app_private|tenant_context_keys|not_before",
+    "columns:app_private|tenant_context_keys|secret",
+    "columns:app_private|tenant_context_keys|status",
+    "columns:app_private|tenant_context_nonces|created_at",
+    "columns:app_private|tenant_context_nonces|expires_at",
+    "columns:app_private|tenant_context_nonces|nonce",
+    "columns:app_private|tenant_context_nonces|session_id",
+    "columns:public|attendance_records|attendance_type",
+    "columns:public|attendance_records|clock_in",
+    "columns:public|attendance_records|clock_out",
+    "columns:public|attendance_records|created_at",
+    "columns:public|attendance_records|employee_id",
+    "columns:public|attendance_records|hours",
+    "columns:public|attendance_records|id",
+    "columns:public|attendance_records|note",
+    "columns:public|attendance_records|revision",
+    "columns:public|attendance_records|updated_at",
+    "columns:public|attendance_records|work_date",
+    "columns:public|attendance_records|workspace_id",
+    "columns:public|audit_logs|action",
+    "columns:public|audit_logs|actor_user_id",
+    "columns:public|audit_logs|created_at",
+    "columns:public|audit_logs|id",
+    "columns:public|audit_logs|payload",
+    "columns:public|audit_logs|request_id",
+    "columns:public|audit_logs|resource_id",
+    "columns:public|audit_logs|resource_type",
+    "columns:public|audit_logs|workspace_id",
+    "columns:public|command_receipts|actor_user_id",
+    "columns:public|command_receipts|command_name",
+    "columns:public|command_receipts|created_at",
+    "columns:public|command_receipts|expires_at",
+    "columns:public|command_receipts|idempotency_key",
+    "columns:public|command_receipts|request_hash",
+    "columns:public|command_receipts|response_body",
+    "columns:public|command_receipts|workspace_id",
+    "columns:public|employees|created_at",
+    "columns:public|employees|deleted_at",
+    "columns:public|employees|hourly_rate",
+    "columns:public|employees|id",
+    "columns:public|employees|job_title",
+    "columns:public|employees|leave_quota",
+    "columns:public|employees|name",
+    "columns:public|employees|phone",
+    "columns:public|employees|purge_after",
+    "columns:public|employees|revision",
+    "columns:public|employees|status",
+    "columns:public|employees|updated_at",
+    "columns:public|employees|workspace_id",
+    "columns:public|leave_selections|created_at",
+    "columns:public|leave_selections|employee_id",
+    "columns:public|leave_selections|leave_date",
+    "columns:public|leave_selections|leave_type",
+    "columns:public|leave_selections|note",
+    "columns:public|leave_selections|revision",
+    "columns:public|leave_selections|status",
+    "columns:public|leave_selections|updated_at",
+    "columns:public|leave_selections|workspace_id",
+    "columns:public|organizations|created_at",
+    "columns:public|organizations|id",
+    "columns:public|organizations|name",
+    "columns:public|organizations|updated_at",
+    "columns:public|outbox_events|aggregate_id",
+    "columns:public|outbox_events|aggregate_type",
+    "columns:public|outbox_events|attempts",
+    "columns:public|outbox_events|created_at",
+    "columns:public|outbox_events|event_type",
+    "columns:public|outbox_events|id",
+    "columns:public|outbox_events|payload",
+    "columns:public|outbox_events|published_at",
+    "columns:public|outbox_events|workspace_id",
+    "columns:public|payroll_adjustments|adjustment_date",
+    "columns:public|payroll_adjustments|amount",
+    "columns:public|payroll_adjustments|created_at",
+    "columns:public|payroll_adjustments|employee_id",
+    "columns:public|payroll_adjustments|id",
+    "columns:public|payroll_adjustments|note",
+    "columns:public|payroll_adjustments|payroll_month",
+    "columns:public|payroll_adjustments|revision",
+    "columns:public|payroll_adjustments|updated_at",
+    "columns:public|payroll_adjustments|workspace_id",
+    "columns:public|shifts|created_at",
+    "columns:public|shifts|employee_id",
+    "columns:public|shifts|end_time",
+    "columns:public|shifts|id",
+    "columns:public|shifts|note",
+    "columns:public|shifts|revision",
+    "columns:public|shifts|start_time",
+    "columns:public|shifts|updated_at",
+    "columns:public|shifts|work_date",
+    "columns:public|shifts|workspace_id",
+    "columns:public|snapshot_imports|imported_at",
+    "columns:public|snapshot_imports|imported_counts",
+    "columns:public|snapshot_imports|source_checksum",
+    "columns:public|snapshot_imports|source_revision",
+    "columns:public|snapshot_imports|workspace_id",
+    "columns:public|users|created_at",
+    "columns:public|users|id",
+    "columns:public|users|phone",
+    "columns:public|users|status",
+    "columns:public|users|updated_at",
+    "columns:public|workspace_members|auth_status",
+    "columns:public|workspace_members|employee_id",
+    "columns:public|workspace_members|joined_at",
+    "columns:public|workspace_members|role",
+    "columns:public|workspace_members|status",
+    "columns:public|workspace_members|updated_at",
+    "columns:public|workspace_members|user_id",
+    "columns:public|workspace_members|workspace_id",
+    "columns:public|workspaces|created_at",
+    "columns:public|workspaces|id",
+    "columns:public|workspaces|name",
+    "columns:public|workspaces|organization_id",
+    "columns:public|workspaces|status",
+    "columns:public|workspaces|updated_at"
+  ],
+  "observedSectionCounts": {
+    "columns": 4,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "observedStructuralFingerprint": "01761d441417806c60d0e706d16ae0f3b45bee23e9819d23ecb2f9dc56e97fb2",
   "phase": "PRODUCTION_CLOSURE_PHASE_2A",
-  "productionConnectionAttempted": false,
+  "productionConnectionAttempted": true,
   "productionMutation": false,
   "repository00010008StructuralBaseline": "PASS",
-  "repositoryCommitSha": "d65797291b05ec47883e32998849241ff81505db",
-  "roleBoundaryResult": "BLOCKED",
+  "repositoryCommitSha": "c3653add472211a27e929c9194f540fb00d11ee6",
+  "roleBoundaryResult": "PASS",
   "schemaVersion": 1,
   "sprintNumberingCappedAt": 65,
   "stopReasons": [
-    "LIVE_PRODUCTION_COMPARISON_NOT_AUTHORIZED"
+    "STRUCTURAL_FINGERPRINT_MISMATCH"
   ],
-  "tlsVerification": "BLOCKED",
+  "tlsVerification": "VERIFY_FULL_PASS",
   "unexpectedObjectKeys": []
 }

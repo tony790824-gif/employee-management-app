@@ -57,12 +57,12 @@ assert.equal(readiness.repositoryStartingBaseline.structuralFingerprint, readine
 assert.equal(readiness.repositoryStartingBaseline.independentRebuildCount, 2);
 assert.equal(readiness.repositoryStartingBaseline.determinism, 'PASS');
 assert.equal(readiness.repositoryStartingBaseline.cleanup, 'PASS');
-assert.equal(readiness.repositoryStartingBaseline.liveProductionComparison, 'NOT_EVALUATED');
+assert.equal(readiness.repositoryStartingBaseline.liveProductionComparison, 'BLOCKED');
 assert.equal(readiness.repositoryStartingBaseline.authoritativeGate, 'BLOCKED');
-assert.equal(readiness.liveStartingBaselineComparison.status, 'NOT_EVALUATED');
+assert.equal(readiness.liveStartingBaselineComparison.status, 'BLOCKED');
 assert.equal(readiness.liveStartingBaselineComparison.confirmationToken, 'COMPARE_BANKE_PRODUCTION_STARTING_BASELINE');
-assert.equal(readiness.liveStartingBaselineComparison.productionAuthorization, 'NOT_GRANTED');
-assert.equal(readiness.liveStartingBaselineComparison.productionConnectionAttempted, false);
+assert.equal(readiness.liveStartingBaselineComparison.productionAuthorization, 'CONSUMED_SINGLE_READONLY_CONNECTION');
+assert.equal(readiness.liveStartingBaselineComparison.productionConnectionAttempted, true);
 assert.deepEqual(readiness.gateClosureMatrix.STRUCTURAL_STARTING_BASELINE.dependencies, ['ZERO_UNEXPECTED_MIGRATIONS']);
 assert.equal(readiness.productionReadOnlyRevalidation.processInputs, 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS');
 assert.equal(readiness.productionReadOnlyRevalidation.currentStatus, 'PARTIAL');

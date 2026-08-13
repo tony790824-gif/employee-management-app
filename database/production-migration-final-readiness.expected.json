@@ -27,20 +27,20 @@
     "independentRebuildCount": 2,
     "determinism": "PASS",
     "cleanup": "PASS",
-    "liveProductionComparison": "NOT_EVALUATED",
+    "liveProductionComparison": "BLOCKED",
     "authoritativeGate": "BLOCKED"
   },
   "liveStartingBaselineComparison": {
-    "status": "NOT_EVALUATED",
+    "status": "BLOCKED",
     "command": "pnpm run db:parity:production-starting-baseline",
     "confirmationToken": "COMPARE_BANKE_PRODUCTION_STARTING_BASELINE",
     "evidencePath": "docs/PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE.json",
-    "evidenceSha256": "484bf8801c4974fd58a6f60f4a3d02dcbfa465ad17024624c3929e9659cd3abb",
+    "evidenceSha256": "373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7",
     "expectedArtifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
     "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
     "exactLedger": ["0001", "0002", "0003", "0004", "0005", "0006", "0007", "0008"],
-    "productionAuthorization": "NOT_GRANTED",
-    "productionConnectionAttempted": false
+    "productionAuthorization": "CONSUMED_SINGLE_READONLY_CONNECTION",
+    "productionConnectionAttempted": true
   },
   "approvedExecutionOrder": ["0009", "0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022"],
   "intentionalExcludedVersions": ["0010"],
@@ -49,7 +49,7 @@
   "sourceEvidence": {
     "productionReadOnlyEvidenceSha256": "2b438c87081aa152a1cc7d53782e3e4d1b17bdf6693ae8c4497179cb0c8146ba",
     "repositoryStartingBaselineEvidenceSha256": "045081c4a0bcbcbdd8f58ed5a42d8170455c5ed9017b38c86b17d6d09b1d3353",
-    "liveStartingBaselineComparisonEvidenceSha256": "484bf8801c4974fd58a6f60f4a3d02dcbfa465ad17024624c3929e9659cd3abb",
+    "liveStartingBaselineComparisonEvidenceSha256": "373de2d509da8a2b1b419430ba89573371f9632ff253c72e07ed99193bf479a7",
     "upgradeRehearsalEvidenceSha256": "0192da56bc53ac60f882463a231e1edcac74980477b40a3f65c67043e91eb359",
     "structuralParityEvidenceSha256": "7e921df8aade0b1b4fd676877d908aff6de1a3eb7f2aac82970759080b65167d"
   },
@@ -118,7 +118,7 @@
     "ZERO_UNEXPECTED_MIGRATIONS": { "status": "PASS", "reason": "SPRINT_65_CURRENT_LEDGER_HAS_NO_UNEXPECTED_VERSION_AND_NO_0010" },
     "0010_ABSENT": { "status": "PASS", "reason": "REPOSITORY_ALLOWLIST_AND_HISTORICAL_PRODUCTION_LEDGER_EXCLUDE_0010" },
     "EXACT_EXECUTION_SEQUENCE": { "status": "PASS", "reason": "REPOSITORY_MANIFEST_VALIDATED" },
-    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "REPOSITORY_0001_TO_0008_BASELINE_PASS_BUT_LIVE_PRODUCTION_COMPARISON_NOT_EVALUATED" },
+    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "LIVE_0001_TO_0008_FINGERPRINT_MISMATCH_HAS_CONFIRMED_COLUMN_VISIBILITY_DEFECT_AND_UNRESOLVED_ACL_SEMANTICS" },
     "ISOLATED_RESTORE": { "status": "PASS", "reason": "SPRINT_57_ISOLATED_RESTORE_AND_ZERO_RESIDUAL_CLEANUP_EVIDENCED" },
     "RTO_60_MINUTES": { "status": "PASS", "reason": "SPRINT_57_MEASURED_112_335_SECONDS" },
     "RPO_15_MINUTES": { "status": "BLOCKED", "reason": "REFERENCE_AND_LATEST_RECOVERABLE_BOUNDARIES_UNKNOWN_RPO_NOT_PROVEN" },
@@ -244,11 +244,11 @@
     "STRUCTURAL_STARTING_BASELINE": {
       "category": "READONLY_PRODUCTION_CLOSABLE",
       "phase": 1,
-      "existingEvidence": "REPOSITORY_0001_TO_0008_BASELINE_REPRODUCIBLE_LIVE_PRODUCTION_COLLECTION_NOT_STARTED",
-      "evidenceSource": "PRODUCTION_0001_0008_STRUCTURAL_BASELINE_EVIDENCE",
+      "existingEvidence": "LIVE_LEDGER_PASS_FINGERPRINT_MISMATCH_COLUMN_VISIBILITY_DEFECT_CONFIRMED_ACL_SEMANTICS_UNRESOLVED",
+      "evidenceSource": "PRODUCTION_0001_0008_LIVE_STRUCTURAL_COMPARISON_EVIDENCE_AND_PHASE_2C_ANALYSIS",
       "canCloseWithoutProductionMutation": true,
-      "requiredAction": "COLLECT_SANITIZED_PRODUCTION_CATALOG_METADATA_AND_COMPARE_TO_0001_TO_0008_BASELINE",
-      "requiredAuthorization": "READONLY_CATALOG_EVIDENCE_AUTHORIZATION",
+      "requiredAction": "COMPLETE_REPOSITORY_ACL_SEMANTIC_MODEL_THEN_REQUEST_ONLY_THE_MINIMUM_SEPARATE_SANITIZED_READONLY_RECHECK_IF_STILL_NEEDED",
+      "requiredAuthorization": "NONE_FOR_REPOSITORY_ACL_MODEL_FUTURE_LIVE_RECHECK_REQUIRES_NEW_EXPLICIT_AUTHORIZATION",
       "requiredExternalResource": "DEDICATED_PRODUCTION_READONLY_CONNECTION",
       "costImplication": "NONE_KNOWN",
       "dependencies": ["ZERO_UNEXPECTED_MIGRATIONS"]

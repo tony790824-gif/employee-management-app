@@ -263,6 +263,17 @@ export async function validateFinalReadinessPackage(input) {
       || liveStartingEvidence.authoritativeStructuralStartingBaseline !== (authoritativeStartingPass ? 'PASS' : 'BLOCKED')) {
     failures.push('LIVE_STARTING_BASELINE_EVIDENCE_CONTRACT_MISMATCH');
   }
+  if (liveStartingEvidence.productionConnectionAttempted !== true
+      || liveStartingEvidence.identityResult !== 'PASS'
+      || liveStartingEvidence.tlsVerification !== 'VERIFY_FULL_PASS'
+      || liveStartingEvidence.roleBoundaryResult !== 'PASS'
+      || liveStartingEvidence.ledgerResult?.status !== 'PASS'
+      || liveStartingEvidence.ledgerResult?.differences?.length
+      || liveStartingEvidence.fingerprintComparison !== 'MISMATCH'
+      || liveStartingEvidence.observedStructuralFingerprint !== '01761d441417806c60d0e706d16ae0f3b45bee23e9819d23ecb2f9dc56e97fb2'
+      || JSON.stringify(liveStartingEvidence.stopReasons) !== JSON.stringify(['STRUCTURAL_FINGERPRINT_MISMATCH'])) {
+    failures.push('PHASE_2B_LIVE_MISMATCH_PROVENANCE_MISMATCH');
+  }
   if (startingEvidence.repository00010008StructuralBaseline !== 'PASS'
       || startingEvidence.liveProductionStructuralStartingBaseline !== 'NOT_EVALUATED'
       || startingEvidence.authoritativeStructuralStartingBaseline !== 'BLOCKED'

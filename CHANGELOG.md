@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 2C Sanitized Structural Drift Analysis
+
+- Preserved and hash-verified the single Phase 2B source evidence, then classified its 136 column omissions as a permission-filtered catalog query defect and its 57 ACL-only changes as unresolved operational/extension ACL semantics.
+- Replaced the shared `information_schema.columns` collector with permission-independent `pg_catalog` metadata and proved Phase 1/Phase 2A byte equivalence in the same disposable PostgreSQL 18.4 database.
+- Kept the live structural Gate BLOCKED, the matrix at 9/13 and Production at 70% / NOT READY; Phase 2C made no Production connection or mutation.
+
 ## 2026-08-13 - Production Closure Phase 2A Dedicated Starting-Baseline Comparator
 
 - Added a dedicated, confirmation-gated exact-`0001`-`0008` Production starting-baseline comparator without executing it.

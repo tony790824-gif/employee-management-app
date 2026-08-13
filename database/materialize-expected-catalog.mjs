@@ -51,20 +51,34 @@ export const CATALOG_QUERIES = Object.freeze({
        AND c.relkind IN ('r', 'p', 'v', 'm', 'S')
      ORDER BY n.nspname, c.relname`,
   columns: `
-    SELECT c.table_schema AS schema_name,
-           c.table_name,
-           c.ordinal_position,
-           c.column_name,
-           c.data_type,
-           c.udt_schema,
-           c.udt_name,
-           c.is_nullable,
-           COALESCE(c.column_default, '') AS column_default,
-           c.is_identity,
-           COALESCE(c.identity_generation, '') AS identity_generation
-      FROM information_schema.columns c
-     WHERE c.table_schema IN ('public', 'app_private')
-     ORDER BY c.table_schema, c.table_name, c.ordinal_position`,
+    SELECT namespace.nspname AS schema_name,
+           relation.relname AS table_name,
+           attribute.attnum AS ordinal_position,
+           attribute.attname AS column_name,
+           pg_catalog.format_type(attribute.atttypid, NULL) AS data_type,
+           type_namespace.nspname AS udt_schema,
+           type.typname AS udt_name,
+           CASE WHEN attribute.attnotnull THEN 'NO' ELSE 'YES' END AS is_nullable,
+           COALESCE(pg_catalog.pg_get_expr(attribute_default.adbin, attribute_default.adrelid), '') AS column_default,
+           CASE WHEN attribute.attidentity = '' THEN 'NO' ELSE 'YES' END AS is_identity,
+           CASE attribute.attidentity
+             WHEN 'a' THEN 'ALWAYS'
+             WHEN 'd' THEN 'BY DEFAULT'
+             ELSE ''
+           END AS identity_generation
+      FROM pg_catalog.pg_attribute AS attribute
+      JOIN pg_catalog.pg_class AS relation ON relation.oid = attribute.attrelid
+      JOIN pg_catalog.pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+      JOIN pg_catalog.pg_type AS type ON type.oid = attribute.atttypid
+      JOIN pg_catalog.pg_namespace AS type_namespace ON type_namespace.oid = type.typnamespace
+      LEFT JOIN pg_catalog.pg_attrdef AS attribute_default
+        ON attribute_default.adrelid = attribute.attrelid
+       AND attribute_default.adnum = attribute.attnum
+     WHERE namespace.nspname IN ('public', 'app_private')
+       AND relation.relkind IN ('r', 'p', 'v', 'm')
+       AND attribute.attnum > 0
+       AND NOT attribute.attisdropped
+     ORDER BY namespace.nspname, relation.relname, attribute.attnum`,
   constraints: `
     SELECT n.nspname AS schema_name,
            c.relname AS table_name,

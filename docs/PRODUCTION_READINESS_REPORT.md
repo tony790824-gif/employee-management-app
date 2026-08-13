@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2C structural drift analysis - 2026-08-13
+
+- Phase 2B source integrity: **PASS**; exact starting ledger: **PASS**; structural fingerprint: **MISMATCH / BLOCKED**.
+- The 136 missing columns are a proven `information_schema.columns` least-privilege visibility defect, not proven missing Production objects. The corrected `pg_catalog` query returns 140/140 columns locally.
+- All other reported changes are ACL-only: 37 extension Functions, four Bankeban API Functions, 14 relations and two schemas. Values are absent by sanitization, so genuine Production drift and ACL semantic equivalence are both **NOT PROVEN**.
+- Same-disposable A/B canonical fingerprints equal the Phase 1 expected value. This fixes Repository collection logic but cannot retroactively turn the consumed live evidence into PASS.
+- `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**. Matrix remains **9 PASS / 13 non-PASS**; Production **70% / NOT READY**; Gate A **DEFER**; Provisioning and Technical Readiness **NO-GO**; authorization **NOT_GRANTED**.
+
 ## Production Closure Phase 1 repository starting baseline - 2026-08-13
 
 - Two independent PostgreSQL 18.4 rebuilds applied exactly `0001`-`0008` and produced byte-identical normalized catalogs.
@@ -14,7 +22,7 @@
 - Added a dedicated exact-`0001`-`0008` starting-baseline comparator, separate from final `0022` parity.
 - Added artifact/hash/Gate provenance, authenticated TLS, target/dedicated-reader/role boundary, PostgreSQL 18, READ ONLY transaction, metadata-only query allowlist and sanitized evidence controls.
 - Gate semantics now permit Repository baseline PASS plus future live structural MATCH PASS to close only `STRUCTURAL_STARTING_BASELINE`; final ledger parity remains independent.
-- Live comparison: **NOT_EVALUATED**. No Production authorization, connection, SQL, wake, mutation, Migration or deploy occurred.
+- At Phase 2A completion the live comparison was **NOT_EVALUATED**, with no Production connection during that implementation phase. Phase 2B later produced MISMATCH/BLOCKED evidence; Phase 2C does not reinterpret it as PASS.
 - Authoritative state remains **9 PASS / 13 non-PASS**, **70% / NOT READY**, Gate A **DEFER**, Provisioning and Migration Technical Readiness **NO-GO**, authorization **NOT_GRANTED**.
 
 ## Sprint 65 authorized read-only evidence analysis - 2026-08-13

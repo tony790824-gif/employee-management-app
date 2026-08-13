@@ -1,5 +1,13 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2C correction and drift boundary - 2026-08-13
+
+Phase 2B evidence is immutable and hash-valid. It reports exact ledger PASS but fingerprint MISMATCH: expected `885b29...596e`, observed `01761d...97fb2`. Phase 2C made no Production connection.
+
+The prior shared column collector used `information_schema.columns`, whose rows are filtered by the current role's column privileges. The dedicated reader has SELECT only on `schema_migrations`; therefore four visible columns and 136 false missing keys were expected from that defective query. The shared model now derives equivalent column metadata from `pg_attribute`, `pg_class`, `pg_namespace`, `pg_type` and `pg_attrdef`. Same-database PostgreSQL 18.4 A/B fingerprints remain identical to the committed Phase 1 fingerprint.
+
+The remaining sanitized changes are ACL-only. Raw ACL text is not yet an approved semantic model for post-migration Production hardening or platform Extension ACLs. Until a Repository-reviewed model distinguishes owner-inherent, runtime, reader, PUBLIC, unknown-principal and extension-managed privileges, no new live result can be interpreted as a safe MATCH. `STRUCTURAL_STARTING_BASELINE` remains BLOCKED and no repair is authorized.
+
 ## Production Closure Phase 2A dedicated live comparator - 2026-08-13
 
 The Repository now has a separate `pnpm run db:parity:production-starting-baseline` path. It never falls through to `db:parity:production` and requires the dedicated `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE` confirmation.
@@ -8,7 +16,7 @@ Before any connection it validates the tracked Phase 1 artifact, companion SHA-2
 
 The live catalog uses the identical Phase 1 structural queries and normalization. It reads `public.schema_migrations` and PostgreSQL/information-schema metadata only, hashes Function/view definitions, and writes separate sanitized evidence plus SHA-256. It requires expected target/reader identities, the existing reader role boundary, PostgreSQL 18, a temporary CA with hostname-verifying TLS and `BEGIN TRANSACTION READ ONLY`.
 
-Phase 2A did not execute this command or connect to Production. The live sub-evidence therefore remains NOT_EVALUATED and authoritative `STRUCTURAL_STARTING_BASELINE` remains BLOCKED. The Gate is now defined as Repository baseline PASS plus live structural MATCH PASS; final 21-version `FRESH_LEDGER_AND_CHECKSUM` remains an independent BLOCKED Gate.
+Phase 2A did not execute this command or connect to Production. Phase 2B later consumed one explicit authorization and produced MISMATCH/BLOCKED evidence; Phase 2C preserves it and fixes only the proven Repository query defect. The Gate remains defined as Repository baseline PASS plus valid live structural MATCH PASS; final 21-version `FRESH_LEDGER_AND_CHECKSUM` is an independent BLOCKED Gate.
 
 ## Production Closure Phase 1 expected starting baseline - 2026-08-13
 

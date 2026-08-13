@@ -524,7 +524,8 @@ export async function runOneRehearsal({
   runLabel,
   includeCatalog = false,
   structuralQueries = CATALOG_QUERIES,
-  baselineOnly = false
+  baselineOnly = false,
+  baselineObserver = null
 }) {
   const rootDirectory = path.join(os.tmpdir(), `${TEMP_PREFIX}${randomBytes(8).toString('hex')}`);
   const dataDirectory = path.join(rootDirectory, 'data');
@@ -566,6 +567,9 @@ export async function runOneRehearsal({
       const structuralBaselineCatalog = structuralQueries === CATALOG_QUERIES
         ? baselineCatalog
         : await collectNormalizedCatalog(client, structuralQueries);
+      const baselineObserverResult = typeof baselineObserver === 'function'
+        ? await baselineObserver({ client, migrationOwner: OWNER, baselineLedger, structuralQueries })
+        : null;
       const baselineCatalogHash = sha256(canonicalJson(baselineCatalog));
       if (baselineOnly) {
         const baselineResult = {
@@ -579,6 +583,7 @@ export async function runOneRehearsal({
         return {
           ...baselineResult,
           ...(includeCatalog ? { baselineCatalog: structuralBaselineCatalog } : {}),
+          ...(baselineObserverResult === null ? {} : { baselineObserverResult }),
           deterministicSummary: canonicalValue(baselineResult)
         };
       }
