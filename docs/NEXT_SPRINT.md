@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Post-Sprint Closure decision after Phase 2F
+
+Phase 2E authorization is consumed. Its Live JSON/hash were not created, and the generic `SANITIZED_FAILURE` cannot identify a Production stage. Phase 2F fixed this Repository observability defect without reconnecting.
+
+The next action is only an Owner decision to defer or issue a new, separately scoped one-attempt read-only authorization against the corrected commit. No authorization currently exists, and no Sprint 66 may be created.
+
 ## Production Closure Phase 2E decision - separately authorize or defer one semantic read
 
 Repository Preflight is complete. The smallest possible next action is an Owner decision on exactly one attempt of `pnpm run db:parity:production-starting-baseline-semantic` at an explicitly authorized clean commit. Possible side effects are Neon wake/unarchive, compute/network/I/O, one session, catalog locks/logs and overwrite of the dedicated live semantic evidence/hash.

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-13 - Production Closure Phase 2F sanitized failure analysis
+
+- Proved that the consumed Phase 2E attempt produced no live Evidence JSON/hash and therefore cannot establish a structural or ACL result.
+- Fixed the comparator's observability defect: failures now retain only an allowlisted stage and safe code, with a separate sanitized failure Evidence/hash contract and no raw error message.
+- Added regression coverage for pre-connect, TLS/connect, identity, role, transaction, ledger, collectors, normalization, comparison, sanitization, write and cleanup failures while keeping all live Gates BLOCKED.
+
 ## 2026-08-13 - Production Closure Phase 2E minimal live semantic evidence preflight
 
 - Hardened the unexecuted semantic starting-baseline comparator with fixed Production target identities, a dedicated token, exact baseline hashes, clean commit provenance, one-connection/no-retry controls and an explicit READ ONLY transaction check.

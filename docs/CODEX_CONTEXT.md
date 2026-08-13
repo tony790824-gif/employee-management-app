@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-13 current state - Production Closure Phase 2F
+
+Phase 2E Live semantic execution did not create its JSON/hash. Only the generic terminal `SANITIZED_FAILURE` remains, so the underlying stage and Production result are UNKNOWN. Do not describe this as structural drift or ACL mismatch.
+
+The Repository now preserves only a fixed safe diagnostic stage/code and a separate failure Evidence/hash; raw errors, identifiers and credentials are never persisted. No reconnect is authorized. Gate state remains 9 PASS / 13 non-PASS and 70% / NOT READY; Sprint numbering remains capped at 65.
+
 ## 2026-08-13 current state - Production Closure Phase 2E Preflight
 
 The semantic live comparator is technically prepared but not authorized. It requires fixed `neondb` / `banke_production_readonly`, PostgreSQL 18, temporary-CA hostname-verifying TLS, a clean explicitly authorized commit equal to `main` and `origin/main`, immutable structural/ACL baseline hashes and exact `0001`-`0008` ledger metadata.

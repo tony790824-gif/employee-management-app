@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Bankeban Production 0001-0008 live semantic comparison failure evidence",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "phase",
+    "sprintNumberingCappedAt",
+    "generatedAt",
+    "repositoryCommitSha",
+    "diagnosticStage",
+    "errorCode",
+    "connectionAttemptCount",
+    "retryCount",
+    "cleanupResult",
+    "productionConnectionAttempted",
+    "productionMutation",
+    "originalErrorPersisted",
+    "structuralNonAclResult",
+    "semanticAclResult",
+    "structuralStartingBaseline",
+    "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_LIVE_SEMANTIC_FAILURE" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": {
+      "oneOf": [
+        { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        { "type": "null" }
+      ]
+    },
+    "diagnosticStage": {
+      "enum": [
+        "PRE_CONNECT_GUARD",
+        "QUERY_ALLOWLIST",
+        "REPOSITORY_PROVENANCE",
+        "ARTIFACT_PROVENANCE",
+        "CA_LOAD",
+        "TLS_CONFIG",
+        "TLS_CONNECT",
+        "IDENTITY_GUARD",
+        "ROLE_BOUNDARY_GUARD",
+        "READ_ONLY_TRANSACTION",
+        "LEDGER",
+        "NON_ACL_CATALOG_COLLECTOR",
+        "NORMALIZATION",
+        "ACL_SEMANTIC_COLLECTOR",
+        "FINGERPRINT_COMPARISON",
+        "CLEANUP",
+        "EVIDENCE_SANITIZATION",
+        "EVIDENCE_WRITE_HASH",
+        "UNKNOWN"
+      ]
+    },
+    "errorCode": { "type": "string", "pattern": "^(SEMANTIC|PRODUCTION|PROTECTED|EXTERNAL|[A-Z]+)_[A-Z0-9_]{2,100}$" },
+    "connectionAttemptCount": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "retryCount": { "const": 0 },
+    "cleanupResult": { "enum": ["PASS", "FAILED", "NOT_STARTED"] },
+    "productionConnectionAttempted": { "type": "boolean" },
+    "productionMutation": { "const": false },
+    "originalErrorPersisted": { "const": false },
+    "structuralNonAclResult": { "const": "BLOCKED" },
+    "semanticAclResult": { "const": "BLOCKED" },
+    "structuralStartingBaseline": { "const": "BLOCKED" },
+    "finalStatus": { "const": "BLOCKED" }
+  },
+  "additionalProperties": false
+}

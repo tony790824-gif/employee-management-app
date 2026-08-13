@@ -1,5 +1,11 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2F diagnostic contract - 2026-08-13
+
+The consumed Phase 2E attempt created no Live Evidence JSON/hash, so the original failure stage is UNKNOWN. Future comparator failures record only an allowlisted stage, safe error code, connection count, retry count and cleanup result in a separate sanitized failure artifact. Raw database errors are not stored or printed.
+
+This diagnostic change does not create evidence, close a Gate or authorize another connection. The structural starting baseline remains BLOCKED until a separately authorized future run produces valid hashed Live evidence.
+
 ## Production Closure Phase 2E execution boundary - 2026-08-13
 
 The hardened future command is `pnpm run db:parity:production-starting-baseline-semantic` with confirmation `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE_SEMANTICS`. It accepts only fixed `neondb` / `banke_production_readonly`, authenticated PostgreSQL 18, a clean explicitly authorized commit, exact immutable structural/ACL artifacts and exact ordered `0001`-`0008` ledger metadata.

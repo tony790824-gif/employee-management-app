@@ -7,13 +7,16 @@ import {
   EXPECTED_ACL_SEMANTIC_BASELINE_SHA256,
   EXPECTED_PRODUCTION_DATABASE,
   EXPECTED_PRODUCTION_READONLY_ROLE,
+  SEMANTIC_COMPARATOR_STAGES,
   SEMANTIC_LIVE_QUERY_SURFACE,
   SEMANTIC_STARTING_CONFIRMATION,
   compareProductionStartingBaselineSemantics,
+  runProductionStartingBaselineSemanticCli,
   semanticStartingConnectionConfig,
   validateAclSemanticBaseline,
   validateRepositoryExecutionProvenance,
   validateSemanticLiveEvidence,
+  validateSemanticFailureEvidence,
   validateSemanticQueryScope
 } from '../database/compare-production-starting-baseline-semantic.mjs';
 import { STRUCTURAL_CATALOG_QUERIES } from '../database/rehearse-structural-schema-parity.mjs';
@@ -23,6 +26,7 @@ const aclText = await readFile(new URL('../database/production-0001-0008-acl-sem
 const aclHashText = await readFile(new URL('../database/production-0001-0008-acl-semantic-baseline.sha256', import.meta.url), 'utf8');
 const aclArtifact = JSON.parse(aclText);
 const evidenceSchema = JSON.parse(await readFile(new URL('../docs/PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_EVIDENCE.schema.json', import.meta.url), 'utf8'));
+const failureEvidenceSchema = JSON.parse(await readFile(new URL('../docs/PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_FAILURE.schema.json', import.meta.url), 'utf8'));
 const comparatorSource = await readFile(new URL('../database/compare-production-starting-baseline-semantic.mjs', import.meta.url), 'utf8');
 const hash = value => createHash('sha256').update(value).digest('hex');
 
@@ -33,6 +37,8 @@ assert.equal(EXPECTED_ACL_SEMANTIC_BASELINE_SHA256, '485097ac88f068cc46a73583cef
 assert.equal(evidenceSchema.properties.phase.const, 'PRODUCTION_CLOSURE_PHASE_2E');
 assert.equal(evidenceSchema.properties.retryCount.const, 0);
 assert.equal(evidenceSchema.additionalProperties, false);
+assert.equal(failureEvidenceSchema.additionalProperties, false);
+assert.deepEqual(failureEvidenceSchema.properties.diagnosticStage.enum, SEMANTIC_COMPARATOR_STAGES);
 for (const field of [
   'generatedAt', 'expectedStructuralArtifactSha256', 'expectedAclArtifactSha256', 'expectedMigrationSequence',
   'identityResult', 'tlsVerification', 'roleBoundaryResult', 'transactionReadOnlyResult',
@@ -43,6 +49,7 @@ for (const field of [
 assert.match(JSON.stringify(SEMANTIC_LIVE_QUERY_SURFACE.structural), /pg_catalog\.pg_attribute/);
 assert.doesNotMatch(comparatorSource, /COMPARE_BANKE_PRODUCTION_CATALOG['"]/);
 assert.doesNotMatch(comparatorSource, /new\s+(?:Pool|Client)\s*\([^)]*\).*new\s+(?:Pool|Client)/s);
+assert.doesNotMatch(comparatorSource, /PRODUCTION_STARTING_BASELINE_SEMANTIC_ERROR=SANITIZED_FAILURE/);
 assert.doesNotMatch(comparatorSource, /information_schema\.columns/);
 for (const token of ['rolsuper', 'rolcreatedb', 'rolcreaterole', 'rolreplication', 'rolbypassrls', 'rolinherit', 'pg_has_role', 'datdba', 'nspowner', 'relowner', 'proowner']) assert.match(comparatorSource, new RegExp(token));
 assert.equal(validateSemanticQueryScope().status, 'PASS');
@@ -100,7 +107,7 @@ assert.throws(() => semanticStartingConnectionConfig({ ...baseEnv, BANK_PRODUCTI
 assert.throws(() => semanticStartingConnectionConfig({ ...baseEnv, BANK_PRODUCTION_CA_BUNDLE: path.join(os.tmpdir(), 'ca.pem'), DATABASE_READONLY_URL: baseEnv.DATABASE_READONLY_URL.replace('db.example.invalid', '127.0.0.1') }), /PRODUCTION_LOOPBACK_TARGET_BLOCKED/);
 assert.throws(() => semanticStartingConnectionConfig({ ...baseEnv, BANK_PRODUCTION_CA_BUNDLE: path.resolve('ca.pem') }), /PRODUCTION_CA_BUNDLE_MUST_BE_TEMPORARY/);
 
-function mockClient({ identity = {}, roleSafe = true, transactionReadOnly = true, ledger = structuralArtifact.catalog.migrationLedger, catalog = rawCatalog, connectError = null, stats }) {
+function mockClient({ identity = {}, roleSafe = true, transactionReadOnly = true, ledger = structuralArtifact.catalog.migrationLedger, catalog = rawCatalog, connectError = null, queryErrorContains = null, endError = null, stats }) {
   return class MockClient {
     constructor(config) {
       stats.clients += 1;
@@ -108,10 +115,11 @@ function mockClient({ identity = {}, roleSafe = true, transactionReadOnly = true
       assert.equal(config.ssl.servername, 'db.example.invalid');
     }
     async connect() { stats.connects += 1; if (connectError) throw connectError; }
-    async end() { stats.ends += 1; }
+    async end() { stats.ends += 1; if (endError) throw endError; }
     async query(sql) {
       const text = String(sql).trim();
       stats.queries.push(text);
+      if (queryErrorContains && text.includes(queryErrorContains)) throw new Error('postgresql://user:secret@host.invalid/neondb');
       if (text === 'BEGIN TRANSACTION READ ONLY' || text === 'ROLLBACK') return { rows: [] };
       if (text.includes('AS database_ok')) return { rows: [{ database_ok: true, current_role_ok: true, session_role_ok: true, read_only_ok: true, server_version_number: 180004, ...identity }] };
       if (text.includes('AS role_safe')) return { rows: [{ role_safe: roleSafe }] };
@@ -183,7 +191,7 @@ assert.equal((await readFile(evidenceHashPath, 'utf8')).trim(), `${hash(await re
   await assert.rejects(compareProductionStartingBaselineSemantics({
     env, ClientImpl: mockClient({ stats: tlsStats, connectError: new Error('sanitized TLS failure') }), evidencePath, evidenceHashPath,
     repositoryVerifier, collectAclFactsImpl, buildAclSnapshotImpl
-  }), /sanitized TLS failure/);
+  }), error => error.safeDiagnostic?.stage === 'TLS_CONNECT' && error.message === 'TLS_CONNECT_FAILED');
   assert.deepEqual({ clients: tlsStats.clients, connects: tlsStats.connects, ends: tlsStats.ends }, { clients: 1, connects: 1, ends: 1 });
 
   await assert.rejects(compareProductionStartingBaselineSemantics({
@@ -198,6 +206,85 @@ assert.equal((await readFile(evidenceHashPath, 'utf8')).trim(), `${hash(await re
     ClientImpl: mockClient({ stats: { clients: 0, connects: 0, ends: 0, queries: [] } }), evidencePath, evidenceHashPath,
     repositoryVerifier, collectAclFactsImpl, buildAclSnapshotImpl
   }), /PRODUCTION_CA_BUNDLE_INVALID/);
+
+  const failurePath = path.join(temporary, 'failure.json');
+  const failureHashPath = path.join(temporary, 'failure.sha256');
+  const secretBearingConnectError = new Error('could not connect to postgresql://reader:secret@host.invalid/neondb');
+  const cliStats = { clients: 0, connects: 0, ends: 0, queries: [] };
+  const failedCli = await runProductionStartingBaselineSemanticCli({
+    env,
+    failureEvidencePath: failurePath,
+    failureEvidenceHashPath: failureHashPath,
+    comparatorOptions: {
+      ClientImpl: mockClient({ stats: cliStats, connectError: secretBearingConnectError }),
+      evidencePath,
+      evidenceHashPath,
+      repositoryVerifier,
+      collectAclFactsImpl,
+      buildAclSnapshotImpl
+    }
+  });
+  assert.equal(failedCli.exitCode, 1);
+  assert.equal(failedCli.failure.diagnosticStage, 'TLS_CONNECT');
+  assert.equal(failedCli.failure.errorCode, 'TLS_CONNECT_FAILED');
+  assert.equal(failedCli.failure.originalErrorPersisted, false);
+  assert.equal(validateSemanticFailureEvidence(failedCli.failure).status, 'PASS');
+  const failureText = await readFile(failurePath, 'utf8');
+  assert.doesNotMatch(failureText, /host\.invalid|secret|postgresql:\/\//i);
+  assert.equal((await readFile(failureHashPath, 'utf8')).trim(), `${hash(await readFile(failurePath))}  failure.json`);
+
+  const preconnectFailure = await runProductionStartingBaselineSemanticCli({
+    env: { ...env, BANK_PRODUCTION_PARITY_CONFIRMATION: '' },
+    failureEvidencePath: path.join(temporary, 'preconnect-failure.json'),
+    failureEvidenceHashPath: path.join(temporary, 'preconnect-failure.sha256'),
+    comparatorOptions: { ClientImpl: mockClient({ stats: { clients: 0, connects: 0, ends: 0, queries: [] } }) }
+  });
+  assert.equal(preconnectFailure.failure.diagnosticStage, 'PRE_CONNECT_GUARD');
+  assert.equal(preconnectFailure.failure.connectionAttemptCount, 0);
+
+  async function diagnosticFor(options = {}, overrides = {}) {
+    const stageStats = { clients: 0, connects: 0, ends: 0, queries: [] };
+    try {
+      await compareProductionStartingBaselineSemantics({
+        env,
+        ClientImpl: mockClient({ stats: stageStats, ...options }),
+        evidencePath,
+        evidenceHashPath,
+        repositoryVerifier,
+        collectAclFactsImpl,
+        buildAclSnapshotImpl,
+        ...overrides
+      });
+      assert.fail('expected fail-closed diagnostic');
+    } catch (error) {
+      return error.safeDiagnostic;
+    }
+  }
+  assert.equal((await diagnosticFor({ identity: { current_role_ok: false } })).stage, 'IDENTITY_GUARD');
+  assert.equal((await diagnosticFor({ roleSafe: false })).stage, 'ROLE_BOUNDARY_GUARD');
+  assert.equal((await diagnosticFor({ transactionReadOnly: false })).stage, 'READ_ONLY_TRANSACTION');
+  assert.equal((await diagnosticFor({ ledger: structuralArtifact.catalog.migrationLedger.slice(0, -1) })).stage, 'LEDGER');
+  assert.equal((await diagnosticFor({ queryErrorContains: 'attribute.attnum > 0' })).stage, 'NON_ACL_CATALOG_COLLECTOR');
+  const ownerless = structuredClone(rawCatalog);
+  ownerless.schemas = ownerless.schemas.filter(row => row.schema_name !== 'app_private');
+  assert.equal((await diagnosticFor({ catalog: ownerless })).stage, 'NORMALIZATION');
+  assert.equal((await diagnosticFor({}, { collectAclFactsImpl: async () => { throw new Error('unsafe raw principal'); } })).stage, 'ACL_SEMANTIC_COLLECTOR');
+  assert.equal((await diagnosticFor({}, { compareAclSnapshotsImpl: () => { throw new Error('comparison internal failure'); } })).stage, 'FINGERPRINT_COMPARISON');
+  assert.equal((await diagnosticFor({ endError: new Error('cleanup failed') })).stage, 'CLEANUP');
+  const unsafeSnapshot = () => ({ ...structuredClone(aclArtifact.snapshot), fingerprint: 'postgresql://sensitive' });
+  assert.equal((await diagnosticFor({}, { buildAclSnapshotImpl: unsafeSnapshot })).stage, 'EVIDENCE_SANITIZATION');
+  assert.equal((await diagnosticFor({}, { artifactLoader: async () => { throw new Error('artifact failed'); } })).stage, 'ARTIFACT_PROVENANCE');
+  assert.equal((await diagnosticFor({}, { repositoryVerifier: async () => ({ status: 'BLOCKED', commitSha: null }) })).stage, 'REPOSITORY_PROVENANCE');
+  assert.equal((await diagnosticFor({}, { evidencePath: path.join(temporary, 'missing-parent', 'evidence.json') })).stage, 'EVIDENCE_WRITE_HASH');
+
+  const unpersisted = await runProductionStartingBaselineSemanticCli({
+    env: { ...env, BANK_PRODUCTION_PARITY_CONFIRMATION: '' },
+    failureEvidencePath: path.join(temporary, 'missing-failure-parent', 'failure.json'),
+    failureEvidenceHashPath: path.join(temporary, 'missing-failure-parent', 'failure.sha256')
+  });
+  assert.equal(unpersisted.exitCode, 1);
+  assert.equal(unpersisted.failure.diagnosticStage, 'PRE_CONNECT_GUARD');
+  assert.equal(unpersisted.failureEvidenceSha256, null);
 } finally {
   await rm(temporary, { recursive: true, force: true });
 }

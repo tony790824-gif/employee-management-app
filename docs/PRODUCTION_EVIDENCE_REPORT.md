@@ -1,5 +1,12 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2F failure-evidence analysis - 2026-08-13
+
+- Phase 2E Live semantic JSON/hash: **NOT_CREATED**; hash, Schema, timestamp and Live provenance: **NOT_EVALUATED**.
+- Exact Production failure stage: **UNKNOWN**. The only retained output was generic `SANITIZED_FAILURE`; structural and ACL results cannot be inferred.
+- Comparator observability defect: **PROVEN AND FIXED LOCALLY** with safe stage/code plus a separate sanitized failure Evidence/hash contract.
+- Production connection/mutation during Phase 2F: **NONE**. Phase 2E authority remains **CONSUMED / NOT REUSABLE**; matrix and readiness remain 9/13 and 70% / NOT READY.
+
 ## Production Closure Phase 2E Preflight evidence - 2026-08-13
 
 - Repository is ready for a separate minimal read-only authorization decision; this is not live evidence or authorization.

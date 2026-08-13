@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2F - Sanitized failure root-cause analysis (2026-08-13)
+
+- **Status:** COMPLETE for Repository/local analysis; Live root cause remains UNKNOWN and no reconnect is authorized.
+- **Proven:** Phase 2E JSON/hash were not created, and Commit `05e5163` collapsed all failures into generic `SANITIZED_FAILURE`.
+- **Fixed:** allowlisted stage/safe code, separate sanitized failure Evidence contract and comprehensive fail-closed regressions.
+- **Decision:** 9/13, 70% / NOT READY and both structural/ledger Gates remain unchanged. Phase 2E authorization is consumed; do not create Sprint 66.
+
 ## Production Closure Phase 2E - Minimal live semantic evidence Preflight (2026-08-13)
 
 - **Status:** COMPLETE for Repository/local Preflight; live execution NOT_AUTHORIZED; Sprint numbering capped at 65.

@@ -34,6 +34,8 @@ const ACL_HASH_PATH = path.join(PROJECT_ROOT, 'database', 'production-0001-0008-
 const READINESS_PATH = path.join(PROJECT_ROOT, 'database', 'production-migration-final-readiness.expected.json');
 const EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_EVIDENCE.json');
 const EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_EVIDENCE.sha256');
+const FAILURE_EVIDENCE_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_FAILURE.json');
+const FAILURE_EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_0001_0008_LIVE_SEMANTIC_COMPARISON_FAILURE.sha256');
 const PROVENANCE_PATHS = Object.freeze([
   'database/acl-semantic-model.mjs',
   'database/compare-production-starting-baseline-semantic.mjs',
@@ -49,6 +51,15 @@ export const EXPECTED_PRODUCTION_DATABASE = 'neondb';
 export const EXPECTED_PRODUCTION_READONLY_ROLE = 'banke_production_readonly';
 export const EXPECTED_ACL_SEMANTIC_BASELINE_SHA256 = '485097ac88f068cc46a73583ceff4ac6d64ad97e007c4ac20262fda0bf8394ec';
 export const SEMANTIC_LIVE_EVIDENCE_SCHEMA_VERSION = 1;
+export const SEMANTIC_FAILURE_EVIDENCE_SCHEMA_VERSION = 1;
+
+export const SEMANTIC_COMPARATOR_STAGES = Object.freeze([
+  'PRE_CONNECT_GUARD', 'QUERY_ALLOWLIST', 'REPOSITORY_PROVENANCE', 'ARTIFACT_PROVENANCE',
+  'CA_LOAD', 'TLS_CONFIG', 'TLS_CONNECT', 'IDENTITY_GUARD', 'ROLE_BOUNDARY_GUARD',
+  'READ_ONLY_TRANSACTION', 'LEDGER', 'NON_ACL_CATALOG_COLLECTOR', 'NORMALIZATION',
+  'ACL_SEMANTIC_COLLECTOR', 'FINGERPRINT_COMPARISON', 'CLEANUP',
+  'EVIDENCE_SANITIZATION', 'EVIDENCE_WRITE_HASH', 'UNKNOWN'
+]);
 
 const RUNTIME_ROLE = 'banke_api_production';
 const ALLOWED_RELATIONS = new Set([
@@ -106,6 +117,29 @@ function objectCounts(catalog) {
 
 function companionHash(text, fileName) {
   return String(text || '').trim().match(new RegExp(`^([a-f0-9]{64})\\s+${fileName.replaceAll('.', '\\.')}$`))?.[1] || null;
+}
+
+function safeFailureCode(stage, error) {
+  const internal = String(error?.message || '').split(':')[0];
+  if (/^(?:SEMANTIC|PRODUCTION|PROTECTED)_[A-Z0-9_]{2,92}$/.test(internal)) return internal;
+  const external = String(error?.code || '').trim().toUpperCase();
+  if (/^[A-Z0-9_]{2,16}$/.test(external)) return `EXTERNAL_${external}`;
+  return `${SEMANTIC_COMPARATOR_STAGES.includes(stage) ? stage : 'UNKNOWN'}_FAILED`;
+}
+
+function comparatorFailure(error, context = {}) {
+  if (error?.safeDiagnostic) return error;
+  const stage = SEMANTIC_COMPARATOR_STAGES.includes(context.stage) ? context.stage : 'UNKNOWN';
+  const wrapped = new Error(safeFailureCode(stage, error));
+  wrapped.name = 'SemanticComparatorFailure';
+  wrapped.safeDiagnostic = Object.freeze({
+    stage,
+    errorCode: wrapped.message,
+    connectionAttemptCount: Number(context.connectionAttemptCount || 0),
+    repositoryCommitSha: /^[a-f0-9]{40}$/.test(context.repositoryCommitSha || '') ? context.repositoryCommitSha : null,
+    cleanupResult: context.cleanupResult || 'NOT_STARTED'
+  });
+  return wrapped;
 }
 
 function gitOutput(args, execFileSyncImpl = execFileSync) {
@@ -216,6 +250,39 @@ export function validateSemanticLiveEvidence(value) {
   return canonicalValue({ status: failures.length ? 'BLOCKED' : 'PASS', failures: [...new Set(failures)].sort() });
 }
 
+export function validateSemanticFailureEvidence(value) {
+  const failures = [];
+  const visit = input => {
+    if (typeof input === 'string' && FORBIDDEN_EVIDENCE_VALUE.test(input)) failures.push('FORBIDDEN_EVIDENCE_VALUE');
+    if (!input || typeof input !== 'object') return;
+    for (const [key, child] of Object.entries(input)) {
+      if (FORBIDDEN_EVIDENCE_KEY.test(key)) failures.push(`FORBIDDEN_EVIDENCE_FIELD:${key}`);
+      visit(child);
+    }
+  };
+  visit(value);
+  const required = [
+    'schemaVersion', 'phase', 'sprintNumberingCappedAt', 'generatedAt', 'repositoryCommitSha',
+    'diagnosticStage', 'errorCode', 'connectionAttemptCount', 'retryCount', 'cleanupResult',
+    'productionConnectionAttempted', 'productionMutation', 'originalErrorPersisted',
+    'structuralNonAclResult', 'semanticAclResult', 'structuralStartingBaseline', 'finalStatus'
+  ];
+  for (const key of required) if (!Object.hasOwn(value || {}, key)) failures.push(`REQUIRED_FAILURE_FIELD_MISSING:${key}`);
+  if (value?.schemaVersion !== SEMANTIC_FAILURE_EVIDENCE_SCHEMA_VERSION
+      || value?.phase !== 'PRODUCTION_CLOSURE_LIVE_SEMANTIC_FAILURE'
+      || value?.sprintNumberingCappedAt !== 65) failures.push('FAILURE_EVIDENCE_CONTRACT_MISMATCH');
+  if (value?.repositoryCommitSha !== null && !/^[a-f0-9]{40}$/.test(value?.repositoryCommitSha || '')) failures.push('FAILURE_EVIDENCE_COMMIT_INVALID');
+  if (!SEMANTIC_COMPARATOR_STAGES.includes(value?.diagnosticStage)
+      || !/^(?:SEMANTIC|PRODUCTION|PROTECTED|EXTERNAL|[A-Z]+)_[A-Z0-9_]{2,100}$/.test(value?.errorCode || '')) failures.push('FAILURE_DIAGNOSTIC_CODE_INVALID');
+  if (!Number.isInteger(value?.connectionAttemptCount) || value.connectionAttemptCount < 0 || value.connectionAttemptCount > 1
+      || value?.retryCount !== 0 || value?.productionConnectionAttempted !== (value.connectionAttemptCount === 1)
+      || value?.productionMutation !== false || value?.originalErrorPersisted !== false) failures.push('FAILURE_CONNECTION_BOUNDARY_MISMATCH');
+  if (!['PASS', 'FAILED', 'NOT_STARTED'].includes(value?.cleanupResult)
+      || value?.structuralNonAclResult !== 'BLOCKED' || value?.semanticAclResult !== 'BLOCKED'
+      || value?.structuralStartingBaseline !== 'BLOCKED' || value?.finalStatus !== 'BLOCKED') failures.push('FAILURE_GATE_RESULT_INVALID');
+  return canonicalValue({ status: failures.length ? 'BLOCKED' : 'PASS', failures: [...new Set(failures)].sort() });
+}
+
 async function tracked(paths) {
   try {
     execFileSync('git', ['ls-files', '--error-unmatch', '--', ...paths], { cwd: PROJECT_ROOT, stdio: 'ignore' });
@@ -247,40 +314,71 @@ async function writeEvidence(evidence, evidencePath, evidenceHashPath) {
   return evidenceHash;
 }
 
+async function writeFailureEvidence(evidence, evidencePath, evidenceHashPath) {
+  const validation = validateSemanticFailureEvidence(evidence);
+  if (validation.status !== 'PASS') throw new Error('SEMANTIC_FAILURE_EVIDENCE_SANITIZATION_BLOCKED');
+  const serialized = canonicalJson(evidence);
+  const evidenceHash = sha256(serialized);
+  await writeFile(evidencePath, serialized, 'utf8');
+  await writeFile(evidenceHashPath, `${evidenceHash}  ${path.basename(evidencePath)}\n`, 'utf8');
+  return evidenceHash;
+}
+
 export async function compareProductionStartingBaselineSemantics({
   env = process.env,
   ClientImpl = Client,
   evidencePath = EVIDENCE_PATH,
   evidenceHashPath = EVIDENCE_HASH_PATH,
   repositoryVerifier = validateRepositoryExecutionProvenance,
+  artifactLoader = loadArtifacts,
   collectAclFactsImpl = collectAclSemanticFacts,
-  buildAclSnapshotImpl = buildAclSemanticSnapshot
+  buildAclSnapshotImpl = buildAclSemanticSnapshot,
+  compareAclSnapshotsImpl = compareAclSemanticSnapshots
 } = {}) {
-  const config = semanticStartingConnectionConfig(env);
-  const queryValidation = validateSemanticQueryScope();
-  if (queryValidation.status !== 'PASS') throw new Error('SEMANTIC_QUERY_SCOPE_BLOCKED');
-  const repository = await repositoryVerifier(env);
-  if (repository?.status !== 'PASS' || !/^[a-f0-9]{40}$/.test(repository?.commitSha || '')) throw new Error('SEMANTIC_REPOSITORY_PROVENANCE_BLOCKED');
-  const artifacts = await loadArtifacts();
-  const ca = await readFile(config.caPath, 'utf8');
-  const client = new ClientImpl({ ...config.client, ssl: authenticatedTlsConfig(config, ca) });
+  let stage = 'PRE_CONNECT_GUARD';
+  let repositoryCommitSha = null;
+  let client = null;
   let transactionOpen = false;
   let connectionAttemptCount = 0;
+  let cleanupResult = 'NOT_STARTED';
+  let evidence = null;
+  let failure = null;
   try {
+    const config = semanticStartingConnectionConfig(env);
+    stage = 'QUERY_ALLOWLIST';
+    const queryValidation = validateSemanticQueryScope();
+    if (queryValidation.status !== 'PASS') throw new Error('SEMANTIC_QUERY_SCOPE_BLOCKED');
+    stage = 'REPOSITORY_PROVENANCE';
+    const repository = await repositoryVerifier(env);
+    if (repository?.status !== 'PASS' || !/^[a-f0-9]{40}$/.test(repository?.commitSha || '')) throw new Error('SEMANTIC_REPOSITORY_PROVENANCE_BLOCKED');
+    repositoryCommitSha = repository.commitSha;
+    stage = 'ARTIFACT_PROVENANCE';
+    const artifacts = await artifactLoader();
+    stage = 'CA_LOAD';
+    const ca = await readFile(config.caPath, 'utf8');
+    stage = 'TLS_CONFIG';
+    client = new ClientImpl({ ...config.client, ssl: authenticatedTlsConfig(config, ca) });
+    stage = 'TLS_CONNECT';
     connectionAttemptCount += 1;
     await client.connect();
+    stage = 'IDENTITY_GUARD';
     const identity = (await client.query(IDENTITY_SQL, [EXPECTED_PRODUCTION_DATABASE, EXPECTED_PRODUCTION_READONLY_ROLE])).rows[0];
     if (!identity?.database_ok || !identity?.current_role_ok || !identity?.session_role_ok || !identity?.read_only_ok
         || Number(identity.server_version_number) < 180000 || Number(identity.server_version_number) >= 190000) throw new Error('SEMANTIC_IDENTITY_BOUNDARY_BLOCKED');
+    stage = 'ROLE_BOUNDARY_GUARD';
     if (!(await client.query(ROLE_BOUNDARY_SQL)).rows[0]?.role_safe) throw new Error('SEMANTIC_ROLE_BOUNDARY_BLOCKED');
+    stage = 'READ_ONLY_TRANSACTION';
     await client.query('BEGIN TRANSACTION READ ONLY');
     transactionOpen = true;
     if (!(await client.query(TRANSACTION_READ_ONLY_SQL)).rows[0]?.read_only_ok) throw new Error('SEMANTIC_READ_ONLY_TRANSACTION_BLOCKED');
+    stage = 'LEDGER';
     const ledger = (await client.query(LEDGER_SQL)).rows;
     const ledgerResult = compareExactStartingLedger(artifacts.structural.artifact.catalog.migrationLedger, ledger);
     if (ledgerResult.status !== 'PASS') throw new Error('SEMANTIC_STARTING_LEDGER_BLOCKED');
+    stage = 'NON_ACL_CATALOG_COLLECTOR';
     const rawCatalog = { migrationLedger: ledger };
     for (const [section, sql] of Object.entries(STRUCTURAL_CATALOG_QUERIES)) rawCatalog[section] = (await client.query(sql)).rows;
+    stage = 'NORMALIZATION';
     const migrationOwner = rawCatalog.schemas.find(row => row.schema_name === 'app_private')?.owner_name;
     if (!migrationOwner) throw new Error('SEMANTIC_MIGRATION_OWNER_UNRESOLVED');
     const observedStructural = normalizeStartingCatalog(rawCatalog, migrationOwner);
@@ -288,6 +386,7 @@ export async function compareProductionStartingBaselineSemantics({
     const observedNonAcl = withoutAcl(observedStructural);
     const structuralComparison = compareStructuralCatalogs(observedNonAcl, expectedNonAcl);
     const structuralNonAclResult = structuralComparison.status === 'PASS' ? 'PASS' : 'MISMATCH';
+    stage = 'ACL_SEMANTIC_COLLECTOR';
     const aclFacts = await collectAclFactsImpl(client);
     const observedAcl = buildAclSnapshotImpl(aclFacts, {
       expectedOwners: [migrationOwner, 'pg_database_owner'],
@@ -296,16 +395,17 @@ export async function compareProductionStartingBaselineSemantics({
       extensionOwners: { pgcrypto: ['cloud_admin'] },
       systemManagedPrincipals: ['cloud_admin']
     });
-    const aclComparison = compareAclSemanticSnapshots(artifacts.acl.artifact.snapshot, observedAcl);
+    stage = 'FINGERPRINT_COMPARISON';
+    const aclComparison = compareAclSnapshotsImpl(artifacts.acl.artifact.snapshot, observedAcl);
     const finalGate = combineStructuralAndAclGate(structuralNonAclResult, aclComparison.status);
     await client.query('ROLLBACK');
     transactionOpen = false;
-    const evidence = canonicalValue({
+    evidence = canonicalValue({
       schemaVersion: SEMANTIC_LIVE_EVIDENCE_SCHEMA_VERSION,
       phase: 'PRODUCTION_CLOSURE_PHASE_2E',
       sprintNumberingCappedAt: 65,
       generatedAt: new Date().toISOString(),
-      repositoryCommitSha: repository.commitSha,
+      repositoryCommitSha,
       comparatorModelVersion: ACL_SEMANTIC_MODEL_VERSION,
       expectedStructuralArtifactSha256: artifacts.structural.artifactSha256,
       expectedStructuralFingerprint: EXPECTED_STARTING_FINGERPRINT,
@@ -339,29 +439,85 @@ export async function compareProductionStartingBaselineSemantics({
       productionMutation: false,
       finalStatus: finalGate === 'PASS' ? 'PASS' : 'BLOCKED'
     });
+  } catch (error) {
+    failure = comparatorFailure(error, { stage, connectionAttemptCount, repositoryCommitSha, cleanupResult });
+  } finally {
+    if (transactionOpen && client) {
+      try { await client.query('ROLLBACK'); } catch { cleanupResult = 'FAILED'; }
+      transactionOpen = false;
+    }
+    if (client) {
+      try { await client.end(); if (cleanupResult !== 'FAILED') cleanupResult = 'PASS'; }
+      catch { cleanupResult = 'FAILED'; }
+    }
+  }
+  if (failure) {
+    failure.safeDiagnostic = Object.freeze({ ...failure.safeDiagnostic, cleanupResult });
+    throw failure;
+  }
+  if (cleanupResult !== 'PASS') throw comparatorFailure(new Error('SEMANTIC_CONNECTION_CLEANUP_BLOCKED'), { stage: 'CLEANUP', connectionAttemptCount, repositoryCommitSha, cleanupResult });
+  try {
+    stage = 'EVIDENCE_SANITIZATION';
+    const validation = validateSemanticLiveEvidence(evidence);
+    if (validation.status !== 'PASS') throw new Error('SEMANTIC_LIVE_EVIDENCE_SANITIZATION_BLOCKED');
+    stage = 'EVIDENCE_WRITE_HASH';
     const evidenceSha256 = await writeEvidence(evidence, evidencePath, evidenceHashPath);
     return { evidence, evidenceSha256 };
   } catch (error) {
-    if (transactionOpen) await client.query('ROLLBACK').catch(() => {});
-    throw error;
-  } finally {
-    await client.end().catch(() => {});
+    throw comparatorFailure(error, { stage, connectionAttemptCount, repositoryCommitSha, cleanupResult });
+  }
+}
+
+export async function runProductionStartingBaselineSemanticCli({
+  env = process.env,
+  failureEvidencePath = FAILURE_EVIDENCE_PATH,
+  failureEvidenceHashPath = FAILURE_EVIDENCE_HASH_PATH,
+  comparatorOptions = {}
+} = {}) {
+  try {
+    const result = await compareProductionStartingBaselineSemantics({ env, ...comparatorOptions });
+    return { exitCode: result.evidence.finalStatus === 'PASS' ? 0 : 2, result, failure: null };
+  } catch (error) {
+    const safe = error?.safeDiagnostic || comparatorFailure(error, { stage: 'UNKNOWN' }).safeDiagnostic;
+    const failure = canonicalValue({
+      schemaVersion: SEMANTIC_FAILURE_EVIDENCE_SCHEMA_VERSION,
+      phase: 'PRODUCTION_CLOSURE_LIVE_SEMANTIC_FAILURE',
+      sprintNumberingCappedAt: 65,
+      generatedAt: new Date().toISOString(),
+      repositoryCommitSha: safe.repositoryCommitSha,
+      diagnosticStage: safe.stage,
+      errorCode: safe.errorCode,
+      connectionAttemptCount: safe.connectionAttemptCount,
+      retryCount: 0,
+      cleanupResult: safe.cleanupResult,
+      productionConnectionAttempted: safe.connectionAttemptCount === 1,
+      productionMutation: false,
+      originalErrorPersisted: false,
+      structuralNonAclResult: 'BLOCKED',
+      semanticAclResult: 'BLOCKED',
+      structuralStartingBaseline: 'BLOCKED',
+      finalStatus: 'BLOCKED'
+    });
+    let failureEvidenceSha256 = null;
+    try { failureEvidenceSha256 = await writeFailureEvidence(failure, failureEvidencePath, failureEvidenceHashPath); } catch { /* stdout remains sanitized and fail closed */ }
+    return { exitCode: 1, result: null, failure, failureEvidenceSha256 };
   }
 }
 
 async function main() {
-  try {
-    const result = await compareProductionStartingBaselineSemantics();
-    process.stdout.write(`PRODUCTION_STARTING_BASELINE_SEMANTIC=${result.evidence.finalStatus}\n`);
-    process.stdout.write(`STRUCTURAL_NON_ACL=${result.evidence.structuralNonAclResult}\n`);
-    process.stdout.write(`ACL_SEMANTIC=${result.evidence.semanticAclResult}\n`);
-    process.stdout.write(`SANITIZED_EVIDENCE_SHA256=${result.evidenceSha256}\n`);
-    if (result.evidence.finalStatus !== 'PASS') process.exitCode = 2;
-  } catch {
+  const outcome = await runProductionStartingBaselineSemanticCli();
+  if (outcome.result) {
+    process.stdout.write(`PRODUCTION_STARTING_BASELINE_SEMANTIC=${outcome.result.evidence.finalStatus}\n`);
+    process.stdout.write(`STRUCTURAL_NON_ACL=${outcome.result.evidence.structuralNonAclResult}\n`);
+    process.stdout.write(`ACL_SEMANTIC=${outcome.result.evidence.semanticAclResult}\n`);
+    process.stdout.write(`SANITIZED_EVIDENCE_SHA256=${outcome.result.evidenceSha256}\n`);
+  } else {
     process.stderr.write('PRODUCTION_STARTING_BASELINE_SEMANTIC=BLOCKED\n');
-    process.stderr.write('PRODUCTION_STARTING_BASELINE_SEMANTIC_ERROR=SANITIZED_FAILURE\n');
-    process.exitCode = 1;
+    process.stderr.write(`PRODUCTION_STARTING_BASELINE_SEMANTIC_STAGE=${outcome.failure.diagnosticStage}\n`);
+    process.stderr.write(`PRODUCTION_STARTING_BASELINE_SEMANTIC_ERROR=${outcome.failure.errorCode}\n`);
+    process.stderr.write(`SANITIZED_FAILURE_EVIDENCE_WRITTEN=${Boolean(outcome.failureEvidenceSha256)}\n`);
   }
+  process.exitCode = outcome.exitCode;
 }
 
 if (path.resolve(process.argv[1] || '') === path.resolve(fileURLToPath(import.meta.url))) main();

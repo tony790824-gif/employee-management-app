@@ -1,5 +1,11 @@
 # AI Handoff
 
+## Production Closure Phase 2F current state - 2026-08-13
+
+- The consumed Phase 2E run emitted only `SANITIZED_FAILURE`; its expected Live Evidence JSON/hash are absent. The actual Production failure stage and structural/ACL result are UNKNOWN.
+- Proven defect: Commit `05e5163` collapsed every comparator failure into one string and persisted no safe stage/code. Phase 2F adds allowlisted stage diagnostics and a separate failure Evidence/hash contract without raw messages or identifiers.
+- No Production reconnect occurred. `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED; 9/13 and 70% / NOT READY remain unchanged. Phase 2E authority is consumed and cannot be reused.
+
 ## Production Closure Phase 2E Preflight current state - 2026-08-13
 
 - Future-only command: `pnpm run db:parity:production-starting-baseline-semantic`; token: `COMPARE_BANKE_PRODUCTION_STARTING_BASELINE_SEMANTICS`. Never execute without new single-use Owner authorization.

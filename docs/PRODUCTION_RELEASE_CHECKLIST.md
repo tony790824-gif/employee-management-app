@@ -1,5 +1,14 @@
 # Production Release Checklist
 
+## Production Closure Phase 2F failure diagnostics
+
+- [x] Confirmed Phase 2E Live Evidence JSON/hash were not created; no structural/ACL conclusion was inferred.
+- [x] Replaced generic catch-only output with allowlisted stage and safe error code.
+- [x] Added separate sanitized failure Evidence/hash contract; raw error messages and target/principal identifiers remain forbidden.
+- [x] Covered all comparator stages, one connection/no retry, cleanup and diagnostic-write failure paths with mocks/local PostgreSQL 18.4.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- [ ] New single-use Production read-only authorization: **NOT_GRANTED**; Phase 2E authorization is consumed.
+
 ## Production Closure Phase 2E minimal live semantic Preflight
 
 - [x] Dedicated semantic command/token cannot invoke the final `0022` comparator.

@@ -1,5 +1,12 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2F sanitized failure analysis - 2026-08-13
+
+- Root cause status: **PARTIALLY_PROVEN**. The generic catch-path observability defect is proven; the underlying Live Production failure is UNKNOWN because no Evidence JSON/hash was created.
+- `STRUCTURAL_STARTING_BASELINE` and independent `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**. No live mismatch or PASS was established.
+- Matrix remains **9 PASS / 13 non-PASS**; Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning and Migration Technical Readiness **NO-GO**, authorization **NOT_GRANTED**.
+- Phase 2F Production connection/mutation: **NONE**; consumed Phase 2E authorization was not reused.
+
 ## Production Closure Phase 2E minimal-live Preflight - 2026-08-13
 
 - Future semantic comparator technical/safety Preflight: **PASS locally**; execution authorization: **NOT_GRANTED**.
