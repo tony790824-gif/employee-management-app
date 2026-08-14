@@ -1,5 +1,12 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2M
+
+- Repository-only proof design classified `EXACT_APPLICATION_OBJECT_OWNER_RELATION` as `A_PROOF_CONTRACT_READY`; no Production connection, credential or mutation was used.
+- A committed hash artifact defines 65 exact required owner relationships and separate platform/Extension exclusions. Tests fail closed on missing objects, multiple owners, rename/drop-recreate hazards, membership, dangerous attributes, extra ownership, PUBLIC and sensitive identity persistence.
+- Owner classification and ACL safety remain separate: the 8/3 privilege shapes match built-in owner defaults, but their explicit default-ACL grant options are not approved and remain a semantic mismatch.
+- Production remains 70% / NOT READY, 9 PASS / 13 non-PASS; the future collector is reserved but not implemented or authorized.
+
 ## 2026-08-14 current state - Production Closure Phase 2L
 
 Phase 2L completed Repository-only principal/default-ACL forensics. Migrations `0001`–`0008` and operator hardening contain no tracked source for the 11 explicit relation/sequence default grants or `WITH GRANT OPTION`; the expected ACL baseline contains no default-privilege entry. Their 8+3 shape matches PostgreSQL 18 owner defaults but cannot identify the GRANTEE or creation source.

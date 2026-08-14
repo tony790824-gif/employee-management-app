@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2M - Exact application owner proof preflight (2026-08-14)
+
+- **Status:** COMPLETE as Repository/local-only preflight; decision `A_PROOF_CONTRACT_READY`.
+- Versioned exact owner set: 65 required objects (database 1, private schema 1, relations 18, indexes 34, Functions 11), one owner, with public schema and Extension/platform objects separately classified.
+- Owner classification requires complete coverage, safe role attributes, zero outbound memberships/unrelated ownership and no ambiguity; raw names/OIDs are never persisted.
+- Owner proof does not approve the 11 explicit default ACL grant options. `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED; matrix 9/13 and readiness 70% / NOT READY remain unchanged.
+- **Next action:** Owner review, then a separate Repository-only implementation/preflight of the reserved minimal collector before any new single-use authorization is considered. No Production connection or mutation occurred.
+
 ## Production Closure Phase 2L - Reviewed principal policy/proof (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.

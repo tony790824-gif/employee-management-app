@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2M
+
+Sprint numbering remains capped at 65. Phase 2M approved the Repository proof contract (`A_PROOF_CONTRACT_READY`) but did not implement or run a Production collector.
+
+The next exact action is Owner review of the 65-object `EXACT_APPLICATION_OBJECT_OWNER_RELATION` boundary. If accepted, implement and locally preflight only the reserved minimal one-connection/no-retry read-only collector, schema and mock failure paths. Do not request Production access until that separate preflight passes. The explicit default ACL grant-option semantic mismatch remains independently BLOCKED.
+
 ## Production Closure next action after Phase 2L
 
 Sprint numbering remains capped at 65. Phase 2L found no tracked origin for the 11 explicit default-ACL facts and approved no new principal category. The next smallest action is an Owner review of the Repository-only `EXACT_APPLICATION_OBJECT_OWNER_RELATION` proof contract for existing category `EXPECTED_OWNER`.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Production Closure Phase 2M current state - 2026-08-14
+
+- Phase 2M is Repository-only COMPLETE with decision `A_PROOF_CONTRACT_READY`; Sprint numbering remains capped at 65.
+- Exact `0001`–`0008` owner set fingerprint is `ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200`: 65 required objects, exactly one owner, with `public` schema and Extension/platform objects separately classified.
+- The future proof must return only safe hashes/counts/enums/booleans, enforce safe role attributes, zero outbound memberships/unrelated ownership and one reviewed-category match. No collector or Production command was implemented.
+- The 11 explicit default ACL facts remain `SEMANTIC_MISMATCH` even if the GRANTEE is later proven `EXPECTED_OWNER`; all Gates remain 9 PASS / 13 non-PASS and 70% / NOT READY.
+- Next: Owner review, then separate local collector preflight. Any later execution requires a new explicit single-use read-only authorization.
+
 ## Production Closure Phase 2L current state - 2026-08-14
 
 - Repository forensic result is D / `UNTRACKED_OR_UNKNOWN_PRINCIPAL`; no Production connection or mutation occurred and Sprint numbering remains capped at 65.

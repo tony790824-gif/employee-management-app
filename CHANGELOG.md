@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production Closure Phase 2M exact application owner proof preflight
+
+- Added a deterministic `0001`–`0008` application-owner object-set artifact, companion hash and privacy-preserving future Evidence schema.
+- Defined complete ownership, role-boundary, membership, exclusion and ambiguity requirements for `EXACT_APPLICATION_OBJECT_OWNER_RELATION`, with counterfactual fail-closed tests.
+- Approved the proof contract only; explicit default ACL grant options remain a semantic mismatch, all Production Gates remain unchanged, and no Production connection or mutation occurred.
+
 ## 2026-08-14 - Production Closure Phase 2L reviewed-principal policy
 
 - Added Repository-only principal-universe, relation-proof and explicit default-ACL/grant-option policy modeling.

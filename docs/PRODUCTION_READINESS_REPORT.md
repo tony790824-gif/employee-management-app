@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2M exact owner proof preflight - 2026-08-14
+
+- Repository decision: **A — PROOF_CONTRACT_READY**; Production connections 0 and mutations NONE.
+- The exact starting-baseline owner set contains 65 required relationships with one owner and deterministic platform/Extension exclusions. Role attributes, membership, unrelated ownership, ambiguity, PUBLIC and raw identity all fail closed.
+- This establishes only a future classification contract. Current immutable Evidence does not prove the Live relationship.
+- The 11 explicit default ACL grant options remain semantic mismatches even under a counterfactual owner classification.
+- `STRUCTURAL_NON_ACL=PASS`; `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED. Matrix stays 9/13 and readiness stays **70% / NOT READY**.
+
 ## Production Closure Phase 2L policy/proof result - 2026-08-14
 
 - Decision: **D / UNTRACKED_OR_UNKNOWN_PRINCIPAL**. No tracked Migration, provisioning or runtime-hardening source creates the observed 11 explicit relation/sequence default privileges or grant options.

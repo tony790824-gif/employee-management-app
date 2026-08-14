@@ -1,0 +1,87 @@
+{
+  "blockers": [],
+  "exclusions": [
+    "EXTENSION_MANAGED_OBJECTS",
+    "PG_CATALOG_OBJECTS",
+    "PUBLIC_SCHEMA_PG_DATABASE_OWNER_ALIAS",
+    "TRIGGERS_CONSTRAINTS_COLUMNS_POLICIES_USE_PARENT_OWNERSHIP"
+  ],
+  "indirectNoIndependentOwner": {
+    "columns": 140,
+    "constraints": 234,
+    "policies": 11,
+    "triggers": 9
+  },
+  "modelVersion": "bankeban-exact-application-owner-proof-v1",
+  "objectSetFingerprint": "ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200",
+  "objectSetVersion": "bankeban-0001-0008-application-owner-set-v1",
+  "requiredOwnership": {
+    "byType": {
+      "DATABASE": {
+        "count": 1,
+        "identitySetSha256": "023fe0f8b9a606e244ab6262597d52b70ae382f9af3fac3632cd0014278a9468"
+      },
+      "FUNCTION": {
+        "count": 11,
+        "identitySetSha256": "c4bacc057b3ab4addfdb058145d46204a50eb86364b8c7db5b48f4c06bcd8704"
+      },
+      "INDEX": {
+        "count": 34,
+        "identitySetSha256": "53b8cc7a6cdab091822674778623de70a7036094b50090f7ab5a3da867809352"
+      },
+      "MATERIALIZED_VIEW": {
+        "count": 0,
+        "identitySetSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "RELATION": {
+        "count": 18,
+        "identitySetSha256": "54d239d035cf38e35f1847f904eb4e2cedca31dacbcaa833075395c363898c0b"
+      },
+      "SCHEMA": {
+        "count": 1,
+        "identitySetSha256": "211126165663b0b1bd2e189b70e8a45409e8b57dcc681c71eef9f119dcdee77b"
+      },
+      "SEQUENCE": {
+        "count": 0,
+        "identitySetSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      },
+      "VIEW": {
+        "count": 0,
+        "identitySetSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+      }
+    },
+    "count": 65,
+    "identitySetSha256": "9a0f2e7fc238e73132f6c643651b6412d1bce5a13389570bd14593b5061d202d",
+    "requiredOwnerSetCount": 1
+  },
+  "schemaVersion": 1,
+  "separatelyClassified": {
+    "extensionManagedFunctions": {
+      "count": 37,
+      "identitySetSha256": "051fd5cefb5292ae3801af167d0a94a7deb0d073f1f0d8b05efecc6977c01c3e"
+    },
+    "extensions": {
+      "count": 2,
+      "identitySetSha256": "56e0002de8a0806705328c2e2baa8ed868238f333794c9d91740cefbc9d3075a"
+    },
+    "systemDatabaseOwnerSchemas": {
+      "count": 1,
+      "identitySetSha256": "f7f059a82745c87bd95eff0ef928b4571e11ec06ebdc92899bb2a4d994998076"
+    }
+  },
+  "source": {
+    "aclBaselineSha256": "485097ac88f068cc46a73583ceff4ac6d64ad97e007c4ac20262fda0bf8394ec",
+    "migrationRange": [
+      "0001",
+      "0002",
+      "0003",
+      "0004",
+      "0005",
+      "0006",
+      "0007",
+      "0008"
+    ],
+    "structuralBaselineSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076"
+  },
+  "status": "PASS"
+}

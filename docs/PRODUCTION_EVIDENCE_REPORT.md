@@ -1,5 +1,14 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2M Repository proof artifact - 2026-08-14
+
+- Evidence class: **Repository-only / no Live Evidence**.
+- Decision: `A_PROOF_CONTRACT_READY`; the Live GRANTEE remains unproven.
+- Object-set fingerprint: `ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200`; companion artifact SHA-256: `dd057fa39036cd71115c4420941c6e936172b749af587aae41b71b0c9b25a0cc`.
+- Coverage contract: 65/65 objects, owner-set count 1, safe attributes, zero outbound memberships/unrelated ownership and exact exclusions. Raw principal/OID persistence and business-row reads are forbidden.
+- Existing immutable Evidence is insufficient to apply this classification. The explicit 8 relation + 3 sequence grant-option facts remain semantic mismatches.
+- Production connections 0; mutations NONE; no status or score promotion.
+
 ## Production Closure Phase 2L Repository forensics - 2026-08-14
 
 - `0001`–`0008` public relation/sequence default grants: **0**; Migration `WITH GRANT OPTION`: **0**.

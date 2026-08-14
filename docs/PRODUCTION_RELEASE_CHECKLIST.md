@@ -1,5 +1,18 @@
 # Production Release Checklist
 
+## Production Closure Phase 2M exact owner proof gate
+
+- [x] Exact `0001`–`0008` application owner set is versioned and hash-validated: 65 required objects, one owner.
+- [x] `public` schema, Extensions/platform objects and indirect non-owner objects are explicitly separated.
+- [x] Owner proof fails on incomplete/multiple ownership, PUBLIC, ambiguity, dangerous attributes, outbound membership, unrelated ownership and raw identity persistence.
+- [x] Built-in owner privilege shapes are tested separately from explicit default ACL state.
+- [x] Explicit relation/sequence default ACL grant options remain `SEMANTIC_MISMATCH`; none are normalized away.
+- [x] Future single-connection/no-retry contract is reserved but not implemented or authorized.
+- [ ] Live exact owner relationship Evidence: **NOT_COLLECTED / NOT_AUTHORIZED**.
+- [ ] `ACL_SEMANTIC`: **BLOCKED**.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- [ ] `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED** independently.
+
 ## Production Closure Phase 2L reviewed-principal policy gate
 
 - [x] Reviewed Migrations `0001`–`0008`, operator scripts, ACL models, expected baseline, operations/evidence/security documents and tests.
