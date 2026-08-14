@@ -1,5 +1,14 @@
 # 班客邦 Product Backlog
 
+## Production ACL remediation authorization plan (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local planning; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.
+- Added a hash-bound, fail-closed contract for one future conditional Owner authorization: dedicated-reader pre-check, exact ACL-only transaction, then independent dedicated-reader post-check; maximum 3 connections total, one attempt per stage, retry 0.
+- Repair scope is limited to the proven 8 relation + 3 sequence explicit `public` default-ACL facts and any exact current-object ACL differences proven against the committed `0001`–`0008` semantic baseline. Broad revoke, GRANT, role/membership/ownership changes, Migration and business rows are prohibited.
+- owner/grantee/runtime-impact proof remains a mandatory pre-check. Failure consumes the future event and stops before mutation; no new blocker was introduced.
+- Gates remain `ACL_SEMANTIC=BLOCKED`, `STRUCTURAL_STARTING_BASELINE=BLOCKED`, `FRESH_LEDGER_AND_CHECKSUM=BLOCKED`, 9/13 and 70% / NOT READY. Authorization remains NOT_GRANTED.
+- **Next action:** Owner may later grant one exact bounded conditional authorization tied to a reviewed clean Commit and plan hash. Do not connect or mutate before that authorization.
+
 ## Production Closure Phase 2O - Owner relation / default ACL analysis (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local analysis; Sprint numbering remains capped at 65.

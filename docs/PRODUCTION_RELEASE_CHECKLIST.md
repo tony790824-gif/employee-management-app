@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Production ACL remediation authorization plan gate
+
+- [x] Proven repair scope preserves exact 8 relation + 3 sequence explicit `public` default-ACL facts and baseline-zero end state.
+- [x] Existing-object ACL remediation is separately constrained to exact baseline differences on an application allowlist; broad revoke is forbidden.
+- [x] Owner/target/runtime-impact/operator proofs are mandatory pre-checks; ambiguity stops before mutation.
+- [x] One future conditional authorization envelope is bounded to three ordered connections, one attempt per stage, retry 0.
+- [x] Exact mutation allowlist, transaction/timeouts, stop conditions, rollback/forward-fix and sanitized post-check evidence are defined and machine validated.
+- [ ] Owner authorization for a future event: **NOT_GRANTED**.
+- [ ] Live pre-check, mutation and post-check: **NOT_EXECUTED**.
+- [ ] `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**.
+- [x] Current matrix/readiness preserved at 9/13 and 70% / NOT READY; current Production connections/mutations 0/NONE.
+
 ## Production Closure Phase 2O owner/default-ACL analysis gate
 
 - [x] Verified Live owner-relation Evidence SHA-256/companion, schema/runtime contract, sanitization, source Commit and timestamp.

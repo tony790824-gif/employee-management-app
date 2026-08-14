@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production ACL remediation plan evidence - 2026-08-14
+
+- Evidence class: **Repository-only plan**, not Production evidence.
+- Source Live fact set remains Phase 2O: explicit default-ACL drift PROVEN; owner relation/runtime impact NOT_PROVEN; source Evidence SHA-256 `d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6`.
+- New contract files are a canonical plan, SHA-256 companion, local validator and regression tests. They persist no raw principal/OID/ACL, hostname, connection data, credential or business rows.
+- Authorization status **NOT_GRANTED**; Production connection/comparator/mutation **0 / NOT_EXECUTED / NONE**.
+- No Live Gate changed: ACL semantic, structural starting baseline and final fresh ledger/checksum remain BLOCKED; 22-Gate remains 9/13.
+
 ## Production Closure Phase 2O owner/default-ACL analysis - 2026-08-14
 
 - Live owner-relation Evidence SHA-256/companion, runtime schema contract, sanitization, timestamp and source Commit: **PASS**. SHA-256: `d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6`; source Commit: `73953776254f7acaccf7fd9bb2828719ddd07203`.

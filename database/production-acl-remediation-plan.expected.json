@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "mode": "REPOSITORY_LOCAL_ONLY_PLAN",
+  "sourceCommit": "942b40a88ee7b217f1c6bdee1a0325779fb0a32d",
+  "sourceEvidenceSha256": "d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6",
+  "decision": "READY_FOR_ONE_BOUNDED_CONDITIONAL_AUTHORIZATION",
+  "authorizationStatus": "NOT_GRANTED",
+  "productionConnectionAttempted": false,
+  "productionComparatorExecuted": false,
+  "productionMutation": false,
+  "knownFacts": {
+    "explicitDefaultAclDrift": "PROVEN",
+    "schema": "public",
+    "relationFactCount": 8,
+    "sequenceFactCount": 3,
+    "grantOptionTrueCount": 11,
+    "expectedDefaultPrivilegeCount": 0,
+    "ownerRelationProof": "BLOCKED",
+    "runtimeImpact": "NOT_PROVEN",
+    "aclSemanticGate": "BLOCKED",
+    "structuralStartingBaselineGate": "BLOCKED",
+    "freshLedgerAndChecksumGate": "BLOCKED",
+    "gateCount": "9_PASS_13_NON_PASS",
+    "productionReadiness": "70_PERCENT_NOT_READY"
+  },
+  "remediationTargets": {
+    "defaultPrivileges": {
+      "objectTypes": ["RELATION", "SEQUENCE"],
+      "relationPrivileges": ["SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE", "REFERENCES", "TRIGGER", "MAINTAIN"],
+      "sequencePrivileges": ["USAGE", "SELECT", "UPDATE"],
+      "expectedEndState": "ZERO_EXPLICIT_DEFAULT_ACL_FACTS_FOR_VERIFIED_TARGET_IN_PUBLIC"
+    },
+    "materializedObjectPrivileges": {
+      "scope": "ONLY_BASELINE_PROVEN_ACL_DIFFERENCES_ON_ALLOWLISTED_APPLICATION_OBJECTS",
+      "expectedEndState": "EXACT_0001_0008_ACL_SEMANTIC_BASELINE",
+      "broadAllObjectsRevokeAllowed": false
+    }
+  },
+  "preconditions": [
+    "EXACT_AUTHORIZED_COMMIT_AND_PLAN_HASH",
+    "TARGET_DATABASE_IDENTITY_PASS",
+    "TLS_VERIFY_FULL_PASS",
+    "EXACT_0001_0008_LEDGER_AND_CHECKSUM_PASS",
+    "ZERO_UNEXPECTED_MIGRATIONS",
+    "DEDICATED_READER_ROLE_BOUNDARY_PASS",
+    "EXACT_DEFAULT_ACL_OWNER_PROVEN",
+    "EXACT_GRANTEE_CATEGORY_PROVEN",
+    "GRANTEE_NOT_PUBLIC",
+    "GRANTEE_NOT_APPROVED_RUNTIME_READER_OR_OPERATOR",
+    "ZERO_EFFECTIVE_MEMBERSHIP_PATH_TO_APPROVED_RUNTIME_ROLES",
+    "RUNTIME_CONFIGURATION_PRINCIPAL_INVENTORY_COMPLETE",
+    "CURRENT_OBJECT_ACL_IMPACT_ENUMERATED",
+    "EXACT_OBJECT_ALLOWLIST_MATCHES_BASELINE_OBJECT_SET",
+    "NO_ACTIVE_RUNTIME_DEPENDENCY_ON_TARGET_PRIVILEGES",
+    "APPROVED_ACL_OPERATOR_EXACTLY_IDENTIFIED",
+    "OPERATOR_CAN_ACT_FOR_DEFAULT_ACL_OWNER_WITHOUT_ROLE_OR_OWNERSHIP_CHANGE",
+    "MUTATION_TRANSACTION_AND_TIMEOUT_GUARDS_READY",
+    "SANITIZED_PRECHECK_EVIDENCE_HASH_VALID"
+  ],
+  "forbiddenBeforeAllPreconditionsPass": [
+    "ALTER_DEFAULT_PRIVILEGES",
+    "REVOKE_OBJECT_PRIVILEGES",
+    "GRANT_ANY_PRIVILEGE",
+    "ALTER_ROLE_OR_MEMBERSHIP",
+    "ALTER_OWNER",
+    "MIGRATION",
+    "DDL_OR_DML_OUTSIDE_EXACT_ACL_MUTATION"
+  ],
+  "authorizationEnvelope": {
+    "kind": "ONE_OWNER_AUTHORIZATION_THREE_BOUNDED_CONNECTIONS",
+    "maxConnectionAttempts": 3,
+    "retryCount": 0,
+    "stages": [
+      {
+        "id": "PRECHECK",
+        "maxConnectionAttempts": 1,
+        "credentialClass": "DEDICATED_PRODUCTION_READONLY",
+        "transactionMode": "READ_ONLY",
+        "catalogMetadataOnly": true,
+        "businessRowReads": false,
+        "mutationAllowed": false,
+        "output": "SANITIZED_PRECHECK_EVIDENCE_AND_DECISION_HASH"
+      },
+      {
+        "id": "CONDITIONAL_MUTATION",
+        "maxConnectionAttempts": 1,
+        "credentialClass": "EXACT_APPROVED_ACL_OPERATOR",
+        "transactionMode": "READ_WRITE_EXACT_ACL_ONLY",
+        "catalogMetadataOnlyBeforeMutation": true,
+        "businessRowReads": false,
+        "mutationAllowed": true,
+        "requiresPrecheckDecision": "PASS",
+        "output": "SANITIZED_MUTATION_EVIDENCE_AND_DECISION_HASH"
+      },
+      {
+        "id": "INDEPENDENT_POSTCHECK",
+        "maxConnectionAttempts": 1,
+        "credentialClass": "DEDICATED_PRODUCTION_READONLY",
+        "transactionMode": "READ_ONLY",
+        "catalogMetadataOnly": true,
+        "businessRowReads": false,
+        "mutationAllowed": false,
+        "output": "SANITIZED_POSTCHECK_EVIDENCE_AND_DECISION_HASH"
+      }
+    ]
+  },
+  "exactMutationAllowlist": [
+    "ALTER_DEFAULT_PRIVILEGES_FOR_VERIFIED_OWNER_IN_PUBLIC_REVOKE_RELATION_PRIVILEGES_FROM_VERIFIED_TARGET",
+    "ALTER_DEFAULT_PRIVILEGES_FOR_VERIFIED_OWNER_IN_PUBLIC_REVOKE_SEQUENCE_PRIVILEGES_FROM_VERIFIED_TARGET",
+    "REVOKE_ONLY_BASELINE_PROVEN_RELATION_PRIVILEGE_DIFFERENCES_FROM_VERIFIED_TARGET_ON_EXACT_OBJECT_ALLOWLIST",
+    "REVOKE_ONLY_BASELINE_PROVEN_SEQUENCE_PRIVILEGE_DIFFERENCES_FROM_VERIFIED_TARGET_ON_EXACT_OBJECT_ALLOWLIST"
+  ],
+  "mutationGuards": {
+    "singleTransaction": true,
+    "advisoryLockRequired": true,
+    "lockTimeoutRequired": true,
+    "statementTimeoutRequired": true,
+    "identifiersResolvedFromVerifiedCatalogOidsAndSafelyQuoted": true,
+    "freeFormSqlAllowed": false,
+    "grantAllowed": false,
+    "roleOrMembershipChangeAllowed": false,
+    "ownershipChangeAllowed": false,
+    "schemaOrBusinessDataChangeAllowed": false,
+    "migrationAllowed": false
+  },
+  "stopConditions": [
+    "AUTHORIZATION_OR_COMMIT_MISMATCH",
+    "TARGET_IDENTITY_OR_TLS_FAILURE",
+    "LEDGER_OR_CHECKSUM_DRIFT",
+    "UNEXPECTED_MIGRATION",
+    "OWNER_RELATION_OR_DEFAULT_OWNER_AMBIGUOUS",
+    "GRANTEE_UNCLASSIFIED_OR_PUBLIC",
+    "GRANTEE_IS_APPROVED_RUNTIME_READER_OR_OPERATOR",
+    "MEMBERSHIP_EXPANDS_TARGET_OR_OPERATOR_PRIVILEGES",
+    "RUNTIME_PRINCIPAL_INVENTORY_INCOMPLETE",
+    "ACTIVE_RUNTIME_DEPENDENCY_FOUND",
+    "OBJECT_ALLOWLIST_OR_ACL_DIFF_MISMATCH",
+    "OPERATOR_IDENTITY_OR_CAPABILITY_MISMATCH",
+    "PRECHECK_EVIDENCE_OR_HASH_INVALID",
+    "LOCK_OR_STATEMENT_TIMEOUT",
+    "CONCURRENT_ACL_OR_SCHEMA_DRIFT",
+    "ANY_NON_ALLOWLISTED_MUTATION",
+    "IN_TRANSACTION_POSTCONDITION_FAILURE",
+    "POSTCHECK_EVIDENCE_OR_HASH_INVALID"
+  ],
+  "recoveryStrategy": {
+    "beforeCommit": "ROLLBACK_TRANSACTION",
+    "afterCommit": "FORWARD_FIX_ONLY_UNLESS_SEPARATELY_AUTHORIZED_EXACT_PRESTATE_RESTORE",
+    "automaticRegrantAllowed": false,
+    "prestateContract": "SANITIZED_SEMANTIC_FACTS_COUNTS_FINGERPRINTS_AND_EXACT_ALLOWLIST",
+    "incidentAction": "KEEP_TRAFFIC_DRAINED_AND_REQUIRE_SEPARATE_EMERGENCY_AUTHORIZATION"
+  },
+  "postRemediationPassContract": {
+    "aclSemantic": [
+      "INDEPENDENT_DEDICATED_READER_POSTCHECK_PASS",
+      "ACL_MODEL_VERSION_MATCH",
+      "ZERO_ACL_SEMANTIC_DIFFERENCES",
+      "OBSERVED_ACL_FINGERPRINT_EQUALS_COMMITTED_0001_0008_BASELINE",
+      "ZERO_UNCLASSIFIED_PRINCIPALS",
+      "ZERO_UNEXPECTED_DEFAULT_ACL_FACTS",
+      "ROLE_BOUNDARY_PASS",
+      "SANITIZED_EVIDENCE_SCHEMA_HASH_AND_PROVENANCE_PASS"
+    ],
+    "structuralStartingBaseline": [
+      "STRUCTURAL_NON_ACL_PASS",
+      "ACL_SEMANTIC_PASS",
+      "LIVE_COMPARISON_USES_EXACT_0001_0008_LEDGER",
+      "SANITIZED_COMBINED_EVIDENCE_SCHEMA_HASH_AND_PROVENANCE_PASS"
+    ],
+    "freshLedgerAndChecksum": "REMAINS_INDEPENDENTLY_BLOCKED_UNTIL_0009_AND_0011_TO_0022_ARE_AUTHORIZED_APPLIED_AND_VERIFIED"
+  },
+  "forbiddenOperations": [
+    "BUSINESS_ROW_READ_OR_WRITE",
+    "MIGRATION_OR_SCHEMA_REPAIR",
+    "ROLE_MEMBERSHIP_OR_OWNERSHIP_CHANGE",
+    "GRANT_OR_PRIVILEGE_EXPANSION",
+    "FUNCTION_EXECUTION",
+    "RESTORE_OR_BRANCH_OPERATION",
+    "DEPLOY_OR_TRAFFIC_CHANGE",
+    "AUTH0_RENDER_NETLIFY_DNS_OR_BILLING_CHANGE",
+    "SECOND_ATTEMPT_OR_RETRY_PER_STAGE",
+    "RAW_PRINCIPAL_OID_ACL_CREDENTIAL_OR_CONNECTION_DATA_PERSISTENCE"
+  ],
+  "currentGateState": {
+    "aclSemantic": "BLOCKED",
+    "structuralStartingBaseline": "BLOCKED",
+    "freshLedgerAndChecksum": "BLOCKED",
+    "passCount": 9,
+    "nonPassCount": 13,
+    "productionReadinessPercent": 70,
+    "productionStatus": "NOT_READY",
+    "gateA": "DEFER",
+    "productionProvisioning": "NO_GO",
+    "productionMigrationAuthorization": "NOT_GRANTED"
+  }
+}

@@ -1,5 +1,13 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after ACL remediation planning
+
+Sprint numbering remains capped at 65 and no further Closure Phase number is created. The Repository now contains a fail-closed, hash-bound ACL remediation authorization plan. It combines the truly necessary future read, conditional mutation and independent post-check under one Owner authorization envelope, while limiting each of three stages to one connection attempt with retry 0.
+
+The only next action is an Owner decision whether to issue that exact conditional authorization at a future clean Commit. Pre-check must first prove the default-ACL owner, target category, complete runtime-principal inventory, zero runtime dependency and exact current-object impact. Any failure stops before mutation. The authorization must limit mutation to revoking the proven `public` relation/sequence default ACL drift and exact baseline-proven current-object differences; it must exclude GRANT, role/membership/ownership changes, Migration, business DDL/DML and every unrelated platform operation.
+
+No authorization exists now. `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and independent `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED; 9 PASS / 13 non-PASS and 70% / NOT READY are unchanged.
+
 ## Production Closure next action after Phase 2O
 
 Sprint numbering remains capped at 65. Phase 2O proved that the Live default-ACL GRANTEE is not the single owner of the 65-object application set: exact coverage is 0/65, with outbound membership and ambiguity, so the owner proof remains BLOCKED. Separately, 11 explicit `pg_default_acl` grant-option facts differ from the `0001`–`0008` baseline's zero default privileges; ACL drift is proven but no repair target is authorized.

@@ -1,5 +1,14 @@
 # Production Operations Evidence Guide
 
+## Production ACL remediation authorization boundary
+
+- Current plan validation command is local-only: `pnpm run db:acl:remediation-plan`. It reads committed Repository files and cannot connect to Production.
+- No Production authorization exists. A future Owner authorization must be tied to an exact clean Commit and plan hash and may cover at most three ordered connections: dedicated-reader pre-check, exact ACL-operator transaction and dedicated-reader post-check; one attempt per stage, retry 0.
+- Pre-check must prove exact default owner/target category, complete runtime principal inventory, zero runtime dependency, exact allowlisted object impact and operator capability. Any failure stops and prohibits mutation.
+- Mutation permits only exact default-ACL revokes and exact current-object baseline-difference revokes. Broad revoke, GRANT, role/membership/owner change, Migration and business data/schema operations are prohibited.
+- Commit-before failure rolls back the transaction. Post-commit failures keep traffic drained and require a separately authorized forward-fix/emergency action; automatic regrant is forbidden.
+- ACL/structural/final-ledger Gates remain BLOCKED, 9/13 and Production 70% / NOT READY. This planning task made zero Production connections and mutations.
+
 ## Production Closure Phase 2N future owner-relation command
 
 - `pnpm run db:parity:production-application-owner-relation` exists for a possible future, separately authorized, single-use evidence event. Do not execute it without an Owner authorization tied to the exact clean commit.

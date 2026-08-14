@@ -40,6 +40,8 @@ docs/PRODUCTION_CLOSURE_PHASE_2K_OPAQUE_GRANTEE_SEMANTIC_RECOMPOSITION.json text
 docs/PRODUCTION_CLOSURE_PHASE_2K_OPAQUE_GRANTEE_SEMANTIC_RECOMPOSITION.sha256 text eol=lf
 database/production-0001-0008-application-owner-object-set.json text eol=lf
 database/production-0001-0008-application-owner-object-set.sha256 text eol=lf
+database/production-acl-remediation-plan.expected.json text eol=lf
+database/production-acl-remediation-plan.expected.sha256 text eol=lf
 docs/PRODUCTION_0001_0008_APPLICATION_OWNER_RELATION_EVIDENCE.json text eol=lf
 docs/PRODUCTION_0001_0008_APPLICATION_OWNER_RELATION_EVIDENCE.sha256 text eol=lf
 docs/PRODUCTION_0001_0008_APPLICATION_OWNER_RELATION_EVIDENCE.schema.json text eol=lf

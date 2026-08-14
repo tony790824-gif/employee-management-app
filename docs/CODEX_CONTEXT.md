@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-14 current state - Production ACL remediation authorization plan
+
+The Repository now has a single fail-closed remediation/authorization contract rather than another numbered Closure Phase. It preserves Phase 2O's proven 8 relation + 3 sequence explicit `public` default-ACL drift and treats materialized existing-object ACLs as a separate exact-diff scope because changing defaults cannot repair existing objects.
+
+Decision is `READY_FOR_ONE_BOUNDED_CONDITIONAL_AUTHORIZATION`, not current authority. One future Owner authorization may cover three ordered stages: dedicated-reader pre-check, one exact ACL-only transaction and independent dedicated-reader post-check; each stage is one attempt, retry 0. Exact owner/grantee classification, runtime-principal inventory, zero runtime dependency, object allowlist/diff and legal operator capability are preconditions. Failure stops before mutation.
+
+`ACL_SEMANTIC` can pass only on zero semantic differences and matching committed baseline fingerprint from an independent post-check. `STRUCTURAL_STARTING_BASELINE` additionally requires non-ACL PASS. `FRESH_LEDGER_AND_CHECKSUM` remains independently BLOCKED for missing `0009` and `0011`–`0022`. Current state remains 9 PASS / 13 non-PASS, 70% / NOT READY; this task made zero Production connections and no mutations.
+
 ## 2026-08-14 current state - Production Closure Phase 2O
 
 Phase 2O validated the consumed owner-relation Live Evidence without reconnecting. Its SHA-256, schema, sanitization and Commit provenance pass. The proof itself does not: the default-ACL GRANTEE matches 0/65 application owners, although the application objects have one owner and zero unrelated ownership. The artifact also records ambiguity, unexpected outbound membership and a blocked role boundary, so `EXPECTED_OWNER` and `EXACT_APPLICATION_OBJECT_OWNER_RELATION` are not proven.

@@ -1,5 +1,14 @@
 # Production Readiness Report — Sprint 33A
 
+## Production ACL remediation authorization plan - 2026-08-14
+
+- Repository/local planning and fail-closed validation: **PASS**. This is not Live evidence and grants no Production authority.
+- Future conditional envelope: pre-check / exact ACL-only mutation / independent post-check, maximum 3 connections, one attempt each, retry 0. Any pre-check ambiguity stops before mutation.
+- Proven target remains 8 relation + 3 sequence explicit `public` default-ACL facts; existing-object ACLs may be touched only when a fresh pre-check proves exact baseline differences on the application allowlist.
+- Owner relation, target classification and runtime impact remain **NOT_PROVEN** until the future pre-check. Current authorization: **NOT_GRANTED**.
+- `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**. Matrix **9 PASS / 13 non-PASS**; Production **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**.
+- Production connections/mutations for this task: **0 / NONE**.
+
 ## Production Closure Phase 2O owner/default-ACL result - 2026-08-14
 
 - Owner-relation Evidence hash/schema/sanitization/provenance: **PASS** at `d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6`.

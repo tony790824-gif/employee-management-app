@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-14 - Production ACL remediation authorization plan
+
+- Documented the single bounded conditional authorization envelope, exact ACL target, runtime-impact pre-check, mutation allowlist, stop/rollback rules and independent post-check contract.
+- Preserved authorization NOT_GRANTED, 9 PASS / 13 non-PASS and 70% / NOT READY; no Production connection or mutation occurred.
+
 ## 2026-08-14 - Production Closure Phase 2O owner/default-ACL analysis
 
 - Documented the hash-valid Live owner-relation BLOCKED result and separated it from the independently proven explicit default-ACL semantic drift.

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production ACL remediation authorization plan
+
+- Added a hash-bound Repository/local contract for one future conditional authorization covering pre-check, exact ACL-only mutation and independent post-check without creating another Sprint or Closure Phase.
+- Limited remediation to the proven 8 relation + 3 sequence explicit default-ACL facts and exact baseline-proven current-object differences; added owner/runtime-impact stops, transaction/timeout guards and forward-fix policy.
+- Added fail-closed regression coverage and kept authorization NOT_GRANTED, all three Live Gates BLOCKED, matrix 9/13 and Production 70% / NOT READY with zero Production operations.
+
 ## 2026-08-14 - Production Closure Phase 2O owner/default-ACL analysis
 
 - Validated the consumed owner-relation Evidence and recorded its fail-closed 0/65 coverage, owner-set, unrelated-ownership, ambiguity, membership and role-boundary results.

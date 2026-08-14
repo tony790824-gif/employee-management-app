@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Production ACL remediation plan current state - 2026-08-14
+
+- Repository/local plan is COMPLETE; no new Sprint or Closure Phase number was created. Production connections 0, mutations NONE, authorization NOT_GRANTED.
+- Machine contract: `database/production-acl-remediation-plan.expected.json`; validator: `pnpm run db:acl:remediation-plan`; detailed runbook: `docs/PRODUCTION_ACL_REMEDIATION_AUTHORIZATION_PLAN.md`.
+- Decision is `READY_FOR_ONE_BOUNDED_CONDITIONAL_AUTHORIZATION`: one future Owner authorization may cover dedicated-reader pre-check, exact ACL-only transaction and independent dedicated-reader post-check, maximum 3 connections, one attempt per stage, retry 0.
+- Pre-check must prove exact default owner/target category, complete runtime principal inventory, no runtime dependency, exact object ACL impact and a legal minimal ACL operator. Any ambiguity stops before mutation.
+- Default-ACL target remains exactly 8 relation + 3 sequence explicit facts in `public`; current-object repair is allowed only for exact semantic-baseline differences on the application allowlist. Broad revoke, GRANT, role/membership/ownership changes, Migration and business rows are forbidden.
+- Gates remain `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, `FRESH_LEDGER_AND_CHECKSUM` BLOCKED; matrix 9/13, Production 70% / NOT READY.
+
 ## Production Closure Phase 2O current state - 2026-08-14
 
 - Phase 2O is Repository/local analysis COMPLETE; Sprint numbering remains capped at 65. Phase 2O made zero Production connections and no mutation; the prior owner-relation authorization is consumed.
