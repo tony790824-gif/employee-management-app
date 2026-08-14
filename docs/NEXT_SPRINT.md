@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Next action after Production Migration Final Execution Plan
+
+Sprint numbering remains capped at 65. The Final Plan is Repository-complete, but execution is NO-GO. Do not request a broad Migration authorization yet. The next minimum action is an Owner decision on the existing ACL/starting-baseline blocker: either keep it deferred (which continues to block Migration) or separately authorize an already-reviewed resolution path. Do not reopen ACL research, choose an Owner/Admin role by convenience, or combine ACL repair with Migration.
+
+After ACL/starting baseline, a least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership and immutable event authorization are independently PASS, one bounded Migration authorization may cover the exact 13-version sequence and final verification. Until then Production remains 70% / NOT READY and Migration remains NOT_GRANTED.
+
 ## Next authorized closure action after operator-discovery tooling
 
 Sprint numbering remains capped at 65; do not create another Sprint or Closure Phase. The next optional action is Owner review of the clean Commit and plan hash, followed only if desired by one explicit dedicated Production read-only authorization for `pnpm run db:acl:production-precheck` with `BANK_PRODUCTION_ACL_OPERATOR_ROLE` omitted. That event may return a candidate but cannot approve or mutate it. A separate Owner decision is required before any exact-operator validation or ACL mutation authorization.

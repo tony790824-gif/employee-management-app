@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Migration Final Execution Plan (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local planning; Production Migration execution remains NO-GO / NOT_GRANTED.
+- Consolidated the exact `0009`, `0011`-`0022` sequence, per-version preconditions, recovery/traffic/operator requirements, one-version transactions, stop/forward-fix rules and final ledger/catalog/ACL verification into one authorization-ready event plan.
+- Current blockers are real, not documentary: ACL/starting-baseline drift with `NO_ELIGIBLE_OPERATOR`, no approved least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership and exact event authorization.
+- Production Readiness remains 70% / NOT READY; no Production connection, Migration, restore, deploy, traffic or external mutation occurred.
+
 ## Production ACL operator discovery (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local tooling; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Production Migration Final Execution Plan - 2026-08-14
+
+- Repository/local plan: COMPLETE; Production connection/mutation: 0/NONE; Sprint numbering remains capped at 65.
+- New authoritative event plan: `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md`. It reuses the exact manifest and existing per-version contract; no disposable rehearsal was repeated.
+- Decision: `PRODUCTION MIGRATION EXECUTION READY = NO`. True blockers are ACL/starting-baseline drift and `NO_ELIGIBLE_OPERATOR`, no approved least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership, and exact immutable event authorization.
+- Exact execution remains `0009`, `0011`-`0022`; `0010` is permanently excluded; each version is one transaction with a human pause and forward-fix-first failure handling.
+- Do not rerun ACL exploration or assume `neondb_owner`/`cloud_admin` is the Migration operator. Do not request Migration authority until all independent preconditions are PASS.
+
 ## ACL operator discovery without circular input - 2026-08-14
 
 - `pnpm run db:acl:production-precheck` no longer requires `BANK_PRODUCTION_ACL_OPERATOR_ROLE` during discovery. An absent value selects `OPERATOR_DISCOVERY`; a supplied reviewed value selects `OPERATOR_VALIDATION`.

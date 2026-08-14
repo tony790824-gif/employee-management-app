@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Migration Final Execution Plan
+
+The Repository now has one consolidated final execution plan for the known Production gap `0009`, `0011`-`0022`; `0010` remains permanently excluded. It reuses the immutable manifest, per-version preconditions and PostgreSQL 18.4 rehearsal evidence rather than rerunning simulation.
+
+Execution is still NO-GO. ACL/starting-baseline drift and `NO_ELIGIBLE_OPERATOR`, the unapproved least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership and exact event authorization are independent non-PASS conditions. One Migration authorization cannot create or approve these prerequisites. Production stays 70% / NOT READY; this planning task makes no Production connection or mutation.
+
 ## 2026-08-14 current state - ACL operator discovery
 
 The ACL pre-check circular dependency is removed locally. Omitting `BANK_PRODUCTION_ACL_OPERATOR_ROLE` activates a fail-closed `OPERATOR_DISCOVERY` mode that gathers reviewed candidate attributes, membership-path summaries and existing capability for both exact owners in the same single read-only connection. Discovery never approves a role and never allows mutation; only a later explicit Owner-approved role input can enter validation mode. No Production connection occurred and all Production Gates remain unchanged.

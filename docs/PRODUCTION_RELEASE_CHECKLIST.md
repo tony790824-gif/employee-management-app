@@ -1,5 +1,16 @@
 # Production Release Checklist
 
+## Production Migration Final Execution Plan gate
+
+- [x] Exact `0009`, `0011`-`0022` order, checksums and per-version preconditions are consolidated; `0010` is permanently excluded.
+- [x] One-version transaction, human pause, stop, conditional rollback/forward-fix and final ledger/catalog/ACL verification are explicit.
+- [x] Restore-point/RPO, maintenance/traffic/lock, TLS, operator and sanitized Evidence boundaries are explicit.
+- [ ] ACL/starting baseline: **BLOCKED**; do not include ACL remediation in Migration execution.
+- [ ] Approved least-privilege Migration operator and role boundary: **BLOCKED**.
+- [ ] RPO <=15 minutes and event-specific restore point: **BLOCKED**.
+- [ ] Maintenance window, traffic drain, monitoring/responders and immutable event authorization: **NOT_GRANTED / NOT_CONFIGURED**.
+- [ ] Production Migration Execution Ready: **NO**; Authorization: **NOT_GRANTED**.
+
 ## ACL operator-discovery gate
 
 - [x] Operator input is optional only in `OPERATOR_DISCOVERY`; required identity/TLS/ledger/ACL/runtime evidence remains mandatory.

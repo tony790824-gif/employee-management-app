@@ -178,4 +178,16 @@ assert.match(simulationSource, /SIMULATED_FINAL_FINGERPRINT_MISMATCH/);
 assert.match(simulationSource, /productionConnectionAttempted: false/);
 assert.match(simulationSource, /productionMutation: false/);
 
+const finalExecutionPlan = await readFile(new URL('../docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md', import.meta.url), 'utf8');
+assert.match(finalExecutionPlan, /PRODUCTION MIGRATION EXECUTION READY = NO/);
+assert.match(finalExecutionPlan, /0009 -> 0011 -> 0012 -> 0013 -> 0014 -> 0015 -> 0016 -> 0017 -> 0018 -> 0019 -> 0020 -> 0021 -> 0022/);
+assert.match(finalExecutionPlan, /0010.*permanently excluded/i);
+assert.match(finalExecutionPlan, /One Migration version per transaction/i);
+assert.match(finalExecutionPlan, /RPO <=15 minutes is NOT PROVEN/i);
+assert.match(finalExecutionPlan, /NO_ELIGIBLE_OPERATOR/);
+assert.match(finalExecutionPlan, /ACL semantic verification cannot be skipped/i);
+assert.match(finalExecutionPlan, /Not today/i);
+assert.match(finalExecutionPlan, /no Production connection or mutation/i);
+assert.doesNotMatch(finalExecutionPlan, /postgres(?:ql)?:\/\//i);
+
 console.log('Production Migration final readiness package and fail-closed gate tests passed');

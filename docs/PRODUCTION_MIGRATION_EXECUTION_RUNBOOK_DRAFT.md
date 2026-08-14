@@ -2,6 +2,8 @@
 
 Status: **FINAL TECHNICAL RUNBOOK / NO-GO / NOT AN AUTHORIZATION**
 
+Final execution-plan update (2026-08-14): `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md` consolidates this runbook, the exact manifest, per-version preconditions, recovery/traffic checkpoints and current Live blockers into one event contract. The current answer is `PRODUCTION MIGRATION EXECUTION READY = NO`: ACL/starting-baseline drift, the missing least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership and exact event authorization must be resolved independently before one bounded Migration authorization can be requested. No ACL remediation is included.
+
 Sprint 65 update: one authorized dedicated-reader connection closed `TARGET_IDENTITY`, `TLS_VERIFY_FULL`, and `ZERO_UNEXPECTED_MIGRATIONS`, producing 9 PASS / 13 non-PASS. `FRESH_LEDGER_AND_CHECKSUM` remains BLOCKED because Production retains only `0001`-`0008`; `STRUCTURAL_STARTING_BASELINE` was not evaluated after the ledger stop. The authority is consumed. This Runbook still does not authorize a second read, Migration, candidate Commit, maintenance event or Production mutation.
 
 Sprint 63 closes only the Repository runtime-contract and immutable-manifest Gates. The matrix is now 6 PASS / 16 non-PASS. The exact manifest hash is `769fcc39a0a9aa0a8e18355e31dcd859018295cdb7f4940f75a30ce244217cbf`; its candidate authorization remains NOT_GRANTED.
