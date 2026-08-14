@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2K
+
+Sprint numbering remains capped at 65. The immutable Phase 2J Evidence was valid but classified all 11 GRANTEE facts as `OTHER_NAMED_PRINCIPAL` with no reviewed relation. Repository-only recomposition correctly remains BLOCKED and does not prove ACL drift or privilege expansion.
+
+The next smallest action is Repository/Owner policy review: decide whether an additional safe principal category and proof can be reviewed without persisting a raw identity. Do not reconnect, rerun the consumed collector, repair ACLs or request broad Production access. A future narrow read may be proposed only after that policy is explicit and independently tested.
+
 ## Production Closure next action after Phase 2J
 
 Sprint numbering remains capped at 65. Do not create Sprint 66. The next action is an Owner decision on one new, single-use, dedicated Production read-only authorization for `pnpm run db:parity:production-default-acl-opaque-grantee`. Until explicitly authorized, do not execute it. Phase 2I authority is consumed. The command must remain one connection/no retry, TLS verify-full, exact `0001`-`0008` ledger, read-only catalog metadata only, no business rows and no raw OID/name Evidence. After evidence collection, perform Repository-only semantic recomposition; never promote `ACL_SEMANTIC` from classification success alone.

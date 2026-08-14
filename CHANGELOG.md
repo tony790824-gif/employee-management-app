@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production Closure Phase 2K opaque GRANTEE semantic recomposition
+
+- Added a Repository-only three-source Evidence validator and semantic recomposition analyzer with exact 8/3/11 fact-set enforcement.
+- Added fail-closed regressions for reviewed categories, PUBLIC OID zero, OTHER/UNCLASSIFIED/ambiguous categories, grant-option expansion, tampering, fact counts and raw identity fields.
+- Confirmed the valid Live classification remains unreviewed, so ACL/structural Gates stay BLOCKED, 9/13 and 70% / NOT READY remain unchanged; no Production connection or mutation occurred.
+
 ## 2026-08-14 - Production Closure Phase 2J opaque OID grantee classification
 
 - Added a privacy-preserving OID relation model and future narrow default-ACL GRANTEE collector that return only reviewed categories/booleans, never raw OIDs, names or ACL strings.

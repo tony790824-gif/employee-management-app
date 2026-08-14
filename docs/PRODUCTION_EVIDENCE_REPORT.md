@@ -1,5 +1,12 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2K derived Evidence - 2026-08-14
+
+- Source SHA-256 chain `bea7076...d37a02` → `bef26fa...285f7c` → `b7cd457...645e4c`: **PASS** with matching companions, schemas, sanitization and provenance.
+- Phase 2J observed exactly 8 relation and 3 sequence GRANTEE facts; all grant-option true. Category is `OTHER_NAMED_PRINCIPAL`, proof is `NAMED_ROLE_WITHOUT_REVIEWED_RELATION`, membership is NONE, ambiguity is NONE and PUBLIC count is zero.
+- Evidence is sufficient to prove the classification remains unreviewed, but not to prove semantic match, semantic mismatch, privilege expansion or ACL drift.
+- Derived Evidence SHA-256 is stored in `PRODUCTION_CLOSURE_PHASE_2K_OPAQUE_GRANTEE_SEMANTIC_RECOMPOSITION.sha256`; Phase 2K made zero Production connections/mutations.
+
 ## Production Closure Phase 2J Repository evidence - 2026-08-14
 
 - Phase 2I source Evidence remains immutable and hash-valid at `bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c`.

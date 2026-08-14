@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Production Closure Phase 2K semantic recomposition gate
+
+- [x] Verified Phase 2G/2I/2J Evidence byte hashes, schema/runtime contracts, source chain and sanitization.
+- [x] Preserved exact 8 relation + 3 sequence = 11 GRANTEE facts with no missing, extra or duplicate fact.
+- [x] Kept `OTHER_NAMED_PRINCIPAL`, unreviewed/ambiguous classification and invalid PUBLIC proof fail-closed.
+- [x] Rejected privilege-shape identity inference and did not claim drift/expansion from a blocked classification.
+- [ ] `ACL_SEMANTIC`: **BLOCKED**.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- [ ] New Production authorization: **NOT_GRANTED**; Phase 2J authorization is consumed.
+
 ## Production Closure Phase 2J default-ACL identity gate
 
 - [x] Repository opaque OID classification/query/schema/tests are fail-closed and persist no raw identity.

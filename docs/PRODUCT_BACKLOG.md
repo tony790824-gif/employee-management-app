@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2K - Opaque GRANTEE semantic recomposition (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.
+- **Evidence:** Phase 2G/2I/2J byte hashes, schemas, sanitization and provenance PASS; Phase 2J SHA-256 is `b7cd457f82ae00ccfaf9fbbe1f35b3e0b2c2c19b0fffd08f52ebdf2169645e4c`.
+- **Result:** exact 8 relation + 3 sequence facts are preserved, all with grant option, but GRANTEE is `OTHER_NAMED_PRINCIPAL` with no reviewed relation. `ACL_SEMANTIC` remains BLOCKED; no privilege expansion or ACL drift is claimed.
+- **Decision:** 9/13 and 70% / NOT READY remain. Next action is a Repository/Owner review of an additional safe principal category, not a reconnect, repair or Sprint 66.
+
 ## Production Closure Phase 2J - Opaque OID grantee classification design (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local implementation; Production connections 0, mutations NONE, Sprint numbering capped at 65.

@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2K
+
+Phase 2K validated and recomposed the immutable Phase 2G, Phase 2I and Phase 2J sanitized Evidence without a Production connection. The source chain is intact. It preserves exactly 11 explicit default-ACL GRANTEE facts (8 relation, 3 sequence), all with grant option, but every fact remains `OTHER_NAMED_PRINCIPAL` with `NAMED_ROLE_WITHOUT_REVIEWED_RELATION`, zero reviewed category matches, no membership relation and no PUBLIC classification.
+
+The local analyzer fails closed: an unreviewed category cannot become semantic match or mismatch, and privilege shape cannot identify a principal. Therefore ACL semantic and structural starting baseline remain BLOCKED; confirmed privilege expansion and confirmed ACL drift are both false. Matrix stays 9/13 and Production stays 70% / NOT READY. Phase 2J authority is consumed; do not reconnect, repair or create Sprint 66.
+
 ## 2026-08-14 current state - Production Closure Phase 2J
 
 Phase 2J completed Repository-only design/implementation for the unresolved Phase 2I default-ACL GRANTEE. Existing Evidence cannot identify the role. The new opaque model resolves current OIDs inside PostgreSQL and returns only safe semantic categories/proofs; it preserves grant options and blocks zero/multiple reviewed matches. Rename with the same OID is stable; a same-name recreated role with another OID does not inherit classification. No Production connection occurred. Future command/token are `pnpm run db:parity:production-default-acl-opaque-grantee` and `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_OPAQUE_GRANTEE`, requiring new one-time authority. Gates stay 9/13 and Production stays 70% / NOT READY.

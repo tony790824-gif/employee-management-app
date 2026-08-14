@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-closure-phase-2k-opaque-grantee-semantic-recomposition.schema.json",
+  "title": "Bankeban Phase 2K opaque grantee semantic recomposition evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "phase", "sprintNumberingCappedAt", "generatedAt", "modelVersion",
+    "sourceEvidenceSha256", "evidenceIntegrity", "sourceFailures", "semanticResult", "blockers",
+    "differences", "confirmedPrivilegeExpansion", "confirmedAclDrift", "factCounts",
+    "classificationSummary", "structuralNonAcl", "aclSemantic", "structuralStartingBaseline",
+    "freshLedgerAndChecksum", "gateSummary", "productionReadinessPercent", "productionStatus",
+    "gateA", "productionProvisioning", "productionMigrationAuthorization",
+    "phase2KProductionConnections", "phase2KProductionMutation", "phase2JAuthorization", "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_PHASE_2K_OPAQUE_GRANTEE_SEMANTIC_RECOMPOSITION" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "modelVersion": { "const": "bankeban-opaque-grantee-semantic-recomposition-v1" },
+    "sourceEvidenceSha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["phase2G", "phase2I", "opaque"],
+      "properties": {
+        "phase2G": { "const": "bea7076ab4972fb3874a99be9fa3652a873bfdbe53fb74e4dc0e9606e3d37a02" },
+        "phase2I": { "const": "bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c" },
+        "opaque": { "const": "b7cd457f82ae00ccfaf9fbbe1f35b3e0b2c2c19b0fffd08f52ebdf2169645e4c" }
+      }
+    },
+    "evidenceIntegrity": { "const": "PASS" },
+    "sourceFailures": { "type": "array", "maxItems": 0 },
+    "semanticResult": { "const": "BLOCKED" },
+    "blockers": { "type": "array", "minItems": 1, "items": { "type": "string" }, "uniqueItems": true },
+    "differences": { "type": "array", "maxItems": 0 },
+    "confirmedPrivilegeExpansion": { "const": false },
+    "confirmedAclDrift": { "const": false },
+    "factCounts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["relation", "sequence", "total", "grantOptionTrue"],
+      "properties": {
+        "relation": { "const": 8 }, "sequence": { "const": 3 }, "total": { "const": 11 }, "grantOptionTrue": { "const": 11 }
+      }
+    },
+    "classificationSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["categories", "proofs", "membershipClassifications", "publicFactCount", "ambiguity"],
+      "properties": {
+        "categories": { "const": ["OTHER_NAMED_PRINCIPAL"] },
+        "proofs": { "const": ["NAMED_ROLE_WITHOUT_REVIEWED_RELATION"] },
+        "membershipClassifications": { "const": ["NONE"] },
+        "publicFactCount": { "const": 0 },
+        "ambiguity": { "const": "NONE" }
+      }
+    },
+    "structuralNonAcl": { "const": "PASS" },
+    "aclSemantic": { "const": "BLOCKED" },
+    "structuralStartingBaseline": { "const": "BLOCKED" },
+    "freshLedgerAndChecksum": { "const": "BLOCKED" },
+    "gateSummary": {
+      "type": "object", "additionalProperties": false, "required": ["before", "after"],
+      "properties": {
+        "before": { "$ref": "#/$defs/gates" }, "after": { "$ref": "#/$defs/gates" }
+      }
+    },
+    "productionReadinessPercent": { "const": 70 },
+    "productionStatus": { "const": "NOT_READY" },
+    "gateA": { "const": "DEFER" },
+    "productionProvisioning": { "const": "NO_GO" },
+    "productionMigrationAuthorization": { "const": "NOT_GRANTED" },
+    "phase2KProductionConnections": { "const": 0 },
+    "phase2KProductionMutation": { "const": false },
+    "phase2JAuthorization": { "const": "CONSUMED_NOT_REUSABLE" },
+    "finalStatus": { "const": "BLOCKED" }
+  },
+  "$defs": {
+    "gates": {
+      "type": "object", "additionalProperties": false, "required": ["pass", "nonPass"],
+      "properties": { "pass": { "const": 9 }, "nonPass": { "const": 13 } }
+    }
+  }
+}

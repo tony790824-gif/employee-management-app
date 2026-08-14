@@ -1,0 +1,66 @@
+{
+  "aclSemantic": "BLOCKED",
+  "blockers": [
+    "OPAQUE_GRANTEE_CATEGORY_UNREVIEWED:PUBLIC_SCHEMA|RELATION",
+    "OPAQUE_GRANTEE_CATEGORY_UNREVIEWED:PUBLIC_SCHEMA|SEQUENCE",
+    "OPAQUE_GRANTEE_PROOF_INSUFFICIENT:PUBLIC_SCHEMA|RELATION",
+    "OPAQUE_GRANTEE_PROOF_INSUFFICIENT:PUBLIC_SCHEMA|SEQUENCE"
+  ],
+  "classificationSummary": {
+    "ambiguity": "NONE",
+    "categories": [
+      "OTHER_NAMED_PRINCIPAL"
+    ],
+    "membershipClassifications": [
+      "NONE"
+    ],
+    "proofs": [
+      "NAMED_ROLE_WITHOUT_REVIEWED_RELATION"
+    ],
+    "publicFactCount": 0
+  },
+  "confirmedAclDrift": false,
+  "confirmedPrivilegeExpansion": false,
+  "differences": [],
+  "evidenceIntegrity": "PASS",
+  "factCounts": {
+    "grantOptionTrue": 11,
+    "relation": 8,
+    "sequence": 3,
+    "total": 11
+  },
+  "finalStatus": "BLOCKED",
+  "freshLedgerAndChecksum": "BLOCKED",
+  "gateA": "DEFER",
+  "gateSummary": {
+    "after": {
+      "nonPass": 13,
+      "pass": 9
+    },
+    "before": {
+      "nonPass": 13,
+      "pass": 9
+    }
+  },
+  "generatedAt": "2026-08-14T04:51:53.257Z",
+  "modelVersion": "bankeban-opaque-grantee-semantic-recomposition-v1",
+  "phase": "PRODUCTION_CLOSURE_PHASE_2K_OPAQUE_GRANTEE_SEMANTIC_RECOMPOSITION",
+  "phase2JAuthorization": "CONSUMED_NOT_REUSABLE",
+  "phase2KProductionConnections": 0,
+  "phase2KProductionMutation": false,
+  "productionMigrationAuthorization": "NOT_GRANTED",
+  "productionProvisioning": "NO_GO",
+  "productionReadinessPercent": 70,
+  "productionStatus": "NOT_READY",
+  "schemaVersion": 1,
+  "semanticResult": "BLOCKED",
+  "sourceEvidenceSha256": {
+    "opaque": "b7cd457f82ae00ccfaf9fbbe1f35b3e0b2c2c19b0fffd08f52ebdf2169645e4c",
+    "phase2G": "bea7076ab4972fb3874a99be9fa3652a873bfdbe53fb74e4dc0e9606e3d37a02",
+    "phase2I": "bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c"
+  },
+  "sourceFailures": [],
+  "sprintNumberingCappedAt": 65,
+  "structuralNonAcl": "PASS",
+  "structuralStartingBaseline": "BLOCKED"
+}

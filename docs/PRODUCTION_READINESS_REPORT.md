@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2K semantic recomposition - 2026-08-14
+
+- Phase 2G/2I/2J immutable Evidence integrity/schema/sanitization/provenance: **PASS**.
+- Exact 8 relation + 3 sequence GRANTEE facts are complete; all have grant option. Classification remains `OTHER_NAMED_PRINCIPAL` with no reviewed relation, so semantic evaluation fails closed.
+- `STRUCTURAL_NON_ACL=PASS`; `ACL_SEMANTIC=BLOCKED`; `STRUCTURAL_STARTING_BASELINE=BLOCKED`; `FRESH_LEDGER_AND_CHECKSUM=BLOCKED`.
+- Matrix remains **9 PASS / 13 non-PASS**. Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**, Migration authorization **NOT_GRANTED**.
+- Phase 2K Production connections/mutations: **0 / NONE**. Phase 2J authorization is consumed.
+
 ## Production Closure Phase 2J opaque grantee design - 2026-08-14
 
 - Existing immutable Evidence remains insufficient to classify the explicit relation/sequence default-ACL GRANTEE beyond `OTHER_NAMED_PRINCIPAL`.
