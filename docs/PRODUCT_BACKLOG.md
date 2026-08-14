@@ -1,10 +1,18 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2O - Owner relation / default ACL analysis (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local analysis; Sprint numbering remains capped at 65.
+- Owner-relation Evidence integrity/schema/sanitization/provenance PASS at SHA-256 `d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6`, but the proof is BLOCKED: GRANTEE-to-owner coverage 0/65, owner set 1, unrelated ownership 0, ambiguity present, outbound membership present and role boundary BLOCKED.
+- Phase 2I/2K preserve 8 relation + 3 sequence explicit `pg_default_acl` facts, all grant-option true; the `0001`–`0008` baseline has zero default privileges. The explicit default-ACL drift is PROVEN, while the repair target/effective runtime impact remain unapproved.
+- Gates remain `ACL_SEMANTIC=BLOCKED`, `STRUCTURAL_STARTING_BASELINE=BLOCKED`, `FRESH_LEDGER_AND_CHECKSUM=BLOCKED`, 9/13 and 70% / NOT READY. Phase 2O Production connections 0, mutations NONE.
+- **Next action:** Repository-only default-ACL drift remediation/authorization planning. Do not reconnect or repair Production without a new narrow authorization.
+
 ## Production Closure Phase 2N - Minimal owner-relation collector preflight (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local/mock scope; decision `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`.
 - Implemented the distinct future one-client/no-retry command, exact 65-object transient OID proof, role/membership/unrelated-ownership guards, strict success/failure Evidence and comprehensive fail-closed tests.
-- Live Evidence remains `NOT_EVALUATED`; exact 11 explicit default-ACL grant options remain semantic mismatch. Gates stay 9/13 and Production stays 70% / NOT READY.
+- At Phase 2N completion Live Evidence was `NOT_EVALUATED`; Phase 2O now supersedes that placeholder with a Live BLOCKED result. Exact 11 explicit default-ACL grant options remain semantic mismatch. Gates stay 9/13 and Production stays 70% / NOT READY.
 - **Next action:** Owner may defer or separately authorize one exact read-only execution at the clean Phase 2N commit. No Production connection, credential, mutation or Neon wake occurred.
 
 ## Production Closure Phase 2M - Exact application owner proof preflight (2026-08-14)

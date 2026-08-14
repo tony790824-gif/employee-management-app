@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2O
+
+Sprint numbering remains capped at 65. Phase 2O proved that the Live default-ACL GRANTEE is not the single owner of the 65-object application set: exact coverage is 0/65, with outbound membership and ambiguity, so the owner proof remains BLOCKED. Separately, 11 explicit `pg_default_acl` grant-option facts differ from the `0001`–`0008` baseline's zero default privileges; ACL drift is proven but no repair target is authorized.
+
+The next exact action is Repository-only preparation of a fail-closed default-ACL drift remediation and authorization plan. It must define the safe target-classification requirement, runtime impact, exact pre/post evidence, stop conditions and rollback/forward-fix boundary. Do not reconnect, identify a raw principal, revoke/grant privileges or modify Production. Any later read or repair needs a new narrowly scoped Owner authorization.
+
 ## Production Closure next action after Phase 2N
 
 Sprint numbering remains capped at 65. Phase 2N implemented and locally validated the future minimal owner-relation collector; decision is `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`. No Production connection or authorization exists.

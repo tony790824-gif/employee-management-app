@@ -1,10 +1,16 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2O
+
+Phase 2O validated the consumed owner-relation Live Evidence without reconnecting. Its SHA-256, schema, sanitization and Commit provenance pass. The proof itself does not: the default-ACL GRANTEE matches 0/65 application owners, although the application objects have one owner and zero unrelated ownership. The artifact also records ambiguity, unexpected outbound membership and a blocked role boundary, so `EXPECTED_OWNER` and `EXACT_APPLICATION_OBJECT_OWNER_RELATION` are not proven.
+
+This failure is separate from the default-ACL result. Phase 2I/2K already preserve 11 explicit `pg_default_acl` facts (8 relation, 3 sequence), all with grant option, while the approved `0001`–`0008` baseline has no default privileges. That explicit catalog-state drift is now proven; it is not a built-in owner default and is not a comparator defect. Effective runtime impact and safe repair target remain unproven/unapproved. Gates stay 9 PASS / 13 non-PASS, 70% / NOT READY; Phase 2O connections 0 and mutations NONE.
+
 ## 2026-08-14 current state - Production Closure Phase 2N
 
 Phase 2N implemented and locally/mock-validated the minimal exact application owner-relation collector without connecting to Production. The distinct future command is limited to one Client and attempt, no retry, authenticated TLS, dedicated reader identity, PostgreSQL 18, exact `0001`–`0008` ledger and one read-only catalog-only transaction. Strict success/failure Evidence rejects raw OIDs, principals, ACLs, connection data and business rows.
 
-Decision is `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`, not authorization. Live Evidence is `NOT_EVALUATED`; the 8 relation and 3 sequence explicit grant-option facts stay semantic mismatch even if owner proof later passes. Gates remain 9 PASS / 13 non-PASS and Production remains 70% / NOT READY. Sprint numbering stays capped at 65.
+At Phase 2N completion the decision was `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`, not authorization, and Live Evidence was `NOT_EVALUATED`. Phase 2O now supersedes that placeholder with a Live BLOCKED result. The 8 relation and 3 sequence explicit grant-option facts remain semantic mismatch; Gates remain 9 PASS / 13 non-PASS and Production remains 70% / NOT READY. Sprint numbering stays capped at 65.
 
 ## 2026-08-14 current state - Production Closure Phase 2M
 

@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-14 - Production Closure Phase 2O owner/default-ACL analysis
+
+- Documented the hash-valid Live owner-relation BLOCKED result and separated it from the independently proven explicit default-ACL semantic drift.
+- Recorded no Gate promotion, no Production connection in Phase 2O and no Production mutation.
+
 ## 2026-08-14 - Production Closure Phase 2N owner-relation collector preflight
 
 - Documented the implemented-but-not-authorized one-attempt read-only collector, exact 65-object proof boundary and strict sanitized success/failure Evidence.

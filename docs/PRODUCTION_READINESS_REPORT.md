@@ -1,10 +1,18 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2O owner/default-ACL result - 2026-08-14
+
+- Owner-relation Evidence hash/schema/sanitization/provenance: **PASS** at `d3f8dfb23d2c8fcd4bbb14c1cbda3c77b07e9bbf7ba6513cf5596d726952d9b6`.
+- Exact owner proof: **BLOCKED**. GRANTEE-owner coverage is 0/65; owner set is 1 and unrelated ownership is 0, but ambiguity, outbound membership and role-boundary checks block classification. `EXPECTED_OWNER` is not proven.
+- Default ACL: **PROVEN SEMANTIC DRIFT**. Live evidence contains 8 relation + 3 sequence explicit `pg_default_acl` facts, all grant-option true; the Repository `0001`–`0008` baseline contains zero default privileges.
+- This does not authorize repair or establish effective runtime impact. `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, and `FRESH_LEDGER_AND_CHECKSUM` remain **BLOCKED**.
+- Matrix stays **9 PASS / 13 non-PASS**; Production stays **70% / NOT READY**, Gate A **DEFER**, Provisioning **NO-GO**, Migration authorization **NOT_GRANTED**. Phase 2O Production connections/mutations: **0 / NONE**.
+
 ## Production Closure Phase 2N minimal owner-relation collector preflight - 2026-08-14
 
 - Repository implementation and mock fail-closed matrix: **PASS**; decision **A — READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION**.
-- The reserved owner-relation command now enforces one Client/one attempt/no retry, TLS verify-full, dedicated reader identity, PostgreSQL 18, exact `0001`–`0008` ledger and a read-only catalog-only transaction. It was not executed.
-- Live Evidence remains `NOT_EVALUATED`. Exact 8 relation + 3 sequence explicit grant-option facts remain `SEMANTIC_MISMATCH`; owner proof cannot promote ACL safety.
+- The reserved owner-relation command enforces one Client/one attempt/no retry, TLS verify-full, dedicated reader identity, PostgreSQL 18, exact `0001`–`0008` ledger and a read-only catalog-only transaction. It had not been executed at Phase 2N completion; Phase 2O records the later consumed BLOCKED result.
+- The Phase 2N `NOT_EVALUATED` placeholder has been superseded by the Phase 2O Live Evidence. Exact 8 relation + 3 sequence explicit grant-option facts remain `SEMANTIC_MISMATCH`; owner proof did not promote ACL safety.
 - Phase 2N Production connections/attempts/credentials/SQL/mutations/Neon wake: **0 / 0 / NONE / NONE / NONE / NONE**.
 - Gates remain 9 PASS / 13 non-PASS and readiness remains **70% / NOT READY**.
 

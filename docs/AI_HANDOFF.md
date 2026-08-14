@@ -1,9 +1,17 @@
 # AI Handoff
 
+## Production Closure Phase 2O current state - 2026-08-14
+
+- Phase 2O is Repository/local analysis COMPLETE; Sprint numbering remains capped at 65. Phase 2O made zero Production connections and no mutation; the prior owner-relation authorization is consumed.
+- Live owner Evidence hash/schema/sanitization/provenance PASS at `d3f8dfb...52d9b6`, but exact owner proof is BLOCKED: 0/65 GRANTEE-owner coverage, owner set 1, unrelated ownership 0, ambiguity true, outbound membership and role-boundary BLOCKED. GRANTEE is not proven `EXPECTED_OWNER`.
+- The independently collected 8 relation + 3 sequence explicit `pg_default_acl` facts all carry grant option, while the Repository `0001`–`0008` baseline has zero default privileges. Default-ACL semantic drift is PROVEN; safe repair identity/runtime impact are not.
+- `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, and `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED; matrix remains 9/13 and Production 70% / NOT READY.
+- Next: Repository-only drift remediation/authorization plan. No reconnect or ACL repair is authorized.
+
 ## Production Closure Phase 2N current state - 2026-08-14
 
 - Phase 2N is Repository/local/mock COMPLETE; decision `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`. Sprint numbering remains capped at 65.
-- Future command/token: `pnpm run db:parity:production-application-owner-relation` / `COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION`. It was not executed and has no authorization.
+- At Phase 2N completion, the future command/token was `pnpm run db:parity:production-application-owner-relation` / `COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION` and had not been executed. Phase 2O now records the consumed execution and BLOCKED Live result above.
 - The collector enforces one Client/attempt, no retry, temporary-CA TLS verify-full, fixed dedicated reader/database, PostgreSQL 18, exact `0001`–`0008` ledger, a read-only transaction and catalog-only proof of all 65 OID relationships.
 - Sanitized Evidence persists only hashes/counts/enums/booleans. Exact 8/3/11 explicit grant-option facts remain `SEMANTIC_MISMATCH`; owner proof never promotes ACL safety.
 - Production connections/attempts/mutations/credentials/Neon wake are 0/0/NONE/NONE/NONE. Gates remain 9/13 and Production 70% / NOT READY.

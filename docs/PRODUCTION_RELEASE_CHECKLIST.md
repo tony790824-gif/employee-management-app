@@ -1,5 +1,16 @@
 # Production Release Checklist
 
+## Production Closure Phase 2O owner/default-ACL analysis gate
+
+- [x] Verified Live owner-relation Evidence SHA-256/companion, schema/runtime contract, sanitization, source Commit and timestamp.
+- [x] Preserved exact fail-closed owner facts: 0/65 coverage, owner set 1, unrelated ownership 0, ambiguity, outbound membership and blocked role boundary.
+- [x] Confirmed the GRANTEE is not proven `EXPECTED_OWNER`; `EXACT_APPLICATION_OBJECT_OWNER_RELATION` remains BLOCKED.
+- [x] Recombined all 8 relation + 3 sequence explicit `pg_default_acl` facts; all 11 have grant option.
+- [x] Confirmed the approved `0001`–`0008` baseline has zero default privileges and classified the explicit default-ACL state as proven drift.
+- [ ] Safe Production repair target/runtime impact: **NOT_PROVEN / NOT_AUTHORIZED**.
+- [ ] `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**.
+- [x] Phase 2O Production connections 0; mutations NONE; prior authorization consumed.
+
 ## Production Closure Phase 2N minimal owner-relation collector gate
 
 - [x] Implemented a distinct future command/token with one Client, one attempt, no retry and no Pool/reconnect.
@@ -8,8 +19,8 @@
 - [x] Enforced exact 65/65 ownership, one owner, safe attributes, zero unrelated ownership/outbound membership and no ambiguous reviewed-category relation.
 - [x] Added strict success/failure Evidence schemas, safe stage/code diagnostics, placeholder/hash and raw identity/ACL/business-data rejection.
 - [x] Mock/fail-closed matrix keeps exact 8 relation + 3 sequence / 11 grant-option facts and prevents owner proof from promoting ACL semantics.
-- [ ] New single-use Production authorization: **NOT_GRANTED**.
-- [ ] Live owner-relation Evidence: **NOT_EVALUATED**.
+- [x] Single-use Production authorization: **CONSUMED / NOT_REUSABLE**.
+- [x] Live owner-relation Evidence collected and validated: **BLOCKED**.
 - [ ] `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, and `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**.
 
 ## Production Closure Phase 2M exact owner proof gate
