@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Production Closure Phase 2N current state - 2026-08-14
+
+- Phase 2N is Repository/local/mock COMPLETE; decision `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`. Sprint numbering remains capped at 65.
+- Future command/token: `pnpm run db:parity:production-application-owner-relation` / `COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION`. It was not executed and has no authorization.
+- The collector enforces one Client/attempt, no retry, temporary-CA TLS verify-full, fixed dedicated reader/database, PostgreSQL 18, exact `0001`–`0008` ledger, a read-only transaction and catalog-only proof of all 65 OID relationships.
+- Sanitized Evidence persists only hashes/counts/enums/booleans. Exact 8/3/11 explicit grant-option facts remain `SEMANTIC_MISMATCH`; owner proof never promotes ACL safety.
+- Production connections/attempts/mutations/credentials/Neon wake are 0/0/NONE/NONE/NONE. Gates remain 9/13 and Production 70% / NOT READY.
+
 ## Production Closure Phase 2M current state - 2026-08-14
 
 - Phase 2M is Repository-only COMPLETE with decision `A_PROOF_CONTRACT_READY`; Sprint numbering remains capped at 65.

@@ -13,7 +13,7 @@ export const EXPECTED_STARTING_MIGRATIONS = Object.freeze(['0001', '0002', '0003
 export const FUTURE_OWNER_PROOF_CONTRACT = Object.freeze({
   command: 'pnpm run db:parity:production-application-owner-relation',
   confirmationToken: 'COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION',
-  implementationStatus: 'RESERVED_NOT_IMPLEMENTED',
+  implementationStatus: 'IMPLEMENTED_NOT_AUTHORIZED',
   connectionAttempts: 1,
   retries: 0,
   transactionMode: 'READ ONLY',
@@ -25,6 +25,13 @@ export const FUTURE_OWNER_PROOF_CONTRACT = Object.freeze({
   productionMutationAllowed: false,
   cleanup: Object.freeze(['CLOSE_CONNECTION', 'CLEAR_PROCESS_CREDENTIALS', 'DELETE_TEMPORARY_CA'])
 });
+
+export const EXPECTED_OWNER_DEFAULT_ACL_FACTS = Object.freeze([
+  ...['DELETE', 'INSERT', 'MAINTAIN', 'REFERENCES', 'SELECT', 'TRIGGER', 'TRUNCATE', 'UPDATE']
+    .map(privilege => `PUBLIC_SCHEMA|RELATION|${privilege}|true`),
+  ...['SELECT', 'UPDATE', 'USAGE']
+    .map(privilege => `PUBLIC_SCHEMA|SEQUENCE|${privilege}|true`)
+].sort());
 
 export const OWNER_PROOF_CATALOG_SCOPE = Object.freeze([
   'pg_catalog.pg_auth_members',
@@ -74,6 +81,10 @@ export function ownerProofSha256(value) {
 
 function identitySetHash(values) {
   return ownerProofSha256([...new Set(values)].sort());
+}
+
+export function applicationObjectIdentitySetSha256(values) {
+  return identitySetHash(values);
 }
 
 function sensitivePath(value, parts = []) {
@@ -238,6 +249,10 @@ export function evaluateExactApplicationObjectOwnerRelation({ artifact, artifact
   if (transient.businessRowsRead !== false) blockers.push('BUSINESS_ROW_READ_BOUNDARY_INVALID');
   if (transient.rawOidPersisted !== false || transient.rawPrincipalNamePersisted !== false) blockers.push('RAW_PRINCIPAL_PERSISTENCE_FORBIDDEN');
 
+  const defaultAclFacts = Array.isArray(transient.defaultAclFacts) ? [...transient.defaultAclFacts].sort() : [];
+  if (JSON.stringify(defaultAclFacts) !== JSON.stringify(EXPECTED_OWNER_DEFAULT_ACL_FACTS)) blockers.push('DEFAULT_ACL_FACT_SET_MISMATCH');
+  if (defaultAclFacts.filter(item => item.endsWith('|true')).length !== 11) blockers.push('DEFAULT_ACL_GRANT_OPTION_COUNT_MISMATCH');
+
   const relationSemantics = ['DELETE', 'INSERT', 'MAINTAIN', 'REFERENCES', 'SELECT', 'TRIGGER', 'TRUNCATE', 'UPDATE']
     .map(privilege => evaluateDefaultAclPolicy({ category: 'EXPECTED_OWNER', aclState: 'EXPLICIT_DEFAULT_ACL', objectType: 'RELATION', privilege, grantOption: true }));
   const sequenceSemantics = ['SELECT', 'UPDATE', 'USAGE']
@@ -255,6 +270,7 @@ export function evaluateExactApplicationObjectOwnerRelation({ artifact, artifact
     ownershipCoverageCount: coverageCount,
     expectedOwnershipCount: expectedCount,
     ownerSetCount,
+    unrelatedOwnershipCount: Number.isInteger(transient.unrelatedOwnershipCount) ? transient.unrelatedOwnershipCount : -1,
     exactOwnerMatch: blockers.length === 0,
     reviewedCategory: blockers.length ? 'UNCLASSIFIED' : 'EXPECTED_OWNER',
     proofEnum: blockers.length ? 'EXACT_APPLICATION_OBJECT_OWNER_RELATION_NOT_PROVEN' : 'EXACT_APPLICATION_OBJECT_OWNER_RELATION',
@@ -278,6 +294,7 @@ export function validateOwnerProofEvidence(value) {
     'schemaVersion', 'modelVersion', 'objectSetVersion', 'objectSetFingerprint', 'ownershipCoverageCount',
     'sourceCommitSha',
     'expectedOwnershipCount', 'ownerSetCount', 'exactOwnerMatch', 'reviewedCategory', 'proofEnum', 'ambiguity',
+    'unrelatedOwnershipCount',
     'membershipClassification', 'roleBoundaryResult', 'grantOptionSemanticResult', 'finalProofStatus', 'blockers',
     'rawOidPersisted', 'rawPrincipalNamePersisted', 'businessRowsRead'
   ]);
@@ -287,11 +304,13 @@ export function validateOwnerProofEvidence(value) {
   if (!/^[a-f0-9]{40}$/.test(value?.sourceCommitSha || '')) failures.push('OWNER_PROOF_SOURCE_COMMIT_INVALID');
   if (value?.objectSetVersion !== APPLICATION_OBJECT_SET_VERSION || !/^[a-f0-9]{64}$/.test(value?.objectSetFingerprint || '')) failures.push('OWNER_PROOF_OBJECT_SET_INVALID');
   if (value?.expectedOwnershipCount !== 65 || value?.ownershipCoverageCount < 0 || value?.ownershipCoverageCount > 65) failures.push('OWNER_PROOF_COVERAGE_COUNT_INVALID');
+  if (!Number.isInteger(value?.unrelatedOwnershipCount) || value.unrelatedOwnershipCount < 0) failures.push('OWNER_PROOF_UNRELATED_OWNERSHIP_COUNT_INVALID');
   if (value?.rawOidPersisted !== false || value?.rawPrincipalNamePersisted !== false || value?.businessRowsRead !== false) failures.push('OWNER_PROOF_PRIVACY_BOUNDARY_INVALID');
   if (!['PASS', 'BLOCKED'].includes(value?.finalProofStatus)) failures.push('OWNER_PROOF_STATUS_INVALID');
   if (value?.finalProofStatus === 'PASS' && (value?.reviewedCategory !== 'EXPECTED_OWNER'
       || value?.proofEnum !== 'EXACT_APPLICATION_OBJECT_OWNER_RELATION' || value?.exactOwnerMatch !== true
       || value?.ownershipCoverageCount !== value?.expectedOwnershipCount || value?.ownerSetCount !== 1
+      || value?.unrelatedOwnershipCount !== 0
       || value?.roleBoundaryResult !== 'PASS' || value?.ambiguity !== false
       || value?.membershipClassification !== 'NONE' || value?.blockers?.length !== 0)) failures.push('OWNER_PROOF_PASS_CONTRACT_INVALID');
   return canonicalValue({ status: failures.length ? 'BLOCKED' : 'PASS', failures: [...new Set(failures)].sort() });

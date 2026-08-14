@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2N
+
+Phase 2N implemented and locally/mock-validated the minimal exact application owner-relation collector without connecting to Production. The distinct future command is limited to one Client and attempt, no retry, authenticated TLS, dedicated reader identity, PostgreSQL 18, exact `0001`–`0008` ledger and one read-only catalog-only transaction. Strict success/failure Evidence rejects raw OIDs, principals, ACLs, connection data and business rows.
+
+Decision is `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`, not authorization. Live Evidence is `NOT_EVALUATED`; the 8 relation and 3 sequence explicit grant-option facts stay semantic mismatch even if owner proof later passes. Gates remain 9 PASS / 13 non-PASS and Production remains 70% / NOT READY. Sprint numbering stays capped at 65.
+
 ## 2026-08-14 current state - Production Closure Phase 2M
 
 - Repository-only proof design classified `EXACT_APPLICATION_OBJECT_OWNER_RELATION` as `A_PROOF_CONTRACT_READY`; no Production connection, credential or mutation was used.

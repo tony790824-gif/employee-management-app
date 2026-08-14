@@ -4,6 +4,7 @@ import {
   APPLICATION_OBJECT_SET_VERSION,
   EXACT_OWNER_PROOF_VERSION,
   EXPECTED_OWNER_POLICY,
+  EXPECTED_OWNER_DEFAULT_ACL_FACTS,
   EXPECTED_STARTING_MIGRATIONS,
   FUTURE_OWNER_PROOF_CONTRACT,
   OWNER_PROOF_CATALOG_SCOPE,
@@ -20,7 +21,7 @@ import { evaluateDefaultAclPolicy } from '../database/reviewed-principal-policy.
 assert.equal(EXACT_OWNER_PROOF_VERSION, 'bankeban-exact-application-owner-proof-v1');
 assert.equal(APPLICATION_OBJECT_SET_VERSION, 'bankeban-0001-0008-application-owner-set-v1');
 assert.deepEqual(EXPECTED_STARTING_MIGRATIONS, ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008']);
-assert.equal(FUTURE_OWNER_PROOF_CONTRACT.implementationStatus, 'RESERVED_NOT_IMPLEMENTED');
+assert.equal(FUTURE_OWNER_PROOF_CONTRACT.implementationStatus, 'IMPLEMENTED_NOT_AUTHORIZED');
 assert.equal(FUTURE_OWNER_PROOF_CONTRACT.connectionAttempts, 1);
 assert.equal(FUTURE_OWNER_PROOF_CONTRACT.retries, 0);
 assert.equal(FUTURE_OWNER_PROOF_CONTRACT.transactionMode, 'READ ONLY');
@@ -88,6 +89,7 @@ const validTransient = {
   businessRowsRead: false,
   rawOidPersisted: false,
   rawPrincipalNamePersisted: false,
+  defaultAclFacts: EXPECTED_OWNER_DEFAULT_ACL_FACTS,
   sourceCommitSha: 'a'.repeat(40)
 };
 const artifactValidation = validateApplicationObjectSetArtifact(inputs.artifact, inputs.structuralBaseline, inputs.aclBaseline, inputs.companionSha256);
@@ -98,6 +100,7 @@ assert.equal(candidate.proofEnum, 'EXACT_APPLICATION_OBJECT_OWNER_RELATION');
 assert.equal(candidate.ownershipCoverageCount, 65);
 assert.equal(candidate.ownerSetCount, 1);
 assert.equal(candidate.grantOptionSemanticResult, 'SEMANTIC_MISMATCH');
+assert.equal(candidate.unrelatedOwnershipCount, 0);
 assert.equal(validateOwnerProofEvidence(candidate).status, 'PASS');
 
 for (const privilege of ['DELETE', 'INSERT', 'MAINTAIN', 'REFERENCES', 'SELECT', 'TRIGGER', 'TRUNCATE', 'UPDATE']) {
@@ -135,6 +138,7 @@ assert.match(blocked({ objectIdentitySetSha256: '0'.repeat(64) }).blockers.join(
 assert.match(blocked({ rawOidPersisted: true }).blockers.join(','), /RAW_PRINCIPAL_PERSISTENCE_FORBIDDEN/);
 assert.match(blocked({ rawPrincipalNamePersisted: true }).blockers.join(','), /RAW_PRINCIPAL_PERSISTENCE_FORBIDDEN/);
 assert.match(blocked({ businessRowsRead: true }).blockers.join(','), /BUSINESS_ROW_READ_BOUNDARY_INVALID/);
+assert.match(blocked({ defaultAclFacts: EXPECTED_OWNER_DEFAULT_ACL_FACTS.slice(1) }).blockers.join(','), /DEFAULT_ACL_FACT_SET_MISMATCH/);
 
 const artifactTampered = structuredClone(inputs.artifact);
 artifactTampered.requiredOwnership.byType.RELATION.count = 17;
@@ -147,15 +151,9 @@ assert.equal(validateOwnerProofEvidence({ ...candidate, expectedOwnershipCount: 
 
 const evidenceSchema = JSON.parse(await readFile(new URL('../docs/PRODUCTION_0001_0008_APPLICATION_OWNER_RELATION_EVIDENCE.schema.json', import.meta.url), 'utf8'));
 assert.equal(evidenceSchema.additionalProperties, false);
-assert.equal(evidenceSchema.properties.rawOidPersisted.const, false);
-assert.equal(evidenceSchema.properties.rawPrincipalNamePersisted.const, false);
-assert.equal(evidenceSchema.properties.businessRowsRead.const, false);
-assert.equal(Object.keys(evidenceSchema.properties).filter(key => !['rawOidPersisted', 'rawPrincipalNamePersisted'].includes(key))
-  .some(key => /password|secret|credential|url|host|principalName|rawOid/i.test(key)), false);
+assert.equal(Object.keys(evidenceSchema.properties).some(key => /password|secret|credential|url|host|principalName|rawOid|rawAcl/i.test(key)), false);
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.equal(packageJson.scripts[FUTURE_OWNER_PROOF_CONTRACT.command.replace('pnpm run ', '')], undefined, 'future Production command must remain non-executable during preflight');
-const source = await readFile(new URL('../database/exact-application-object-owner-proof.mjs', import.meta.url), 'utf8');
-assert.doesNotMatch(source, /from ['"]pg['"]|new\s+Client\s*\(|DATABASE_READONLY_URL|\.connect\s*\(/);
+assert.equal(packageJson.scripts[FUTURE_OWNER_PROOF_CONTRACT.command.replace('pnpm run ', '')], 'node database/compare-production-application-owner-relation.mjs');
 
 console.log('Production Closure Phase 2M exact application owner proof preflight tests passed');

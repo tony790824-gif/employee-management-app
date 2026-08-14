@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2N minimal owner-relation collector preflight - 2026-08-14
+
+- Repository implementation and mock fail-closed matrix: **PASS**; decision **A — READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION**.
+- The reserved owner-relation command now enforces one Client/one attempt/no retry, TLS verify-full, dedicated reader identity, PostgreSQL 18, exact `0001`–`0008` ledger and a read-only catalog-only transaction. It was not executed.
+- Live Evidence remains `NOT_EVALUATED`. Exact 8 relation + 3 sequence explicit grant-option facts remain `SEMANTIC_MISMATCH`; owner proof cannot promote ACL safety.
+- Phase 2N Production connections/attempts/credentials/SQL/mutations/Neon wake: **0 / 0 / NONE / NONE / NONE / NONE**.
+- Gates remain 9 PASS / 13 non-PASS and readiness remains **70% / NOT READY**.
+
 ## Production Closure Phase 2M exact owner proof preflight - 2026-08-14
 
 - Repository decision: **A — PROOF_CONTRACT_READY**; Production connections 0 and mutations NONE.

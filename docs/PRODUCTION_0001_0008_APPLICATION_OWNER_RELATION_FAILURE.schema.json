@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bankeban-production-0001-0008-application-owner-relation-failure-evidence-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp", "sourceCommit", "stage", "errorCode", "connectionAttemptCount", "retryCount", "cleanupResult", "result"],
+  "properties": {
+    "timestamp": { "type": "string", "format": "date-time" },
+    "sourceCommit": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },
+    "stage": { "enum": [
+      "PRE_CONNECT_GUARD", "QUERY_ALLOWLIST", "REPOSITORY_PROVENANCE", "ARTIFACT_PROVENANCE",
+      "CA_LOAD", "TLS_CONFIG", "TLS_CONNECT", "IDENTITY_GUARD", "READER_ROLE_BOUNDARY_GUARD",
+      "READ_ONLY_TRANSACTION", "LEDGER", "APPLICATION_OBJECT_COLLECTOR", "DEFAULT_ACL_COLLECTOR",
+      "OWNER_ROLE_BOUNDARY_GUARD", "OWNERSHIP_SCOPE_COLLECTOR", "NORMALIZATION", "PROOF_EVALUATION",
+      "CLEANUP", "EVIDENCE_SANITIZATION", "EVIDENCE_WRITE_HASH", "UNKNOWN"
+    ] },
+    "errorCode": { "type": "string", "pattern": "^(OWNER_RELATION|PRODUCTION|PROTECTED|EXTERNAL)_[A-Z0-9_]{2,100}$" },
+    "connectionAttemptCount": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "retryCount": { "const": 0 },
+    "cleanupResult": { "enum": ["PASS", "FAILED", "NOT_STARTED"] },
+    "result": { "const": "BLOCKED" }
+  }
+}

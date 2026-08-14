@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2N - Minimal owner-relation collector preflight (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local/mock scope; decision `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`.
+- Implemented the distinct future one-client/no-retry command, exact 65-object transient OID proof, role/membership/unrelated-ownership guards, strict success/failure Evidence and comprehensive fail-closed tests.
+- Live Evidence remains `NOT_EVALUATED`; exact 11 explicit default-ACL grant options remain semantic mismatch. Gates stay 9/13 and Production stays 70% / NOT READY.
+- **Next action:** Owner may defer or separately authorize one exact read-only execution at the clean Phase 2N commit. No Production connection, credential, mutation or Neon wake occurred.
+
 ## Production Closure Phase 2M - Exact application owner proof preflight (2026-08-14)
 
 - **Status:** COMPLETE as Repository/local-only preflight; decision `A_PROOF_CONTRACT_READY`.

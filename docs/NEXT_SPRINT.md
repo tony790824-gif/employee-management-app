@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2N
+
+Sprint numbering remains capped at 65. Phase 2N implemented and locally validated the future minimal owner-relation collector; decision is `A_READY_FOR_MINIMAL_OWNER_RELATION_AUTHORIZATION`. No Production connection or authorization exists.
+
+The next exact action is an Owner decision to defer or authorize one execution of `pnpm run db:parity:production-application-owner-relation` at the clean Phase 2N commit, using confirmation `COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION`. Authorization must be single-use, dedicated-reader-only, one connect/no retry, TLS verify-full, exact `0001`–`0008`, read-only catalog/ACL metadata, sanitized local Evidence and cleanup; it must explicitly cover Neon wake/usage/log side effects and exclude final parity, business rows and all mutations. Owner proof cannot turn the independent explicit grant-option semantic mismatch into ACL PASS.
+
 ## Production Closure next action after Phase 2M
 
 Sprint numbering remains capped at 65. Phase 2M approved the Repository proof contract (`A_PROOF_CONTRACT_READY`) but did not implement or run a Production collector.

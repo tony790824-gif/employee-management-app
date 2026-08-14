@@ -2,6 +2,11 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-14 - Production Closure Phase 2N owner-relation collector preflight
+
+- Documented the implemented-but-not-authorized one-attempt read-only collector, exact 65-object proof boundary and strict sanitized success/failure Evidence.
+- Recorded zero Production connections/mutations/wake and preserved all Gate/readiness states.
+
 ## 2026-08-13 - Production Closure Phase 1 structural baseline
 
 - Recorded two independent PostgreSQL 18.4 `0001`-`0008` rebuilds, byte-identical catalog evidence and zero-residual cleanup.

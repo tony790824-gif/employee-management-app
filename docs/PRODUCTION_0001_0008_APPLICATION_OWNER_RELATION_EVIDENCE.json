@@ -1,0 +1,21 @@
+{
+  "ambiguity": false,
+  "connectionAttemptCount": 0,
+  "exactOwnerMatch": false,
+  "expectedCoverageCount": 65,
+  "grantOptionSemanticResult": "NOT_EVALUATED",
+  "membershipClassification": "NOT_EVALUATED",
+  "modelVersion": "bankeban-production-application-owner-relation-collector-v1",
+  "objectSetFingerprint": "ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200",
+  "objectSetVersion": "bankeban-0001-0008-application-owner-set-v1",
+  "observedCoverageCount": 0,
+  "ownerSetCount": 0,
+  "proofEnum": "NOT_EVALUATED",
+  "result": "NOT_EVALUATED",
+  "retryCount": 0,
+  "reviewedCategory": "NOT_EVALUATED",
+  "roleBoundaryResult": "NOT_EVALUATED",
+  "sourceCommit": null,
+  "timestamp": "2026-08-14T00:00:00.000Z",
+  "unrelatedOwnershipCount": 0
+}

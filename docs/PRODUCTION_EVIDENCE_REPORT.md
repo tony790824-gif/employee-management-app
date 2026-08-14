@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2N Repository collector evidence - 2026-08-14
+
+- Evidence class: **Repository-only / Live `NOT_EVALUATED`**.
+- The future collector, strict success/failure schemas, placeholder/hash and mock matrix are complete; no Production connection or credential was used.
+- Owner proof requires 65/65 current OID relationships, one owner, zero unrelated ownership/membership expansion/ambiguity and safe attributes. Persisted raw OID/name/ACL/business data are blocked.
+- Object-set fingerprint remains `ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200`; artifact SHA-256 remains `dd057fa39036cd71115c4420941c6e936172b749af587aae41b71b0c9b25a0cc`.
+- The committed owner-relation Evidence is only a hash-verified `NOT_EVALUATED` placeholder. The 11 explicit grant-option facts remain semantic mismatch; no Gate or score changed.
+
 ## Production Closure Phase 2M Repository proof artifact - 2026-08-14
 
 - Evidence class: **Repository-only / no Live Evidence**.

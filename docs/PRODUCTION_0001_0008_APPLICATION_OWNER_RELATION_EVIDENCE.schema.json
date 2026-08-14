@@ -1,50 +1,59 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "bankeban-production-0001-0008-application-owner-relation-evidence-v1",
+  "$id": "bankeban-production-0001-0008-application-owner-relation-live-evidence-v1",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schemaVersion",
-    "modelVersion",
-    "sourceCommitSha",
-    "objectSetVersion",
-    "objectSetFingerprint",
-    "ownershipCoverageCount",
-    "expectedOwnershipCount",
-    "ownerSetCount",
-    "exactOwnerMatch",
-    "reviewedCategory",
-    "proofEnum",
-    "ambiguity",
-    "membershipClassification",
-    "roleBoundaryResult",
-    "grantOptionSemanticResult",
-    "finalProofStatus",
-    "blockers",
-    "rawOidPersisted",
-    "rawPrincipalNamePersisted",
-    "businessRowsRead"
+    "timestamp", "sourceCommit", "modelVersion", "objectSetVersion", "objectSetFingerprint",
+    "expectedCoverageCount", "observedCoverageCount", "ownerSetCount", "exactOwnerMatch",
+    "unrelatedOwnershipCount", "ambiguity", "reviewedCategory", "proofEnum", "roleBoundaryResult",
+    "membershipClassification", "grantOptionSemanticResult", "connectionAttemptCount", "retryCount", "result"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "modelVersion": { "const": "bankeban-exact-application-owner-proof-v1" },
-    "sourceCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "sourceCommit": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },
+    "modelVersion": { "const": "bankeban-production-application-owner-relation-collector-v1" },
     "objectSetVersion": { "const": "bankeban-0001-0008-application-owner-set-v1" },
-    "objectSetFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "ownershipCoverageCount": { "type": "integer", "minimum": 0, "maximum": 65 },
-    "expectedOwnershipCount": { "const": 65 },
+    "objectSetFingerprint": { "const": "ce84209b37fe81c7ec93d211327f2e0f3cb4576a5966d48803dae6ddd2bf6200" },
+    "expectedCoverageCount": { "const": 65 },
+    "observedCoverageCount": { "type": "integer", "minimum": 0 },
     "ownerSetCount": { "type": "integer", "minimum": 0 },
     "exactOwnerMatch": { "type": "boolean" },
-    "reviewedCategory": { "enum": ["EXPECTED_OWNER", "UNCLASSIFIED"] },
-    "proofEnum": { "enum": ["EXACT_APPLICATION_OBJECT_OWNER_RELATION", "EXACT_APPLICATION_OBJECT_OWNER_RELATION_NOT_PROVEN"] },
+    "unrelatedOwnershipCount": { "type": "integer", "minimum": 0 },
     "ambiguity": { "type": "boolean" },
-    "membershipClassification": { "enum": ["NONE", "UNEXPECTED_OUTBOUND"] },
-    "roleBoundaryResult": { "enum": ["PASS", "BLOCKED"] },
-    "grantOptionSemanticResult": { "enum": ["SEMANTIC_MISMATCH", "BLOCKED"] },
-    "finalProofStatus": { "enum": ["PASS", "BLOCKED"] },
-    "blockers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
-    "rawOidPersisted": { "const": false },
-    "rawPrincipalNamePersisted": { "const": false },
-    "businessRowsRead": { "const": false }
-  }
+    "reviewedCategory": { "enum": ["EXPECTED_OWNER", "UNCLASSIFIED", "NOT_EVALUATED"] },
+    "proofEnum": { "enum": ["EXACT_APPLICATION_OBJECT_OWNER_RELATION", "EXACT_APPLICATION_OBJECT_OWNER_RELATION_NOT_PROVEN", "NOT_EVALUATED"] },
+    "roleBoundaryResult": { "enum": ["PASS", "BLOCKED", "NOT_EVALUATED"] },
+    "membershipClassification": { "enum": ["NONE", "UNEXPECTED_OUTBOUND", "NOT_EVALUATED"] },
+    "grantOptionSemanticResult": { "enum": ["SEMANTIC_MISMATCH", "BLOCKED", "NOT_EVALUATED"] },
+    "connectionAttemptCount": { "enum": [0, 1] },
+    "retryCount": { "const": 0 },
+    "result": { "enum": ["PASS", "BLOCKED", "NOT_EVALUATED"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "result": { "const": "NOT_EVALUATED" } }, "required": ["result"] },
+      "then": {
+        "properties": {
+          "sourceCommit": { "const": null }, "connectionAttemptCount": { "const": 0 },
+          "observedCoverageCount": { "const": 0 }, "ownerSetCount": { "const": 0 }, "exactOwnerMatch": { "const": false },
+          "reviewedCategory": { "const": "NOT_EVALUATED" }, "proofEnum": { "const": "NOT_EVALUATED" },
+          "roleBoundaryResult": { "const": "NOT_EVALUATED" }, "membershipClassification": { "const": "NOT_EVALUATED" },
+          "grantOptionSemanticResult": { "const": "NOT_EVALUATED" }
+        }
+      },
+      "else": { "properties": { "sourceCommit": { "type": "string" }, "connectionAttemptCount": { "const": 1 } } }
+    },
+    {
+      "if": { "properties": { "result": { "const": "PASS" } }, "required": ["result"] },
+      "then": {
+        "properties": {
+          "observedCoverageCount": { "const": 65 }, "ownerSetCount": { "const": 1 }, "exactOwnerMatch": { "const": true },
+          "unrelatedOwnershipCount": { "const": 0 }, "ambiguity": { "const": false }, "reviewedCategory": { "const": "EXPECTED_OWNER" },
+          "proofEnum": { "const": "EXACT_APPLICATION_OBJECT_OWNER_RELATION" }, "roleBoundaryResult": { "const": "PASS" },
+          "membershipClassification": { "const": "NONE" }, "grantOptionSemanticResult": { "const": "SEMANTIC_MISMATCH" }
+        }
+      }
+    }
+  ]
 }

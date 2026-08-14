@@ -1,5 +1,14 @@
 # Production Operations Evidence Guide
 
+## Production Closure Phase 2N future owner-relation command
+
+- `pnpm run db:parity:production-application-owner-relation` exists for a possible future, separately authorized, single-use evidence event. Do not execute it without an Owner authorization tied to the exact clean commit.
+- Required process-only confirmation is `COMPARE_BANKE_PRODUCTION_APPLICATION_OWNER_RELATION`; fixed target/reader remain `neondb` / `banke_production_readonly`.
+- The command is one Client/one attempt/no retry, authenticated TLS, PostgreSQL 18, exact `0001`–`0008` ledger, one `READ ONLY` transaction, reviewed catalog/default-ACL metadata only and no business rows.
+- Success and failure Evidence are sanitized and hash-paired. The operator wrapper must always clear process-only credentials and delete the temporary CA after the client closes.
+- Possible future read side effects requiring explicit authorization are Neon wake/unarchive, compute/network/I/O/cache use, short catalog locks and authentication/audit/monitoring logs. No final parity, Migration, repair, Restore, deploy, role/ACL/configuration or billing mutation is included.
+- Phase 2N itself made zero connection attempts and caused no Neon wake.
+
 ## Production Closure Phase 1 operating boundary
 
 - `pnpm db:parity:starting-baseline` is a local/disposable-only command. It rejects Production inputs and requires an explicit disposable confirmation value.

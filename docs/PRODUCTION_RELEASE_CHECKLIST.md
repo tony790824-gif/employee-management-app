@@ -1,5 +1,17 @@
 # Production Release Checklist
 
+## Production Closure Phase 2N minimal owner-relation collector gate
+
+- [x] Implemented a distinct future command/token with one Client, one attempt, no retry and no Pool/reconnect.
+- [x] Enforced fixed Production reader/database, PostgreSQL 18, temporary-CA TLS verify-full and exact clean commit provenance.
+- [x] Enforced `BEGIN TRANSACTION READ ONLY`, exact `0001`–`0008` ledger, catalog-only static queries, `ROLLBACK` and close cleanup.
+- [x] Enforced exact 65/65 ownership, one owner, safe attributes, zero unrelated ownership/outbound membership and no ambiguous reviewed-category relation.
+- [x] Added strict success/failure Evidence schemas, safe stage/code diagnostics, placeholder/hash and raw identity/ACL/business-data rejection.
+- [x] Mock/fail-closed matrix keeps exact 8 relation + 3 sequence / 11 grant-option facts and prevents owner proof from promoting ACL semantics.
+- [ ] New single-use Production authorization: **NOT_GRANTED**.
+- [ ] Live owner-relation Evidence: **NOT_EVALUATED**.
+- [ ] `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE`, and `FRESH_LEDGER_AND_CHECKSUM`: **BLOCKED**.
+
 ## Production Closure Phase 2M exact owner proof gate
 
 - [x] Exact `0001`–`0008` application owner set is versioned and hash-validated: 65 required objects, one owner.
@@ -7,7 +19,7 @@
 - [x] Owner proof fails on incomplete/multiple ownership, PUBLIC, ambiguity, dangerous attributes, outbound membership, unrelated ownership and raw identity persistence.
 - [x] Built-in owner privilege shapes are tested separately from explicit default ACL state.
 - [x] Explicit relation/sequence default ACL grant options remain `SEMANTIC_MISMATCH`; none are normalized away.
-- [x] Future single-connection/no-retry contract is reserved but not implemented or authorized.
+- [x] Future single-connection/no-retry contract was reserved in Phase 2M and implemented locally in Phase 2N; it remains not authorized.
 - [ ] Live exact owner relationship Evidence: **NOT_COLLECTED / NOT_AUTHORIZED**.
 - [ ] `ACL_SEMANTIC`: **BLOCKED**.
 - [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
