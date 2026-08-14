@@ -1,5 +1,15 @@
 # Production ACL Remediation Authorization Plan
 
+## Dedicated Production ACL pre-check runner
+
+The Repository now provides `pnpm run db:acl:production-precheck` as the only reviewed pre-check entry point. It reuses the committed `0001`-`0008` structural baseline, ACL semantic model, exact-ledger comparator and dedicated-reader identity/TLS guards. One `pg.Client` performs at most one connection attempt with retry 0 and one `READ ONLY` transaction; the runner never issues `REVOKE`, `GRANT`, `ALTER`, Migration or business-row queries.
+
+The same connection must prove all seven prerequisites: identity/TLS verify-full, exact `0001`-`0008` ledger/checksums, default-ACL owner/grantee classification, role membership, runtime-principal inventory, current-object ACL differences against the committed baseline and an exact safe remediation target. Missing, ambiguous, unexpected or non-attributable facts produce `BLOCKED`; no mutation stage may start.
+
+Success and failure outputs use separate sanitized JSON/SHA-256 contracts. They preserve only categories, counts, booleans, allowlisted object keys and fingerprints; raw role identity, OID, ACL text, connection data and CA content are prohibited. The command is implemented and locally validated, but **not authorized or executed against Production**.
+
+Future process-only inputs are `DATABASE_READONLY_URL`, `BANK_PRODUCTION_CA_BUNDLE`, `BANK_PRODUCTION_DATABASE_NAME`, `BANK_PRODUCTION_READONLY_ROLE`, `BANK_ENV`, `BANK_PRODUCTION_PARITY_CONFIRMATION`, `BANK_PRODUCTION_EVIDENCE_COMMIT_SHA`, `BANK_PRODUCTION_OBJECT_OWNER_ROLE`, `BANK_PRODUCTION_PLATFORM_ROLE`, `BANK_PRODUCTION_RUNTIME_ROLES`, `BANK_PRODUCTION_ACL_OPERATOR_ROLE` and `BANK_PRODUCTION_ACL_PLAN_SHA256`. Their values must be entered by the Owner/operator in process memory and must never be committed.
+
 ## 結論
 
 本文件是 Repository/local-only 的修復與授權契約，不是 Production 授權，也不是執行腳本。Sprint 編號維持封頂於 65；本次 Production connections = **0**，Production mutations = **NONE**。

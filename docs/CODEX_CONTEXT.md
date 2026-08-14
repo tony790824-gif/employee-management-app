@@ -1,5 +1,13 @@
 # Codex Context
 
+## 2026-08-14 current state - Production ACL remediation pre-check runner
+
+The Repository now has one dedicated fail-closed pre-check command, `pnpm run db:acl:production-precheck`. It reuses the reviewed dedicated-reader TLS/identity guards, exact `0001`-`0008` ledger comparator, structural baseline and ACL semantic model. A single `pg.Client` makes at most one connection attempt, retry 0, and all metadata collection occurs in one `READ ONLY` transaction.
+
+The runner resolves all seven required evidence groups in that one connection and writes only schema-validated sanitized JSON/SHA-256 success or failure evidence. Raw principal names/OIDs/ACLs, URL, CA and credentials are never persisted. This task did not run the command or use Production credentials.
+
+The implementation is READY for a future explicit one-time dedicated read-only authorization, not currently authorized. Gate state remains ACL/structural/final-ledger BLOCKED, 9 PASS / 13 non-PASS and Production 70% / NOT READY. Sprint numbering remains capped at 65.
+
 ## 2026-08-14 current state - Production ACL remediation authorization plan
 
 The Repository now has a single fail-closed remediation/authorization contract rather than another numbered Closure Phase. It preserves Phase 2O's proven 8 relation + 3 sequence explicit `public` default-ACL drift and treats materialized existing-object ACLs as a separate exact-diff scope because changing defaults cannot repair existing objects.

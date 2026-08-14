@@ -110,6 +110,25 @@ export function validateAclRemediationPlan(plan) {
   }
   if (plan?.recoveryStrategy?.beforeCommit !== 'ROLLBACK_TRANSACTION' || plan?.recoveryStrategy?.automaticRegrantAllowed !== false) failures.push('RECOVERY_BOUNDARY_WEAKENED');
 
+  const runner = plan?.precheckRunner || {};
+  if (runner.status !== 'READY' || runner.command !== 'pnpm run db:acl:production-precheck'
+      || runner.confirmation !== 'PRECHECK_BANKE_PRODUCTION_ACL_REMEDIATION'
+      || runner.maxConnectionAttempts !== 1 || runner.retryCount !== 0 || runner.transactionMode !== 'READ_ONLY'
+      || runner.businessRowReads !== false || runner.productionMutation !== false) failures.push('PRECHECK_RUNNER_BOUNDARY_MISMATCH');
+  const requiredEvidence = ['IDENTITY_AND_TLS_VERIFY_FULL','EXACT_0001_0008_LEDGER_AND_CHECKSUM',
+    'DEFAULT_ACL_OWNER_GRANTEE_CLASSIFICATION','ROLE_MEMBERSHIP','RUNTIME_PRINCIPAL_INVENTORY',
+    'CURRENT_OBJECT_ACL_BASELINE_DIFFERENCE','EXACT_SAFE_REMEDIATION_TARGET'];
+  if (JSON.stringify(runner.requiredEvidence) !== JSON.stringify(requiredEvidence)) failures.push('PRECHECK_RUNNER_EVIDENCE_SCOPE_MISMATCH');
+  const requiredInputs = ['DATABASE_READONLY_URL','BANK_PRODUCTION_CA_BUNDLE','BANK_PRODUCTION_DATABASE_NAME',
+    'BANK_PRODUCTION_READONLY_ROLE','BANK_ENV','BANK_PRODUCTION_PARITY_CONFIRMATION','BANK_PRODUCTION_EVIDENCE_COMMIT_SHA',
+    'BANK_PRODUCTION_OBJECT_OWNER_ROLE','BANK_PRODUCTION_PLATFORM_ROLE','BANK_PRODUCTION_RUNTIME_ROLES',
+    'BANK_PRODUCTION_ACL_OPERATOR_ROLE','BANK_PRODUCTION_ACL_PLAN_SHA256'];
+  if (JSON.stringify(runner.processOnlyInputs) !== JSON.stringify(requiredInputs)) failures.push('PRECHECK_RUNNER_INPUT_SCOPE_MISMATCH');
+  if (runner.successEvidence !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.json'
+      || runner.successEvidenceHash !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.sha256'
+      || runner.failureEvidence !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.json'
+      || runner.failureEvidenceHash !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.sha256') failures.push('PRECHECK_RUNNER_EVIDENCE_PATH_MISMATCH');
+
   const passContract = plan?.postRemediationPassContract || {};
   for (const requirement of ['ZERO_ACL_SEMANTIC_DIFFERENCES','OBSERVED_ACL_FINGERPRINT_EQUALS_COMMITTED_0001_0008_BASELINE','ZERO_UNCLASSIFIED_PRINCIPALS','ZERO_UNEXPECTED_DEFAULT_ACL_FACTS']) {
     if (!passContract.aclSemantic?.includes(requirement)) failures.push(`ACL_PASS_REQUIREMENT_MISSING:${requirement}`);

@@ -1,5 +1,13 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after ACL pre-check tooling
+
+Sprint numbering remains capped at 65; do not create another Sprint or Closure Phase. The dedicated command `pnpm run db:acl:production-precheck` is Repository-ready and can collect all seven required pre-check evidence groups through one dedicated Production read-only connection, retry 0, TLS verify-full and one `READ ONLY` transaction.
+
+The next action is an Owner decision whether to grant that exact one-time read-only execution at the final clean Commit and matching plan hash. Process-only connection/CA/identity inputs and the exact approved ACL-operator role identifier must be supplied securely at execution time. No connection or authority exists now; no ACL mutation is included.
+
+All Live gates remain unchanged: `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` are BLOCKED; Production remains 70% / NOT READY and 9 PASS / 13 non-PASS.
+
 ## Production Closure next action after ACL remediation planning
 
 Sprint numbering remains capped at 65 and no further Closure Phase number is created. The Repository now contains a fail-closed, hash-bound ACL remediation authorization plan. It combines the truly necessary future read, conditional mutation and independent post-check under one Owner authorization envelope, while limiting each of three stages to one connection attempt with retry 0.

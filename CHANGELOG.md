@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production ACL remediation pre-check runner
+
+- Added one fail-closed, one-connection/no-retry dedicated-reader runner covering all seven ACL remediation pre-check evidence requirements in a catalog-only `READ ONLY` transaction.
+- Reused exact `0001`-`0008` ledger/checksum, structural and ACL semantic models; added sanitized success/failure schemas and local counterfactual/single-connect regression coverage.
+- Updated the hash-bound remediation plan contract. No Production connection, credential or mutation was used; all Live Gates, 9/13 and 70% / NOT READY remain unchanged.
+
 ## 2026-08-14 - Production ACL remediation authorization plan
 
 - Added a hash-bound Repository/local contract for one future conditional authorization covering pre-check, exact ACL-only mutation and independent post-check without creating another Sprint or Closure Phase.

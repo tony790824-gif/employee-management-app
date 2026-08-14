@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production ACL remediation pre-check tooling - 2026-08-14
+
+- Dedicated one-connection/retry-0/read-only pre-check runner and local regression matrix: **PASS**.
+- Coverage: identity/TLS, exact `0001`-`0008` ledger/checksum, default ACL classification, membership, runtime principals, current-object baseline differences and exact safe target decision.
+- Sanitized success/failure schemas and SHA-256 output contract: **PASS**. Production execution/authorization: **NOT_EXECUTED / NOT_GRANTED**.
+- This is Repository tooling, not Live evidence. `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` remain **BLOCKED**; matrix remains **9 PASS / 13 non-PASS** and Production remains **70% / NOT READY**.
+- Production connections/mutations: **0 / NONE**.
+
 ## Production ACL remediation authorization plan - 2026-08-14
 
 - Repository/local planning and fail-closed validation: **PASS**. This is not Live evidence and grants no Production authority.

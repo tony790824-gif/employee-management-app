@@ -1,5 +1,14 @@
 # AI Handoff
 
+## Production ACL remediation pre-check tooling - 2026-08-14
+
+- Repository/local implementation is COMPLETE; no new Sprint/Closure Phase was created. Production connections 0, mutations NONE, authorization NOT_GRANTED.
+- Future command: `pnpm run db:acl:production-precheck`; confirmation: `PRECHECK_BANKE_PRODUCTION_ACL_REMEDIATION`.
+- Architecture is one `pg.Client`, maximum one connect attempt, retry 0, TLS verify-full and one `READ ONLY` transaction. It reuses the exact-ledger, structural and ACL semantic models and issues catalog-only reads.
+- One run covers identity/TLS, exact `0001`-`0008` ledger/checksum, default-ACL classification, membership, runtime principals, current-object ACL differences and exact safe target classification. Any missing or unsafe fact returns BLOCKED before any mutation.
+- Required inputs are process-only; notably the future clean Commit, committed plan hash and exact Owner-approved ACL-operator role identifier must match. Do not request or persist connection/CA material.
+- No Gate changed: ACL/structural/final-ledger remain BLOCKED, 9/13 and 70% / NOT READY.
+
 ## Production ACL remediation plan current state - 2026-08-14
 
 - Repository/local plan is COMPLETE; no new Sprint or Closure Phase number was created. Production connections 0, mutations NONE, authorization NOT_GRANTED.

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-acl-remediation-precheck-evidence-v1.json",
+  "title": "Bankeban Production ACL remediation pre-check evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "modelVersion", "sprintNumberingCappedAt", "generatedAt",
+    "repositoryCommitSha", "planSha256", "identityResult", "tlsVerification",
+    "readerRoleBoundaryResult", "transactionReadOnlyResult", "ledgerResult",
+    "structuralObjectAllowlistResult", "defaultAclClassification", "roleMembership",
+    "runtimePrincipalInventory", "targetRoleBoundary", "operatorCapability",
+    "currentObjectAclComparison", "exactSafeRemediationTarget", "connectionAttemptCount",
+    "retryCount", "productionConnectionAttempted", "productionMutation", "businessRowsRead",
+    "rawPrincipalPersisted", "rawOidPersisted", "rawAclPersisted", "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "modelVersion": { "const": "bankeban-production-acl-remediation-precheck-v1" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "planSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "identityResult": { "$ref": "#/$defs/result" },
+    "tlsVerification": { "enum": ["VERIFY_FULL_PASS", "BLOCKED"] },
+    "readerRoleBoundaryResult": { "$ref": "#/$defs/result" },
+    "transactionReadOnlyResult": { "$ref": "#/$defs/result" },
+    "ledgerResult": { "type": "object" },
+    "structuralObjectAllowlistResult": { "$ref": "#/$defs/result" },
+    "defaultAclClassification": { "type": "object" },
+    "roleMembership": { "type": "object" },
+    "runtimePrincipalInventory": { "type": "object" },
+    "targetRoleBoundary": { "type": "object" },
+    "operatorCapability": { "type": "object" },
+    "currentObjectAclComparison": { "type": "object" },
+    "exactSafeRemediationTarget": { "type": "object" },
+    "connectionAttemptCount": { "const": 1 },
+    "retryCount": { "const": 0 },
+    "productionConnectionAttempted": { "const": true },
+    "productionMutation": { "const": false },
+    "businessRowsRead": { "const": false },
+    "rawPrincipalPersisted": { "const": false },
+    "rawOidPersisted": { "const": false },
+    "rawAclPersisted": { "const": false },
+    "finalStatus": { "$ref": "#/$defs/result" }
+  },
+  "$defs": {
+    "result": { "enum": ["PASS", "BLOCKED"] }
+  }
+}

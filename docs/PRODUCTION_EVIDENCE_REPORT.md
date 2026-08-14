@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production ACL remediation pre-check tooling evidence - 2026-08-14
+
+- Evidence class: **Repository/local implementation and mocks**, not Production evidence.
+- Command contract: one dedicated reader connection attempt, retry 0, TLS verify-full and one catalog-only `READ ONLY` transaction covering all seven pre-check requirements.
+- Output contracts: `docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.schema.json` and `docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.schema.json`; no Live evidence file was generated.
+- Query allowlist, identity/ledger/model reuse, counterfactual safety cases, single-connect lifecycle and pre-connect failure path: **PASS locally**.
+- Production connection/credential/comparator/mutation: **0 / NONE / NOT_EXECUTED / NONE**. No Live Gate changed; 22-Gate remains 9/13.
+
 ## Production ACL remediation plan evidence - 2026-08-14
 
 - Evidence class: **Repository-only plan**, not Production evidence.

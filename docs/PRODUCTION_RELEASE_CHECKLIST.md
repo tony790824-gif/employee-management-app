@@ -1,5 +1,14 @@
 # Production Release Checklist
 
+## Production ACL remediation pre-check tooling gate
+
+- [x] One dedicated pre-check runner covers all seven required evidence groups in one connection attempt, retry 0 and one `READ ONLY` transaction.
+- [x] Exact `0001`-`0008` ledger/checksum, structural baseline and ACL semantic logic are reused rather than duplicated.
+- [x] Query allowlist excludes mutation and business-row reads; missing/ambiguous/runtime-dependent/unsupported evidence fails closed.
+- [x] Sanitized success/failure schemas, hashes, single-connect lifecycle and counterfactual regression tests are present.
+- [ ] Owner authorization and process-only Production inputs: **NOT_GRANTED / NOT_PROVIDED**.
+- [ ] Live pre-check: **NOT_EXECUTED**. ACL/structural/final-ledger Gates remain **BLOCKED**; matrix/readiness remain 9/13 and 70% / NOT READY.
+
 ## Production ACL remediation authorization plan gate
 
 - [x] Proven repair scope preserves exact 8 relation + 3 sequence explicit `public` default-ACL facts and baseline-zero end state.

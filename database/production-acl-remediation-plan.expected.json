@@ -66,6 +66,43 @@
     "MIGRATION",
     "DDL_OR_DML_OUTSIDE_EXACT_ACL_MUTATION"
   ],
+  "precheckRunner": {
+    "status": "READY",
+    "command": "pnpm run db:acl:production-precheck",
+    "confirmation": "PRECHECK_BANKE_PRODUCTION_ACL_REMEDIATION",
+    "maxConnectionAttempts": 1,
+    "retryCount": 0,
+    "transactionMode": "READ_ONLY",
+    "businessRowReads": false,
+    "productionMutation": false,
+    "requiredEvidence": [
+      "IDENTITY_AND_TLS_VERIFY_FULL",
+      "EXACT_0001_0008_LEDGER_AND_CHECKSUM",
+      "DEFAULT_ACL_OWNER_GRANTEE_CLASSIFICATION",
+      "ROLE_MEMBERSHIP",
+      "RUNTIME_PRINCIPAL_INVENTORY",
+      "CURRENT_OBJECT_ACL_BASELINE_DIFFERENCE",
+      "EXACT_SAFE_REMEDIATION_TARGET"
+    ],
+    "processOnlyInputs": [
+      "DATABASE_READONLY_URL",
+      "BANK_PRODUCTION_CA_BUNDLE",
+      "BANK_PRODUCTION_DATABASE_NAME",
+      "BANK_PRODUCTION_READONLY_ROLE",
+      "BANK_ENV",
+      "BANK_PRODUCTION_PARITY_CONFIRMATION",
+      "BANK_PRODUCTION_EVIDENCE_COMMIT_SHA",
+      "BANK_PRODUCTION_OBJECT_OWNER_ROLE",
+      "BANK_PRODUCTION_PLATFORM_ROLE",
+      "BANK_PRODUCTION_RUNTIME_ROLES",
+      "BANK_PRODUCTION_ACL_OPERATOR_ROLE",
+      "BANK_PRODUCTION_ACL_PLAN_SHA256"
+    ],
+    "successEvidence": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.json",
+    "successEvidenceHash": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.sha256",
+    "failureEvidence": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.json",
+    "failureEvidenceHash": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.sha256"
+  },
   "authorizationEnvelope": {
     "kind": "ONE_OWNER_AUTHORIZATION_THREE_BOUNDED_CONNECTIONS",
     "maxConnectionAttempts": 3,

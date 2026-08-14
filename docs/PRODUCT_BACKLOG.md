@@ -1,5 +1,13 @@
 # 班客邦 Product Backlog
 
+## Production ACL remediation pre-check runner (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local tooling; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.
+- Added one fail-closed, dedicated-reader pre-check command that collects all seven remediation prerequisites within one connection attempt, retry 0 and a `READ ONLY` transaction.
+- Reused exact `0001`-`0008` ledger/checksum, structural baseline and ACL semantic logic; sanitized success/failure contracts reject raw principal/OID/ACL/connection material.
+- No Live gate changed: `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED; matrix 9/13 and Production 70% / NOT READY are unchanged.
+- **Next action:** Owner review of the clean Commit and, only if desired, a new explicit one-time dedicated Production read-only authorization for `pnpm run db:acl:production-precheck`. Do not execute it without that authorization.
+
 ## Production ACL remediation authorization plan (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local planning; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.

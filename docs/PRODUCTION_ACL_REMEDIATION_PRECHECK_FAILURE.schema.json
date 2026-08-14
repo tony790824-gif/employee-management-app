@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-acl-remediation-precheck-failure-v1.json",
+  "title": "Bankeban Production ACL remediation pre-check sanitized failure evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "modelVersion", "sprintNumberingCappedAt", "generatedAt",
+    "repositoryCommitSha", "planSha256", "diagnosticStage", "errorCode",
+    "connectionAttemptCount", "retryCount", "cleanupResult", "productionConnectionAttempted",
+    "productionMutation", "businessRowsRead", "originalErrorPersisted", "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "modelVersion": { "const": "bankeban-production-acl-remediation-precheck-v1" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },
+    "planSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "diagnosticStage": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+    "errorCode": { "type": "string", "pattern": "^(ACL_PRECHECK|PRODUCTION|PROTECTED|EXTERNAL)_[A-Z0-9_]{2,100}$" },
+    "connectionAttemptCount": { "type": "integer", "minimum": 0, "maximum": 1 },
+    "retryCount": { "const": 0 },
+    "cleanupResult": { "enum": ["PASS", "FAILED", "NOT_STARTED"] },
+    "productionConnectionAttempted": { "type": "boolean" },
+    "productionMutation": { "const": false },
+    "businessRowsRead": { "const": false },
+    "originalErrorPersisted": { "const": false },
+    "finalStatus": { "const": "BLOCKED" }
+  }
+}

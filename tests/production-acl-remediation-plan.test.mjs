@@ -28,6 +28,13 @@ assert.deepEqual(source.remediationTargets.defaultPrivileges.sequencePrivileges,
 assert.equal(source.remediationTargets.materializedObjectPrivileges.broadAllObjectsRevokeAllowed, false);
 assert.ok(REQUIRED_PRECONDITIONS.every(value => source.preconditions.includes(value)));
 assert.ok(REQUIRED_STOPS.every(value => source.stopConditions.includes(value)));
+assert.equal(source.precheckRunner.status, 'READY');
+assert.equal(source.precheckRunner.command, 'pnpm run db:acl:production-precheck');
+assert.equal(source.precheckRunner.maxConnectionAttempts, 1);
+assert.equal(source.precheckRunner.retryCount, 0);
+assert.equal(source.precheckRunner.productionMutation, false);
+assert.equal(source.precheckRunner.requiredEvidence.length, 7);
+assert.ok(source.precheckRunner.processOnlyInputs.includes('BANK_PRODUCTION_ACL_OPERATOR_ROLE'));
 
 const authorized = clone();
 authorized.authorizationStatus = 'GRANTED';
@@ -64,6 +71,14 @@ assert.match(validateAclRemediationPlan(secondAttempt).failures.join(','), /STAG
 const businessRead = clone();
 businessRead.authorizationEnvelope.stages[2].businessRowReads = true;
 assert.match(validateAclRemediationPlan(businessRead).failures.join(','), /BUSINESS_ROW_READ_ALLOWED/);
+
+const precheckRetry = clone();
+precheckRetry.precheckRunner.retryCount = 1;
+assert.match(validateAclRemediationPlan(precheckRetry).failures.join(','), /PRECHECK_RUNNER_BOUNDARY_MISMATCH/);
+
+const missingPrecheckEvidence = clone();
+missingPrecheckEvidence.precheckRunner.requiredEvidence.pop();
+assert.match(validateAclRemediationPlan(missingPrecheckEvidence).failures.join(','), /PRECHECK_RUNNER_EVIDENCE_SCOPE_MISMATCH/);
 
 const gatePromotion = clone();
 gatePromotion.currentGateState.aclSemantic = 'PASS';

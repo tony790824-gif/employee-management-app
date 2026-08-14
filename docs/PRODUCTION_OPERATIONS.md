@@ -1,5 +1,13 @@
 # Production Operations Evidence Guide
 
+## Dedicated ACL remediation pre-check command
+
+- `pnpm run db:acl:production-precheck` is the only reviewed entry point for the future ACL remediation pre-check. Never execute it without an Owner authorization tied to the exact clean Commit and committed plan hash.
+- The command uses one dedicated-reader Client/connection attempt, retry 0, TLS verify-full, PostgreSQL 18 identity/role guards and one `READ ONLY` transaction. It performs catalog/ledger reads only and never issues ACL mutation or business-row queries.
+- Process-only inputs are enumerated in `database/production-acl-remediation-plan.expected.json`. The operator must supply the exact existing ACL-operator role identifier for capability analysis, but the runner still authenticates only as the dedicated reader.
+- Success or failure writes a separate sanitized JSON/SHA-256 pair. Operator cleanup must remove process-only inputs and the temporary CA after the client closes.
+- This implementation task made zero Production connections/mutations. Future Neon wake, compute/network/I/O/cache use, short catalog locks and audit logs require explicit authorization.
+
 ## Production ACL remediation authorization boundary
 
 - Current plan validation command is local-only: `pnpm run db:acl:remediation-plan`. It reads committed Repository files and cannot connect to Production.
