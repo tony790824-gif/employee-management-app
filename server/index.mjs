@@ -1,49 +1,15 @@
 import process from 'node:process';
-import { createApiServer } from './app.mjs';
-import { createCommandService } from './commands.mjs';
+import { createServer } from 'node:http';
 import {
-  assertApiDatabaseTarget,
   assertPushDatabaseTarget,
-  createPool,
   createPushPool
 } from './db.mjs';
-import { createOidcVerifier } from './jwt-verifier.mjs';
-import { createTenantContextSigner } from './tenant-context.mjs';
+import { createApiRuntime } from './runtime.mjs';
 import { createWebPushDispatcher, webPushConfig } from './web-push.mjs';
-import { createRateLimiter, rateLimitConfig } from './rate-limit.mjs';
 
-function required(name) {
-  const value = String(process.env[name] || '').trim();
-  if (!value) throw new Error(`缺少 ${name}。`);
-  return value;
-}
-
-const environment = String(process.env.BANK_ENV || 'local').toLowerCase();
-if (!['local', 'staging', 'production'].includes(environment)) throw new Error('BANK_ENV 格式不正確。');
-const pool = createPool();
-const verifyAccessToken = createOidcVerifier({
-  issuer: required('BANK_OIDC_ISSUER'),
-  audience: required('BANK_OIDC_AUDIENCE'),
-  jwksUri: required('BANK_OIDC_JWKS_URL'),
-  sessionClaim: String(process.env.BANK_OIDC_SESSION_CLAIM || 'https://banke.tw/session_id')
-});
-const tenantContextSigner = createTenantContextSigner({
-  key: required('BANK_TENANT_CONTEXT_KEY'),
-  keyId: required('BANK_TENANT_CONTEXT_KEY_ID')
-});
-const allowedOrigins = required('BANK_ALLOWED_ORIGINS').split(',').map(value => value.trim()).filter(Boolean);
-const commandService = createCommandService({ pool, tenantContextSigner });
-const configuredBuildSha = String(process.env.BANK_BUILD_SHA || process.env.RENDER_GIT_COMMIT || '').trim().toLowerCase();
-const buildSha = /^[a-f0-9]{7,64}$/.test(configuredBuildSha) ? configuredBuildSha : 'unknown';
-const server = createApiServer({
-  commandService,
-  verifyAccessToken,
-  pool,
-  allowedOrigins,
-  environment,
-  rateLimiter: createRateLimiter(rateLimitConfig()),
-  buildSha
-});
+const apiRuntime = createApiRuntime();
+const { environment, buildSha } = apiRuntime;
+const server = createServer(apiRuntime.requestHandler);
 const pushConfig = webPushConfig();
 const pushPool = pushConfig.enabled ? createPushPool() : null;
 const pushDispatcher = pushPool
@@ -56,7 +22,7 @@ if (!['127.0.0.1', '0.0.0.0'].includes(bindHost)) {
 }
 
 async function start() {
-  await assertApiDatabaseTarget(pool);
+  await apiRuntime.ensureReady();
   if (pushPool) {
     await assertPushDatabaseTarget(pushPool);
     await pushDispatcher.start();
@@ -82,7 +48,7 @@ start().catch(async error => {
   }));
   await pushDispatcher?.stop().catch(() => {});
   await pushPool?.end().catch(() => {});
-  await pool.end().catch(() => {});
+  await apiRuntime.close().catch(() => {});
   process.exitCode = 1;
 });
 
@@ -91,7 +57,7 @@ async function shutdown(signal) {
   server.close(async () => {
     await pushDispatcher?.stop().catch(() => {});
     await pushPool?.end().catch(() => {});
-    await pool.end();
+    await apiRuntime.close();
     process.exit(0);
   });
   setTimeout(() => process.exit(1), 10_000).unref();

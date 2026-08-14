@@ -19,10 +19,15 @@ const backendSourceFiles = [
   'server/errors.mjs',
   'server/index.mjs',
   'server/jwt-verifier.mjs',
+  'server/netlify-adapter.mjs',
+  'server/netlify-push-drain.mjs',
   'server/oidc-readiness.mjs',
   'server/rate-limit.mjs',
   'server/tenant-context.mjs',
+  'server/runtime.mjs',
   'server/validation.mjs',
+  'netlify/functions/api.mjs',
+  'netlify/functions/push-drain.mjs',
   'security-events/auth0-event.mjs',
   'security-events/database.mjs',
   'security-events/handler.mjs',
@@ -41,6 +46,7 @@ const backendSourceFiles = [
   'tests/staging-auth-initiation.test.mjs',
   'tests/lambda-artifact-packaging.test.mjs',
   'tests/staging-node-hosting.test.mjs',
+  'tests/netlify-functions.test.mjs',
   'tests/postgres-backup-restore.test.mjs',
   'tests/postgres-staging-integration.test.mjs'
   , 'tests/production-operations-gate.test.mjs'
