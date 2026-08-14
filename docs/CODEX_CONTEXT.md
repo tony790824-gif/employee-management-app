@@ -1,5 +1,9 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2J
+
+Phase 2J completed Repository-only design/implementation for the unresolved Phase 2I default-ACL GRANTEE. Existing Evidence cannot identify the role. The new opaque model resolves current OIDs inside PostgreSQL and returns only safe semantic categories/proofs; it preserves grant options and blocks zero/multiple reviewed matches. Rename with the same OID is stable; a same-name recreated role with another OID does not inherit classification. No Production connection occurred. Future command/token are `pnpm run db:parity:production-default-acl-opaque-grantee` and `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_OPAQUE_GRANTEE`, requiring new one-time authority. Gates stay 9/13 and Production stays 70% / NOT READY.
+
 ## 2026-08-14 current state - Production Closure Phase 2I
 
 The consumed narrow collector produced hash-valid, schema-valid sanitized Evidence. Both explicit `PUBLIC_SCHEMA` relation/sequence default ACLs classify OWNER and GRANTOR as `SYSTEM_PLATFORM_MANAGED`, but GRANTEE as `OTHER_NAMED_PRINCIPAL`; no PUBLIC principal entry exists. Primary outcome: C / PRINCIPAL_CLASSIFICATION_STILL_BLOCKED.

@@ -1,5 +1,13 @@
 # AI Handoff
 
+## Production Closure Phase 2J current state - 2026-08-14
+
+- Repository/local implementation is COMPLETE; Sprint numbering remains capped at 65. Production connections 0, mutations NONE. Phase 2I authorization remains consumed.
+- Existing Phase 2I Evidence is not sufficient: the GRANTEE remains `OTHER_NAMED_PRINCIPAL`; do not infer identity from its privilege shape.
+- New model `bankeban-default-acl-opaque-grantee-v1` compares OIDs only inside PostgreSQL and emits reviewed category/proof enums, membership state, privilege and grant option. Raw names/OIDs are forbidden from Evidence.
+- Future-only command/token: `pnpm run db:parity:production-default-acl-opaque-grantee` / `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_OPAQUE_GRANTEE`. It is not authorized and needs a new single-use Owner decision.
+- Gates remain `STRUCTURAL_NON_ACL=PASS`, `ACL_SEMANTIC=BLOCKED`, `STRUCTURAL_STARTING_BASELINE=BLOCKED`, `FRESH_LEDGER_AND_CHECKSUM=BLOCKED`; 9/13 and 70% / NOT READY.
+
 ## Production Closure Phase 2I current state - 2026-08-14
 
 - The one-time narrow collector authorization is consumed. Phase 2I made zero Production connections/mutations.

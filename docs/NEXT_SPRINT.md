@@ -1,5 +1,9 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2J
+
+Sprint numbering remains capped at 65. Do not create Sprint 66. The next action is an Owner decision on one new, single-use, dedicated Production read-only authorization for `pnpm run db:parity:production-default-acl-opaque-grantee`. Until explicitly authorized, do not execute it. Phase 2I authority is consumed. The command must remain one connection/no retry, TLS verify-full, exact `0001`-`0008` ledger, read-only catalog metadata only, no business rows and no raw OID/name Evidence. After evidence collection, perform Repository-only semantic recomposition; never promote `ACL_SEMANTIC` from classification success alone.
+
 ## Post-Phase 2I decision — design an opaque grantee-category proof locally
 
 The consumed narrow execution produced valid sanitized Evidence but remained BLOCKED because the explicit relation/sequence default ACL GRANTEE is `OTHER_NAMED_PRINCIPAL`. OWNER and GRANTOR are `SYSTEM_PLATFORM_MANAGED`; no PUBLIC principal was observed. Do not rerun the collector and do not request another authorization merely because exit code 2 was returned.

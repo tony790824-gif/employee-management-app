@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-0001-0008-opaque-grantee-classification-evidence.schema.json",
+  "title": "Bankeban opaque default ACL grantee classification evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "phase", "sprintNumberingCappedAt", "generatedAt", "repositoryCommitSha",
+    "sourcePhase2IEvidenceSha256", "modelVersion", "scope", "identityResult", "tlsVerification",
+    "roleBoundaryResult", "transactionReadOnlyResult", "ledgerResult", "classifications", "blockers",
+    "classificationFingerprint", "opaqueGranteeResult", "aclSemanticGate", "connectionAttemptCount",
+    "retryCount", "productionConnectionAttempted", "productionMutation", "businessRowReads",
+    "rawOidPersisted", "rawPrincipalNamePersisted", "cleanupResult", "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_PHASE_2J_OPAQUE_GRANTEE_SUPPLEMENT" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "sourcePhase2IEvidenceSha256": { "const": "bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c" },
+    "modelVersion": { "const": "bankeban-default-acl-opaque-grantee-v1" },
+    "scope": { "const": "UNRESOLVED_PUBLIC_SCHEMA_RELATION_SEQUENCE_GRANTEE_ONLY" },
+    "identityResult": { "const": "PASS" },
+    "tlsVerification": { "const": "VERIFY_FULL_PASS" },
+    "roleBoundaryResult": { "const": "PASS" },
+    "transactionReadOnlyResult": { "const": "PASS" },
+    "ledgerResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "expectedCount", "observedCount", "differences"],
+      "properties": {
+        "status": { "const": "PASS" },
+        "expectedCount": { "const": 8 },
+        "observedCount": { "const": 8 },
+        "differences": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "classifications": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/classification" }
+    },
+    "blockers": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z0-9_:|]+$" }, "uniqueItems": true },
+    "classificationFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "opaqueGranteeResult": { "enum": ["PASS", "BLOCKED"] },
+    "aclSemanticGate": { "const": "BLOCKED_PENDING_SEMANTIC_RECOMPOSITION" },
+    "connectionAttemptCount": { "const": 1 },
+    "retryCount": { "const": 0 },
+    "productionConnectionAttempted": { "const": true },
+    "productionMutation": { "const": false },
+    "businessRowReads": { "const": "NONE" },
+    "rawOidPersisted": { "const": false },
+    "rawPrincipalNamePersisted": { "const": false },
+    "cleanupResult": { "const": "PASS" },
+    "finalStatus": { "enum": ["PASS", "BLOCKED"] }
+  },
+  "$defs": {
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultAclKey", "objectType", "aclState", "principalPosition", "principalCategory",
+        "classificationProof", "membershipClassification", "privilege", "grantOption",
+        "categoryMatchCount", "semanticResult", "modelVersion"
+      ],
+      "properties": {
+        "defaultAclKey": { "enum": ["PUBLIC_SCHEMA|RELATION", "PUBLIC_SCHEMA|SEQUENCE"] },
+        "objectType": { "enum": ["RELATION", "SEQUENCE"] },
+        "aclState": { "const": "EXPLICIT_DEFAULT_ACL" },
+        "principalPosition": { "const": "GRANTEE" },
+        "principalCategory": {
+          "enum": [
+            "EXPECTED_OWNER", "EXPECTED_READONLY_ROLE", "EXPECTED_RUNTIME_ROLE",
+            "SYSTEM_PLATFORM_MANAGED", "READONLY_MEMBERSHIP_CARRIER", "EXTENSION_OWNER",
+            "PUBLIC", "OTHER_NAMED_PRINCIPAL", "UNCLASSIFIED"
+          ]
+        },
+        "classificationProof": {
+          "enum": [
+            "PUBLIC_OID_ZERO", "EXPECTED_OWNER_OID_RELATION", "EXPECTED_READONLY_ROLE_OID_RELATION",
+            "EXPECTED_RUNTIME_ROLE_OID_RELATION", "SYSTEM_PLATFORM_OID_RELATION",
+            "EXTENSION_OWNER_OID_RELATION", "READONLY_OUTBOUND_MEMBERSHIP_RELATION",
+            "NAMED_ROLE_WITHOUT_REVIEWED_RELATION", "NO_ROLE_RELATION", "AMBIGUOUS_OID_RELATION"
+          ]
+        },
+        "membershipClassification": { "enum": ["NONE", "OUTBOUND_EFFECTIVE", "AMBIGUOUS"] },
+        "privilege": { "type": "string", "pattern": "^[A-Z_]+$" },
+        "grantOption": { "type": "boolean" },
+        "categoryMatchCount": { "type": "integer", "minimum": 0, "maximum": 7 },
+        "semanticResult": { "enum": ["CLASSIFICATION_PROVEN", "BLOCKED"] },
+        "modelVersion": { "const": "bankeban-default-acl-opaque-grantee-v1" }
+      }
+    }
+  }
+}

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production Closure Phase 2J opaque OID grantee classification
+
+- Added a privacy-preserving OID relation model and future narrow default-ACL GRANTEE collector that return only reviewed categories/booleans, never raw OIDs, names or ACL strings.
+- Added strict Evidence schema and regressions for PUBLIC OID 0, reviewed principals, membership ambiguity, grant options, rename stability and drop/recreate safety.
+- Kept `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` BLOCKED, matrix 9/13 and Production 70% / NOT READY; Phase 2J made zero Production connections or mutations.
+
 ## 2026-08-14 - Production Closure Phase 2I narrow default ACL Evidence analysis
 
 - Verified the consumed narrow Live Evidence/hash/schema/provenance and preserved its bytes unchanged.

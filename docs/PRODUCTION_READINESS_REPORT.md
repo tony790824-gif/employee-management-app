@@ -1,5 +1,13 @@
 # Production Readiness Report — Sprint 33A
 
+## Production Closure Phase 2J opaque grantee design - 2026-08-14
+
+- Existing immutable Evidence remains insufficient to classify the explicit relation/sequence default-ACL GRANTEE beyond `OTHER_NAMED_PRINCIPAL`.
+- Repository now has a privacy-preserving OID relationship classifier, future narrow collector, strict schema and fail-closed tests. This is design readiness, not Live Production evidence.
+- `STRUCTURAL_NON_ACL=PASS`; `ACL_SEMANTIC=BLOCKED`; `STRUCTURAL_STARTING_BASELINE=BLOCKED`; `FRESH_LEDGER_AND_CHECKSUM=BLOCKED`.
+- Matrix remains **9 PASS / 13 non-PASS**. Production remains **70% / NOT READY**, Gate A **DEFER**, Provisioning and Migration Technical Readiness **NO-GO**.
+- Phase 2J Production connections/mutations: **0 / NONE**. Phase 2I authorization remains consumed.
+
 ## Production Closure Phase 2I narrow default-ACL result - 2026-08-14
 
 - Valid Live Evidence produced outcome **C / PRINCIPAL_CLASSIFICATION_STILL_BLOCKED**; no PUBLIC principal was observed.

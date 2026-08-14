@@ -1,5 +1,12 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2J Repository evidence - 2026-08-14
+
+- Phase 2I source Evidence remains immutable and hash-valid at `bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c`.
+- Existing evidence sufficiency: **NO**. It proves `OTHER_NAMED_PRINCIPAL` only and contains no reviewed OID relation.
+- Repository contract: PostgreSQL-internal OID comparisons may return only reviewed category/proof enums, membership classification, privilege and grant option. Raw OIDs, raw names and raw ACLs are forbidden.
+- No new Live Evidence was generated. `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED.
+
 ## Production Closure Phase 2I narrow default-ACL Live Evidence - 2026-08-14
 
 - Evidence SHA-256, companion, strict schema/runtime contract, sanitization, timestamp/model/fingerprint and authorized Commit provenance: **PASS**.

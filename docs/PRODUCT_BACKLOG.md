@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2J - Opaque OID grantee classification design (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local implementation; Production connections 0, mutations NONE, Sprint numbering capped at 65.
+- **Finding:** Phase 2I immutable Evidence is insufficient because it contains only `OTHER_NAMED_PRINCIPAL`, not a reviewed OID relationship.
+- **Implemented:** an in-database opaque OID classifier, narrower future collector, strict Evidence schema and fail-closed regressions for PUBLIC, owner/runtime/reader/platform/extension/membership, rename, drop/recreate, ambiguity and grant option.
+- **Decision:** no Gate promotion; 9/13 and 70% / NOT READY remain. Any future live use requires a new single-use Owner authorization.
+
 ## Production Closure Phase 2I - Narrow default ACL Evidence analysis (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.

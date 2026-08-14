@@ -1,5 +1,12 @@
 # Production Release Checklist
 
+## Production Closure Phase 2J default-ACL identity gate
+
+- [x] Repository opaque OID classification/query/schema/tests are fail-closed and persist no raw identity.
+- [ ] A new separately authorized Live narrow Evidence run proves exactly one reviewed GRANTEE relationship for relation and sequence default ACLs.
+- [ ] Repository-only semantic recomposition reviews all 11 preserved grant-option facts after classification.
+- [ ] `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` are PASS. They remain BLOCKED now.
+
 ## Production Closure Phase 2I narrow Evidence analysis
 
 - [x] Verified JSON/companion/expected SHA, schema, sanitization, provenance, timestamp, model and semantic fingerprint.
