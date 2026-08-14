@@ -47,6 +47,7 @@ for (const [name, patch, pattern] of [
 }
 
 const source = await readFile(new URL('../database/production-migration-event.mjs', import.meta.url), 'utf8');
+const executionPlan = await readFile(new URL('../docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md', import.meta.url), 'utf8');
 assert.match(source, /loadExactMigrationSet/);
 assert.match(source, /applyMigrationStep/);
 assert.match(source, /BEGIN TRANSACTION READ ONLY/);
@@ -58,5 +59,8 @@ assert.match(source, /connectionCount \+= 1/);
 assert.match(source, /retryCount: 0/);
 assert.doesNotMatch(source, /setTimeout[\s\S]*client\.connect/);
 assert.doesNotMatch(source, /readdir\(/);
+assert.match(executionPlan, /\$env:CI = 'true'[\s\S]*pnpm run db:migration:production-event/);
+assert.match(executionPlan, /Do not use\s+`--force`/);
+assert.match(executionPlan, /do not set\s+`confirmModulesPurge=false`/);
 
 console.log('Production migration event package tests passed');

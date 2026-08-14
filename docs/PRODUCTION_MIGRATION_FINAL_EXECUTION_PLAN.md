@@ -22,9 +22,19 @@ Auth0, Render, Netlify, custom domain, external APM, long-term log retention and
 
 ## Exact execution package
 
-The only executable entry point is:
+The only executable entry point is shown below. The operator must set pnpm's official
+process-scoped CI flag **before** pnpm starts so the non-interactive Codex/CI
+shell cannot prompt to rebuild dependency state:
 
-`pnpm run db:migration:production-event`
+```powershell
+$env:CI = 'true'
+pnpm run db:migration:production-event
+```
+
+`CI=true` changes only pnpm's interaction mode. It does not bypass dependency
+validation, any Migration guard, or any Production authorization. Do not use
+`--force`, do not set `confirmModulesPurge=false`, and do not delete
+`node_modules` as part of the Production event.
 
 It is fail-closed and requires process-only inputs for the exact Owner authorization, immutable Commit, dedicated direct-endpoint Migration credential, expected database/operator identities, temporary CA, verified restore point and active drained maintenance state. It requires TLS `verify-full` plus channel binding, one connection, retry zero, PostgreSQL 18, and a non-dangerous operator boundary. It never scans the Migration directory for Production execution.
 
