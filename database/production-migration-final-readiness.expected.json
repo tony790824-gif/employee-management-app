@@ -108,17 +108,63 @@
     "EVIDENCE_FRESHNESS",
     "REPOSITORY_COMMIT_IDENTITY"
   ],
+  "migrationExecutionControlIds": [
+    "EVENT_AUTHORIZATION_AND_ARTIFACT",
+    "MIGRATION_OPERATOR_BOUNDARY",
+    "EVENT_TIME_NON_ACL_PREFLIGHT",
+    "EVENT_RECOVERY_CHECKPOINT",
+    "CHANGE_WINDOW_AND_RESPONDERS"
+  ],
+  "migrationExecutionControls": {
+    "EVENT_AUTHORIZATION_AND_ARTIFACT": {
+      "status": "NOT_GRANTED",
+      "closes": ["EXPLICIT_EVENT_AUTHORIZATION", "EVIDENCE_FRESHNESS", "REPOSITORY_COMMIT_IDENTITY"],
+      "closeInsideSingleEventAuthorization": true
+    },
+    "MIGRATION_OPERATOR_BOUNDARY": {
+      "status": "BLOCKED",
+      "closes": ["APPROVED_MIGRATION_OPERATOR", "ROLE_BOUNDARY"],
+      "closeInsideSingleEventAuthorization": true
+    },
+    "EVENT_TIME_NON_ACL_PREFLIGHT": {
+      "status": "BLOCKED",
+      "closes": ["FRESH_LEDGER_AND_CHECKSUM", "ZERO_UNEXPECTED_MIGRATIONS", "STRUCTURAL_STARTING_BASELINE"],
+      "closeInsideSingleEventAuthorization": true
+    },
+    "EVENT_RECOVERY_CHECKPOINT": {
+      "status": "BLOCKED",
+      "closes": ["PRE_MIGRATION_RESTORE_POINT"],
+      "closeInsideSingleEventAuthorization": true
+    },
+    "CHANGE_WINDOW_AND_RESPONDERS": {
+      "status": "NOT_GRANTED",
+      "closes": ["MAINTENANCE_WINDOW", "TRAFFIC_AND_LONG_TRANSACTION_CONTROL", "MONITORING_AND_RESPONDERS"],
+      "closeInsideSingleEventAuthorization": true
+    }
+  },
+  "parallelPlatformGateIds": ["PRODUCTION_ENVIRONMENT_CONFIGURATION"],
+  "trafficGoOnlyGateIds": ["RPO_15_MINUTES", "ACL_SEMANTIC"],
+  "executionPackage": {
+    "status": "READY_FOR_EXPLICIT_EVENT_AUTHORIZATION",
+    "command": "pnpm run db:migration:production-event",
+    "connectionArchitecture": "ONE_MIGRATOR_CONNECTION_RETRY_ZERO",
+    "preflightScope": "EXACT_0001_0008_LEDGER_CHECKSUM_AND_NON_ACL_STRUCTURE",
+    "upgradeScope": "EXACT_0009_AND_0011_TO_0022_ONE_VERSION_PER_TRANSACTION",
+    "postflightScope": "EXACT_21_VERSION_LEDGER_CHECKSUM_AND_NON_ACL_STRUCTURE",
+    "aclRemediationIncluded": false,
+    "productionPlatformProvisioningIncluded": false
+  },
   "currentGateEvidence": {
     "EXPLICIT_EVENT_AUTHORIZATION": { "status": "NOT_GRANTED", "reason": "NO_EXACT_PRODUCTION_MIGRATION_EVENT_AUTHORIZATION" },
     "APPROVED_MIGRATION_OPERATOR": { "status": "BLOCKED", "reason": "NO_APPROVED_LEAST_PRIVILEGE_PRODUCTION_MIGRATION_OPERATOR_EVIDENCE" },
     "TARGET_IDENTITY": { "status": "PASS", "reason": "SPRINT_65_DATABASE_AND_DEDICATED_READER_IDENTITY_MATCHED_PROTECTED_EXPECTATIONS" },
     "TLS_VERIFY_FULL": { "status": "PASS", "reason": "SPRINT_65_TRUSTED_CA_AND_HOSTNAME_VERIFICATION_PASS" },
     "ROLE_BOUNDARY": { "status": "BLOCKED", "reason": "MIGRATION_OPERATOR_BOUNDARY_NOT_EVIDENCED" },
-    "FRESH_LEDGER_AND_CHECKSUM": { "status": "BLOCKED", "reason": "SPRINT_65_CURRENT_LEDGER_OBSERVED_BUT_13_EXPECTED_VERSIONS_ARE_MISSING" },
+    "FRESH_LEDGER_AND_CHECKSUM": { "status": "BLOCKED", "reason": "EVENT_TIME_EXACT_0001_TO_0008_LEDGER_AND_TRACKED_CHECKSUM_REVALIDATION_REQUIRED" },
     "ZERO_UNEXPECTED_MIGRATIONS": { "status": "PASS", "reason": "SPRINT_65_CURRENT_LEDGER_HAS_NO_UNEXPECTED_VERSION_AND_NO_0010" },
     "0010_ABSENT": { "status": "PASS", "reason": "REPOSITORY_ALLOWLIST_AND_HISTORICAL_PRODUCTION_LEDGER_EXCLUDE_0010" },
     "EXACT_EXECUTION_SEQUENCE": { "status": "PASS", "reason": "REPOSITORY_MANIFEST_VALIDATED" },
-    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "REPOSITORY_ACL_SEMANTIC_MODEL_V1_PASS_BUT_EXISTING_LIVE_EVIDENCE_LACKS_PRIVILEGE_LEVEL_SEMANTICS" },
+    "STRUCTURAL_STARTING_BASELINE": { "status": "BLOCKED", "reason": "EVENT_TIME_NON_ACL_STRUCTURAL_BASELINE_REVALIDATION_REQUIRED_ACL_IS_A_SEPARATE_TRAFFIC_GO_GATE" },
     "ISOLATED_RESTORE": { "status": "PASS", "reason": "SPRINT_57_ISOLATED_RESTORE_AND_ZERO_RESIDUAL_CLEANUP_EVIDENCED" },
     "RTO_60_MINUTES": { "status": "PASS", "reason": "SPRINT_57_MEASURED_112_335_SECONDS" },
     "RPO_15_MINUTES": { "status": "BLOCKED", "reason": "REFERENCE_AND_LATEST_RECOVERABLE_BOUNDARIES_UNKNOWN_RPO_NOT_PROVEN" },
@@ -429,7 +475,7 @@
   ],
   "decision": {
     "productionMigrationAuthorization": "NOT_GRANTED",
-    "productionMigrationTechnicalReadiness": "NO_GO",
+    "productionMigrationTechnicalReadiness": "READY_FOR_EXPLICIT_EVENT_AUTHORIZATION",
     "productionReadiness": "70_PERCENT_NOT_READY",
     "gateA": "DEFER",
     "productionProvisioning": "NO_GO"

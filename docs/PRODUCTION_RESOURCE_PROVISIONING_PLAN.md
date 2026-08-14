@@ -65,6 +65,20 @@ Sprint 37 revalidated this plan against current repository and external evidence
 
 No resource, billing, credential, database, Migration, deployment, DNS, deletion or traffic action occurred. The only next human task is a read-only Auth0 Team plan/Tenant-capacity review; it does not authorize purchase or creation.
 
+## Fast Production Path status
+
+This section supersedes the old serial dependency assumption for the minimum launch platform. It creates no resource and grants no billing/deploy authority.
+
+| Minimum platform | Fast-path status | Next real Owner action |
+| --- | --- | --- |
+| Auth0 Production isolation | **BLOCKED** | Approve the minimum tenant-capacity/billing decision, then create one dedicated Production Tenant, SPA and API. The Development/Staging Tenant cannot be relabelled as Production. |
+| Render Production API | **NEED_CREATE** | Authorize one independent API service from the accepted immutable Commit, with auto-deploy off for the first release and no public traffic until readiness passes. |
+| Render Production Push Worker | **NEED_CREATE** | Authorize one independent worker using the same accepted Commit and a separate least-privilege database credential; keep delivery disabled until API/schema/VAPID checks pass. |
+| Netlify Production Site | **EXISTING** project / **NEED_CREATE** first Production deploy | Confirm the existing project as the Production site and authorize the first non-preview Production candidate. A custom domain is not required for the first family release. |
+| Production secrets/environment variables | **BLOCKED** | After the four resource identities exist, enter the approved inventory directly in protected platform stores and run presence/parity checks; never copy values into Git or chat. |
+
+Render API, Render worker and the Netlify Production candidate may be created in parallel with the Auth0 capacity decision, but they cannot reach final readiness or user traffic until their protected Production values exist. Custom domain, external APM, long-term log retention and scheduled snapshots are explicitly deferred from this minimum platform path; provider health/readiness logs, event responders, Neon PITR and an event-specific restore point remain mandatory where the Migration/release event uses them.
+
 ## 1. Production resource inventory
 
 | Platform / control | Current evidence | Status | Provisioning implication |

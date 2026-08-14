@@ -34,6 +34,13 @@ const CLOSURE_CATEGORIES = Object.freeze([
   'BLOCKED_BY_DEPENDENCY'
 ]);
 const ALLOWED_CLOSURE_CATEGORIES = new Set([...CLOSURE_CATEGORIES, 'CLOSED_PASS']);
+const MIGRATION_EXECUTION_CONTROL_IDS = Object.freeze([
+  'EVENT_AUTHORIZATION_AND_ARTIFACT',
+  'MIGRATION_OPERATOR_BOUNDARY',
+  'EVENT_TIME_NON_ACL_PREFLIGHT',
+  'EVENT_RECOVERY_CHECKPOINT',
+  'CHANGE_WINDOW_AND_RESPONDERS'
+]);
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -63,6 +70,28 @@ export function evaluateProductionMigrationReadiness(gates, requiredGateIds) {
     status: blockers.length ? 'NO_GO' : 'GO',
     blockers: Object.freeze(blockers.map(item => Object.freeze(item)))
   });
+}
+
+export function evaluateMigrationExecutionPackage(value) {
+  const failures = [];
+  if (JSON.stringify(value?.migrationExecutionControlIds) !== JSON.stringify(MIGRATION_EXECUTION_CONTROL_IDS)) failures.push('CONTROL_ID_SET_MISMATCH');
+  for (const controlId of MIGRATION_EXECUTION_CONTROL_IDS) {
+    const control = value?.migrationExecutionControls?.[controlId];
+    if (!control || !['PASS', 'BLOCKED', 'NOT_GRANTED'].includes(control.status)) failures.push(`CONTROL_STATUS_INVALID:${controlId}`);
+    if (!Array.isArray(control?.closes) || !control.closes.length) failures.push(`CONTROL_CLOSURE_EMPTY:${controlId}`);
+    if (control?.closeInsideSingleEventAuthorization !== true) failures.push(`CONTROL_NOT_CLOSABLE_IN_EVENT:${controlId}`);
+  }
+  const execution = value?.executionPackage || {};
+  if (execution.status !== 'READY_FOR_EXPLICIT_EVENT_AUTHORIZATION'
+      || execution.command !== 'pnpm run db:migration:production-event'
+      || execution.connectionArchitecture !== 'ONE_MIGRATOR_CONNECTION_RETRY_ZERO'
+      || execution.aclRemediationIncluded !== false
+      || execution.productionPlatformProvisioningIncluded !== false) {
+    failures.push('EXECUTION_PACKAGE_CONTRACT_MISMATCH');
+  }
+  if (JSON.stringify(value?.parallelPlatformGateIds) !== JSON.stringify(['PRODUCTION_ENVIRONMENT_CONFIGURATION'])) failures.push('PARALLEL_PLATFORM_GATE_MISMATCH');
+  if (JSON.stringify(value?.trafficGoOnlyGateIds) !== JSON.stringify(['RPO_15_MINUTES', 'ACL_SEMANTIC'])) failures.push('TRAFFIC_GO_GATE_MISMATCH');
+  return Object.freeze({ status: failures.length ? 'BLOCKED' : 'READY', failures: Object.freeze(failures) });
 }
 
 export function evaluateStructuralStartingBaseline(repositoryStatus, liveStatus) {
@@ -136,10 +165,12 @@ export async function validateFinalReadinessPackage(input) {
   }
   if (!Array.isArray(value.requiredStopConditions) || value.requiredStopConditions.length < 10) failures.push('STOP_CONDITIONS_INCOMPLETE');
   if (value.decision?.productionMigrationAuthorization !== 'NOT_GRANTED') failures.push('AUTHORIZATION_GATE_WEAKENED');
-  if (value.decision?.productionMigrationTechnicalReadiness !== 'NO_GO') failures.push('TECHNICAL_GATE_WEAKENED');
+  if (value.decision?.productionMigrationTechnicalReadiness !== 'READY_FOR_EXPLICIT_EVENT_AUTHORIZATION') failures.push('TECHNICAL_EXECUTION_PACKAGE_NOT_READY');
   if (value.decision?.productionReadiness !== '70_PERCENT_NOT_READY' || value.decision?.gateA !== 'DEFER' || value.decision?.productionProvisioning !== 'NO_GO') failures.push('PRODUCTION_DECISION_DRIFT');
   const current = evaluateProductionMigrationReadiness(value.currentGateEvidence, value.requiredGateIds);
   if (current.status !== 'NO_GO') failures.push('CURRENT_GATE_MUST_FAIL_CLOSED');
+  const eventPackage = evaluateMigrationExecutionPackage(value);
+  if (eventPackage.status !== 'READY') failures.push(...eventPackage.failures.map(item => `EVENT_PACKAGE:${item}`));
   const revalidation = value.productionReadOnlyRevalidation || {};
   if (revalidation.processInputs !== 'PRESENT_DURING_SINGLE_AUTHORIZED_PROCESS'
       || revalidation.currentStatus !== 'PARTIAL' || revalidation.authorizationConsumed !== true
@@ -306,7 +337,7 @@ export async function validateFinalReadinessPackage(input) {
     status: failures.length ? 'BLOCKED' : 'PASS',
     failures: Object.freeze(failures),
     repositoryTruth: remediation.status,
-    productionMigrationTechnicalReadiness: current.status,
+    productionMigrationTechnicalReadiness: value.decision?.productionMigrationTechnicalReadiness,
     productionMigrationAuthorization: value.decision?.productionMigrationAuthorization,
     blockerCount: current.blockers.length,
     blockers: current.blockers

@@ -1,6 +1,8 @@
 # Production Migration Execution Runbook Draft
 
-Status: **FINAL TECHNICAL RUNBOOK / NO-GO / NOT AN AUTHORIZATION**
+Status: **FINAL TECHNICAL RUNBOOK / READY FOR ONE EXPLICIT EVENT AUTHORIZATION / NOT AUTHORIZED**
+
+Fast Production Path update (2026-08-14): the authoritative execution contract is `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md` and the exact runner is `pnpm run db:migration:production-event`. The 13 non-PASS launch records are not 13 separate Migration projects; five event controls close inside one bounded authorization. ACL owner split, full Production platform provisioning and formal RPO <=15 minutes remain separate traffic-GO concerns, not Migration technical prerequisites. Nothing in this update grants a Production connection or mutation.
 
 Final execution-plan update (2026-08-14): `docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md` consolidates this runbook, the exact manifest, per-version preconditions, recovery/traffic checkpoints and current Live blockers into one event contract. The current answer is `PRODUCTION MIGRATION EXECUTION READY = NO`: ACL/starting-baseline drift, the missing least-privilege Migration operator, RPO/event restore point, maintenance/traffic/monitoring ownership and exact event authorization must be resolved independently before one bounded Migration authorization can be requested. No ACL remediation is included.
 

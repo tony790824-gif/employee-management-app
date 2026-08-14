@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
   evaluateProductionMigrationReadiness,
+  evaluateMigrationExecutionPackage,
   evaluateStructuralStartingBaseline,
   loadFinalReadinessPackage,
   repositoryFinalReadinessGate,
@@ -13,7 +14,7 @@ const validation = await validateFinalReadinessPackage(readiness);
 assert.equal(validation.status, 'PASS');
 assert.deepEqual(validation.failures, []);
 assert.equal(validation.repositoryTruth, 'PASS');
-assert.equal(validation.productionMigrationTechnicalReadiness, 'NO_GO');
+assert.equal(validation.productionMigrationTechnicalReadiness, 'READY_FOR_EXPLICIT_EVENT_AUTHORIZATION');
 assert.equal(validation.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.equal(evaluateStructuralStartingBaseline('PASS', 'NOT_EVALUATED'), 'BLOCKED');
 assert.equal(evaluateStructuralStartingBaseline('PASS', 'BLOCKED'), 'BLOCKED');
@@ -92,6 +93,18 @@ assert.deepEqual(readiness.classificationSummary, {
 assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status === 'PASS').length, 9);
 assert.equal(Object.values(readiness.currentGateEvidence).filter(gate => gate.status !== 'PASS').length, 13);
 assert.equal(Object.keys(readiness.gateClosureMatrix).length, 22);
+assert.equal(evaluateMigrationExecutionPackage(readiness).status, 'READY');
+assert.deepEqual(readiness.migrationExecutionControlIds, [
+  'EVENT_AUTHORIZATION_AND_ARTIFACT',
+  'MIGRATION_OPERATOR_BOUNDARY',
+  'EVENT_TIME_NON_ACL_PREFLIGHT',
+  'EVENT_RECOVERY_CHECKPOINT',
+  'CHANGE_WINDOW_AND_RESPONDERS'
+]);
+assert.deepEqual(readiness.parallelPlatformGateIds, ['PRODUCTION_ENVIRONMENT_CONFIGURATION']);
+assert.deepEqual(readiness.trafficGoOnlyGateIds, ['RPO_15_MINUTES', 'ACL_SEMANTIC']);
+assert.equal(readiness.executionPackage.command, 'pnpm run db:migration:production-event');
+assert.equal(readiness.executionPackage.aclRemediationIncluded, false);
 for (const gateId of readiness.requiredGateIds) {
   const gate = readiness.currentGateEvidence[gateId];
   const closure = readiness.gateClosureMatrix[gateId];
@@ -155,7 +168,7 @@ assert.equal((await validateFinalReadinessPackage(cyclicClosurePlan)).status, 'B
 
 const gate = await repositoryFinalReadinessGate();
 assert.equal(gate.packageValidation, 'PASS');
-assert.equal(gate.productionMigrationTechnicalReadiness, 'NO_GO');
+assert.equal(gate.productionMigrationTechnicalReadiness, 'READY_FOR_EXPLICIT_EVENT_AUTHORIZATION');
 assert.equal(gate.productionMigrationAuthorization, 'NOT_GRANTED');
 assert.equal(gate.productionConnectionAttempted, false);
 assert.equal(gate.productionSqlExecuted, false);
@@ -179,14 +192,14 @@ assert.match(simulationSource, /productionConnectionAttempted: false/);
 assert.match(simulationSource, /productionMutation: false/);
 
 const finalExecutionPlan = await readFile(new URL('../docs/PRODUCTION_MIGRATION_FINAL_EXECUTION_PLAN.md', import.meta.url), 'utf8');
-assert.match(finalExecutionPlan, /PRODUCTION MIGRATION EXECUTION READY = NO/);
+assert.match(finalExecutionPlan, /PRODUCTION MIGRATION EXECUTION READY = YES/);
 assert.match(finalExecutionPlan, /0009 -> 0011 -> 0012 -> 0013 -> 0014 -> 0015 -> 0016 -> 0017 -> 0018 -> 0019 -> 0020 -> 0021 -> 0022/);
 assert.match(finalExecutionPlan, /0010.*permanently excluded/i);
 assert.match(finalExecutionPlan, /One Migration version per transaction/i);
-assert.match(finalExecutionPlan, /RPO <=15 minutes is NOT PROVEN/i);
-assert.match(finalExecutionPlan, /NO_ELIGIBLE_OPERATOR/);
-assert.match(finalExecutionPlan, /ACL semantic verification cannot be skipped/i);
-assert.match(finalExecutionPlan, /Not today/i);
+assert.match(finalExecutionPlan, /five event controls/i);
+assert.match(finalExecutionPlan, /ACL.*not.*Migration blocker/i);
+assert.match(finalExecutionPlan, /RPO <=15 minutes.*traffic GO/i);
+assert.match(finalExecutionPlan, /db:migration:production-event/);
 assert.match(finalExecutionPlan, /no Production connection or mutation/i);
 assert.doesNotMatch(finalExecutionPlan, /postgres(?:ql)?:\/\//i);
 

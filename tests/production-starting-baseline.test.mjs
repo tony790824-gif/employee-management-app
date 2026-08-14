@@ -72,7 +72,7 @@ assert.equal(readiness.currentGateEvidence.STRUCTURAL_STARTING_BASELINE.status, 
 assert.equal(readiness.currentGateEvidence.FRESH_LEDGER_AND_CHECKSUM.status, 'BLOCKED');
 assert.deepEqual(readiness.gateClosureMatrix.STRUCTURAL_STARTING_BASELINE.dependencies, ['ZERO_UNEXPECTED_MIGRATIONS']);
 assert.equal(readiness.decision.productionReadiness, '70_PERCENT_NOT_READY');
-assert.equal(readiness.decision.productionMigrationTechnicalReadiness, 'NO_GO');
+assert.equal(readiness.decision.productionMigrationTechnicalReadiness, 'READY_FOR_EXPLICIT_EVENT_AUTHORIZATION');
 
 assert.doesNotMatch(source, /postgres(?:ql)?:\/\//i);
 assert.doesNotMatch(source, /neon\.tech|onrender\.com|netlify\.app/i);
