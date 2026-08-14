@@ -1,5 +1,11 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2H narrow default-ACL supplement - 2026-08-14
+
+The minimum future collector is `pnpm run db:parity:production-default-acl-principals`, confirmation `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_PRINCIPALS`. It is restricted to fixed Production reader/target guards, authenticated TLS, exact `0001`–`0008` ledger, one `READ ONLY` transaction and `pg_default_acl` entries for relation/sequence defaults in schema `public`.
+
+PUBLIC classification requires grantee OID 0. Schema `public` is a separate `PUBLIC_SCHEMA` key. Evidence stores OWNER/GRANTEE/GRANTOR categories, privilege, grant option and explicit/built-in default state; raw names are forbidden. Trusted grantor differences may be ignored only after category proof; unknown grantors or any dangerous expansion block. Phase 2H does not authorize or run this collector.
+
 ## Production Closure Phase 2F diagnostic contract - 2026-08-13
 
 The consumed Phase 2E attempt created no Live Evidence JSON/hash, so the original failure stage is UNKNOWN. Future comparator failures record only an allowlisted stage, safe error code, connection count, retry count and cleanup result in a separate sanitized failure artifact. Raw database errors are not stored or printed.

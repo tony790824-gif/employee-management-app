@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production Closure Phase 2H default ACL principal classification
+
+- Traced Phase 2G's two default-ACL blockers to loss of owner/grantee/grantor position in sanitized semantics; historical Evidence remains immutable and insufficient for reclassification.
+- Added an OID-based no-raw-name classification model, strict Evidence schema and narrow future relation/sequence default-ACL collector.
+- Added regressions for PUBLIC vs schema `public`, reviewed principal categories, unknowns, grantors, grant-option/write expansion, one connection/no retry and sanitization while keeping all live Gates unchanged.
+
 ## 2026-08-13 - Production Closure Phase 2F sanitized failure analysis
 
 - Proved that the consumed Phase 2E attempt produced no live Evidence JSON/hash and therefore cannot establish a structural or ACL result.

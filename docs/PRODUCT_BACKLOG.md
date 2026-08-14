@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2H - Minimal default ACL principal evidence (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local implementation; Production connections 0 and Sprint numbering remains capped at 65.
+- **Finding:** the Phase 2G object-level blocker collapsed owner/grantee/grantor position; schema `public` did not prove PUBLIC principal.
+- **Implemented:** an OID-based, no-raw-name classification model plus a narrow future `pg_default_acl` relation/sequence collector, strict schema and regressions.
+- **Decision:** historical Evidence remains immutable; `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` stay BLOCKED, 9/13 and 70% / NOT READY stay unchanged. A future narrow read requires a new explicit one-time authorization.
+
 ## Production Closure Phase 2F - Sanitized failure root-cause analysis (2026-08-13)
 
 - **Status:** COMPLETE for Repository/local analysis; Live root cause remains UNKNOWN and no reconnect is authorized.

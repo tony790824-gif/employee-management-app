@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bankeban.invalid/schemas/production-0001-0008-default-acl-principal-evidence.schema.json",
+  "title": "Bankeban narrow Production default ACL principal evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "phase", "sprintNumberingCappedAt", "generatedAt", "repositoryCommitSha",
+    "sourceLiveSemanticEvidenceSha256", "modelVersion", "scope", "identityResult", "tlsVerification",
+    "roleBoundaryResult", "transactionReadOnlyResult", "ledgerResult", "entries", "blockers", "differences",
+    "defaultAclSemanticResult", "semanticFingerprint", "connectionAttemptCount", "retryCount",
+    "productionConnectionAttempted", "productionMutation", "businessRowReads", "cleanupResult", "finalStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "phase": { "const": "PRODUCTION_CLOSURE_PHASE_2H_DEFAULT_ACL_SUPPLEMENT" },
+    "sprintNumberingCappedAt": { "const": 65 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "repositoryCommitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "sourceLiveSemanticEvidenceSha256": { "const": "bea7076ab4972fb3874a99be9fa3652a873bfdbe53fb74e4dc0e9606e3d37a02" },
+    "modelVersion": { "const": "bankeban-default-acl-principal-classification-v1" },
+    "scope": { "const": "PUBLIC_SCHEMA_RELATION_AND_SEQUENCE_DEFAULT_ACL_ONLY" },
+    "identityResult": { "const": "PASS" },
+    "tlsVerification": { "const": "VERIFY_FULL_PASS" },
+    "roleBoundaryResult": { "const": "PASS" },
+    "transactionReadOnlyResult": { "const": "PASS" },
+    "ledgerResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "expectedCount", "observedCount", "differences"],
+      "properties": {
+        "status": { "const": "PASS" },
+        "expectedCount": { "const": 8 },
+        "observedCount": { "const": 8 },
+        "differences": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "blockers": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z0-9_:|]+$" }, "uniqueItems": true },
+    "differences": { "type": "array", "items": { "$ref": "#/$defs/difference" } },
+    "defaultAclSemanticResult": { "enum": ["SEMANTIC_MATCH", "SEMANTIC_MISMATCH", "BLOCKED"] },
+    "semanticFingerprint": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "connectionAttemptCount": { "const": 1 },
+    "retryCount": { "const": 0 },
+    "productionConnectionAttempted": { "const": true },
+    "productionMutation": { "const": false },
+    "businessRowReads": { "const": "NONE" },
+    "cleanupResult": { "const": "PASS" },
+    "finalStatus": { "enum": ["PASS", "BLOCKED"] }
+  },
+  "$defs": {
+    "principalClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "category"],
+      "properties": {
+        "position": { "enum": ["OWNER", "GRANTEE", "GRANTOR"] },
+        "category": { "$ref": "#/$defs/principalCategory" }
+      }
+    },
+    "principalCategory": {
+      "enum": [
+        "EXPECTED_OWNER", "EXPECTED_READONLY_ROLE", "EXPECTED_RUNTIME_ROLE", "PUBLIC",
+        "EXTENSION_OWNER", "SYSTEM_PLATFORM_MANAGED", "READONLY_MEMBERSHIP_CARRIER",
+        "OTHER_NAMED_PRINCIPAL", "UNCLASSIFIED"
+      ]
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultAclKey", "schemaKey", "objectType", "aclState", "principalClassifications",
+        "ownerCategory", "granteeCategory", "grantorCategory", "privilege", "grantOption", "modelVersion"
+      ],
+      "properties": {
+        "defaultAclKey": { "enum": ["PUBLIC_SCHEMA|RELATION", "PUBLIC_SCHEMA|SEQUENCE"] },
+        "schemaKey": { "const": "PUBLIC_SCHEMA" },
+        "objectType": { "enum": ["RELATION", "SEQUENCE"] },
+        "aclState": { "enum": ["EXPLICIT_DEFAULT_ACL", "BUILTIN_DEFAULT"] },
+        "principalClassifications": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "prefixItems": [
+            { "allOf": [{ "$ref": "#/$defs/principalClassification" }, { "properties": { "position": { "const": "OWNER" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/principalClassification" }, { "properties": { "position": { "const": "GRANTEE" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/principalClassification" }, { "properties": { "position": { "const": "GRANTOR" } } }] }
+          ],
+          "items": false
+        },
+        "ownerCategory": { "$ref": "#/$defs/principalCategory" },
+        "granteeCategory": { "$ref": "#/$defs/principalCategory" },
+        "grantorCategory": { "$ref": "#/$defs/principalCategory" },
+        "privilege": { "type": "string", "pattern": "^[A-Z_]+$" },
+        "grantOption": { "type": "boolean" },
+        "modelVersion": { "const": "bankeban-default-acl-principal-classification-v1" }
+      }
+    },
+    "difference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "defaultAclKey", "granteeCategory", "privilege", "grantOption", "dangerous"],
+      "properties": {
+        "type": { "enum": ["DEFAULT_PRIVILEGE_ADDED", "DEFAULT_PRIVILEGE_REMOVED"] },
+        "defaultAclKey": { "enum": ["PUBLIC_SCHEMA|RELATION", "PUBLIC_SCHEMA|SEQUENCE"] },
+        "granteeCategory": { "$ref": "#/$defs/principalCategory" },
+        "privilege": { "type": "string", "pattern": "^[A-Z_]+$" },
+        "grantOption": { "type": "boolean" },
+        "dangerous": { "type": "boolean" }
+      }
+    }
+  }
+}

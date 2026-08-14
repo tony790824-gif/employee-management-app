@@ -1,5 +1,12 @@
 # AI Handoff
 
+## Production Closure Phase 2H current state - 2026-08-14
+
+- Repository-only implementation is complete; Production connections 0, mutations NONE, Sprint numbering capped at 65.
+- Phase 2G's `public|S` and `public|r` blockers identify schema/object type only. The old snapshot collapsed an unknown owner, grantee or grantor into one blocker and did not persist position/category, so historical Evidence cannot be reclassified.
+- New model `bankeban-default-acl-principal-classification-v1` proves PUBLIC only with grantee OID 0, separates `PUBLIC_SCHEMA`, retains safe OWNER/GRANTEE/GRANTOR categories, and blocks unknown/dangerous expansion.
+- Future-only narrow command/token: `pnpm run db:parity:production-default-acl-principals` / `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_PRINCIPALS`. It is not authorized. Gates remain 9/13 and 70% / NOT READY.
+
 ## Production Closure Phase 2F current state - 2026-08-13
 
 - The consumed Phase 2E run emitted only `SANITIZED_FAILURE`; its expected Live Evidence JSON/hash are absent. The actual Production failure stage and structural/ACL result are UNKNOWN.

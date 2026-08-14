@@ -1,0 +1,84 @@
+{
+  "comparatorModelVersion": "bankeban-acl-semantics-v1",
+  "connectionAttemptCount": 1,
+  "expectedAclArtifactSha256": "485097ac88f068cc46a73583ceff4ac6d64ad97e007c4ac20262fda0bf8394ec",
+  "expectedAclObjectCount": 68,
+  "expectedAclSemanticFingerprint": "693df2f51f8bf2d14492ff378f374016619232bdf7b917940f5526eb93db1f9d",
+  "expectedMigrationSequence": [
+    "0001",
+    "0002",
+    "0003",
+    "0004",
+    "0005",
+    "0006",
+    "0007",
+    "0008"
+  ],
+  "expectedNonAclFingerprint": "f3be7be38620a743ee7f30e6a9e158221ff326dacd14651025a411a361b44e2f",
+  "expectedStructuralArtifactSha256": "6f09dd605cd939fc6bb9de778a6690d93cc66764334722fd2afbf7d5d6e70076",
+  "expectedStructuralFingerprint": "885b29cd316ab781db613373979d31c92766bd3d0fcf7b062f8da33f451a596e",
+  "expectedStructuralSectionCounts": {
+    "columns": 140,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "migrationLedger": 8,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "finalStatus": "BLOCKED",
+  "generatedAt": "2026-08-14T03:08:05.825Z",
+  "identityResult": "PASS",
+  "ledgerResult": {
+    "differences": [],
+    "expectedCount": 8,
+    "observedCount": 8,
+    "status": "PASS"
+  },
+  "observedAclObjectCount": 68,
+  "observedAclSemanticFingerprint": "c6f3398eb76ec4eb836a7cfae2d916e8c89a51c9b8b3c29c605348fb667eedc2",
+  "observedNonAclFingerprint": "f3be7be38620a743ee7f30e6a9e158221ff326dacd14651025a411a361b44e2f",
+  "observedStructuralSectionCounts": {
+    "columns": 140,
+    "constraints": 234,
+    "extensions": 2,
+    "functions": 48,
+    "indexes": 34,
+    "migrationLedger": 8,
+    "policies": 11,
+    "relations": 18,
+    "schemas": 2,
+    "sequences": 0,
+    "triggers": 9
+  },
+  "phase": "PRODUCTION_CLOSURE_PHASE_2E",
+  "productionConnectionAttempted": true,
+  "productionMutation": false,
+  "repositoryCommitSha": "6f2e27c71912734b19ca7d2dff162ecb55f9a159",
+  "retryCount": 0,
+  "roleBoundaryResult": "PASS",
+  "schemaVersion": 1,
+  "semanticAclMismatchSummary": {
+    "blockers": [
+      "OBSERVED:DEFAULT_ACL_PRINCIPAL_UNCLASSIFIED:public|S",
+      "OBSERVED:DEFAULT_ACL_PRINCIPAL_UNCLASSIFIED:public|r",
+      "OBSERVED_ACL_SNAPSHOT_BLOCKED"
+    ],
+    "differences": []
+  },
+  "semanticAclResult": "BLOCKED",
+  "sprintNumberingCappedAt": 65,
+  "structuralMismatchSummary": {
+    "mismatched": [],
+    "missing": [],
+    "unexpected": []
+  },
+  "structuralNonAclResult": "PASS",
+  "structuralStartingBaseline": "BLOCKED",
+  "tlsVerification": "VERIFY_FULL_PASS",
+  "transactionReadOnlyResult": "PASS"
+}

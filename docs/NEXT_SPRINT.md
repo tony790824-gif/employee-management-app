@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Post-Phase 2H decision — authorize or defer one narrow default-ACL read
+
+Phase 2H is Repository-complete. The smallest next Closure action is an Owner decision on exactly one execution of `pnpm run db:parity:production-default-acl-principals` with token `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_PRINCIPALS` at a clean authorized commit. This command reads only exact `0001`–`0008` ledger/identity guards and `public` relation/sequence default-ACL metadata; it does not rerun the full structural comparator.
+
+No authorization currently exists. The historical Phase 2G Evidence lacks principal position/category and cannot be reclassified. Until a new one-time authorization is issued, `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED. Do not create Sprint 66.
+
 ## Post-Sprint Closure decision after Phase 2F
 
 Phase 2E authorization is consumed. Its Live JSON/hash were not created, and the generic `SANITIZED_FAILURE` cannot identify a Production stage. Phase 2F fixed this Repository observability defect without reconnecting.

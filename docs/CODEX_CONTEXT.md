@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2H
+
+Phase 2H adds a Repository-only narrow default-ACL classifier/collector. Schema `public` maps only to `PUBLIC_SCHEMA`; only `aclexplode` grantee OID 0 maps to PostgreSQL `PUBLIC`. Future sanitized Evidence retains OWNER/GRANTEE/GRANTOR position/category, privilege and grant option, never raw principal names.
+
+Historical Phase 2G Evidence is immutable and lacks the missing position/category, so it cannot close the ACL Gate. A future single-use narrow execution would require new Owner authorization. `STRUCTURAL_NON_ACL` remains PASS; `ACL_SEMANTIC` and `STRUCTURAL_STARTING_BASELINE` remain BLOCKED; matrix 9/13 and Production 70% / NOT READY remain unchanged. Do not create Sprint 66.
+
 ## 2026-08-13 current state - Production Closure Phase 2F
 
 Phase 2E Live semantic execution did not create its JSON/hash. Only the generic terminal `SANITIZED_FAILURE` remains, so the underlying stage and Production result are UNKNOWN. Do not describe this as structural drift or ACL mismatch.

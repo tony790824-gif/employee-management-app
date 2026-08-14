@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Production Closure Phase 2H default-ACL classification
+
+- [x] Traced the old default-ACL blocker to position loss across owner/grantee/grantor classification.
+- [x] Required grantee OID 0 for PUBLIC and separated schema `public` as `PUBLIC_SCHEMA`.
+- [x] Added strict no-raw-principal Evidence schema and fail-closed privilege/grant-option tests.
+- [x] Added a narrow future relation/sequence default-ACL collector with one connection, retry 0, READ ONLY and no business rows.
+- [ ] Narrow Production execution authorization: **NOT_GRANTED**.
+- [ ] `ACL_SEMANTIC`: **BLOCKED**.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+
 ## Production Closure Phase 2F failure diagnostics
 
 - [x] Confirmed Phase 2E Live Evidence JSON/hash were not created; no structural/ACL conclusion was inferred.
