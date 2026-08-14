@@ -1,5 +1,16 @@
 # Production Release Checklist
 
+## Production Closure Phase 2L reviewed-principal policy gate
+
+- [x] Reviewed Migrations `0001`–`0008`, operator scripts, ACL models, expected baseline, operations/evidence/security documents and tests.
+- [x] Confirmed no tracked source grants the 11 explicit relation/sequence default privileges or `WITH GRANT OPTION`.
+- [x] Kept privilege shape, raw names and raw OIDs invalid as identity proof.
+- [x] Added relation-based proof policy with rename stability, drop/recreate rejection, ambiguity/PUBLIC/membership/grant-option fail-closed tests.
+- [ ] Live GRANTEE reviewed category: **BLOCKED / UNKNOWN**.
+- [ ] `ACL_SEMANTIC`: **BLOCKED**.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- [ ] Future read-only authorization: **NOT_GRANTED**.
+
 ## Production Closure Phase 2K semantic recomposition gate
 
 - [x] Verified Phase 2G/2I/2J Evidence byte hashes, schema/runtime contracts, source chain and sanitization.

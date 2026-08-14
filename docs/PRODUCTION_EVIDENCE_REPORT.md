@@ -1,5 +1,13 @@
 # Production Evidence Report - Sprint 33D
 
+## Production Closure Phase 2L Repository forensics - 2026-08-14
+
+- `0001`–`0008` public relation/sequence default grants: **0**; Migration `WITH GRANT OPTION`: **0**.
+- Operator public relation/sequence default grants: **0**; operator `WITH GRANT OPTION`: **0**. Operator scripts only revoke from the dedicated reader.
+- Expected `0001`–`0008` ACL baseline default privileges: **0**.
+- Immutable observed facts: 8 relation + 3 sequence, all grant-option true. Source and principal category remain **UNKNOWN / UNTRACKED**.
+- No new Live Evidence was generated; Phase 2L Production connections/mutations: **0 / NONE**.
+
 ## Production Closure Phase 2K derived Evidence - 2026-08-14
 
 - Source SHA-256 chain `bea7076...d37a02` → `bef26fa...285f7c` → `b7cd457...645e4c`: **PASS** with matching companions, schemas, sanitization and provenance.

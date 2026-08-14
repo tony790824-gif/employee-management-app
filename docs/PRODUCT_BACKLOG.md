@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2L - Reviewed principal policy/proof (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.
+- **Decision:** D / UNTRACKED_OR_UNKNOWN_PRINCIPAL. Migrations `0001`–`0008`, operator scripts and the committed baseline contain no source for the 11 explicit public-schema relation/sequence default grants or their grant options.
+- **Policy:** no new reviewed category. The existing `EXPECTED_OWNER` category could be tested only through a future exact application-object-owner relationship; current immutable Evidence lacks that proof.
+- **Gates:** ACL/starting baseline remain BLOCKED, fresh ledger remains independently BLOCKED, 9/13 and 70% / NOT READY unchanged.
+
 ## Production Closure Phase 2K - Opaque GRANTEE semantic recomposition (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.

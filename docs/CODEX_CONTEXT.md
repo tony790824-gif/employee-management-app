@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2L
+
+Phase 2L completed Repository-only principal/default-ACL forensics. Migrations `0001`–`0008` and operator hardening contain no tracked source for the 11 explicit relation/sequence default grants or `WITH GRANT OPTION`; the expected ACL baseline contains no default-privilege entry. Their 8+3 shape matches PostgreSQL 18 owner defaults but cannot identify the GRANTEE or creation source.
+
+Decision is D / `UNTRACKED_OR_UNKNOWN_PRINCIPAL`. No new category was introduced. A possible future proof may target existing `EXPECTED_OWNER` only by an exact application-object-owner relationship that survives rename, rejects drop/recreate, blocks ambiguity and persists no raw identity. Existing immutable Evidence lacks that relationship, so ACL/structural Gates remain BLOCKED, matrix 9/13 and readiness 70% / NOT READY.
+
 ## 2026-08-14 current state - Production Closure Phase 2K
 
 Phase 2K validated and recomposed the immutable Phase 2G, Phase 2I and Phase 2J sanitized Evidence without a Production connection. The source chain is intact. It preserves exactly 11 explicit default-ACL GRANTEE facts (8 relation, 3 sequence), all with grant option, but every fact remains `OTHER_NAMED_PRINCIPAL` with `NAMED_ROLE_WITHOUT_REVIEWED_RELATION`, zero reviewed category matches, no membership relation and no PUBLIC classification.

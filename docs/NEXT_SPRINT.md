@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Production Closure next action after Phase 2L
+
+Sprint numbering remains capped at 65. Phase 2L found no tracked origin for the 11 explicit default-ACL facts and approved no new principal category. The next smallest action is an Owner review of the Repository-only `EXACT_APPLICATION_OBJECT_OWNER_RELATION` proof contract for existing category `EXPECTED_OWNER`.
+
+Do not connect Production yet. If the Owner accepts that proof model, first build and validate a separate minimum future read-only preflight that returns only category/proof booleans and exact fact semantics. Any execution would require a new, explicit, single-use authorization.
+
 ## Production Closure next action after Phase 2K
 
 Sprint numbering remains capped at 65. The immutable Phase 2J Evidence was valid but classified all 11 GRANTEE facts as `OTHER_NAMED_PRINCIPAL` with no reviewed relation. Repository-only recomposition correctly remains BLOCKED and does not prove ACL drift or privilege expansion.
