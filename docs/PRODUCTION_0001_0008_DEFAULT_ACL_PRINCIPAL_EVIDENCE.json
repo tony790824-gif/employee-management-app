@@ -1,0 +1,717 @@
+{
+  "blockers": [
+    "DEFAULT_ACL_OTHER_PRINCIPAL_REVIEW_REQUIRED:PUBLIC_SCHEMA|RELATION|GRANTEE",
+    "DEFAULT_ACL_OTHER_PRINCIPAL_REVIEW_REQUIRED:PUBLIC_SCHEMA|SEQUENCE|GRANTEE"
+  ],
+  "businessRowReads": "NONE",
+  "cleanupResult": "PASS",
+  "connectionAttemptCount": 1,
+  "defaultAclSemanticResult": "BLOCKED",
+  "differences": [
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "DELETE",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "INSERT",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "MAINTAIN",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "REFERENCES",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "SELECT",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "TRIGGER",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "TRUNCATE",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "UPDATE",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": false,
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "privilege": "USAGE",
+      "type": "DEFAULT_PRIVILEGE_REMOVED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "DELETE",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "INSERT",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "MAINTAIN",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "REFERENCES",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "SELECT",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "TRIGGER",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "TRUNCATE",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "UPDATE",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "SELECT",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "UPDATE",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    },
+    {
+      "dangerous": true,
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "privilege": "USAGE",
+      "type": "DEFAULT_PRIVILEGE_ADDED"
+    }
+  ],
+  "entries": [
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "DELETE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "INSERT",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "MAINTAIN",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "REFERENCES",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "SELECT",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "TRIGGER",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "TRUNCATE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "UPDATE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "BUILTIN_DEFAULT",
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": false,
+      "granteeCategory": "SYSTEM_PLATFORM_MANAGED",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "SEQUENCE",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "USAGE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "DELETE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "INSERT",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "MAINTAIN",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "REFERENCES",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "SELECT",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "TRIGGER",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "TRUNCATE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|RELATION",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "RELATION",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "UPDATE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "SEQUENCE",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "SELECT",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "SEQUENCE",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "UPDATE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    },
+    {
+      "aclState": "EXPLICIT_DEFAULT_ACL",
+      "defaultAclKey": "PUBLIC_SCHEMA|SEQUENCE",
+      "grantOption": true,
+      "granteeCategory": "OTHER_NAMED_PRINCIPAL",
+      "grantorCategory": "SYSTEM_PLATFORM_MANAGED",
+      "modelVersion": "bankeban-default-acl-principal-classification-v1",
+      "objectType": "SEQUENCE",
+      "ownerCategory": "SYSTEM_PLATFORM_MANAGED",
+      "principalClassifications": [
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "OWNER"
+        },
+        {
+          "category": "OTHER_NAMED_PRINCIPAL",
+          "position": "GRANTEE"
+        },
+        {
+          "category": "SYSTEM_PLATFORM_MANAGED",
+          "position": "GRANTOR"
+        }
+      ],
+      "privilege": "USAGE",
+      "schemaKey": "PUBLIC_SCHEMA"
+    }
+  ],
+  "finalStatus": "BLOCKED",
+  "generatedAt": "2026-08-14T03:40:30.207Z",
+  "identityResult": "PASS",
+  "ledgerResult": {
+    "differences": [],
+    "expectedCount": 8,
+    "observedCount": 8,
+    "status": "PASS"
+  },
+  "modelVersion": "bankeban-default-acl-principal-classification-v1",
+  "phase": "PRODUCTION_CLOSURE_PHASE_2H_DEFAULT_ACL_SUPPLEMENT",
+  "productionConnectionAttempted": true,
+  "productionMutation": false,
+  "repositoryCommitSha": "25dca558f4c76f217f3114950896bac0354d224f",
+  "retryCount": 0,
+  "roleBoundaryResult": "PASS",
+  "schemaVersion": 1,
+  "scope": "PUBLIC_SCHEMA_RELATION_AND_SEQUENCE_DEFAULT_ACL_ONLY",
+  "semanticFingerprint": "a8fcbb12f41124c0792a509215e0068d64c2c75a2b1eb87da878a824e9b3251b",
+  "sourceLiveSemanticEvidenceSha256": "bea7076ab4972fb3874a99be9fa3652a873bfdbe53fb74e4dc0e9606e3d37a02",
+  "sprintNumberingCappedAt": 65,
+  "tlsVerification": "VERIFY_FULL_PASS",
+  "transactionReadOnlyResult": "PASS"
+}

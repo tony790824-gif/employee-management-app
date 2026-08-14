@@ -1,5 +1,11 @@
 # Production Schema Parity Read-only Plan
 
+## Production Closure Phase 2I narrow Evidence result - 2026-08-14
+
+The narrow live Evidence is valid but returned C / PRINCIPAL_CLASSIFICATION_STILL_BLOCKED. For relation and sequence defaults, OWNER/GRANTOR are platform-managed and GRANTEE is another named principal; no PUBLIC grantee was observed. Grant options are true on the explicit unreviewed-grantee entries, so fail-closed review remains mandatory.
+
+The next proof must be designed locally first and may reveal only an OID relationship to an approved category—not a raw name. The consumed authorization cannot be reused. No full semantic comparator, final `0022` parity, Migration or repair is authorized.
+
 ## Production Closure Phase 2H narrow default-ACL supplement - 2026-08-14
 
 The minimum future collector is `pnpm run db:parity:production-default-acl-principals`, confirmation `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_PRINCIPALS`. It is restricted to fixed Production reader/target guards, authenticated TLS, exact `0001`–`0008` ledger, one `READ ONLY` transaction and `pg_default_acl` entries for relation/sequence defaults in schema `public`.

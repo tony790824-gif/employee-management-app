@@ -1,5 +1,15 @@
 # Production Release Checklist
 
+## Production Closure Phase 2I narrow Evidence analysis
+
+- [x] Verified JSON/companion/expected SHA, schema, sanitization, provenance, timestamp, model and semantic fingerprint.
+- [x] Confirmed PUBLIC principal count 0 and kept schema `public` separate as `PUBLIC_SCHEMA`.
+- [x] Localized both unresolved entries to GRANTEE=`OTHER_NAMED_PRINCIPAL`; OWNER/GRANTOR are platform-managed.
+- [x] Preserved historical and new Live Evidence bytes; did not infer semantic match/mismatch from an unreviewed grantee.
+- [ ] `ACL_SEMANTIC`: **BLOCKED**.
+- [ ] `STRUCTURAL_STARTING_BASELINE`: **BLOCKED**.
+- [ ] New Production authorization: **NOT_REQUESTED**; design the opaque OID proof locally first.
+
 ## Production Closure Phase 2H default-ACL classification
 
 - [x] Traced the old default-ACL blocker to position loss across owner/grantee/grantor classification.

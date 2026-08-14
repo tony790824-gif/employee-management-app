@@ -1,5 +1,11 @@
 # Codex Context
 
+## 2026-08-14 current state - Production Closure Phase 2I
+
+The consumed narrow collector produced hash-valid, schema-valid sanitized Evidence. Both explicit `PUBLIC_SCHEMA` relation/sequence default ACLs classify OWNER and GRANTOR as `SYSTEM_PLATFORM_MANAGED`, but GRANTEE as `OTHER_NAMED_PRINCIPAL`; no PUBLIC principal entry exists. Primary outcome: C / PRINCIPAL_CLASSIFICATION_STILL_BLOCKED.
+
+Do not infer a mismatch or match from the recorded difference list while the grantee is unreviewed. No Gate changes: structural non-ACL PASS, ACL semantic BLOCKED, structural starting baseline BLOCKED, 9/13, 70% / NOT READY. The next action is local design of an opaque OID-relation classification proof, not another connection. Sprint numbering remains capped at 65.
+
 ## 2026-08-14 current state - Production Closure Phase 2H
 
 Phase 2H adds a Repository-only narrow default-ACL classifier/collector. Schema `public` maps only to `PUBLIC_SCHEMA`; only `aclexplode` grantee OID 0 maps to PostgreSQL `PUBLIC`. Future sanitized Evidence retains OWNER/GRANTEE/GRANTOR position/category, privilege and grant option, never raw principal names.

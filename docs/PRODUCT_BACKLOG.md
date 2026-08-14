@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production Closure Phase 2I - Narrow default ACL Evidence analysis (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local analysis; Production connections 0, mutations NONE, Sprint numbering capped at 65.
+- **Evidence:** integrity/schema/sanitization/provenance PASS at SHA-256 `bef26fa7e8c53ed68a841b9c8de7627b8542927396bcbb4d77a4b430c3285f7c`.
+- **Result:** C / PRINCIPAL_CLASSIFICATION_STILL_BLOCKED. OWNER and GRANTOR are platform-managed; RELATION/SEQUENCE GRANTEE remains `OTHER_NAMED_PRINCIPAL`; PUBLIC principal count is zero.
+- **Decision:** no Gate promotion; 9/13 and 70% / NOT READY remain. Next action is Repository-only opaque grantee-classification design, not a blind rerun or immediate authorization.
+
 ## Production Closure Phase 2H - Minimal default ACL principal evidence (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local implementation; Production connections 0 and Sprint numbering remains capped at 65.

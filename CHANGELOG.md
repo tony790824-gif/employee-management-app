@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-14 - Production Closure Phase 2I narrow default ACL Evidence analysis
+
+- Verified the consumed narrow Live Evidence/hash/schema/provenance and preserved its bytes unchanged.
+- Localized both former object-level blockers to `OTHER_NAMED_PRINCIPAL` at GRANTEE; OWNER/GRANTOR are platform-managed and PUBLIC principal count is zero.
+- Kept ACL/structural Gates BLOCKED, matrix 9/13 and readiness 70%; next action is Repository-only opaque grantee-classification design rather than another Production attempt.
+
 ## 2026-08-14 - Production Closure Phase 2H default ACL principal classification
 
 - Traced Phase 2G's two default-ACL blockers to loss of owner/grantee/grantor position in sanitized semantics; historical Evidence remains immutable and insufficient for reclassification.

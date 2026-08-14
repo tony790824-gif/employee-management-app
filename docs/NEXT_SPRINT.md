@@ -1,5 +1,11 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Post-Phase 2I decision — design an opaque grantee-category proof locally
+
+The consumed narrow execution produced valid sanitized Evidence but remained BLOCKED because the explicit relation/sequence default ACL GRANTEE is `OTHER_NAMED_PRINCIPAL`. OWNER and GRANTOR are `SYSTEM_PLATFORM_MANAGED`; no PUBLIC principal was observed. Do not rerun the collector and do not request another authorization merely because exit code 2 was returned.
+
+The next action is Repository-only: define and test the minimum OID-relation proof needed to map that grantee to a reviewed category without returning or persisting its raw identity. Only after that preflight may the Owner decide on a new one-time read-only authorization. Gates remain 9/13 and 70% / NOT READY; do not create Sprint 66.
+
 ## Post-Phase 2H decision — authorize or defer one narrow default-ACL read
 
 Phase 2H is Repository-complete. The smallest next Closure action is an Owner decision on exactly one execution of `pnpm run db:parity:production-default-acl-principals` with token `COMPARE_BANKE_PRODUCTION_DEFAULT_ACL_PRINCIPALS` at a clean authorized commit. This command reads only exact `0001`–`0008` ledger/identity guards and `public` relation/sequence default-ACL metadata; it does not rerun the full structural comparator.
