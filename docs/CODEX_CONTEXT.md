@@ -1,5 +1,9 @@
 # Codex Context
 
+## 2026-08-14 current state - ACL operator discovery
+
+The ACL pre-check circular dependency is removed locally. Omitting `BANK_PRODUCTION_ACL_OPERATOR_ROLE` activates a fail-closed `OPERATOR_DISCOVERY` mode that gathers reviewed candidate attributes, membership-path summaries and existing capability for both exact owners in the same single read-only connection. Discovery never approves a role and never allows mutation; only a later explicit Owner-approved role input can enter validation mode. No Production connection occurred and all Production Gates remain unchanged.
+
 ## 2026-08-14 current state - Production ACL remediation pre-check runner
 
 The Repository now has one dedicated fail-closed pre-check command, `pnpm run db:acl:production-precheck`. It reuses the reviewed dedicated-reader TLS/identity guards, exact `0001`-`0008` ledger comparator, structural baseline and ACL semantic model. A single `pg.Client` makes at most one connection attempt, retry 0, and all metadata collection occurs in one `READ ONLY` transaction.

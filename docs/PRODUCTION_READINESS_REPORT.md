@@ -1,5 +1,10 @@
 # Production Readiness Report — Sprint 33A
 
+## ACL operator-discovery tooling - 2026-08-14
+
+- Repository tooling no longer requires an unproven Operator before read-only discovery. This closes a tooling dependency only; it does not produce Live evidence or approve an operator.
+- Production Readiness remains 70% / NOT READY; Gate A remains DEFER; Production Provisioning remains NO-GO; the 22-Gate matrix remains 9 PASS / 13 non-PASS.
+
 ## Production ACL remediation pre-check tooling - 2026-08-14
 
 - Dedicated one-connection/retry-0/read-only pre-check runner and local regression matrix: **PASS**.

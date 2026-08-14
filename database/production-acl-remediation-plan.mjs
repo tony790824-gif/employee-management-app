@@ -117,13 +117,19 @@ export function validateAclRemediationPlan(plan) {
       || runner.businessRowReads !== false || runner.productionMutation !== false) failures.push('PRECHECK_RUNNER_BOUNDARY_MISMATCH');
   const requiredEvidence = ['IDENTITY_AND_TLS_VERIFY_FULL','EXACT_0001_0008_LEDGER_AND_CHECKSUM',
     'DEFAULT_ACL_OWNER_GRANTEE_CLASSIFICATION','ROLE_MEMBERSHIP','RUNTIME_PRINCIPAL_INVENTORY',
-    'CURRENT_OBJECT_ACL_BASELINE_DIFFERENCE','EXACT_SAFE_REMEDIATION_TARGET'];
+    'CURRENT_OBJECT_ACL_BASELINE_DIFFERENCE','OPERATOR_DISCOVERY_OR_APPROVED_OPERATOR_VALIDATION','EXACT_SAFE_REMEDIATION_TARGET'];
   if (JSON.stringify(runner.requiredEvidence) !== JSON.stringify(requiredEvidence)) failures.push('PRECHECK_RUNNER_EVIDENCE_SCOPE_MISMATCH');
   const requiredInputs = ['DATABASE_READONLY_URL','BANK_PRODUCTION_CA_BUNDLE','BANK_PRODUCTION_DATABASE_NAME',
     'BANK_PRODUCTION_READONLY_ROLE','BANK_ENV','BANK_PRODUCTION_PARITY_CONFIRMATION','BANK_PRODUCTION_EVIDENCE_COMMIT_SHA',
     'BANK_PRODUCTION_OBJECT_OWNER_ROLE','BANK_PRODUCTION_PLATFORM_ROLE','BANK_PRODUCTION_RUNTIME_ROLES',
-    'BANK_PRODUCTION_ACL_OPERATOR_ROLE','BANK_PRODUCTION_ACL_PLAN_SHA256'];
+    'BANK_PRODUCTION_ACL_PLAN_SHA256'];
   if (JSON.stringify(runner.processOnlyInputs) !== JSON.stringify(requiredInputs)) failures.push('PRECHECK_RUNNER_INPUT_SCOPE_MISMATCH');
+  if (JSON.stringify(runner.optionalProcessOnlyInputs) !== JSON.stringify(['BANK_PRODUCTION_ACL_OPERATOR_ROLE'])) failures.push('PRECHECK_RUNNER_OPTIONAL_INPUT_SCOPE_MISMATCH');
+  if (runner?.operatorDiscovery?.whenOperatorInputMissing !== true
+      || JSON.stringify(runner?.operatorDiscovery?.resultAllowlist) !== JSON.stringify(['ELIGIBLE_OPERATOR_CANDIDATE','NO_ELIGIBLE_OPERATOR','INSUFFICIENT_EVIDENCE'])
+      || runner?.operatorDiscovery?.ownerApprovalRequired !== true || runner?.operatorDiscovery?.productionMutation !== false) {
+    failures.push('PRECHECK_RUNNER_OPERATOR_DISCOVERY_BOUNDARY_MISMATCH');
+  }
   if (runner.successEvidence !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.json'
       || runner.successEvidenceHash !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.sha256'
       || runner.failureEvidence !== 'docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.json'

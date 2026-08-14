@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bankeban.invalid/schemas/production-acl-remediation-precheck-failure-v1.json",
+  "$id": "https://bankeban.invalid/schemas/production-acl-remediation-precheck-failure-v2.json",
   "title": "Bankeban Production ACL remediation pre-check sanitized failure evidence",
   "type": "object",
   "additionalProperties": false,
@@ -11,8 +11,8 @@
     "productionMutation", "businessRowsRead", "originalErrorPersisted", "finalStatus"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "modelVersion": { "const": "bankeban-production-acl-remediation-precheck-v1" },
+    "schemaVersion": { "const": 2 },
+    "modelVersion": { "const": "bankeban-production-acl-remediation-precheck-v2" },
     "sprintNumberingCappedAt": { "const": 65 },
     "generatedAt": { "type": "string", "format": "date-time" },
     "repositoryCommitSha": { "type": ["string", "null"], "pattern": "^[a-f0-9]{40}$" },

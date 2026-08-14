@@ -1,5 +1,12 @@
 # Production Release Checklist
 
+## ACL operator-discovery gate
+
+- [x] Operator input is optional only in `OPERATOR_DISCOVERY`; required identity/TLS/ledger/ACL/runtime evidence remains mandatory.
+- [x] Discovery results are restricted to `ELIGIBLE_OPERATOR_CANDIDATE`, `NO_ELIGIBLE_OPERATOR`, or `INSUFFICIENT_EVIDENCE`.
+- [x] A discovered candidate remains Owner-unapproved; Production mutation is false and the overall pre-check remains blocked.
+- [ ] Exact ACL operator Owner approval and Live validation evidence remain outstanding.
+
 ## Production ACL remediation pre-check tooling gate
 
 - [x] One dedicated pre-check runner covers all seven required evidence groups in one connection attempt, retry 0 and one `READ ONLY` transaction.

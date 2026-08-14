@@ -2,6 +2,12 @@
 
 The complete project changelog remains `../CHANGELOG.md`.
 
+## 2026-08-14 - ACL operator discovery pre-check
+
+- Made `BANK_PRODUCTION_ACL_OPERATOR_ROLE` optional during discovery while preserving exact validation when an Owner-approved role is supplied.
+- Added sanitized candidate attributes, membership-path and dual-owner capability evaluation under the existing one-connection, retry-0, read-only runner.
+- No Production connection, mutation, Gate promotion or readiness change occurred.
+
 ## 2026-08-14 - Production ACL remediation authorization plan
 
 - Documented the single bounded conditional authorization envelope, exact ACL target, runtime-impact pre-check, mutation allowlist, stop/rollback rules and independent post-check contract.

@@ -1,5 +1,9 @@
 # Next Production Closure gate — Production evidence and authorization
 
+## Next authorized closure action after operator-discovery tooling
+
+Sprint numbering remains capped at 65; do not create another Sprint or Closure Phase. The next optional action is Owner review of the clean Commit and plan hash, followed only if desired by one explicit dedicated Production read-only authorization for `pnpm run db:acl:production-precheck` with `BANK_PRODUCTION_ACL_OPERATOR_ROLE` omitted. That event may return a candidate but cannot approve or mutate it. A separate Owner decision is required before any exact-operator validation or ACL mutation authorization.
+
 ## Production Closure next action after ACL pre-check tooling
 
 Sprint numbering remains capped at 65; do not create another Sprint or Closure Phase. The dedicated command `pnpm run db:acl:production-precheck` is Repository-ready and can collect all seven required pre-check evidence groups through one dedicated Production read-only connection, retry 0, TLS verify-full and one `READ ONLY` transaction.

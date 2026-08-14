@@ -82,6 +82,7 @@
       "ROLE_MEMBERSHIP",
       "RUNTIME_PRINCIPAL_INVENTORY",
       "CURRENT_OBJECT_ACL_BASELINE_DIFFERENCE",
+      "OPERATOR_DISCOVERY_OR_APPROVED_OPERATOR_VALIDATION",
       "EXACT_SAFE_REMEDIATION_TARGET"
     ],
     "processOnlyInputs": [
@@ -95,9 +96,21 @@
       "BANK_PRODUCTION_OBJECT_OWNER_ROLE",
       "BANK_PRODUCTION_PLATFORM_ROLE",
       "BANK_PRODUCTION_RUNTIME_ROLES",
-      "BANK_PRODUCTION_ACL_OPERATOR_ROLE",
       "BANK_PRODUCTION_ACL_PLAN_SHA256"
     ],
+    "optionalProcessOnlyInputs": [
+      "BANK_PRODUCTION_ACL_OPERATOR_ROLE"
+    ],
+    "operatorDiscovery": {
+      "whenOperatorInputMissing": true,
+      "resultAllowlist": [
+        "ELIGIBLE_OPERATOR_CANDIDATE",
+        "NO_ELIGIBLE_OPERATOR",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "ownerApprovalRequired": true,
+      "productionMutation": false
+    },
     "successEvidence": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.json",
     "successEvidenceHash": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_EVIDENCE.sha256",
     "failureEvidence": "docs/PRODUCTION_ACL_REMEDIATION_PRECHECK_FAILURE.json",

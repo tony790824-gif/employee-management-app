@@ -1,5 +1,12 @@
 # AI Handoff
 
+## ACL operator discovery without circular input - 2026-08-14
+
+- `pnpm run db:acl:production-precheck` no longer requires `BANK_PRODUCTION_ACL_OPERATOR_ROLE` during discovery. An absent value selects `OPERATOR_DISCOVERY`; a supplied reviewed value selects `OPERATOR_VALIDATION`.
+- Discovery uses the same one-attempt, retry-0, TLS verify-full, dedicated-reader connection and one `READ ONLY` transaction as the rest of the pre-check. It cannot mutate Production.
+- A unique `ELIGIBLE_OPERATOR_CANDIDATE` remains Owner-unapproved and keeps the overall pre-check BLOCKED. Never convert the candidate into `BANK_PRODUCTION_ACL_OPERATOR_ROLE` without a separate explicit Owner decision.
+- Production connections for this Repository change: 0. Production mutations: NONE. Gates remain 9 PASS / 13 non-PASS and Production Readiness remains 70% / NOT READY.
+
 ## Production ACL remediation pre-check tooling - 2026-08-14
 
 - Repository/local implementation is COMPLETE; no new Sprint/Closure Phase was created. Production connections 0, mutations NONE, authorization NOT_GRANTED.

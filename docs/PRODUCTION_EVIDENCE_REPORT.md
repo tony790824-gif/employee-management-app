@@ -1,5 +1,10 @@
 # Production Evidence Report - Sprint 33D
 
+## ACL operator-discovery tooling evidence - 2026-08-14
+
+- Repository/local tests prove the operator input is optional in discovery mode, candidate evidence is sanitized, the query surface is catalog-only, one connection/retry-0 and `READ ONLY` boundaries remain enforced, and discovery always leaves mutation disabled.
+- No Live evidence was collected. No operator is approved. `ACL_SEMANTIC`, `STRUCTURAL_STARTING_BASELINE` and `FRESH_LEDGER_AND_CHECKSUM` remain BLOCKED.
+
 ## Production ACL remediation pre-check tooling evidence - 2026-08-14
 
 - Evidence class: **Repository/local implementation and mocks**, not Production evidence.

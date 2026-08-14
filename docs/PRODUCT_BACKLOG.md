@@ -1,5 +1,12 @@
 # 班客邦 Product Backlog
 
+## Production ACL operator discovery (2026-08-14)
+
+- **Status:** COMPLETE for Repository/local tooling; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.
+- Removed the circular requirement to name an ACL operator before collecting the read-only facts required to evaluate it.
+- The existing pre-check now supports fail-closed discovery and exact approved-operator validation in one command. Discovery can only report an eligible candidate, no eligible candidate, or insufficient evidence; it never authorizes mutation.
+- Production Gates, 9/13 matrix and 70% / NOT READY remain unchanged.
+
 ## Production ACL remediation pre-check runner (2026-08-14)
 
 - **Status:** COMPLETE for Repository/local tooling; Sprint numbering remains capped at 65. Production connections 0; mutations NONE.

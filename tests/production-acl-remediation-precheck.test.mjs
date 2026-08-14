@@ -72,6 +72,31 @@ function defaultAclRows() {
   ].map(row => ({ ...row, owner_ref: '103', grantee_ref: '105', grantor_ref: '103', grant_option: true }));
 }
 
+function operatorCandidateRows() {
+  const base = {
+    match_count: 1,
+    superuser_clear: true,
+    createdb_clear: true,
+    createrole_clear: true,
+    replication_clear: true,
+    bypassrls_clear: true,
+    login_enabled: true,
+    inherit_enabled: false,
+    direct_outbound_count: 0,
+    direct_inbound_count: 0,
+    set_option_path_count: 0,
+    admin_option_path_count: 0,
+    inherit_option_path_count: 0,
+    unrelated_effective_path_count: 0
+  };
+  return [
+    { ...base, candidate_code: 'OBJECT_OWNER', role_ref: '102', can_act_for_default_owner: false, can_act_for_application_owner: true },
+    { ...base, candidate_code: 'PLATFORM', role_ref: '103', set_option_path_count: 1, can_act_for_default_owner: true, can_act_for_application_owner: true },
+    { ...base, candidate_code: 'RUNTIME', role_ref: '104', can_act_for_default_owner: false, can_act_for_application_owner: false },
+    { ...base, candidate_code: 'READER', role_ref: '101', can_act_for_default_owner: false, can_act_for_application_owner: false }
+  ];
+}
+
 function passCollection() {
   const defaults = defaultAclRows();
   const aclFacts = rawAclFacts();
@@ -90,7 +115,7 @@ function passCollection() {
     rawCatalog: replaceOwners(artifacts.structural.artifact.catalog),
     defaultAclContext: defaults,
     principalInventory: [
-      ['READER','101'], ['OBJECT_OWNER','102'], ['PLATFORM','103'], ['ACL_OPERATOR','103'], ['RUNTIME','104']
+      ['READER','101'], ['OBJECT_OWNER','102'], ['PLATFORM','103'], ['RUNTIME','104']
     ].map(([category, role_ref]) => ({ category, match_count: 1, role_ref, dangerous_attributes_clear: true, login_enabled: true })),
     targetRoleContext: {
       target_principal: 'legacy_acl_group',
@@ -100,7 +125,7 @@ function passCollection() {
       inbound_membership_count: 0, effective_inbound_membership_count: 0,
       owned_object_count: 0
     },
-    operatorCapability: { can_act_for_default_owner: true },
+    operatorCandidates: operatorCandidateRows(),
     targetAclSurface: [],
     aclFacts
   };
@@ -110,8 +135,10 @@ const config = Object.freeze({
   objectOwnerRole: 'neondb_owner',
   platformRole: 'cloud_admin',
   runtimeRoles: ['banke_api_production'],
-  aclOperatorRole: 'cloud_admin'
+  aclOperatorRole: 'cloud_admin',
+  executionMode: 'OPERATOR_VALIDATION'
 });
+const discoveryConfig = Object.freeze({ ...config, aclOperatorRole: '', executionMode: 'OPERATOR_DISCOVERY' });
 
 assert.deepEqual(validateAclRemediationPrecheckQueryScope(), { failures: [], status: 'PASS' });
 const unsafeSurface = { ...ACL_REMEDIATION_PRECHECK_QUERY_SURFACE, targetAclSurface: 'DELETE FROM public.schema_migrations' };
@@ -124,7 +151,7 @@ for (const sql of [
   ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.defaultAclContext,
   ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.principalInventory,
   ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.targetRoleContext,
-  ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.operatorCapability,
+  ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.operatorCandidates,
   ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.targetAclSurface,
   ...Object.values(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.structural),
   ...Object.values(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.aclSemantic)
@@ -147,11 +174,42 @@ assert.equal(passingEvidence.currentObjectAclComparison.result, 'PASS');
 assert.equal(passingEvidence.exactSafeRemediationTarget.result, 'PASS');
 assert.equal(validateAclRemediationPrecheckEvidence(passingEvidence).status, 'PASS');
 
+const discoveryEvidence = evaluateAclRemediationPrecheck({ artifacts, config: discoveryConfig, collection: passCollection(), sourceCommit: SOURCE_COMMIT });
+assert.equal(discoveryEvidence.executionMode, 'OPERATOR_DISCOVERY');
+assert.equal(discoveryEvidence.operatorDiscovery.result, 'ELIGIBLE_OPERATOR_CANDIDATE');
+assert.equal(discoveryEvidence.operatorDiscovery.candidateRole, 'cloud_admin');
+assert.equal(discoveryEvidence.operatorDiscovery.defaultAclOwnerRole, 'cloud_admin');
+assert.equal(discoveryEvidence.operatorDiscovery.applicationObjectOwnerRole, 'neondb_owner');
+assert.equal(discoveryEvidence.operatorDiscovery.ownerApprovalRequired, true);
+assert.equal(discoveryEvidence.operatorDiscovery.productionMutationAllowed, false);
+assert.equal(discoveryEvidence.operatorCapability.result, 'BLOCKED');
+assert.equal(discoveryEvidence.finalStatus, 'BLOCKED');
+assert.match(discoveryEvidence.exactSafeRemediationTarget.blockerCodes.join(','), /ACL_OPERATOR_OWNER_APPROVAL_REQUIRED/);
+assert.equal(validateAclRemediationPrecheckEvidence(discoveryEvidence).status, 'PASS');
+
+const noEligible = passCollection();
+noEligible.operatorCandidates.find(row => row.candidate_code === 'PLATFORM').can_act_for_application_owner = false;
+const noEligibleEvidence = evaluateAclRemediationPrecheck({ artifacts, config: discoveryConfig, collection: noEligible, sourceCommit: SOURCE_COMMIT });
+assert.equal(noEligibleEvidence.operatorDiscovery.result, 'NO_ELIGIBLE_OPERATOR');
+assert.equal(noEligibleEvidence.operatorDiscovery.candidateRole, null);
+
+const incompleteDiscovery = passCollection();
+incompleteDiscovery.operatorCandidates.pop();
+const incompleteEvidence = evaluateAclRemediationPrecheck({ artifacts, config: discoveryConfig, collection: incompleteDiscovery, sourceCommit: SOURCE_COMMIT });
+assert.equal(incompleteEvidence.operatorDiscovery.result, 'INSUFFICIENT_EVIDENCE');
+
+const ambiguousDiscovery = passCollection();
+Object.assign(ambiguousDiscovery.operatorCandidates.find(row => row.candidate_code === 'OBJECT_OWNER'), {
+  can_act_for_default_owner: true
+});
+const ambiguousEvidence = evaluateAclRemediationPrecheck({ artifacts, config: discoveryConfig, collection: ambiguousDiscovery, sourceCommit: SOURCE_COMMIT });
+assert.equal(ambiguousEvidence.operatorDiscovery.result, 'INSUFFICIENT_EVIDENCE');
+
 for (const mutate of [
   value => { value.targetRoleContext.rolcanlogin = true; },
   value => { value.targetRoleContext.outbound_membership_count = 1; },
   value => { value.principalInventory.find(row => row.category === 'RUNTIME').role_ref = '105'; },
-  value => { value.operatorCapability.can_act_for_default_owner = false; },
+  value => { value.operatorCandidates.find(row => row.candidate_code === 'PLATFORM').can_act_for_application_owner = false; },
   value => { value.defaultAclContext.pop(); },
   value => { value.targetAclSurface.push({ object_type: 'FUNCTION', object_identity: 'FUNCTION|public.unsafe()', privilege_type: 'EXECUTE', grant_option: false }); }
 ]) {
@@ -194,8 +252,13 @@ const parsed = aclRemediationPrecheckConnectionConfig(env);
 assert.equal(parsed.effectiveTlsMode, 'verify-full');
 assert.equal(parsed.runtimeRoles.length, 1);
 assert.equal(parsed.client.connectionTimeoutMillis, 10_000);
+assert.equal(parsed.executionMode, 'OPERATOR_VALIDATION');
+const discoveryParsed = aclRemediationPrecheckConnectionConfig({ ...env, BANK_PRODUCTION_ACL_OPERATOR_ROLE: '' });
+assert.equal(discoveryParsed.executionMode, 'OPERATOR_DISCOVERY');
+assert.equal(discoveryParsed.aclOperatorRole, '');
 assert.throws(() => aclRemediationPrecheckConnectionConfig({ ...env, BANK_PRODUCTION_PARITY_CONFIRMATION: 'WRONG' }), /PRODUCTION_ACL_PRECHECK_CONFIRMATION_REQUIRED/);
 assert.throws(() => aclRemediationPrecheckConnectionConfig({ ...env, BANK_PRODUCTION_ACL_OPERATOR_ROLE: 'banke_api_production' }), /OPERATOR_CLASS_BLOCKED/);
+assert.throws(() => aclRemediationPrecheckConnectionConfig({ ...env, BANK_PRODUCTION_ACL_OPERATOR_ROLE: 'unknown_operator' }), /OPERATOR_NOT_REVIEWED_CANDIDATE/);
 assert.throws(() => aclRemediationPrecheckConnectionConfig({ ...env, BANK_PRODUCTION_RUNTIME_ROLES: '' }), /PRINCIPAL_INVENTORY_INPUT_BLOCKED/);
 
 let connectCount = 0;
@@ -229,6 +292,20 @@ assert.equal(endCount, 1);
 assert.equal(issued.filter(sql => sql === 'BEGIN TRANSACTION READ ONLY').length, 1);
 assert.equal(issued.filter(sql => sql === 'ROLLBACK').length, 1);
 assert.equal((await readFile(successHashPath, 'utf8')).trim().split(/\s+/)[0], result.evidenceSha256);
+
+const discoveryResult = await compareProductionAclRemediationPrecheck({
+  env: { ...env, BANK_PRODUCTION_ACL_OPERATOR_ROLE: '' },
+  ClientImpl: MockClient,
+  repositoryVerifier: async () => ({ status: 'PASS', failures: [], commitSha: SOURCE_COMMIT }),
+  artifactLoader: async () => artifacts,
+  collectorImpl: async () => passCollection(),
+  evidencePath: path.join(tempRoot, 'discovery.json'),
+  evidenceHashPath: path.join(tempRoot, 'discovery.sha256')
+});
+assert.equal(discoveryResult.evidence.operatorDiscovery.result, 'ELIGIBLE_OPERATOR_CANDIDATE');
+assert.equal(discoveryResult.evidence.finalStatus, 'BLOCKED');
+assert.equal(connectCount, 2);
+assert.equal(endCount, 2);
 
 let blockedClientConstructed = false;
 class NeverClient { constructor() { blockedClientConstructed = true; } }

@@ -33,8 +33,12 @@ assert.equal(source.precheckRunner.command, 'pnpm run db:acl:production-precheck
 assert.equal(source.precheckRunner.maxConnectionAttempts, 1);
 assert.equal(source.precheckRunner.retryCount, 0);
 assert.equal(source.precheckRunner.productionMutation, false);
-assert.equal(source.precheckRunner.requiredEvidence.length, 7);
-assert.ok(source.precheckRunner.processOnlyInputs.includes('BANK_PRODUCTION_ACL_OPERATOR_ROLE'));
+assert.equal(source.precheckRunner.requiredEvidence.length, 8);
+assert.ok(!source.precheckRunner.processOnlyInputs.includes('BANK_PRODUCTION_ACL_OPERATOR_ROLE'));
+assert.deepEqual(source.precheckRunner.optionalProcessOnlyInputs, ['BANK_PRODUCTION_ACL_OPERATOR_ROLE']);
+assert.deepEqual(source.precheckRunner.operatorDiscovery.resultAllowlist,
+  ['ELIGIBLE_OPERATOR_CANDIDATE','NO_ELIGIBLE_OPERATOR','INSUFFICIENT_EVIDENCE']);
+assert.equal(source.precheckRunner.operatorDiscovery.productionMutation, false);
 
 const authorized = clone();
 authorized.authorizationStatus = 'GRANTED';

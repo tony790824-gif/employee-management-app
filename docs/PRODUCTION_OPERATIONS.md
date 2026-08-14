@@ -1,5 +1,11 @@
 # Production Operations Evidence Guide
 
+## ACL operator-discovery mode
+
+- Omit `BANK_PRODUCTION_ACL_OPERATOR_ROLE` only for an explicitly authorized read-only discovery event. All other required process-only inputs, exact Commit and plan hash remain mandatory.
+- Discovery uses one dedicated-reader connection attempt, retry 0, TLS verify-full and one `READ ONLY` transaction. Its candidate result is not authorization and cannot be used for mutation until the Owner separately approves the exact role.
+- Never add membership, change ownership, create a role, elevate privileges, or substitute Owner/Admin/API/readonly credentials to force eligibility.
+
 ## Dedicated ACL remediation pre-check command
 
 - `pnpm run db:acl:production-precheck` is the only reviewed entry point for the future ACL remediation pre-check. Never execute it without an Owner authorization tied to the exact clean Commit and committed plan hash.

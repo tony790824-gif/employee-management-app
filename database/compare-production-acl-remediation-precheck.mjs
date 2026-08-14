@@ -61,17 +61,20 @@ const PROVENANCE_PATHS = Object.freeze([
 ]);
 
 export const ACL_REMEDIATION_PRECHECK_CONFIRMATION = 'PRECHECK_BANKE_PRODUCTION_ACL_REMEDIATION';
-export const ACL_REMEDIATION_PRECHECK_MODEL_VERSION = 'bankeban-production-acl-remediation-precheck-v1';
+export const ACL_REMEDIATION_PRECHECK_MODEL_VERSION = 'bankeban-production-acl-remediation-precheck-v2';
 export const EXPECTED_OBJECT_OWNER_ROLE = 'neondb_owner';
 export const EXPECTED_PLATFORM_ROLE = 'cloud_admin';
 export const EXPECTED_RUNTIME_ROLES = Object.freeze(['banke_api_production']);
-export const ACL_REMEDIATION_PRECHECK_SCHEMA_VERSION = 1;
+export const ACL_REMEDIATION_PRECHECK_SCHEMA_VERSION = 2;
+export const ACL_OPERATOR_DISCOVERY_RESULTS = Object.freeze([
+  'ELIGIBLE_OPERATOR_CANDIDATE', 'NO_ELIGIBLE_OPERATOR', 'INSUFFICIENT_EVIDENCE'
+]);
 
 export const ACL_REMEDIATION_PRECHECK_STAGES = Object.freeze([
   'PRE_CONNECT_GUARD', 'QUERY_ALLOWLIST', 'REPOSITORY_PROVENANCE', 'ARTIFACT_PROVENANCE',
   'CA_LOAD', 'TLS_CONFIG', 'TLS_CONNECT', 'IDENTITY_GUARD', 'READER_ROLE_BOUNDARY_GUARD',
   'READ_ONLY_TRANSACTION', 'LEDGER', 'STRUCTURAL_COLLECTOR', 'DEFAULT_ACL_COLLECTOR',
-  'PRINCIPAL_INVENTORY', 'TARGET_ROLE_BOUNDARY', 'ROLE_MEMBERSHIP', 'OPERATOR_CAPABILITY',
+  'PRINCIPAL_INVENTORY', 'TARGET_ROLE_BOUNDARY', 'ROLE_MEMBERSHIP', 'OPERATOR_DISCOVERY', 'OPERATOR_CAPABILITY',
   'CURRENT_OBJECT_ACL', 'ACL_SEMANTIC_COLLECTOR', 'NORMALIZATION', 'SAFE_TARGET_EVALUATION',
   'CLEANUP', 'EVIDENCE_SANITIZATION', 'EVIDENCE_WRITE_HASH', 'UNKNOWN'
 ]);
@@ -84,7 +87,7 @@ const ALLOWED_RELATIONS = new Set([
   'pg_catalog.pg_extension', 'pg_catalog.pg_trigger', 'pg_catalog.pg_sequence', 'pg_catalog.pg_policies',
   'pg_catalog.pg_default_acl', 'pg_catalog.pg_auth_members', 'pg_catalog.pg_roles', 'pg_catalog.aclexplode'
 ]);
-const ALLOWED_CTES = new Set(['expected', 'candidate', 'outbound', 'inbound', 'owned', 'acl_surface', 'modeled_objects', 'object']);
+const ALLOWED_CTES = new Set(['expected', 'candidate', 'candidates', 'resolved', 'outbound', 'inbound', 'owned', 'acl_surface', 'modeled_objects', 'object']);
 const SAFE_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_-]*$/;
 const FORBIDDEN_EVIDENCE_KEY = /^(?:raw.*(?:oid|principal|acl)|principal.*(?:name|oid)|role.*name|user.*name|password|secret|credential|connectionString|databaseUrl|url|hostname|host|endpoint|cookie|authorization|databaseName|caBundle)$/i;
 const FORBIDDEN_EVIDENCE_VALUE = /(?:postgres(?:ql)?:\/\/|-----BEGIN|\bBearer\s+)/i;
@@ -110,7 +113,7 @@ const DEFAULT_ACL_CONTEXT_SQL = `
 const PRINCIPAL_INVENTORY_SQL = `
   WITH expected(category, principal) AS (
     VALUES ('READER', $1::text), ('OBJECT_OWNER', $2::text), ('PLATFORM', $3::text),
-           ('ACL_OPERATOR', $4::text), ('RUNTIME', $5::text)
+           ('RUNTIME', $4::text)
   )
   SELECT expected.category,
          count(role.oid)::integer AS match_count,
@@ -159,16 +162,61 @@ const TARGET_ROLE_CONTEXT_SQL = `
          (SELECT count(*)::integer FROM owned) AS owned_object_count
     FROM candidate`;
 
-const OPERATOR_CAPABILITY_SQL = `
-  WITH RECURSIVE outbound(role_ref, can_set) AS (
-    SELECT membership.roleid, membership.set_option
-      FROM pg_catalog.pg_auth_members AS membership
-     WHERE membership.member = $1::oid
+const OPERATOR_CANDIDATES_SQL = `
+  WITH RECURSIVE candidates(candidate_code, principal) AS (
+    VALUES ('OBJECT_OWNER', $1::text), ('PLATFORM', $2::text),
+           ('RUNTIME', $3::text), ('READER', $4::text)
+  ), resolved AS (
+    SELECT candidates.candidate_code, candidates.principal, role.oid,
+           role.rolsuper, role.rolcreatedb, role.rolcreaterole, role.rolreplication,
+           role.rolbypassrls, role.rolcanlogin, role.rolinherit
+      FROM candidates
+      LEFT JOIN pg_catalog.pg_roles AS role ON role.rolname = candidates.principal
+  ), outbound(candidate_code, role_ref, can_set, has_admin, can_inherit, depth) AS (
+    SELECT resolved.candidate_code, membership.roleid, membership.set_option,
+           membership.admin_option, membership.inherit_option, 1
+      FROM resolved
+      JOIN pg_catalog.pg_auth_members AS membership ON membership.member = resolved.oid
     UNION
-    SELECT membership.roleid, outbound.can_set AND membership.set_option
-      FROM outbound JOIN pg_catalog.pg_auth_members AS membership ON membership.member = outbound.role_ref
+    SELECT outbound.candidate_code, membership.roleid,
+           outbound.can_set AND membership.set_option,
+           outbound.has_admin OR membership.admin_option,
+           outbound.can_inherit AND membership.inherit_option,
+           outbound.depth + 1
+      FROM outbound
+      JOIN pg_catalog.pg_auth_members AS membership ON membership.member = outbound.role_ref
+     WHERE outbound.depth < 32
   )
-  SELECT ($1::oid = $2::oid OR EXISTS (SELECT 1 FROM outbound WHERE role_ref = $2::oid AND can_set)) AS can_act_for_default_owner`;
+  SELECT resolved.candidate_code,
+         count(resolved.oid)::integer AS match_count,
+         min(resolved.oid)::text AS role_ref,
+         bool_and(NOT resolved.rolsuper) AS superuser_clear,
+         bool_and(NOT resolved.rolcreatedb) AS createdb_clear,
+         bool_and(NOT resolved.rolcreaterole) AS createrole_clear,
+         bool_and(NOT resolved.rolreplication) AS replication_clear,
+         bool_and(NOT resolved.rolbypassrls) AS bypassrls_clear,
+         bool_and(resolved.rolcanlogin) AS login_enabled,
+         bool_and(resolved.rolinherit) AS inherit_enabled,
+         (SELECT count(*)::integer FROM pg_catalog.pg_auth_members AS membership WHERE membership.member = resolved.oid) AS direct_outbound_count,
+         (SELECT count(*)::integer FROM pg_catalog.pg_auth_members AS membership WHERE membership.roleid = resolved.oid) AS direct_inbound_count,
+         (SELECT count(*)::integer FROM outbound WHERE outbound.candidate_code = resolved.candidate_code AND outbound.can_set) AS set_option_path_count,
+         (SELECT count(*)::integer FROM outbound WHERE outbound.candidate_code = resolved.candidate_code AND outbound.has_admin) AS admin_option_path_count,
+         (SELECT count(*)::integer FROM outbound WHERE outbound.candidate_code = resolved.candidate_code AND outbound.can_inherit) AS inherit_option_path_count,
+         (SELECT count(*)::integer FROM outbound
+           WHERE outbound.candidate_code = resolved.candidate_code
+             AND outbound.role_ref <> ALL(ARRAY[$5::oid, $6::oid])
+             AND (outbound.can_set OR outbound.has_admin OR outbound.can_inherit)) AS unrelated_effective_path_count,
+         bool_or(resolved.oid = $5::oid) OR EXISTS (
+           SELECT 1 FROM outbound WHERE outbound.candidate_code = resolved.candidate_code
+             AND outbound.role_ref = $5::oid AND outbound.can_set
+         ) AS can_act_for_default_owner,
+         bool_or(resolved.oid = $6::oid) OR EXISTS (
+           SELECT 1 FROM outbound WHERE outbound.candidate_code = resolved.candidate_code
+             AND outbound.role_ref = $6::oid AND outbound.can_set
+         ) AS can_act_for_application_owner
+    FROM resolved
+   GROUP BY resolved.candidate_code, resolved.oid
+   ORDER BY resolved.candidate_code`;
 
 const TARGET_ACL_SURFACE_SQL = `
   WITH acl_surface AS (
@@ -214,7 +262,7 @@ export const ACL_REMEDIATION_PRECHECK_QUERY_SURFACE = Object.freeze({
   defaultAclContext: DEFAULT_ACL_CONTEXT_SQL,
   principalInventory: PRINCIPAL_INVENTORY_SQL,
   targetRoleContext: TARGET_ROLE_CONTEXT_SQL,
-  operatorCapability: OPERATOR_CAPABILITY_SQL,
+  operatorCandidates: OPERATOR_CANDIDATES_SQL,
   targetAclSurface: TARGET_ACL_SURFACE_SQL
 });
 
@@ -247,10 +295,14 @@ export function aclRemediationPrecheckConnectionConfig(env = process.env) {
   const authorizedPlanSha256 = String(env.BANK_PRODUCTION_ACL_PLAN_SHA256 || '').trim();
   if (objectOwnerRole !== EXPECTED_OBJECT_OWNER_ROLE || platformRole !== EXPECTED_PLATFORM_ROLE
       || canonicalJson(runtimeRoles) !== canonicalJson(EXPECTED_RUNTIME_ROLES)
-      || !safeIdentifier(aclOperatorRole) || !/^[a-f0-9]{64}$/.test(authorizedPlanSha256)) {
+      || !/^[a-f0-9]{64}$/.test(authorizedPlanSha256)) {
     throw new Error('PRODUCTION_ACL_PRECHECK_PRINCIPAL_INVENTORY_INPUT_BLOCKED');
   }
-  if ([EXPECTED_PRODUCTION_READONLY_ROLE, ...EXPECTED_RUNTIME_ROLES].includes(aclOperatorRole)) {
+  const operatorCandidateRoles = unique([objectOwnerRole, platformRole, ...runtimeRoles, EXPECTED_PRODUCTION_READONLY_ROLE]);
+  if (aclOperatorRole && (!safeIdentifier(aclOperatorRole) || !operatorCandidateRoles.includes(aclOperatorRole))) {
+    throw new Error('PRODUCTION_ACL_PRECHECK_OPERATOR_NOT_REVIEWED_CANDIDATE');
+  }
+  if (aclOperatorRole && [EXPECTED_PRODUCTION_READONLY_ROLE, ...EXPECTED_RUNTIME_ROLES].includes(aclOperatorRole)) {
     throw new Error('PRODUCTION_ACL_PRECHECK_OPERATOR_CLASS_BLOCKED');
   }
   return Object.freeze({
@@ -260,6 +312,8 @@ export function aclRemediationPrecheckConnectionConfig(env = process.env) {
     platformRole,
     runtimeRoles: Object.freeze(runtimeRoles),
     aclOperatorRole,
+    operatorCandidateRoles: Object.freeze(operatorCandidateRoles),
+    executionMode: aclOperatorRole ? 'OPERATOR_VALIDATION' : 'OPERATOR_DISCOVERY',
     authorizedPlanSha256
   });
 }
@@ -285,11 +339,11 @@ export function validateAclRemediationPrecheckQueryScope(surface = ACL_REMEDIATI
     structural: surface.structural,
     aclSemantic: surface.aclSemantic
   }).status !== 'PASS') failures.push('REUSED_SEMANTIC_QUERY_SCOPE_BLOCKED');
-  const expectedKeys = ['aclSemantic', 'defaultAclContext', 'identity', 'ledger', 'operatorCapability', 'principalInventory',
+  const expectedKeys = ['aclSemantic', 'defaultAclContext', 'identity', 'ledger', 'operatorCandidates', 'principalInventory',
     'readerRoleBoundary', 'structural', 'targetAclSurface', 'targetRoleContext', 'transactionReadOnly'];
   if (canonicalJson(Object.keys(surface || {}).sort()) !== canonicalJson(expectedKeys)) failures.push('ACL_PRECHECK_QUERY_SECTION_SET_MISMATCH');
   for (const key of ['identity', 'readerRoleBoundary', 'transactionReadOnly', 'ledger', 'defaultAclContext',
-    'principalInventory', 'targetRoleContext', 'operatorCapability', 'targetAclSurface']) inspectQuery(key, surface[key], failures);
+    'principalInventory', 'targetRoleContext', 'operatorCandidates', 'targetAclSurface']) inspectQuery(key, surface[key], failures);
   for (const [section, sql] of Object.entries(surface.structural || {})) inspectQuery(`structural.${section}`, sql, failures);
   for (const [section, sql] of Object.entries(surface.aclSemantic || {})) inspectQuery(`acl.${section}`, sql, failures);
   return canonicalValue({ status: failures.length ? 'BLOCKED' : 'PASS', failures: unique(failures) });
@@ -359,6 +413,74 @@ function replaceTargetPrincipal(rawFacts, targetPrincipal) {
 
 function inventoryMap(rows) { return new Map((rows || []).map(row => [String(row.category), row])); }
 
+function candidateRoleForCode(config, code) {
+  return ({
+    OBJECT_OWNER: config.objectOwnerRole,
+    PLATFORM: config.platformRole,
+    RUNTIME: config.runtimeRoles[0],
+    READER: EXPECTED_PRODUCTION_READONLY_ROLE
+  })[code] || null;
+}
+
+function evaluateOperatorDiscovery({ config, rows, defaultOwnerRole, applicationOwnerRole, targetRef }) {
+  const expectedCodes = ['OBJECT_OWNER', 'PLATFORM', 'READER', 'RUNTIME'];
+  const byCode = new Map((rows || []).map(row => [String(row.candidate_code), row]));
+  const candidates = expectedCodes.map(candidateCode => {
+    const row = byCode.get(candidateCode) || {};
+    const candidateRole = candidateRoleForCode(config, candidateCode);
+    const dangerousAttributeCount = ['superuser_clear','createdb_clear','createrole_clear','replication_clear','bypassrls_clear']
+      .filter(key => !bool(row[key])).length;
+    const reviewedOperatorClass = ['OBJECT_OWNER', 'PLATFORM'].includes(candidateCode);
+    const exactRolePresent = Number(row.match_count || 0) === 1 && Boolean(row.role_ref);
+    const isTarget = exactRolePresent && String(row.role_ref) === String(targetRef || '');
+    const eligible = reviewedOperatorClass && exactRolePresent && dangerousAttributeCount === 0
+      && bool(row.login_enabled) && !isTarget
+      && Number(row.admin_option_path_count ?? -1) === 0
+      && Number(row.unrelated_effective_path_count ?? -1) === 0
+      && bool(row.can_act_for_default_owner) && bool(row.can_act_for_application_owner);
+    return canonicalValue({
+      candidateCode,
+      candidateRole,
+      matchCount: Number(row.match_count || 0),
+      loginEnabled: bool(row.login_enabled),
+      superuser: !bool(row.superuser_clear),
+      createDb: !bool(row.createdb_clear),
+      createRole: !bool(row.createrole_clear),
+      replication: !bool(row.replication_clear),
+      bypassRls: !bool(row.bypassrls_clear),
+      inheritEnabled: bool(row.inherit_enabled),
+      directOutboundMembershipCount: Number(row.direct_outbound_count ?? -1),
+      directInboundMembershipCount: Number(row.direct_inbound_count ?? -1),
+      setOptionPathCount: Number(row.set_option_path_count ?? -1),
+      adminOptionPathCount: Number(row.admin_option_path_count ?? -1),
+      inheritOptionPathCount: Number(row.inherit_option_path_count ?? -1),
+      unrelatedEffectivePathCount: Number(row.unrelated_effective_path_count ?? -1),
+      canActForDefaultAclOwner: bool(row.can_act_for_default_owner),
+      canActForApplicationObjectOwner: bool(row.can_act_for_application_owner),
+      noPrivilegeMembershipOrOwnershipChangeRequired: bool(row.can_act_for_default_owner) && bool(row.can_act_for_application_owner),
+      reviewedOperatorClass,
+      targetCollision: isTarget,
+      eligible
+    });
+  });
+  const complete = Boolean(defaultOwnerRole) && applicationOwnerRole === config.objectOwnerRole
+    && canonicalJson([...byCode.keys()].sort()) === canonicalJson(expectedCodes)
+    && candidates.every(candidate => candidate.candidateRole && candidate.matchCount === 1);
+  const eligible = candidates.filter(candidate => candidate.eligible);
+  const result = !complete || eligible.length > 1 ? 'INSUFFICIENT_EVIDENCE'
+    : eligible.length === 1 ? 'ELIGIBLE_OPERATOR_CANDIDATE' : 'NO_ELIGIBLE_OPERATOR';
+  return canonicalValue({
+    result,
+    candidateRole: result === 'ELIGIBLE_OPERATOR_CANDIDATE' ? eligible[0].candidateRole : null,
+    defaultAclOwnerRole: defaultOwnerRole || null,
+    applicationObjectOwnerRole: applicationOwnerRole || null,
+    eligibleCandidateCount: eligible.length,
+    ownerApprovalRequired: result === 'ELIGIBLE_OPERATOR_CANDIDATE',
+    productionMutationAllowed: false,
+    candidates
+  });
+}
+
 function withoutAcl(catalog) {
   return canonicalValue({
     ...catalog,
@@ -372,7 +494,7 @@ export function evaluateAclRemediationPrecheck({ artifacts, config, collection, 
   const blockers = [];
   if (collection?.ledgerResult?.status !== 'PASS') blockers.push('EXACT_0001_0008_LEDGER_AND_CHECKSUM_BLOCKED');
   const inventory = inventoryMap(collection.principalInventory);
-  const requiredCategories = ['READER', 'OBJECT_OWNER', 'PLATFORM', 'ACL_OPERATOR', 'RUNTIME'];
+  const requiredCategories = ['READER', 'OBJECT_OWNER', 'PLATFORM', 'RUNTIME'];
   if (canonicalJson([...inventory.keys()].sort()) !== canonicalJson([...requiredCategories].sort())
       || requiredCategories.some(category => Number(inventory.get(category)?.match_count) !== 1 || !inventory.get(category)?.role_ref)) {
     blockers.push('RUNTIME_PRINCIPAL_INVENTORY_INCOMPLETE');
@@ -404,10 +526,24 @@ export function evaluateAclRemediationPrecheck({ artifacts, config, collection, 
   if (!target.target_principal || dangerous !== 0 || bool(target.rolcanlogin) || bool(target.rolinherit)
       || roleMembershipResult !== 'PASS' || Number(target.owned_object_count ?? -1) !== 0) blockers.push('TARGET_ROLE_BOUNDARY_OR_MEMBERSHIP_BLOCKED');
 
-  const operator = inventory.get('ACL_OPERATOR') || {};
-  const operatorSafe = bool(operator.dangerous_attributes_clear);
-  const operatorCapability = bool(collection.operatorCapability?.can_act_for_default_owner);
-  if (!operatorSafe || !operatorCapability || ref('ACL_OPERATOR') === targetRef) blockers.push('ACL_OPERATOR_CAPABILITY_BLOCKED');
+  const operatorDiscovery = evaluateOperatorDiscovery({
+    config,
+    rows: collection.operatorCandidates,
+    defaultOwnerRole: ownerCategory === 'EXPECTED_OBJECT_OWNER' ? config.objectOwnerRole
+      : ownerCategory === 'SYSTEM_PLATFORM_MANAGED' ? config.platformRole : null,
+    applicationOwnerRole: ref('OBJECT_OWNER') ? config.objectOwnerRole : null,
+    targetRef
+  });
+  const selectedOperatorEligible = config.executionMode === 'OPERATOR_VALIDATION'
+    && operatorDiscovery.result === 'ELIGIBLE_OPERATOR_CANDIDATE'
+    && operatorDiscovery.candidateRole === config.aclOperatorRole;
+  if (config.executionMode === 'OPERATOR_DISCOVERY') {
+    blockers.push(operatorDiscovery.result === 'ELIGIBLE_OPERATOR_CANDIDATE'
+      ? 'ACL_OPERATOR_OWNER_APPROVAL_REQUIRED'
+      : operatorDiscovery.result === 'NO_ELIGIBLE_OPERATOR'
+        ? 'ACL_OPERATOR_NO_ELIGIBLE_CANDIDATE'
+        : 'ACL_OPERATOR_DISCOVERY_INSUFFICIENT_EVIDENCE');
+  } else if (!selectedOperatorEligible) blockers.push('ACL_OPERATOR_CAPABILITY_BLOCKED');
 
   const expectedObjectKeys = relationObjectKeys(artifacts.structural.artifact);
   const aclSurface = (collection.targetAclSurface || []).map(row => ({
@@ -474,6 +610,7 @@ export function evaluateAclRemediationPrecheck({ artifacts, config, collection, 
     generatedAt: new Date().toISOString(),
     repositoryCommitSha: sourceCommit,
     planSha256: artifacts.planSha256,
+    executionMode: config.executionMode,
     identityResult: 'PASS',
     tlsVerification: 'VERIFY_FULL_PASS',
     readerRoleBoundaryResult: 'PASS',
@@ -509,7 +646,12 @@ export function evaluateAclRemediationPrecheck({ artifacts, config, collection, 
       inheritEnabled: bool(target.rolinherit),
       ownedObjectCount: Number(target.owned_object_count ?? -1)
     },
-    operatorCapability: { result: operatorSafe && operatorCapability && ref('ACL_OPERATOR') !== targetRef ? 'PASS' : 'BLOCKED' },
+    operatorDiscovery,
+    operatorCapability: {
+      result: selectedOperatorEligible ? 'PASS' : 'BLOCKED',
+      approvedOperatorRole: config.executionMode === 'OPERATOR_VALIDATION' ? config.aclOperatorRole : null,
+      ownerApprovalRequired: config.executionMode === 'OPERATOR_DISCOVERY'
+    },
     currentObjectAclComparison: {
       result: currentObjectAclResult,
       remediationObjectCount: remediationObjectKeys.length,
@@ -551,14 +693,15 @@ export function validateAclRemediationPrecheckEvidence(value) {
   const failures = [];
   visitEvidence(value, failures);
   const required = ['schemaVersion','modelVersion','sprintNumberingCappedAt','generatedAt','repositoryCommitSha','planSha256',
-    'identityResult','tlsVerification','readerRoleBoundaryResult','transactionReadOnlyResult','ledgerResult',
+    'executionMode','identityResult','tlsVerification','readerRoleBoundaryResult','transactionReadOnlyResult','ledgerResult',
     'structuralObjectAllowlistResult','defaultAclClassification','roleMembership','runtimePrincipalInventory',
-    'targetRoleBoundary','operatorCapability','currentObjectAclComparison','exactSafeRemediationTarget',
+    'targetRoleBoundary','operatorDiscovery','operatorCapability','currentObjectAclComparison','exactSafeRemediationTarget',
     'connectionAttemptCount','retryCount','productionConnectionAttempted','productionMutation','businessRowsRead',
     'rawPrincipalPersisted','rawOidPersisted','rawAclPersisted','finalStatus'];
   if (canonicalJson(Object.keys(value || {}).sort()) !== canonicalJson([...required].sort())) failures.push('ACL_PRECHECK_EVIDENCE_FIELD_SET_INVALID');
   if (value?.schemaVersion !== ACL_REMEDIATION_PRECHECK_SCHEMA_VERSION || value?.modelVersion !== ACL_REMEDIATION_PRECHECK_MODEL_VERSION
       || value?.sprintNumberingCappedAt !== 65 || Number.isNaN(Date.parse(value?.generatedAt || ''))
+      || !['OPERATOR_DISCOVERY','OPERATOR_VALIDATION'].includes(value?.executionMode)
       || !/^[a-f0-9]{40}$/.test(value?.repositoryCommitSha || '') || !/^[a-f0-9]{64}$/.test(value?.planSha256 || '')) failures.push('ACL_PRECHECK_EVIDENCE_PROVENANCE_INVALID');
   if (value?.connectionAttemptCount !== 1 || value?.retryCount !== 0 || value?.productionConnectionAttempted !== true
       || value?.productionMutation !== false || value?.businessRowsRead !== false || value?.rawPrincipalPersisted !== false
@@ -569,9 +712,22 @@ export function validateAclRemediationPrecheckEvidence(value) {
     value?.runtimePrincipalInventory?.result, value?.targetRoleBoundary?.result, value?.operatorCapability?.result,
     value?.currentObjectAclComparison?.result, value?.exactSafeRemediationTarget?.result];
   if (!subResults.every(result => ['PASS','BLOCKED'].includes(result))) failures.push('ACL_PRECHECK_SUBRESULT_INVALID');
+  if (!ACL_OPERATOR_DISCOVERY_RESULTS.includes(value?.operatorDiscovery?.result)
+      || !Array.isArray(value?.operatorDiscovery?.candidates)
+      || value.operatorDiscovery.candidates.length !== 4
+      || value.operatorDiscovery.productionMutationAllowed !== false) failures.push('ACL_PRECHECK_OPERATOR_DISCOVERY_CONTRACT_INVALID');
+  if (value?.executionMode === 'OPERATOR_DISCOVERY' && (value?.operatorCapability?.result !== 'BLOCKED'
+      || value?.operatorCapability?.approvedOperatorRole !== null || value?.operatorCapability?.ownerApprovalRequired !== true
+      || value?.finalStatus !== 'BLOCKED')) failures.push('ACL_PRECHECK_DISCOVERY_FAIL_CLOSED_INVALID');
+  if (value?.operatorDiscovery?.result === 'ELIGIBLE_OPERATOR_CANDIDATE'
+      && (!value.operatorDiscovery.candidateRole || value.operatorDiscovery.eligibleCandidateCount !== 1
+        || value.operatorDiscovery.ownerApprovalRequired !== true)) failures.push('ACL_PRECHECK_ELIGIBLE_CANDIDATE_CONTRACT_INVALID');
+  if (value?.operatorDiscovery?.result !== 'ELIGIBLE_OPERATOR_CANDIDATE'
+      && (value.operatorDiscovery.candidateRole !== null || value.operatorDiscovery.ownerApprovalRequired !== false)) failures.push('ACL_PRECHECK_NONCANDIDATE_CONTRACT_INVALID');
   const shouldPass = subResults.every(result => result === 'PASS');
   if (value?.finalStatus !== (shouldPass ? 'PASS' : 'BLOCKED')) failures.push('ACL_PRECHECK_FINAL_STATUS_INCONSISTENT');
-  if (value?.finalStatus === 'PASS' && (value?.defaultAclClassification?.relationFactCount !== 8
+  if (value?.finalStatus === 'PASS' && (value?.executionMode !== 'OPERATOR_VALIDATION'
+      || value?.defaultAclClassification?.relationFactCount !== 8
       || value?.defaultAclClassification?.sequenceFactCount !== 3 || value?.defaultAclClassification?.grantOptionTrueCount !== 11
       || value?.defaultAclClassification?.expectedBaselineDefaultPrivilegeCount !== 0
       || value?.runtimePrincipalInventory?.targetMatchesReviewedPrincipal !== false
@@ -641,22 +797,24 @@ export async function collectAclRemediationPrecheckFacts(client, artifacts, conf
   if (granteeRefs.length !== 1 || granteeRefs[0] === '0') throw new Error('ACL_PRECHECK_GRANTEE_RESOLUTION_BLOCKED');
   onStage('PRINCIPAL_INVENTORY');
   const principalInventory = (await client.query(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.principalInventory,
-    [EXPECTED_PRODUCTION_READONLY_ROLE, config.objectOwnerRole, config.platformRole, config.aclOperatorRole, config.runtimeRoles[0]])).rows;
+    [EXPECTED_PRODUCTION_READONLY_ROLE, config.objectOwnerRole, config.platformRole, config.runtimeRoles[0]])).rows;
   onStage('TARGET_ROLE_BOUNDARY');
   const targetRoleContext = (await client.query(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.targetRoleContext, [granteeRefs[0]])).rows[0];
   if (!targetRoleContext) throw new Error('ACL_PRECHECK_TARGET_ROLE_MISSING');
   onStage('ROLE_MEMBERSHIP');
   const inventory = inventoryMap(principalInventory);
-  onStage('OPERATOR_CAPABILITY');
+  onStage('OPERATOR_DISCOVERY');
   const ownerRefs = unique(defaultAclContext.map(row => row.owner_ref));
-  const operatorCapability = ownerRefs.length === 1 && inventory.get('ACL_OPERATOR')?.role_ref
-    ? (await client.query(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.operatorCapability, [inventory.get('ACL_OPERATOR').role_ref, ownerRefs[0]])).rows[0]
-    : { can_act_for_default_owner: false };
+  const applicationOwnerRef = inventory.get('OBJECT_OWNER')?.role_ref;
+  if (ownerRefs.length !== 1 || !applicationOwnerRef) throw new Error('ACL_PRECHECK_OPERATOR_DISCOVERY_OWNER_CONTEXT_BLOCKED');
+  const operatorCandidates = (await client.query(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.operatorCandidates,
+    [config.objectOwnerRole, config.platformRole, config.runtimeRoles[0], EXPECTED_PRODUCTION_READONLY_ROLE,
+      ownerRefs[0], applicationOwnerRef])).rows;
   onStage('CURRENT_OBJECT_ACL');
   const targetAclSurface = (await client.query(ACL_REMEDIATION_PRECHECK_QUERY_SURFACE.targetAclSurface, [granteeRefs[0]])).rows;
   onStage('ACL_SEMANTIC_COLLECTOR');
   const aclFacts = await collectAclSemanticFacts(client);
-  return { ledger, ledgerResult, rawCatalog, defaultAclContext, principalInventory, targetRoleContext, operatorCapability, targetAclSurface, aclFacts };
+  return { ledger, ledgerResult, rawCatalog, defaultAclContext, principalInventory, targetRoleContext, operatorCandidates, targetAclSurface, aclFacts };
 }
 
 export async function compareProductionAclRemediationPrecheck({
@@ -785,6 +943,11 @@ async function main() {
   const outcome = await runProductionAclRemediationPrecheckCli();
   if (outcome.result) {
     process.stdout.write(`PRODUCTION_ACL_REMEDIATION_PRECHECK=${outcome.result.evidence.finalStatus}\n`);
+    process.stdout.write(`ACL_OPERATOR_MODE=${outcome.result.evidence.executionMode}\n`);
+    process.stdout.write(`ACL_OPERATOR_DISCOVERY=${outcome.result.evidence.operatorDiscovery.result}\n`);
+    if (outcome.result.evidence.operatorDiscovery.candidateRole) {
+      process.stdout.write(`ACL_OPERATOR_CANDIDATE=${outcome.result.evidence.operatorDiscovery.candidateRole}\n`);
+    }
     process.stdout.write(`EXACT_SAFE_REMEDIATION_TARGET=${outcome.result.evidence.exactSafeRemediationTarget.result}\n`);
     process.stdout.write(`SANITIZED_EVIDENCE_SHA256=${outcome.result.evidenceSha256}\n`);
   } else {
