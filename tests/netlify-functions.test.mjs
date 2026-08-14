@@ -117,6 +117,8 @@ const [netlifyConfig, redirects] = await Promise.all([
 assert.match(netlifyConfig, /directory = "netlify\/functions"/);
 assert.match(netlifyConfig, /schedule = "\*\/5 \* \* \* \*"/);
 assert.match(netlifyConfig, /publish = "dist"/);
+assert.match(netlifyConfig, /NODE_VERSION = "22\.13\.0"/,
+  'Netlify must use the minimum Node release supported by pnpm 11.9');
 assert.ok(redirects.indexOf('/v1/*') < redirects.indexOf('/* /index.html'),
   'API function rewrite must precede the SPA fallback');
 
