@@ -1,5 +1,11 @@
 # Change Log
 
+## 2026-08-15 - Production Migration input guard validation-only
+
+- Added allowlisted, sanitized `INPUT_GUARD` diagnostics and a network-free validation-only mode for the immutable Production Migration event package.
+- Synthetic validation, focused regressions, the full test suite, Release Gate and Sensitive Scan passed.
+- The disposable 13-version database rehearsal for this change is `NOT_EXECUTED_DUE_TO_LOCAL_SANDBOX_PERMISSION`; it is not reported as PASS. No Production connection or mutation occurred.
+
 ## 2026-08-14 - Production Migration Final Execution Plan
 
 - Added one consolidated, fail-closed event plan for the exact `0009`, `0011`-`0022` Production Migration sequence with `0010` permanently excluded.

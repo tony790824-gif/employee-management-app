@@ -42,6 +42,8 @@
     "db:migration:repository-closure": "node database/production-migration-repository-closure-gate.mjs",
     "db:migration:final-readiness:simulate": "node database/rehearse-production-migration-final-readiness.mjs",
     "db:migration:production-event": "node database/production-migration-event.mjs",
+    "db:migration:production-event:validate-input": "node database/production-migration-event.mjs --validation-only",
+    "db:migration:production-event:validate-input:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate-production-migration-input.ps1 -InputSource ProcessEnvironment",
     "production:recovery:readiness": "node database/production-recovery-readiness-gate.mjs",
     "production:recovery:authorize": "node database/production-isolated-restore-authorization-gate.mjs",
     "auth:readiness:production": "node scripts/auth0-production-readiness.mjs",

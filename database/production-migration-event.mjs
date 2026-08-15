@@ -27,6 +27,25 @@ export const PRODUCTION_EVENT_CONFIRMATION = 'EXECUTE_BANKE_PRODUCTION_MIGRATION
 export const RESTORE_POINT_CONFIRMATION = 'EVENT_RESTORE_POINT_VERIFIED';
 export const MAINTENANCE_CONFIRMATION = 'EVENT_WRITES_DRAINED';
 export const APPROVED_NEON_MIGRATION_OPERATOR = 'neondb_owner';
+export const INPUT_GUARD_ERROR_CODES = Object.freeze([
+  'CLIPBOARD_INPUT_MISSING',
+  'URL_PARSE_BLOCKED',
+  'PROTOCOL_BLOCKED',
+  'DATABASE_BLOCKED',
+  'OPERATOR_BLOCKED',
+  'PASSWORD_COMPONENT_MISSING',
+  'DIRECT_TARGET_BLOCKED',
+  'CHANNEL_BINDING_BLOCKED',
+  'TLS_MODE_BLOCKED',
+  'CA_BUNDLE_BLOCKED',
+  'CI_MODE_BLOCKED',
+  'ENVIRONMENT_BLOCKED',
+  'CONFIRMATION_BLOCKED',
+  'COMMIT_SHA_BLOCKED',
+  'MANIFEST_BLOCKED',
+  'SEQUENCE_BLOCKED',
+  'UNAPPROVED_0010_BLOCKED'
+]);
 export const APPROVED_UPGRADE_SEQUENCE = Object.freeze([
   '0009', '0011', '0012', '0013', '0014', '0015', '0016',
   '0017', '0018', '0019', '0020', '0021', '0022'
@@ -64,37 +83,57 @@ function forbiddenEvidencePath(value, parts = []) {
 }
 
 export function productionMigrationEventConfig(env = process.env, { head = gitHead() } = {}) {
-  if (env.BANK_PRODUCTION_MIGRATION_EVENT_CONFIRMATION !== PRODUCTION_EVENT_CONFIRMATION) throw new Error('EVENT_AUTHORIZATION_REQUIRED');
-  if (env.BANK_PRODUCTION_RESTORE_POINT_STATUS !== RESTORE_POINT_CONFIRMATION) throw new Error('EVENT_RESTORE_POINT_REQUIRED');
-  if (env.BANK_PRODUCTION_MAINTENANCE_STATUS !== MAINTENANCE_CONFIRMATION) throw new Error('EVENT_MAINTENANCE_DRAIN_REQUIRED');
-  if (String(env.BANK_ENV || '').toLowerCase() !== 'production') throw new Error('PRODUCTION_ENVIRONMENT_REQUIRED');
+  if (env.BANK_PRODUCTION_MIGRATION_EVENT_CONFIRMATION !== PRODUCTION_EVENT_CONFIRMATION) throw new Error('CONFIRMATION_BLOCKED');
+  if (env.BANK_PRODUCTION_RESTORE_POINT_STATUS !== RESTORE_POINT_CONFIRMATION
+      || env.BANK_PRODUCTION_MAINTENANCE_STATUS !== MAINTENANCE_CONFIRMATION
+      || String(env.BANK_ENV || '').toLowerCase() !== 'production') {
+    throw new Error('ENVIRONMENT_BLOCKED');
+  }
 
   const value = String(env.DATABASE_MIGRATOR_URL || '').trim();
   const expectedDatabase = String(env.BANK_PRODUCTION_DATABASE_NAME || '').trim();
   const expectedOperator = String(env.BANK_PRODUCTION_MIGRATION_OPERATOR_ROLE || '').trim();
   const expectedCommit = String(env.BANK_PRODUCTION_MIGRATION_COMMIT_SHA || '').trim();
   const caInput = String(env.BANK_PRODUCTION_CA_BUNDLE || '').trim();
-  if (!value || !expectedDatabase || !expectedOperator || !expectedCommit || !caInput) throw new Error('PROTECTED_EVENT_INPUT_MISSING');
+  if (!value) throw new Error('CLIPBOARD_INPUT_MISSING');
+  if (!expectedDatabase) throw new Error('DATABASE_BLOCKED');
+  if (!expectedOperator) throw new Error('OPERATOR_BLOCKED');
+  if (!expectedCommit) throw new Error('COMMIT_SHA_BLOCKED');
+  if (!caInput) throw new Error('CA_BUNDLE_BLOCKED');
   if (!SAFE_IDENTIFIER.test(expectedDatabase) || !SAFE_IDENTIFIER.test(expectedOperator) || FORBIDDEN_OPERATOR.test(expectedOperator)
       || expectedOperator !== APPROVED_NEON_MIGRATION_OPERATOR) {
-    throw new Error('MIGRATION_OPERATOR_EXPECTATION_BLOCKED');
+    throw new Error('OPERATOR_BLOCKED');
   }
-  if (expectedCommit !== head) throw new Error('EVENT_COMMIT_IDENTITY_MISMATCH');
+  if (expectedCommit !== head) throw new Error('COMMIT_SHA_BLOCKED');
 
-  const parsed = new URL(value);
-  if (!['postgres:', 'postgresql:'].includes(parsed.protocol)) throw new Error('MIGRATOR_PROTOCOL_BLOCKED');
-  const user = decodeURIComponent(parsed.username);
-  const password = decodeURIComponent(parsed.password);
-  const database = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error('URL_PARSE_BLOCKED');
+  }
+  if (!['postgres:', 'postgresql:'].includes(parsed.protocol)) throw new Error('PROTOCOL_BLOCKED');
+  let user;
+  let password;
+  let database;
+  try {
+    user = decodeURIComponent(parsed.username);
+    password = decodeURIComponent(parsed.password);
+    database = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
+  } catch {
+    throw new Error('URL_PARSE_BLOCKED');
+  }
   const host = parsed.hostname;
-  if (!host || !user || !password || user !== expectedOperator || database !== expectedDatabase) throw new Error('MIGRATOR_IDENTITY_BLOCKED');
-  if (['localhost', '127.0.0.1', '::1'].includes(host.toLowerCase()) || host.includes('-pooler.')) throw new Error('MIGRATOR_DIRECT_TARGET_REQUIRED');
-  if (parsed.searchParams.get('sslmode') !== 'verify-full') throw new Error('TLS_VERIFY_FULL_REQUIRED');
-  if (parsed.searchParams.get('channel_binding') !== 'require') throw new Error('CHANNEL_BINDING_REQUIRED');
+  if (database !== expectedDatabase) throw new Error('DATABASE_BLOCKED');
+  if (user !== expectedOperator) throw new Error('OPERATOR_BLOCKED');
+  if (!password) throw new Error('PASSWORD_COMPONENT_MISSING');
+  if (!host || ['localhost', '127.0.0.1', '::1'].includes(host.toLowerCase()) || host.includes('-pooler.')) throw new Error('DIRECT_TARGET_BLOCKED');
+  if (parsed.searchParams.get('sslmode') !== 'verify-full') throw new Error('TLS_MODE_BLOCKED');
+  if (parsed.searchParams.get('channel_binding') !== 'require') throw new Error('CHANNEL_BINDING_BLOCKED');
 
   const caPath = path.resolve(caInput);
   const tempRoot = path.resolve(os.tmpdir());
-  if (caPath !== tempRoot && !caPath.startsWith(`${tempRoot}${path.sep}`)) throw new Error('PRODUCTION_CA_BUNDLE_MUST_BE_TEMPORARY');
+  if (caPath !== tempRoot && !caPath.startsWith(`${tempRoot}${path.sep}`)) throw new Error('CA_BUNDLE_BLOCKED');
   return Object.freeze({
     expectedDatabase,
     expectedOperator,
@@ -136,10 +175,44 @@ export function assertMigrationOperatorEvidence(identity, boundary, config) {
 }
 
 export function assertApprovedMigrationSet(migrationSet) {
-  if (migrationSet.upgrade.some(item => item.version === '0010')) throw new Error('MIGRATION_0010_REJECTED');
+  if (migrationSet.upgrade.some(item => item.version === '0010')) throw new Error('UNAPPROVED_0010_BLOCKED');
   if (canonicalJson(migrationSet.upgrade.map(item => item.version)) !== canonicalJson(APPROVED_UPGRADE_SEQUENCE)) {
-    throw new Error('EVENT_SEQUENCE_BLOCKED');
+    throw new Error('SEQUENCE_BLOCKED');
   }
+}
+
+export function sanitizedInputGuardErrorCode(error) {
+  const raw = String(error?.message || '');
+  if (INPUT_GUARD_ERROR_CODES.includes(raw)) return raw;
+  if (raw.startsWith('MIGRATION_CHECKSUM_MISMATCH:')
+      || raw.startsWith('EXPECTED_INVENTORY_BLOCKED:')
+      || raw.startsWith('REMEDIATION_INVENTORY_BLOCKED:')
+      || raw.startsWith('UNAPPROVED_MIGRATION_FILE:')) {
+    return 'MANIFEST_BLOCKED';
+  }
+  return 'MANIFEST_BLOCKED';
+}
+
+export async function validateProductionMigrationEventInput({ env = process.env, head, migrationSetLoader = loadExactMigrationSet } = {}) {
+  if (String(env.CI || '').toLowerCase() !== 'true') throw new Error('CI_MODE_BLOCKED');
+  const config = productionMigrationEventConfig(env, { head: head || gitHead() });
+  let ca;
+  try {
+    ca = await readFile(config.caPath, 'utf8');
+  } catch {
+    throw new Error('CA_BUNDLE_BLOCKED');
+  }
+  if (!ca.includes('-----BEGIN CERTIFICATE-----') || !ca.includes('-----END CERTIFICATE-----')) {
+    throw new Error('CA_BUNDLE_BLOCKED');
+  }
+  let migrationSet;
+  try {
+    migrationSet = await migrationSetLoader();
+  } catch (error) {
+    throw new Error(sanitizedInputGuardErrorCode(error));
+  }
+  assertApprovedMigrationSet(migrationSet);
+  return Object.freeze({ config, ca, migrationSet });
 }
 
 export async function verifyIdentityAndOperator(client, config) {
@@ -189,15 +262,11 @@ async function verifyStructuralBaseline(client, baseline, migrationOwner, code) 
 }
 
 export async function executeProductionMigrationEvent({ env = process.env, clientFactory, head } = {}) {
-  const config = productionMigrationEventConfig(env, { head: head || gitHead() });
-  const [ca, migrationSet, startingBaseline, finalBaseline] = await Promise.all([
-    readFile(config.caPath, 'utf8'),
-    loadExactMigrationSet(),
+  const [{ config, ca, migrationSet }, startingBaseline, finalBaseline] = await Promise.all([
+    validateProductionMigrationEventInput({ env, head }),
     readFile(STARTING_BASELINE_PATH, 'utf8').then(JSON.parse),
     readFile(FINAL_BASELINE_PATH, 'utf8').then(JSON.parse)
   ]);
-  if (!ca.includes('-----BEGIN CERTIFICATE-----')) throw new Error('PRODUCTION_CA_BUNDLE_INVALID');
-  assertApprovedMigrationSet(migrationSet);
 
   const client = clientFactory
     ? clientFactory(config)
@@ -273,6 +342,22 @@ export async function executeProductionMigrationEvent({ env = process.env, clien
 }
 
 async function main() {
+  const validationOnly = process.argv.includes('--validation-only');
+  if (validationOnly) {
+    try {
+      await validateProductionMigrationEventInput();
+      process.stdout.write('PRODUCTION_MIGRATION_INPUT_GUARD=PASS\n');
+      process.stdout.write('NETWORK_CONNECTION_ATTEMPTED=false\n');
+      process.stdout.write('PRODUCTION_MUTATION=false\n');
+    } catch (error) {
+      process.stderr.write('PRODUCTION_MIGRATION_INPUT_GUARD=BLOCKED\n');
+      process.stderr.write(`PRODUCTION_MIGRATION_INPUT_GUARD_ERROR=${sanitizedInputGuardErrorCode(error)}\n`);
+      process.stderr.write('NETWORK_CONNECTION_ATTEMPTED=false\n');
+      process.stderr.write('PRODUCTION_MUTATION=false\n');
+      process.exitCode = 2;
+    }
+    return;
+  }
   try {
     const output = await executeProductionMigrationEvent();
     process.stdout.write('PRODUCTION_MIGRATION_EVENT=PASS\n');
