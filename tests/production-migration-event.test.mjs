@@ -174,6 +174,10 @@ const wrapperSource = await readFile(new URL('../scripts/validate-production-mig
 for (const code of INPUT_GUARD_ERROR_CODES) assert.match(wrapperSource, new RegExp(`['\"]${code}['\"]`));
 assert.match(wrapperSource, /--validation-only/);
 assert.match(wrapperSource, /Cert:\\CurrentUser\\Root/);
+assert.match(
+  wrapperSource,
+  /GetEnvironmentVariable\('DATABASE_MIGRATOR_URL', 'Process'\)[\s\S]*GetEnvironmentVariable\('DATABASE_MIGRATOR_URL', 'User'\)/
+);
 assert.match(wrapperSource, /Remove-Item -LiteralPath \$temporaryCa/);
 assert.doesNotMatch(wrapperSource, /Write-(?:Output|Error)[^\n]*(?:rawInput|verifiedUri|Exception\.Message)/i);
 

@@ -42,6 +42,9 @@ function Read-ConnectionInput {
     }
 
     $value = [Environment]::GetEnvironmentVariable('DATABASE_MIGRATOR_URL', 'Process')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        $value = [Environment]::GetEnvironmentVariable('DATABASE_MIGRATOR_URL', 'User')
+    }
     if ([string]::IsNullOrWhiteSpace($value)) { Stop-InputGuard 'ENVIRONMENT_BLOCKED' }
     return $value.Trim()
 }

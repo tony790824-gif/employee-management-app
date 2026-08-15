@@ -64,35 +64,45 @@ export async function expectedTrackedMigrations() {
 }
 
 export async function inspectMigrationStatus(client, migrations) {
-  await client.query('SET default_transaction_read_only = on');
-  const identity = await client.query(
-    `SELECT current_database() AS database_name,
-            current_user AS role_name,
-            current_setting('transaction_read_only') AS transaction_read_only,
-            to_regclass('public.schema_migrations') IS NOT NULL AS ledger_exists`
-  );
-  const database = identity.rows[0];
-  const applied = database.ledger_exists
-    ? (await client.query('SELECT version, name, checksum FROM public.schema_migrations ORDER BY version')).rows
-    : [];
-  const appliedByVersion = new Map(applied.map(row => [String(row.version), row]));
-  for (const migration of migrations) {
-    const row = appliedByVersion.get(migration.version);
-    if (row && (row.name !== migration.name || row.checksum !== migration.checksum)) {
-      throw new Error(`Migration ${migration.version} ledger mismatch; inspection stopped.`);
+  await client.query('BEGIN TRANSACTION READ ONLY');
+  try {
+    const identity = await client.query(
+      `SELECT current_database() AS database_name,
+              current_user AS role_name,
+              current_setting('transaction_read_only') AS transaction_read_only,
+              to_regclass('public.schema_migrations') IS NOT NULL AS ledger_exists`
+    );
+    const database = identity.rows[0];
+    if (database.transaction_read_only !== 'on') {
+      throw new Error('Database did not accept read-only transaction mode.');
     }
+    const applied = database.ledger_exists
+      ? (await client.query('SELECT version, name, checksum FROM public.schema_migrations ORDER BY version')).rows
+      : [];
+    const appliedByVersion = new Map(applied.map(row => [String(row.version), row]));
+    for (const migration of migrations) {
+      const row = appliedByVersion.get(migration.version);
+      if (row && (row.name !== migration.name || row.checksum !== migration.checksum)) {
+        throw new Error(`Migration ${migration.version} ledger mismatch; inspection stopped.`);
+      }
+    }
+    const expectedVersions = new Set(migrations.map(item => item.version));
+    const unexpected = applied.filter(row => !expectedVersions.has(String(row.version)));
+    if (unexpected.length) throw new Error('Database contains unexpected migration versions; inspection stopped.');
+    const result = Object.freeze({
+      database: database.database_name,
+      role: database.role_name,
+      transactionReadOnly: database.transaction_read_only === 'on',
+      ledgerExists: Boolean(database.ledger_exists),
+      applied: migrations.filter(item => appliedByVersion.has(item.version)).map(item => item.version),
+      pending: migrations.filter(item => !appliedByVersion.has(item.version)).map(item => item.version)
+    });
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   }
-  const expectedVersions = new Set(migrations.map(item => item.version));
-  const unexpected = applied.filter(row => !expectedVersions.has(String(row.version)));
-  if (unexpected.length) throw new Error('Database contains unexpected migration versions; inspection stopped.');
-  return Object.freeze({
-    database: database.database_name,
-    role: database.role_name,
-    transactionReadOnly: database.transaction_read_only === 'on',
-    ledgerExists: Boolean(database.ledger_exists),
-    applied: migrations.filter(item => appliedByVersion.has(item.version)).map(item => item.version),
-    pending: migrations.filter(item => !appliedByVersion.has(item.version)).map(item => item.version)
-  });
 }
 
 export async function inspectSchemaMetadata(client) {
@@ -363,9 +373,7 @@ async function main() {
   await client.connect();
   try {
     const result = await inspectMigrationStatus(client, await expectedTrackedMigrations());
-    if (!result.transactionReadOnly) throw new Error('Database did not accept read-only transaction mode.');
-    const metadata = await inspectSchemaMetadata(client);
-    process.stdout.write(`${JSON.stringify({ environment: config.environment, ...result, metadata }, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({ environment: config.environment, ...result }, null, 2)}\n`);
   } finally {
     await client.end();
   }

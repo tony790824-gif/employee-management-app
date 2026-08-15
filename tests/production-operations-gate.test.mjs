@@ -73,7 +73,7 @@ const sql = [];
 const inspected = await inspectMigrationStatus({
   async query(statement) {
     sql.push(statement);
-    if (statement.startsWith('SET ')) return { rows: [] };
+    if (statement === 'BEGIN TRANSACTION READ ONLY' || statement === 'COMMIT' || statement === 'ROLLBACK') return { rows: [] };
     if (statement.includes('current_database')) return { rows: [{
       database_name: 'neondb', role_name: 'banke_readonly', transaction_read_only: 'on', ledger_exists: true
     }] };
@@ -82,7 +82,28 @@ const inspected = await inspectMigrationStatus({
 }, expectedMigrations);
 assert.deepEqual(inspected.applied, ['0001']);
 assert.deepEqual(inspected.pending, ['0002']);
-assert.equal(sql.every(statement => /^(?:SET default_transaction_read_only|SELECT)/.test(statement.trim())), true);
+assert.equal(sql[0], 'BEGIN TRANSACTION READ ONLY');
+assert.equal(sql.at(-1), 'COMMIT');
+assert.equal(sql.includes('ROLLBACK'), false);
+assert.equal(sql.every(statement => /^(?:BEGIN TRANSACTION READ ONLY|COMMIT|SELECT)/.test(statement.trim())), true);
+
+const rejectedSql = [];
+await assert.rejects(() => inspectMigrationStatus({
+  async query(statement) {
+    rejectedSql.push(statement);
+    if (statement.includes('current_database')) return { rows: [{
+      database_name: 'neondb', role_name: 'banke_readonly', transaction_read_only: 'off', ledger_exists: true
+    }] };
+    return { rows: [] };
+  }
+}, expectedMigrations), /did not accept read-only/);
+assert.equal(rejectedSql.at(-1), 'ROLLBACK');
+
+const readonlyStatusSource = await readFile('database/inspect-migration-status.mjs', 'utf8');
+const readonlyStatusMain = readonlyStatusSource.slice(readonlyStatusSource.indexOf('async function main()'));
+assert.match(readonlyStatusMain, /inspectMigrationStatus/);
+assert.doesNotMatch(readonlyStatusMain, /inspectSchemaMetadata/);
+assert.doesNotMatch(readonlyStatusMain, /pg_stat_ssl/);
 
 const authConfig = auth0ProductionConfig({
   BANK_ENV: 'production', BANK_OIDC_ISSUER: 'https://bankeban.us.auth0.com/',

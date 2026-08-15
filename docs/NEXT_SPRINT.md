@@ -1,4 +1,12 @@
-# Next Production Closure gate — Production evidence and authorization
+# Next action — Fast Production Path
+
+`docs/APP_COMPLETION_PATH.md` 是目前唯一的執行路徑。停止新增小型 Closure Phase、重複 parser 或把 traffic-GO 條件誤列為 Migration 前置條件。
+
+下一個唯一動作是 Owner 授權一次合併的 Migration event：先以既有 `db:status:readonly` / event-time preflight 驗證 fresh ledger、checksum、restore point、writes drained、operator、TLS、manifest；全部 PASS 後，在同一授權邊界執行 exact `0009`, `0011`–`0022`，永久排除 `0010`，最後做 fresh ledger/checksum/non-ACL structural post-check。任一失敗立即停止且不重試。
+
+ACL owner split、custom domain、外部 APM、長期 log retention 與 scheduled snapshot 不再阻塞 Migration；其中真正的 traffic-GO 項目在 Migration 之外並行完成。Production 操作仍須 Owner 明確授權。
+
+# Historical Production Closure notes
 
 ## Next action after Production Migration Final Execution Plan
 

@@ -28,7 +28,7 @@ Sprint 33A separated 98% product completion from 62% Production readiness. The r
 - CTO/Product: separates implemented scope from release authority and prevents a false launch claim.
 - Frontend/PWA: headers are environment-derived and preserve current inline/style compatibility; stricter nonce removal is future hardening.
 - Backend/Security: rate limiting is bounded and principal-scoped after verified JWT; CORS remains non-authoritative.
-- Database: inspection runs only `SET default_transaction_read_only` and `SELECT`, never ledger creation, locks, Migration, or DDL.
+- Database: the status inspection uses one explicit `READ ONLY` transaction and reads only identity plus Migration ledger/checksums, never ledger creation, business rows, locks, Migration, or DDL.
 - QA/DevOps: CI is deterministic and non-deploying; external Production gates remain visible and cannot be auto-passed.
 
 ## Consequences

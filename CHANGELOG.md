@@ -1103,3 +1103,9 @@
 - Added a Staging-only migration manager with environment/host safeguards, advisory lock, explicit rollback confirmation, duplicate-up protection, and deliberate exclusion of `0009`/`0010`.
 - Added fully synthetic dual-Workspace notification E2E covering manager/employee delivery, approve/reject, badge count, read state, sorting, idempotency, revision refresh, privacy, cross-tenant denial, SQL injection, least privilege, and fixture cleanup.
 - Production, Production database, Auth0, Google Sheets, Apps Script, and Production deployment were not modified.
+# 2026-08-15 - Fast Production Path tooling consolidation
+
+- Kept the tested exact-manifest Production Migration event executor and removed the uncommitted duplicate migration-state parser/temporary-runner chain.
+- Simplified `db:status:readonly` to one explicit read-only transaction that reads identity and Migration ledger/checksums only.
+- Defined one finite A–F APP completion path and moved ACL semantics, custom domain and long-term observability out of the Migration critical path.
+- Added no dependency and made no Production connection, mutation, Migration, deployment or external-resource change.

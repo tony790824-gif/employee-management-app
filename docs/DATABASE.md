@@ -34,7 +34,7 @@ The read-only inspector now reports only schema metadata: database/role/read-onl
 
 ## Sprint 33B read-only Production schema inspection
 
-`pnpm db:status:readonly` is the only status command approved for pre-authorization Production inspection. It requires a distinct `DATABASE_READONLY_URL`, exact approved host, TLS, explicit `neondb`, and credentials different from Migrator/API/Push roles. It executes `SET default_transaction_read_only = on` and `SELECT` only; it never creates the ledger, takes a Migration lock, applies DDL/DML, or changes checksums.
+`pnpm db:status:readonly` is the only status command approved for pre-authorization Production inspection. It requires a distinct `DATABASE_READONLY_URL`, exact approved host, TLS, explicit `neondb`, and credentials different from Migrator/API/Push roles. It executes one explicit `BEGIN TRANSACTION READ ONLY`, reads only identity and `schema_migrations(version,name,checksum)`, then commits (or rolls back on failure); it never creates the ledger, scans business rows, takes a Migration lock, applies DDL/DML, or changes checksums.
 
 The expected manifest is derived only from Git-tracked Migration pairs and excludes the intentionally untracked/unapproved `0010`. Actual Production status and schema alignment remain **PENDING EXTERNAL APPROVAL**; Sprint 33B did not connect to or modify Production.
 
