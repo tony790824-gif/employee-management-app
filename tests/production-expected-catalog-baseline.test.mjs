@@ -100,6 +100,10 @@ assert.ok(artifact.objectCounts.triggers > 0);
 assert.equal(Array.isArray(artifact.catalog.sequences), true);
 assert.equal(artifact.objectCounts.sequences, artifact.catalog.sequences.length);
 assert.ok(artifact.objectCounts.extensions > 0);
+assert.equal(
+  artifact.catalog.columns.find(item => item.table_name === 'push_subscriptions' && item.column_name === 'endpoint_hash')?.column_default,
+  ''
+);
 
 const source = await readFile(new URL('../database/materialize-expected-catalog.mjs', import.meta.url), 'utf8');
 assert.doesNotMatch(source, /postgres(?:ql)?:\/\//i);
@@ -108,5 +112,6 @@ assert.doesNotMatch(source, /env\.(?:DATABASE_URL|DATABASE_MIGRATOR_URL|DATABASE
 assert.match(source, /127\.0\.0\.1/);
 assert.match(source, /DISPOSABLE_CONFIRMATION_REQUIRED/);
 assert.match(source, /BASELINE_REPRODUCIBILITY_MISMATCH/);
+assert.match(source, /CASE WHEN attribute\.attgenerated = ''[\s\S]*ELSE ''[\s\S]*END AS column_default/);
 
 console.log('Disposable expected catalog baseline passed deterministic and fail-closed validation');

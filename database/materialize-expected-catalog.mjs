@@ -59,7 +59,10 @@ export const CATALOG_QUERIES = Object.freeze({
            type_namespace.nspname AS udt_schema,
            type.typname AS udt_name,
            CASE WHEN attribute.attnotnull THEN 'NO' ELSE 'YES' END AS is_nullable,
-           COALESCE(pg_catalog.pg_get_expr(attribute_default.adbin, attribute_default.adrelid), '') AS column_default,
+           CASE WHEN attribute.attgenerated = ''
+             THEN COALESCE(pg_catalog.pg_get_expr(attribute_default.adbin, attribute_default.adrelid), '')
+             ELSE ''
+           END AS column_default,
            CASE WHEN attribute.attidentity = '' THEN 'NO' ELSE 'YES' END AS is_identity,
            CASE attribute.attidentity
              WHEN 'a' THEN 'ALWAYS'

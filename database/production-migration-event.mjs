@@ -26,6 +26,7 @@ const EVIDENCE_HASH_PATH = path.join(PROJECT_ROOT, 'docs', 'PRODUCTION_MIGRATION
 export const PRODUCTION_EVENT_CONFIRMATION = 'EXECUTE_BANKE_PRODUCTION_MIGRATION_EVENT';
 export const RESTORE_POINT_CONFIRMATION = 'EVENT_RESTORE_POINT_VERIFIED';
 export const MAINTENANCE_CONFIRMATION = 'EVENT_WRITES_DRAINED';
+export const APPROVED_NEON_MIGRATION_OPERATOR = 'neondb_owner';
 export const APPROVED_UPGRADE_SEQUENCE = Object.freeze([
   '0009', '0011', '0012', '0013', '0014', '0015', '0016',
   '0017', '0018', '0019', '0020', '0021', '0022'
@@ -74,7 +75,8 @@ export function productionMigrationEventConfig(env = process.env, { head = gitHe
   const expectedCommit = String(env.BANK_PRODUCTION_MIGRATION_COMMIT_SHA || '').trim();
   const caInput = String(env.BANK_PRODUCTION_CA_BUNDLE || '').trim();
   if (!value || !expectedDatabase || !expectedOperator || !expectedCommit || !caInput) throw new Error('PROTECTED_EVENT_INPUT_MISSING');
-  if (!SAFE_IDENTIFIER.test(expectedDatabase) || !SAFE_IDENTIFIER.test(expectedOperator) || FORBIDDEN_OPERATOR.test(expectedOperator)) {
+  if (!SAFE_IDENTIFIER.test(expectedDatabase) || !SAFE_IDENTIFIER.test(expectedOperator) || FORBIDDEN_OPERATOR.test(expectedOperator)
+      || expectedOperator !== APPROVED_NEON_MIGRATION_OPERATOR) {
     throw new Error('MIGRATION_OPERATOR_EXPECTATION_BLOCKED');
   }
   if (expectedCommit !== head) throw new Error('EVENT_COMMIT_IDENTITY_MISMATCH');
@@ -113,21 +115,51 @@ async function collectCatalog(client) {
   return catalog;
 }
 
-async function verifyIdentityAndOperator(client, config) {
+export function assertMigrationOperatorEvidence(identity, boundary, config) {
+  if (!identity?.database_ok || !identity?.user_ok || !identity?.session_ok || !identity?.version_ok) {
+    throw new Error('EVENT_IDENTITY_BLOCKED');
+  }
+  const approvedNeonOwnerProfile = config.expectedOperator === APPROVED_NEON_MIGRATION_OPERATOR
+    && boundary?.rolsuper === false
+    && boundary?.rolcanlogin === true
+    && boundary?.rolcreatedb === true
+    && boundary?.rolcreaterole === true
+    && boundary?.rolreplication === true
+    && boundary?.rolbypassrls === true;
+  if (!approvedNeonOwnerProfile
+      || boundary?.public_create !== true
+      || boundary?.private_create !== true
+      || Number(boundary?.relation_owner_mismatch_count) !== 0
+      || Number(boundary?.function_owner_mismatch_count) !== 0) {
+    throw new Error('MIGRATION_OPERATOR_BOUNDARY_BLOCKED');
+  }
+}
+
+export function assertApprovedMigrationSet(migrationSet) {
+  if (migrationSet.upgrade.some(item => item.version === '0010')) throw new Error('MIGRATION_0010_REJECTED');
+  if (canonicalJson(migrationSet.upgrade.map(item => item.version)) !== canonicalJson(APPROVED_UPGRADE_SEQUENCE)) {
+    throw new Error('EVENT_SEQUENCE_BLOCKED');
+  }
+}
+
+export async function verifyIdentityAndOperator(client, config) {
   const identity = (await client.query(`
     SELECT current_database() = $1 AS database_ok,
            current_user = $2 AS user_ok,
            session_user = $2 AS session_ok,
            current_setting('server_version_num')::integer BETWEEN 180000 AND 189999 AS version_ok
   `, [config.expectedDatabase, config.expectedOperator])).rows[0];
-  if (!identity?.database_ok || !identity?.user_ok || !identity?.session_ok || !identity?.version_ok) throw new Error('EVENT_IDENTITY_BLOCKED');
   const boundary = (await client.query(`
-    SELECT NOT r.rolsuper AND NOT r.rolcreatedb AND NOT r.rolcreaterole
-           AND NOT r.rolreplication AND NOT r.rolbypassrls AND r.rolcanlogin
-           AND pg_catalog.has_schema_privilege(current_user, 'public', 'CREATE')
-           AND pg_catalog.has_schema_privilege(current_user, 'app_private', 'CREATE')
-           AND NOT EXISTS (
-             SELECT 1 FROM pg_catalog.pg_class c
+    SELECT r.rolsuper,
+           r.rolcreatedb,
+           r.rolcreaterole,
+           r.rolreplication,
+           r.rolbypassrls,
+           r.rolcanlogin,
+           pg_catalog.has_schema_privilege(current_user, 'public', 'CREATE') AS public_create,
+           pg_catalog.has_schema_privilege(current_user, 'app_private', 'CREATE') AS private_create,
+           (SELECT count(*)::integer
+             FROM pg_catalog.pg_class c
              JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
              WHERE n.nspname IN ('public', 'app_private') AND c.relkind IN ('r','p','v','m','S')
                AND c.relowner <> r.oid
@@ -135,21 +167,19 @@ async function verifyIdentityAndOperator(client, config) {
                  SELECT 1 FROM pg_catalog.pg_depend d
                  WHERE d.classid = 'pg_catalog.pg_class'::pg_catalog.regclass
                    AND d.objid = c.oid AND d.deptype = 'e'
-               )
-           )
-           AND NOT EXISTS (
-             SELECT 1 FROM pg_catalog.pg_proc p
+             )) AS relation_owner_mismatch_count,
+           (SELECT count(*)::integer
+             FROM pg_catalog.pg_proc p
              JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
              WHERE n.nspname IN ('public', 'app_private') AND p.proowner <> r.oid
                AND NOT EXISTS (
                  SELECT 1 FROM pg_catalog.pg_depend d
                  WHERE d.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass
                    AND d.objid = p.oid AND d.deptype = 'e'
-               )
-           ) AS operator_safe
+             )) AS function_owner_mismatch_count
       FROM pg_catalog.pg_roles r WHERE r.rolname = current_user
   `)).rows[0];
-  if (!boundary?.operator_safe) throw new Error('MIGRATION_OPERATOR_BOUNDARY_BLOCKED');
+  assertMigrationOperatorEvidence(identity, boundary, config);
 }
 
 async function verifyStructuralBaseline(client, baseline, migrationOwner, code) {
@@ -167,8 +197,7 @@ export async function executeProductionMigrationEvent({ env = process.env, clien
     readFile(FINAL_BASELINE_PATH, 'utf8').then(JSON.parse)
   ]);
   if (!ca.includes('-----BEGIN CERTIFICATE-----')) throw new Error('PRODUCTION_CA_BUNDLE_INVALID');
-  if (canonicalJson(migrationSet.upgrade.map(item => item.version)) !== canonicalJson(APPROVED_UPGRADE_SEQUENCE)) throw new Error('EVENT_SEQUENCE_BLOCKED');
-  if (migrationSet.upgrade.some(item => item.version === '0010')) throw new Error('MIGRATION_0010_REJECTED');
+  assertApprovedMigrationSet(migrationSet);
 
   const client = clientFactory
     ? clientFactory(config)
