@@ -3,7 +3,7 @@
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "22.13.0"
+  NODE_VERSION = "22.14.0"
   PNPM_VERSION = "11.9.0"
 
 [functions]

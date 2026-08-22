@@ -118,8 +118,8 @@ assert.match(netlifyConfig, /directory = "netlify\/functions"/);
 assert.doesNotMatch(netlifyConfig, /schedule\s*=/,
   'Initial Production launch must defer scheduled push drains to avoid unnecessary Free-plan usage.');
 assert.match(netlifyConfig, /publish = "dist"/);
-assert.match(netlifyConfig, /NODE_VERSION = "22\.13\.0"/,
-  'Netlify must use the minimum Node release supported by pnpm 11.9');
+assert.match(netlifyConfig, /NODE_VERSION = "22\.14\.0"/,
+  'Netlify must use Node 22.14 or newer Corepack keys with pnpm 11.9');
 assert.ok(redirects.indexOf('/v1/*') < redirects.indexOf('/* /index.html'),
   'API function rewrite must precede the SPA fallback');
 
