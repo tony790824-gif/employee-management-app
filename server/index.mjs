@@ -40,11 +40,48 @@ async function start() {
   });
 }
 
+const SAFE_ERROR_CODE_PATTERN = /^[A-Z0-9_]{2,64}$/;
+const SAFE_ERROR_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const AUTHENTICATION_CODES = new Set(['28P01']);
+const AUTHORIZATION_CODES = new Set(['28000']);
+const DNS_CODES = new Set(['ENOTFOUND', 'EAI_AGAIN']);
+const CONNECTION_CODES = new Set(['ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET']);
+
+function safeStartupErrorCode(error) {
+  const candidate = String(error?.code || error?.cause?.code || '').trim().toUpperCase();
+  return SAFE_ERROR_CODE_PATTERN.test(candidate) ? candidate : '';
+}
+
+function safeStartupErrorName(error) {
+  const candidate = String(error?.name || 'Error').trim();
+  return SAFE_ERROR_NAME_PATTERN.test(candidate) ? candidate : 'Error';
+}
+
+function classifyStartupError(error) {
+  const message = String(error?.message || '');
+  const normalizedMessage = message.toLowerCase();
+  const errorCode = safeStartupErrorCode(error);
+
+  if (message === 'Database startup target verification failed.') {
+    return 'DATABASE_NAME_MISMATCH';
+  }
+  if (AUTHENTICATION_CODES.has(errorCode)) return 'DATABASE_AUTH_FAILED';
+  if (AUTHORIZATION_CODES.has(errorCode)) return 'DATABASE_AUTHORIZATION_FAILED';
+  if (DNS_CODES.has(errorCode)) return 'DATABASE_DNS_FAILED';
+  if (CONNECTION_CODES.has(errorCode)) return 'DATABASE_CONNECTION_FAILED';
+  if (/(?:TLS|SSL|CERT|X509)/.test(errorCode)
+    || /\b(?:tls|ssl|certificate)\b|unable to verify (?:the )?(?:first )?certificate|self[- ]signed certificate/.test(normalizedMessage)) {
+    return 'DATABASE_TLS_FAILED';
+  }
+  return 'DATABASE_STARTUP_FAILED';
+}
+
 start().catch(async error => {
+  const errorCode = safeStartupErrorCode(error);
   console.error(JSON.stringify({
-    level: 'error',
-    message: 'Banke API startup failed closed',
-    code: 'DATABASE_TARGET_INVALID'
+    classification: classifyStartupError(error),
+    errorName: safeStartupErrorName(error),
+    ...(errorCode ? { errorCode } : {})
   }));
   await pushDispatcher?.stop().catch(() => {});
   await pushPool?.end().catch(() => {});
