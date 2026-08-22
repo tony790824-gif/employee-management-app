@@ -47,6 +47,14 @@ const AUTHORIZATION_CODES = new Set(['28000']);
 const DNS_CODES = new Set(['ENOTFOUND', 'EAI_AGAIN']);
 const CONNECTION_TIMEOUT_CODES = new Set(['ETIMEDOUT']);
 const CONNECTION_CODES = new Set(['ECONNREFUSED', 'ECONNRESET']);
+const SAFE_NESTED_ERROR_CODES = Object.freeze([
+  'ENETUNREACH',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'ENOTFOUND',
+  'EAI_AGAIN'
+]);
 
 function safeStartupErrorCode(error) {
   const candidate = String(error?.code || error?.cause?.code || '').trim().toUpperCase();
@@ -54,15 +62,29 @@ function safeStartupErrorCode(error) {
 }
 
 function safeStartupErrorName(error) {
-  const candidate = String(error?.name || 'Error').trim();
+  const candidate = String(error?.constructor?.name || error?.name || 'Error').trim();
   return SAFE_ERROR_NAME_PATTERN.test(candidate) ? candidate : 'Error';
 }
 
-function classifyStartupError(error) {
+function safeNestedErrorCodes(error) {
+  if (!Array.isArray(error?.errors)) return [];
+  const observed = new Set(error.errors.map(nested => safeStartupErrorCode(nested)).filter(Boolean));
+  return SAFE_NESTED_ERROR_CODES.filter(code => observed.has(code));
+}
+
+function classifyStartupError(error, nestedCodes = safeNestedErrorCodes(error)) {
   const message = String(error?.message || '');
   const normalizedMessage = message.toLowerCase();
   const errorCode = safeStartupErrorCode(error);
 
+  if (nestedCodes.includes('ENETUNREACH')) return 'DATABASE_NETWORK_UNREACHABLE';
+  if (nestedCodes.includes('ETIMEDOUT')) return 'DATABASE_CONNECT_TIMEOUT';
+  if (nestedCodes.some(code => ['ECONNREFUSED', 'ECONNRESET'].includes(code))) {
+    return 'DATABASE_CONNECTION_FAILED';
+  }
+  if (nestedCodes.some(code => ['ENOTFOUND', 'EAI_AGAIN'].includes(code))) {
+    return 'DATABASE_DNS_FAILED';
+  }
   if (message === 'Database startup target verification failed.') {
     return 'DATABASE_NAME_MISMATCH';
   }
@@ -79,6 +101,12 @@ function classifyStartupError(error) {
     || /connection terminated due to connection timeout|connection timeout|connection timed out|timeout expired/.test(normalizedMessage)) {
     return 'DATABASE_CONNECT_TIMEOUT';
   }
+  if (message.startsWith('SASL:')) return 'DATABASE_SCRAM_FAILED';
+  if (normalizedMessage.includes('client password must be a string')) {
+    return 'DATABASE_CREDENTIAL_FORMAT_INVALID';
+  }
+  if (normalizedMessage.includes('connection terminated unexpectedly')
+    || normalizedMessage.includes('connection terminated')) return 'DATABASE_CONNECTION_DROPPED';
   if (CONNECTION_CODES.has(errorCode)) return 'DATABASE_CONNECTION_FAILED';
   if (/(?:TLS|SSL|CERT|X509)/.test(errorCode)
     || /\b(?:tls|ssl|certificate)\b|unable to verify (?:the )?(?:first )?certificate|unable to verify leaf signature|hostname\/ip does not match certificate|certificate has expired|self[- ]signed certificate/.test(normalizedMessage)) {
@@ -88,11 +116,11 @@ function classifyStartupError(error) {
 }
 
 start().catch(async error => {
-  const errorCode = safeStartupErrorCode(error);
+  const nestedCodes = safeNestedErrorCodes(error);
   console.error(JSON.stringify({
-    classification: classifyStartupError(error),
+    classification: classifyStartupError(error, nestedCodes),
     errorName: safeStartupErrorName(error),
-    ...(errorCode ? { errorCode } : {})
+    nestedCodes
   }));
   await pushDispatcher?.stop().catch(() => {});
   await pushPool?.end().catch(() => {});
