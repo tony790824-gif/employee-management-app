@@ -45,7 +45,8 @@ const SAFE_ERROR_NAME_PATTERN = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 const AUTHENTICATION_CODES = new Set(['28P01']);
 const AUTHORIZATION_CODES = new Set(['28000']);
 const DNS_CODES = new Set(['ENOTFOUND', 'EAI_AGAIN']);
-const CONNECTION_CODES = new Set(['ECONNREFUSED', 'ETIMEDOUT', 'ECONNRESET']);
+const CONNECTION_TIMEOUT_CODES = new Set(['ETIMEDOUT']);
+const CONNECTION_CODES = new Set(['ECONNREFUSED', 'ECONNRESET']);
 
 function safeStartupErrorCode(error) {
   const candidate = String(error?.code || error?.cause?.code || '').trim().toUpperCase();
@@ -65,12 +66,22 @@ function classifyStartupError(error) {
   if (message === 'Database startup target verification failed.') {
     return 'DATABASE_NAME_MISMATCH';
   }
-  if (AUTHENTICATION_CODES.has(errorCode)) return 'DATABASE_AUTH_FAILED';
-  if (AUTHORIZATION_CODES.has(errorCode)) return 'DATABASE_AUTHORIZATION_FAILED';
-  if (DNS_CODES.has(errorCode)) return 'DATABASE_DNS_FAILED';
+  if (/\bdatabase\b.+\bdoes not exist\b/.test(normalizedMessage)) return 'DATABASE_NAME_MISMATCH';
+  if (AUTHENTICATION_CODES.has(errorCode)
+    || normalizedMessage.includes('password authentication failed')) return 'DATABASE_AUTH_FAILED';
+  if (AUTHORIZATION_CODES.has(errorCode)
+    || /no pg_hba entry|permission denied|not authorized/.test(normalizedMessage)) {
+    return 'DATABASE_AUTHORIZATION_FAILED';
+  }
+  if (DNS_CODES.has(errorCode)
+    || /getaddrinfo|name or service not known/.test(normalizedMessage)) return 'DATABASE_DNS_FAILED';
+  if (CONNECTION_TIMEOUT_CODES.has(errorCode)
+    || /connection terminated due to connection timeout|connection timeout|connection timed out|timeout expired/.test(normalizedMessage)) {
+    return 'DATABASE_CONNECT_TIMEOUT';
+  }
   if (CONNECTION_CODES.has(errorCode)) return 'DATABASE_CONNECTION_FAILED';
   if (/(?:TLS|SSL|CERT|X509)/.test(errorCode)
-    || /\b(?:tls|ssl|certificate)\b|unable to verify (?:the )?(?:first )?certificate|self[- ]signed certificate/.test(normalizedMessage)) {
+    || /\b(?:tls|ssl|certificate)\b|unable to verify (?:the )?(?:first )?certificate|unable to verify leaf signature|hostname\/ip does not match certificate|certificate has expired|self[- ]signed certificate/.test(normalizedMessage)) {
     return 'DATABASE_TLS_FAILED';
   }
   return 'DATABASE_STARTUP_FAILED';

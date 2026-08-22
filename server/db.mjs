@@ -88,7 +88,7 @@ export function createPool(env = process.env) {
     ssl: sslMode === 'require' ? { rejectUnauthorized: true } : false,
     max: Number(env.DATABASE_POOL_MAX || 10),
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 5_000,
+    connectionTimeoutMillis: 30_000,
     statement_timeout: 10_000,
     application_name: `banke-api-${environment}`
   });
