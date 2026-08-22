@@ -14,8 +14,19 @@ assert.equal(profile.auth.domain, 'dev-nkduawjn5itjlhx4.us.auth0.com');
 assert.ok(profile.auth.clientId, 'Staging public Client ID is required.');
 
 const stagingIndex = await readFile('dist-staging/index.html', 'utf8');
-assert.match(stagingIndex, /cdn\.auth0\.com\/js\/auth0-spa-js\/2\.11\/auth0-spa-js\.production\.js/);
-assert.match(stagingIndex, /integrity="sha384-[A-Za-z0-9+/=]+"/);
+const localAuth0Sdk = await readFile('dist-staging/vendor/auth0-spa-js.production.js', 'utf8');
+assert.match(stagingIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js"><\/script>/);
+assert.doesNotMatch(stagingIndex, /cdn\.auth0\.com|integrity=|crossorigin=/);
+assert.match(localAuth0Sdk, /createAuth0Client/);
+const sdkSandbox = {
+  TextEncoder, TextDecoder, URL, URLSearchParams, AbortController,
+  fetch, Headers, Request, Response, crypto: webcrypto,
+  navigator: { userAgent: 'Bankeban Auth0 SDK regression' },
+  setTimeout, clearTimeout
+};
+vm.runInNewContext(localAuth0Sdk, sdkSandbox, { filename: 'auth0-spa-js.production.js' });
+assert.equal(typeof sdkSandbox.auth0?.createAuth0Client, 'function',
+  'The same-origin Auth0 browser bundle must expose window.auth0.createAuth0Client.');
 assert.match(stagingIndex, /<script src="staging-auth\.js"><\/script>/);
 
 const sourceIndex = await readFile('index.html', 'utf8');

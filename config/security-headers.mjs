@@ -12,11 +12,10 @@ function directive(name, values) {
   return `${name} ${[...new Set(values.filter(Boolean))].join(' ')}`;
 }
 
-export function createSecurityHeaders({ profile, auth0SdkUrl = '' }) {
+export function createSecurityHeaders({ profile }) {
   const backendOrigin = originOf(profile.backendUrl);
   const postgresOrigin = originOf(profile.postgresApiUrl);
   const auth0Origin = profile.auth?.domain ? originOf(`https://${profile.auth.domain}`) : '';
-  const auth0SdkOrigin = originOf(auth0SdkUrl);
   const googleTransport = profile.dataBackend === 'google_sheets';
 
   const csp = [
@@ -24,7 +23,7 @@ export function createSecurityHeaders({ profile, auth0SdkUrl = '' }) {
     directive('base-uri', ["'self'"]),
     directive('object-src', ["'none'"]),
     directive('frame-ancestors', ["'none'"]),
-    directive('script-src', ["'self'", "'unsafe-inline'", auth0SdkOrigin]),
+    directive('script-src', ["'self'", "'unsafe-inline'"]),
     directive('style-src', ["'self'", "'unsafe-inline'"]),
     directive('img-src', ["'self'", 'data:', 'blob:']),
     directive('font-src', ["'self'", 'data:']),

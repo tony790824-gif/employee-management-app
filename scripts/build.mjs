@@ -42,8 +42,8 @@ const outputDirectory = postgresRehearsal ? 'dist-staging-postgres'
   : profile.name === 'production' ? 'dist' : `dist-${profile.name}`;
 const cacheRevision = encodeURIComponent(effectiveProfile.cacheName);
 const cacheCleanupPrefix = profile.name === 'staging' ? profile.cachePrefix : effectiveProfile.cachePrefix;
-const auth0SdkUrl = 'https://cdn.auth0.com/js/auth0-spa-js/2.11/auth0-spa-js.production.js';
-const auth0SdkIntegrity = 'sha384-6cnw/e3NUTHp0Du1Qjh1PjnZ6N0XOX/NW2oX3rXiTDHPJ9hjENz/8G2qT1RzUDWd';
+const auth0SdkSource = 'node_modules/@auth0/auth0-spa-js/dist/auth0-spa-js.production.js';
+const auth0SdkPath = '/vendor/auth0-spa-js.production.js';
 
 await rm(outputDirectory, { recursive: true, force: true });
 await mkdir(outputDirectory, { recursive: true });
@@ -81,10 +81,7 @@ const runtimeConfig = `(() => {
 })();
 `;
 await writeFile(`${outputDirectory}/environment-config.js`, runtimeConfig, 'utf8');
-await writeFile(`${outputDirectory}/_headers`, createSecurityHeaders({
-  profile: effectiveProfile,
-  auth0SdkUrl: profile.auth ? auth0SdkUrl : ''
-}), 'utf8');
+await writeFile(`${outputDirectory}/_headers`, createSecurityHeaders({ profile: effectiveProfile }), 'utf8');
 
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
 manifest.id = effectiveProfile.manifest.id;
@@ -110,9 +107,11 @@ if (builtIndexHtml === originalIndexHtml) {
 }
 
 if (profile.auth) {
+  await mkdir(`${outputDirectory}/vendor`, { recursive: true });
+  await cp(auth0SdkSource, `${outputDirectory}/vendor/auth0-spa-js.production.js`);
   await cp('staging-auth.js', `${outputDirectory}/staging-auth.js`);
   const authScripts = [
-    `    <script src="${auth0SdkUrl}" integrity="${auth0SdkIntegrity}" crossorigin="anonymous"></script>`,
+    `    <script src="${auth0SdkPath}"></script>`,
     '    <script src="staging-auth.js"></script>'
   ].join('\n');
   const authenticatedIndexHtml = builtIndexHtml.replace(
@@ -124,4 +123,4 @@ if (profile.auth) {
 }
 await writeFile(indexPath, builtIndexHtml, 'utf8');
 
-console.log(`Built ${profile.name} frontend (${deployFiles.length + (profile.auth ? 1 : 0)} assets) in ${outputDirectory}/.`);
+console.log(`Built ${profile.name} frontend (${deployFiles.length + (profile.auth ? 2 : 0)} assets) in ${outputDirectory}/.`);

@@ -90,6 +90,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@auth0/auth0-spa-js": "2.24.1",
     "@aws-sdk/client-secrets-manager": "^3.1090.0",
     "pg": "^8.22.0",
     "web-push": "3.6.7"

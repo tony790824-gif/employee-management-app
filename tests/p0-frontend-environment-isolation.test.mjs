@@ -43,15 +43,18 @@ assert.equal(environmentProfiles.production.postgresApiUrl, 'https://steady-salm
 const productionEnvironment = await readFile('dist/environment-config.js', 'utf8');
 const productionHeaders = await readFile('dist/_headers', 'utf8');
 const productionIndex = await readFile('dist/index.html', 'utf8');
+const productionAuth0Sdk = await readFile('dist/vendor/auth0-spa-js.production.js', 'utf8');
 assert.match(productionEnvironment, /"dataBackend": "postgres"/);
 assert.match(productionEnvironment, /https:\/\/steady-salmiakki-4aaa19\.netlify\.app\/v1/);
 assert.match(productionEnvironment, /"clientId": "production-client-id"/);
 assert.match(productionEnvironment, /"audience": "https:\/\/bankeban-production-api"/);
 assert.doesNotMatch(productionEnvironment, /script\.google\.com|bankeban-staging-api|nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu/);
 assert.match(productionHeaders, /https:\/\/production-tenant\.us\.auth0\.com/);
-assert.match(productionHeaders, /https:\/\/cdn\.auth0\.com/);
+assert.doesNotMatch(productionHeaders, /https:\/\/cdn\.auth0\.com/);
 assert.doesNotMatch(productionHeaders, /script\.google\.com|bankeban-staging-node-api/);
-assert.match(productionIndex, /auth0-spa-js\.production\.js/);
+assert.match(productionIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js"><\/script>/);
+assert.doesNotMatch(productionIndex, /cdn\.auth0\.com|integrity=|crossorigin=/);
+assert.match(productionAuth0Sdk, /createAuth0Client/);
 assert.match(productionIndex, /<script src="staging-auth\.js"><\/script>/);
 
 const stagingFiles = await readdir('dist-staging');

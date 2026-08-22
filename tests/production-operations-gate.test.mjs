@@ -23,11 +23,11 @@ const stagingHeaders = createSecurityHeaders({
   profile: {
     dataBackend: 'postgres', backendUrl: '', postgresApiUrl: 'https://api.staging.example/v1',
     auth: { domain: 'dev-synthetic.us.auth0.com' }
-  },
-  auth0SdkUrl: 'https://cdn.auth0.com/js/auth0-spa-js/2.11/auth0-spa-js.production.js'
+  }
 });
 assert.match(stagingHeaders, /https:\/\/api\.staging\.example/);
 assert.match(stagingHeaders, /https:\/\/dev-synthetic\.us\.auth0\.com/);
+assert.doesNotMatch(stagingHeaders, /cdn\.auth0\.com/);
 assert.doesNotMatch(stagingHeaders, /script\.google\.com/);
 
 let now = 0;
