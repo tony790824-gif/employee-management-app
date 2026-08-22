@@ -2,7 +2,10 @@
   'use strict';
 
   const environment = window.shiftEnvironment;
-  if (environment?.name !== 'staging') return;
+  if (!['staging', 'production'].includes(environment?.name)) return;
+
+  const environmentLabel = environment.name === 'production' ? 'Production' : 'Staging';
+  const environmentLabelUpper = environmentLabel.toUpperCase();
 
   const authConfig = environment.auth;
   const loginButton = document.querySelector('#bossLogin');
@@ -177,8 +180,8 @@
 
   const initialize = async () => {
     if (showInAppBrowserNotice()) return;
-    if (!authConfig?.domain || !authConfig?.clientId || authConfig?.audience !== 'https://bankeban-staging-api') {
-      throw new Error('Staging Auth0 public configuration is incomplete.');
+    if (!authConfig?.domain || !authConfig?.clientId || !authConfig?.audience) {
+      throw new Error(`${environmentLabel} Auth0 public configuration is incomplete.`);
     }
     if (typeof auth0Sdk?.createAuth0Client !== 'function') {
       throw new Error('Auth0 SPA SDK failed to load.');
@@ -210,7 +213,7 @@
       if (environment.dataBackend === 'postgres') {
         if (!verifiedOfflineBinding) throw new Error('Auth0 identity binding is unavailable.');
         initializationPhase = 'app-session';
-        setStatus('Auth0 驗證成功，正在載入 PostgreSQL Staging 資料…');
+        setStatus(`Auth0 驗證成功，正在載入 PostgreSQL ${environmentLabel} 資料…`);
         const bootstrap = await window.shiftPostgresCloud.connect({
           getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
           offlineIdentityBinding: verifiedOfflineBinding
@@ -218,16 +221,16 @@
         initializationPhase = 'app-ui';
         await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
         window.shiftPostgresCloud.activateForegroundSync();
-        setStatus('PostgreSQL Staging 資料載入完成。');
+        setStatus(`PostgreSQL ${environmentLabel} 資料載入完成。`);
       } else {
-        setStatus('Auth0 Staging login succeeded; the session claim is present and matches the Auth0 session ID.');
+        setStatus(`Auth0 ${environmentLabel} login succeeded; the session claim is present and matches the Auth0 session ID.`);
       }
       loginButton.textContent = 'Auth0 已登入';
       loginButton.disabled = true;
       return;
     }
 
-    setStatus('STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
+    setStatus(`${environmentLabelUpper} 僅使用 Auth0 Authorization Code + PKCE 登入。`);
     setBusy(false);
   };
 
@@ -246,7 +249,7 @@
   const resetLoggedOutUi = () => {
     claimVerification = emptyClaimVerification();
     verifiedOfflineBinding = '';
-    setStatus('STAGING 僅使用 Auth0 Authorization Code + PKCE 登入。');
+    setStatus(`${environmentLabelUpper} 僅使用 Auth0 Authorization Code + PKCE 登入。`);
     if (loginButton) {
       loginButton.disabled = false;
       loginButton.textContent = '使用 Auth0 登入';
@@ -265,7 +268,7 @@
 
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     window.shiftStateStore?.clearSensitive?.();
-    setStatus('PostgreSQL Staging 登入階段已過期，正在安全重新登入…');
+    setStatus(`PostgreSQL ${environmentLabel} 登入階段已過期，正在安全重新登入…`);
     if (loginButton) {
       loginButton.disabled = true;
       loginButton.textContent = '正在重新登入…';
@@ -274,7 +277,7 @@
     try {
       await logoutProvider();
     } catch {
-      setStatus('PostgreSQL Staging 登入階段已過期，請按「重新登入」。');
+      setStatus(`PostgreSQL ${environmentLabel} 登入階段已過期，請按「重新登入」。`);
       if (loginButton) {
         loginButton.disabled = false;
         loginButton.textContent = '重新登入';
@@ -290,7 +293,7 @@
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     window.shiftStateStore?.clearSensitive?.();
     claimVerification = emptyClaimVerification();
-    setStatus('此 Auth0 Staging 帳號尚未綁定可用的工作區，或帳號已停權。請更換為已核准的老闆或員工測試帳號。');
+    setStatus(`此 Auth0 ${environmentLabel} 帳號尚未綁定可用的工作區，或帳號已停權。請更換為已核准的老闆或員工帳號。`);
     if (loginButton) {
       loginButton.disabled = false;
       loginButton.textContent = '更換登入帳號';
@@ -309,7 +312,7 @@
     setBusy(true);
   }
 
-  window.shiftStagingAuth = Object.freeze({
+  const publicAuth = Object.freeze({
     loginWithRedirect,
     logoutProvider,
     getAccessToken: () => client?.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
@@ -317,11 +320,15 @@
     redirectUri,
     audience: authConfig?.audience || ''
   });
+  window.shiftAuth = publicAuth;
+  window.shiftStagingAuth = publicAuth;
 
   initialize().catch(async error => {
     if (await recoverInvalidPostgresSession(error)) return;
     if (recoverDeniedPostgresIdentity(error)) return;
-    const system = initializationPhase === 'auth0' ? 'Auth0 Staging' : 'PostgreSQL Staging';
+    const system = initializationPhase === 'auth0'
+      ? `Auth0 ${environmentLabel}`
+      : `PostgreSQL ${environmentLabel}`;
     setStatus(`${system} 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
     if (loginButton) loginButton.disabled = true;
   });

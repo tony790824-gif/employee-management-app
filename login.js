@@ -308,9 +308,10 @@
         code: error?.code || 'LOGOUT_REQUEST_FAILED'
       });
     }
-    if (postgresSession && typeof window.shiftStagingAuth?.logoutProvider === 'function') {
+    const authRuntime = window.shiftAuth || window.shiftStagingAuth;
+    if (postgresSession && typeof authRuntime?.logoutProvider === 'function') {
       try {
-        await window.shiftStagingAuth.logoutProvider();
+        await authRuntime.logoutProvider();
       } catch (error) {
         console.warn('Auth0 logout redirect failed after local state was cleared', {
           code: error?.code || 'AUTH0_LOGOUT_FAILED'

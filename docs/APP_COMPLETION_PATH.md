@@ -7,7 +7,7 @@
 | 分類 | 工具 | 決定 |
 |---|---|---|
 | KEEP | `database/production-migration-event.mjs`、exact manifest、checksum、`0009` → `0011`–`0022` allowlist、逐版 transaction | 這條路徑已在 disposable PostgreSQL 18.4 演練；切換工具會增加 ledger 與 migration-history 轉換風險。 |
-| KEEP | `database/rehearse-production-migration-upgrade.mjs`、non-ACL structural pre/post check、Release Gate | 保留作為 Migration event 前後的必要安全驗證。 |
+| KEEP, NON-BLOCKING | `database/rehearse-production-migration-upgrade.mjs`、既有 non-ACL structural comparator | 保留供 disposable rehearsal、debug 與 audit；baseline/catalog 欄位集合不相容時不得阻塞 Production。Production DB Gate 改由 APP 必要 contract 與最小 read-only smoke 判定。 |
 | SIMPLIFY | `pnpm db:status:readonly` | 只做一個 `READ ONLY` transaction，讀取 identity 與 `schema_migrations(version,name,checksum)`；不再順帶做全 catalog/ACL 掃描。 |
 | KEEP, NON-BLOCKING | ACL/default-ACL/semantic evidence 工具與歷史 Evidence | 保留稽核歷史，但 ACL owner split 不阻止 approved migration sequence；不得再作為 Migration event 的循環前置依賴。 |
 | DELETE | 臨時 `production-migration-state-result` parser、temporary runner 與重複 tests | 未提交的重複鏈已移除；狀態查詢回到既有 `db:status:readonly`。 |
@@ -23,7 +23,7 @@
 4. fresh ledger/name/checksum 與起點一致。
 5. exact sequence `0009`, `0011`–`0022`；`0010` 永久排除。
 6. 任一 preflight/migration/post-check 失敗立即停止，不自動 retry。
-7. 每版獨立 transaction，完成後 fresh ledger/checksum/non-ACL structural verification。
+7. 每版獨立 transaction；完成後以 fresh ledger/checksum、APP 必要 DB contract 與最小 read-only smoke 驗證，不以 structural fingerprint 阻塞。
 8. API、Auth、workspace isolation、核心 UI 與 push smoke tests。
 9. event-specific restore/forward-fix 路徑與當班 owner。
 
@@ -32,14 +32,14 @@
 | Phase | 完成條件 | 現況 |
 |---|---|---|
 | A — Freeze path | Migration 工具與必要 Gates 收斂，不再新增證據 runner | COMPLETE |
-| B — Event preflight | 一次 read-only ledger/checksum、restore point、writes drained、operator/TLS/manifest PASS | NEXT |
-| C — Migration event | 精確 13 版成功，fresh ledger/checksum/non-ACL structural post-check PASS | PENDING AUTHORIZATION |
+| B — Event preflight | read-only ledger/checksum、restore boundary、identity/TLS/manifest PASS | COMPLETE |
+| C — Migration event | Production ledger 已包含 `0001`–`0009`、`0011`–`0022` 且 checksum PASS；`0010` 永久排除 | SKIPPED / ALREADY APPLIED |
 | D — Minimum platform | Production-isolated Auth0、Netlify API/frontend/scheduled push secrets 與設定完成 | PENDING OWNER ACTION |
 | E — Launch verification | Auth/workspace/API/PWA/push smoke、rollback ready，Owner 明確 Traffic GO | PENDING |
 | F — Post-launch operations | 監控/告警、備份改善與 ACL hardening 依實際風險排程 | POST-LAUNCH |
 
-從現在到家人可正式使用，剩四個主要階段（B–E）。Phase F 不阻塞低流量首次上線，但既有 PITR/restore 能力與 event restore point 仍不可省略。
+Production 必要 schemas/tables/columns、indexes/constraints 與 APP runtime function signatures 已由 dedicated read-only contract check 驗證；核心查詢 contract 與唯讀連線正常。`Production Database = READY`。從現在到家人可正式使用，剩兩個主要階段（D–E）。Phase F 不阻塞低流量首次上線。
 
 ## Next single action
 
-Owner 只需授權一次合併的 Migration event：同一事件先做 B 的 read-only preflight，PASS 後立即執行 C；任何 Gate 不符即停止。不得再先建立新的 parser、Phase 或 Sprint。
+直接進入 Phase D：在既有免費 Netlify Production candidate 注入獨立 Production secrets，完成 Auth0 isolation、Functions API 與 scheduled push 設定；不得重跑 Migration，也不得再建立新的 DB parser、comparator、Phase 或 Sprint。

@@ -20,10 +20,15 @@ export const environmentProfiles = Object.freeze({
   }),
   production: Object.freeze({
     name: 'production', label: '',
-    dataBackend: 'google_sheets',
-    backendUrl: 'https://script.google.com/macros/s/AKfycbw_c_AGjrq91Gjl_UrYMDxIzQtSUsW0PPm6H3WmJUEZZN2uXmvrXbKTlVxahLZ6OOzq/exec',
-    postgresApiUrl: '',
-    storagePrefix: '', cachePrefix: 'banke-production-', cacheName: 'banke-production-v1',
+    dataBackend: 'postgres',
+    backendUrl: '',
+    postgresApiUrl: 'https://steady-salmiakki-4aaa19.netlify.app/v1',
+    auth: Object.freeze({
+      domain: String(process.env.BANKE_PRODUCTION_AUTH0_DOMAIN || '').trim(),
+      clientId: String(process.env.BANKE_PRODUCTION_AUTH0_CLIENT_ID || '').trim(),
+      audience: String(process.env.BANKE_PRODUCTION_AUTH0_AUDIENCE || '').trim()
+    }),
+    storagePrefix: '', cachePrefix: 'banke-production-', cacheName: 'banke-production-v2',
     manifest: Object.freeze({ id: './?app=banke-production', name: '班表管理', shortName: '班表管理', startUrl: './' })
   })
 });

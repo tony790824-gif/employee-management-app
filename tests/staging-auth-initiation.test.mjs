@@ -26,7 +26,7 @@ assert.match(runtimeConfig, /"audience": "https:\/\/bankeban-staging-api"/);
 assert.match(runtimeConfig, /"clientId": "nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu"/);
 
 const authSource = await readFile('staging-auth.js', 'utf8');
-assert.match(authSource, /environment\?\.name !== 'staging'/);
+assert.match(authSource, /\['staging', 'production'\]\.includes\(environment\?\.name\)/);
 assert.match(authSource, /new URL\('\.\/', window\.location\.href\)\.href/);
 assert.match(authSource, /authorizationParams:\s*\{[\s\S]*redirect_uri: redirectUri,[\s\S]*audience: authConfig\.audience/);
 assert.match(authSource, /useRefreshTokens: true/);
@@ -38,6 +38,8 @@ assert.match(authSource, /client\.getIdTokenClaims/);
 assert.match(authSource, /matchesAuth0SessionId/);
 assert.match(authSource, /getClaimVerification: \(\) => claimVerification/);
 assert.doesNotMatch(authSource, /getClient:\s*\(\)\s*=>\s*client/, 'Staging auth client must remain private.');
+assert.match(authSource, /window\.shiftAuth = publicAuth/,
+  'The authenticated frontend entry point must expose an environment-neutral API.');
 assert.match(authSource, /phoneLabel, pinLabel, activationLabel, employeeLoginButton/);
 assert.match(authSource, /legacyControl\.style\.display = 'none'/);
 assert.match(authSource, /Line\\\/\|\\bFBAN\\\/\|\\bFBAV\\\/\|\\bFB_IAB\\\/\|\\bInstagram\\b\|\\bMessenger\\b/);
@@ -46,7 +48,7 @@ assert.match(authSource, /window\.navigator\.clipboard\.writeText\(redirectUri\)
 assert.match(authSource, /showInAppBrowserNotice\(\)\) return/);
 assert.match(authSource, /initializationPhase = 'app-session'/);
 assert.match(authSource, /await window\.shiftAppSession\.enter[\s\S]*activateForegroundSync\(\)/);
-assert.match(authSource, /initializationPhase === 'auth0' \? 'Auth0 Staging' : 'PostgreSQL Staging'/);
+assert.match(authSource, /initializationPhase === 'auth0'[\s\S]*`Auth0 \$\{environmentLabel\}`[\s\S]*`PostgreSQL \$\{environmentLabel\}`/);
 assert.match(authSource, /IDENTITY_ACCESS_DENIED/);
 assert.match(authSource, /loginButton\.textContent = '更換登入帳號'/);
 assert.doesNotMatch(authSource, /console\.(?:log|info|debug)/, 'Staging auth entry must not expose tokens in logs.');

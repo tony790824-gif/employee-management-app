@@ -83,7 +83,7 @@ const runtimeConfig = `(() => {
 await writeFile(`${outputDirectory}/environment-config.js`, runtimeConfig, 'utf8');
 await writeFile(`${outputDirectory}/_headers`, createSecurityHeaders({
   profile: effectiveProfile,
-  auth0SdkUrl: profile.name === 'staging' ? auth0SdkUrl : ''
+  auth0SdkUrl: profile.auth ? auth0SdkUrl : ''
 }), 'utf8');
 
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
@@ -109,19 +109,19 @@ if (builtIndexHtml === originalIndexHtml) {
   throw new Error('Unable to add the environment cache revision to the frontend entry point.');
 }
 
-if (profile.name === 'staging') {
+if (profile.auth) {
   await cp('staging-auth.js', `${outputDirectory}/staging-auth.js`);
-  const stagingAuthScripts = [
+  const authScripts = [
     `    <script src="${auth0SdkUrl}" integrity="${auth0SdkIntegrity}" crossorigin="anonymous"></script>`,
     '    <script src="staging-auth.js"></script>'
   ].join('\n');
-  const stagingIndexHtml = builtIndexHtml.replace(
+  const authenticatedIndexHtml = builtIndexHtml.replace(
     '    <script src="pwa.js"></script>',
-    `${stagingAuthScripts}\n    <script src="pwa.js"></script>`
+    `${authScripts}\n    <script src="pwa.js"></script>`
   );
-  if (stagingIndexHtml === builtIndexHtml) throw new Error('Unable to inject the Staging Auth0 entry point.');
-  builtIndexHtml = stagingIndexHtml;
+  if (authenticatedIndexHtml === builtIndexHtml) throw new Error('Unable to inject the Auth0 entry point.');
+  builtIndexHtml = authenticatedIndexHtml;
 }
 await writeFile(indexPath, builtIndexHtml, 'utf8');
 
-console.log(`Built ${profile.name} frontend (${deployFiles.length} assets) in ${outputDirectory}/.`);
+console.log(`Built ${profile.name} frontend (${deployFiles.length + (profile.auth ? 1 : 0)} assets) in ${outputDirectory}/.`);

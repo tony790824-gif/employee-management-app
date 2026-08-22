@@ -4,8 +4,8 @@ import { readFile, readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { environmentProfiles } from '../config/environments.mjs';
 
-const build = environment => {
-  const result = spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`], { encoding: 'utf8' });
+const build = (environment, env = process.env) => {
+  const result = spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`], { encoding: 'utf8', env });
   assert.equal(result.status, 0, result.stderr || `Failed to build ${environment}`);
 };
 
@@ -22,6 +22,12 @@ assert.equal(rehearsalBuild.status, 0, rehearsalBuild.stderr || 'Failed to build
 
 build('local');
 build('staging');
+build('production', {
+  ...process.env,
+  BANKE_PRODUCTION_AUTH0_DOMAIN: 'production-tenant.us.auth0.com',
+  BANKE_PRODUCTION_AUTH0_CLIENT_ID: 'production-client-id',
+  BANKE_PRODUCTION_AUTH0_AUDIENCE: 'https://bankeban-production-api'
+});
 
 assert.equal(environmentProfiles.production.storagePrefix, '', 'Production 必須維持既有 storage key 相容性');
 assert.equal(environmentProfiles.staging.storagePrefix, 'banke:staging:');
@@ -29,17 +35,31 @@ assert.equal(environmentProfiles.local.storagePrefix, 'banke:local:');
 assert.notEqual(environmentProfiles.staging.backendUrl, environmentProfiles.production.backendUrl);
 assert.equal(environmentProfiles.local.dataBackend, 'local_preview');
 assert.equal(environmentProfiles.staging.dataBackend, 'google_sheets');
-assert.equal(environmentProfiles.production.dataBackend, 'google_sheets');
-for (const profile of Object.values(environmentProfiles)) {
-  assert.equal(profile.postgresApiUrl, '', `${profile.name} must not activate PostgreSQL before cutover approval`);
-}
+assert.equal(environmentProfiles.production.dataBackend, 'postgres');
+assert.equal(environmentProfiles.local.postgresApiUrl, '');
+assert.equal(environmentProfiles.staging.postgresApiUrl, '');
+assert.equal(environmentProfiles.production.postgresApiUrl, 'https://steady-salmiakki-4aaa19.netlify.app/v1');
+
+const productionEnvironment = await readFile('dist/environment-config.js', 'utf8');
+const productionHeaders = await readFile('dist/_headers', 'utf8');
+const productionIndex = await readFile('dist/index.html', 'utf8');
+assert.match(productionEnvironment, /"dataBackend": "postgres"/);
+assert.match(productionEnvironment, /https:\/\/steady-salmiakki-4aaa19\.netlify\.app\/v1/);
+assert.match(productionEnvironment, /"clientId": "production-client-id"/);
+assert.match(productionEnvironment, /"audience": "https:\/\/bankeban-production-api"/);
+assert.doesNotMatch(productionEnvironment, /script\.google\.com|bankeban-staging-api|nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu/);
+assert.match(productionHeaders, /https:\/\/production-tenant\.us\.auth0\.com/);
+assert.match(productionHeaders, /https:\/\/cdn\.auth0\.com/);
+assert.doesNotMatch(productionHeaders, /script\.google\.com|bankeban-staging-node-api/);
+assert.match(productionIndex, /auth0-spa-js\.production\.js/);
+assert.match(productionIndex, /<script src="staging-auth\.js"><\/script>/);
 
 const stagingFiles = await readdir('dist-staging');
 const stagingText = (await Promise.all(stagingFiles
   .filter(file => /\.(?:js|html|webmanifest)$/.test(file))
   .map(file => readFile(`dist-staging/${file}`, 'utf8')))).join('\n');
 assert.ok(stagingText.includes(environmentProfiles.staging.backendUrl), 'Staging build 必須包含 Staging backend');
-assert.ok(!stagingText.includes(environmentProfiles.production.backendUrl), 'Staging build 不得包含 Production backend');
+assert.ok(!stagingText.includes(environmentProfiles.production.postgresApiUrl), 'Staging build 不得包含 Production API');
 
 const stagingEnvironment = await readFile('dist-staging/environment-config.js', 'utf8');
 const stagingHeaders = await readFile('dist-staging/_headers', 'utf8');
@@ -91,7 +111,7 @@ assert.match(rehearsalEnvironment, /"backendUrl": ""/,
   'PostgreSQL rehearsal must not embed a Google Sheets backend URL');
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.staging.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
   'PostgreSQL rehearsal must not load the Google Sheets Staging iframe');
-assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.postgresApiUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 assert.match(rehearsalHeaders, /https:\/\/api\.staging\.example/);
 assert.match(rehearsalHeaders, /https:\/\/dev-nkduawjn5itjlhx4\.us\.auth0\.com/);
 assert.doesNotMatch(rehearsalHeaders, /script\.google\.com|AKfycbw/);

@@ -10,6 +10,3 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
   external_node_modules = ["pg", "web-push"]
-
-[functions."push-drain"]
-  schedule = "*/5 * * * *"

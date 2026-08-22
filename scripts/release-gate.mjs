@@ -3,7 +3,7 @@ import { deployFiles } from './project-files.mjs';
 
 const failures = [];
 const fail = message => failures.push(message);
-const expectedFiles = [...deployFiles].sort();
+const expectedFiles = [...deployFiles, 'staging-auth.js'].sort();
 const generatedBuildFiles = new Set([
   'environment-config.js',
   '_headers',
@@ -63,8 +63,12 @@ for (const requiredHeader of [
 ]) {
   if (!productionHeaders.includes(requiredHeader)) fail(`Production build 缺少安全標頭：${requiredHeader}`);
 }
-if (productionHeaders.includes('bankeban-staging-node-api') || productionHeaders.includes('.auth0.com')) {
-  fail('Production security headers 不得允許 Staging API 或 Auth0 Staging。');
+if (productionHeaders.includes('bankeban-staging-node-api')) {
+  fail('Production security headers 不得允許 Staging API。');
+}
+if (productionEnvironment.includes('https://bankeban-staging-api') ||
+    productionEnvironment.includes('nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu')) {
+  fail('Production build 不得重用 Staging Auth0 Application 或 API audience。');
 }
 
 const sensitivePatterns = [
@@ -105,4 +109,4 @@ if (failures.length) {
 }
 
 console.log(`本機發布閘門通過：${actualFiles.length} 個白名單資產、${totalFrontendBytes} bytes 與後端維運文件均已驗證。`);
-console.log('正式發布前仍必須在 Apps Script 執行 createOperationalBackup() 與 runReleaseReadinessCheck()。');
+console.log('Production PostgreSQL runtime configuration and external service smoke checks remain deployment-time validations.');

@@ -115,7 +115,8 @@ const [netlifyConfig, redirects] = await Promise.all([
   readFile('_redirects', 'utf8')
 ]);
 assert.match(netlifyConfig, /directory = "netlify\/functions"/);
-assert.match(netlifyConfig, /schedule = "\*\/5 \* \* \* \*"/);
+assert.doesNotMatch(netlifyConfig, /schedule\s*=/,
+  'Initial Production launch must defer scheduled push drains to avoid unnecessary Free-plan usage.');
 assert.match(netlifyConfig, /publish = "dist"/);
 assert.match(netlifyConfig, /NODE_VERSION = "22\.13\.0"/,
   'Netlify must use the minimum Node release supported by pnpm 11.9');
