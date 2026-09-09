@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
-import { readFile, readdir } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { environmentProfiles } from '../config/environments.mjs';
+import { deployFiles } from '../scripts/project-files.mjs';
 
 const build = (environment, env = process.env) => {
   const result = spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`], { encoding: 'utf8', env });
@@ -93,12 +96,13 @@ assert.doesNotMatch(entryHtml, /has\('preview'\)/, 'URL 參數不得在 Staging 
 const stagingWorker = await readFile('dist-staging/service-worker.js', 'utf8');
 const stagingIndex = await readFile('dist-staging/index.html', 'utf8');
 assert.match(stagingWorker, /const CACHE_PREFIX='banke-staging-'/);
-assert.match(stagingWorker, /const CACHE='banke-staging-v1'/);
+const stagingCache = stagingWorker.match(/const CACHE='(banke-staging-v1-[a-f0-9]{16})'/)?.[1];
+assert.ok(stagingCache, 'Each build must have a content-derived cache revision');
 assert.match(stagingWorker, /key\.startsWith\(CACHE_PREFIX\)/, 'Service Worker 只能清除 Staging cache family');
 assert.match(stagingWorker, /environment-config\.js\?v=banke-staging-v1/);
 assert.match(stagingWorker, /manifest\.webmanifest\?v=banke-staging-v1/);
-assert.match(stagingIndex, /src="environment-config\.js\?v=banke-staging-v1"/);
-assert.match(stagingIndex, /href="manifest\.webmanifest\?v=banke-staging-v1"/);
+assert.ok(stagingIndex.includes(`src="environment-config.js?v=${stagingCache}"`));
+assert.ok(stagingIndex.includes(`href="manifest.webmanifest?v=${stagingCache}"`));
 assert.doesNotMatch(stagingIndex, /src="environment-config\.js"/);
 assert.doesNotMatch(stagingIndex, /href="manifest\.webmanifest"/);
 assert.match(stagingWorker, /caches\.open\(CACHE\)\.then\(cache=>cache\.match\(request\)\)/);
@@ -125,8 +129,10 @@ assert.match(rehearsalWorker, /const CACHE_PREFIX='banke-staging-'/, 'PostgreSQL
 assert.match(rehearsalWorker, /banke-staging-postgres-v12/);
 assert.match(rehearsalWorker, /environment-config\.js\?v=banke-staging-postgres-v12/);
 assert.match(rehearsalWorker, /manifest\.webmanifest\?v=banke-staging-postgres-v12/);
-assert.match(rehearsalIndex, /src="environment-config\.js\?v=banke-staging-postgres-v12"/);
-assert.match(rehearsalIndex, /href="manifest\.webmanifest\?v=banke-staging-postgres-v12"/);
+const rehearsalCache = rehearsalWorker.match(/const CACHE='(banke-staging-postgres-v12-[a-f0-9]{16})'/)?.[1];
+assert.ok(rehearsalCache);
+assert.ok(rehearsalIndex.includes(`src="environment-config.js?v=${rehearsalCache}"`));
+assert.ok(rehearsalIndex.includes(`href="manifest.webmanifest?v=${rehearsalCache}"`));
 assert.notEqual(
   stagingIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
   rehearsalIndex.match(/environment-config\.js\?v=([^"]+)/)?.[1],
@@ -211,4 +217,114 @@ for (const file of ['state-store.js', 'access.js', 'cloud-sync.js', 'google-shee
   assert.doesNotMatch(source, /(?:localStorage|sessionStorage)\.(?:getItem|setItem|removeItem)\('(shift-[^']+)'/, `${file} 不得直接使用未隔離的 shift-* key`);
 }
 
-console.log('P0 frontend environment isolation tests passed.');
+// Exercise an installed Production app shell without contacting an API or Auth0.
+const productionWorker = await readFile('dist/service-worker.js', 'utf8');
+const productionListeners = new Map();
+const cachedAssets = new Map();
+const deletedCaches = [];
+const productionCache = productionWorker.match(/const CACHE='([^']+)'/)[1];
+const toPath = value => new URL(typeof value === 'string' ? value : value.url, 'https://app.example/').pathname;
+const cacheKey = value => new URL(typeof value === 'string' ? value : value.url, 'https://app.example/').href;
+const offlineContext = vm.createContext({
+  self: {
+    addEventListener: (type, listener) => productionListeners.set(type, listener),
+    skipWaiting: async () => {},
+    clients: { claim: async () => {} }
+  },
+  importScripts: () => {},
+  caches: {
+    open: async name => {
+      assert.equal(name, productionCache);
+      return {
+        addAll: async files => {
+          for (const file of files) {
+            const asset = toPath(file) === '/' ? 'index.html' : toPath(file).slice(1);
+            cachedAssets.set(cacheKey(file), await readFile(`dist/${asset}`));
+          }
+        },
+        match: async request => {
+          const body = cachedAssets.get(cacheKey(request));
+          return body ? new Response(body) : undefined;
+        }
+      };
+    },
+    keys: async () => ['banke-production-v2', productionCache, stagingCache],
+    delete: async name => { deletedCaches.push(name); return true; }
+  },
+  fetch: async () => { throw new Error('OFFLINE'); },
+  Response,
+  URL
+});
+vm.runInContext(productionWorker, offlineContext);
+let lifecycle;
+productionListeners.get('install')({ waitUntil: work => { lifecycle = work; } });
+await lifecycle;
+productionListeners.get('activate')({ waitUntil: work => { lifecycle = work; } });
+await lifecycle;
+assert.deepEqual(deletedCaches, ['banke-production-v2'], 'Updates must keep other environments isolated');
+
+for (const match of productionIndex.matchAll(/(?:src|href)="([^"#]+)"/g)) {
+  const url = new URL(match[1], 'https://app.example/');
+  if (url.origin !== 'https://app.example' || !/\.(?:js|css|svg|webmanifest)$/.test(url.pathname)) continue;
+  let response;
+  productionListeners.get('fetch')({
+    request: { method: 'GET', mode: 'cors', url: url.href },
+    respondWith: work => { response = work; }
+  });
+  assert.ok((await response)?.ok, `Installed app must load ${url.pathname} offline`);
+}
+for (const asset of ['login.js', 'postgres-cloud.js', 'staging-auth.js', 'vendor/auth0-spa-js.production.js']) {
+  assert.ok(cachedAssets.has(cacheKey(`./${asset}`)), `${asset} must not be omitted from the offline shell`);
+}
+let navigation;
+productionListeners.get('fetch')({
+  request: { method: 'GET', mode: 'navigate', url: 'https://app.example/?app=banke-production' },
+  respondWith: work => { navigation = work; }
+});
+assert.equal(await (await navigation).text(), productionIndex);
+let apiResponse;
+productionListeners.get('fetch')({
+  request: { method: 'GET', mode: 'cors', url: 'https://app.example/v1/bootstrap' },
+  respondWith: work => { apiResponse = work; }
+});
+await assert.rejects(apiResponse, /OFFLINE/, 'Private API responses must not enter the static app cache');
+
+// Build in a disposable folder so update regressions never modify the working source.
+const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'banke-pwa-build-'));
+try {
+  for (const file of [...deployFiles, 'staging-auth.js', 'scripts/build.mjs', 'scripts/project-files.mjs',
+    'config/environments.mjs', 'config/security-headers.mjs',
+    'node_modules/@auth0/auth0-spa-js/dist/auth0-spa-js.production.js']) {
+    const destination = path.join(fixtureRoot, file);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await cp(file, destination);
+  }
+  const fixtureEnv = {
+    ...process.env,
+    BANKE_PRODUCTION_AUTH0_DOMAIN: 'production-tenant.us.auth0.com',
+    BANKE_PRODUCTION_AUTH0_CLIENT_ID: 'production-client-id',
+    BANKE_PRODUCTION_AUTH0_AUDIENCE: 'https://bankeban-production-api'
+  };
+  const fixtureBuild = async () => {
+    const result = spawnSync(process.execPath, ['scripts/build.mjs', '--environment=production'], {
+      cwd: fixtureRoot, env: fixtureEnv, encoding: 'utf8'
+    });
+    assert.equal(result.status, 0, result.stderr);
+    return readFile(path.join(fixtureRoot, 'dist/service-worker.js'), 'utf8');
+  };
+  let previous = await fixtureBuild();
+  assert.equal(await fixtureBuild(), previous, 'Identical inputs must produce an identical worker');
+  for (const file of ['app.js', 'staging-auth.js', 'node_modules/@auth0/auth0-spa-js/dist/auth0-spa-js.production.js', 'scripts/build.mjs']) {
+    const input = path.join(fixtureRoot, file);
+    await writeFile(input, `${await readFile(input, 'utf8')}\n// update regression fixture\n`);
+    const updated = await fixtureBuild();
+    assert.notEqual(updated, previous, `${file} changes must invalidate installed caches`);
+    previous = updated;
+  }
+  fixtureEnv.BANKE_PRODUCTION_AUTH0_CLIENT_ID = 'updated-production-client-id';
+  assert.notEqual(await fixtureBuild(), previous, 'Runtime configuration changes must invalidate caches');
+} finally {
+  await rm(fixtureRoot, { recursive: true, force: true });
+}
+
+console.log('P0 frontend environment isolation, offline app shell and update tests passed.');

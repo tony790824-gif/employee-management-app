@@ -171,6 +171,8 @@ const dialogCloseCount = new Map();
 let reloadCount = 0;
 let createShiftCalls = 0;
 let createEmployeeCalls = 0;
+let activationCodeCalls = 0;
+const managementAlerts = [];
 let releaseCreateShift;
 let currentData = structuredClone(initialData);
 const primaryButton = { disabled: false };
@@ -216,7 +218,7 @@ const managementWindow = {
   },
   shiftAccountSecurity: {
     cleanPhone: value => value,
-    generateActivationCode: () => '00000000',
+    generateActivationCode: () => { activationCodeCalls += 1; return '00000000'; },
     hashSecret: async value => value
   },
   shiftEnvironment: { dataBackend: 'postgres' },
@@ -240,7 +242,7 @@ const managementContext = vm.createContext({
     querySelector: getElement,
     addEventListener() {}
   },
-  alert() {},
+  alert: message => managementAlerts.push(message),
   confirm: () => true,
   location: { reload: () => { reloadCount += 1; } },
   structuredClone,
@@ -260,6 +262,11 @@ assert.equal(createEmployeeCalls, 1);
 assert.equal(dialogCloseCount.get('#employeeDialog'), 1);
 assert.equal(reloadCount, 0, 'successful employee creation must not reload the whole page');
 assert.equal(currentData.employees.some(employee => employee.phone === '0911555777'), true);
+assert.equal(activationCodeCalls, 0, 'Auth0-backed employee creation must not generate unusable PIN credentials');
+assert.equal('activationCodeHash' in currentData.employees.at(-1), false);
+assert.match(managementAlerts.at(-1), /登入使用 Auth0 帳號/);
+assert.match(managementAlerts.at(-1), /仍須完成帳號與員工資料的連結/);
+assert.doesNotMatch(managementAlerts.at(-1), /一次性啟用碼：/);
 
 const shiftSubmit = listeners.get('#shiftForm:submit');
 assert.equal(typeof shiftSubmit, 'function');
@@ -279,6 +286,12 @@ assert.equal(dialogCloseCount.get('#shiftDialog'), 1);
 assert.equal(reloadCount, 0, 'successful shift creation must not reload the whole page');
 assert.equal(currentData.shifts.length, 1);
 assert.equal(primaryButton.disabled, false);
+
+managementWindow.shiftEnvironment.dataBackend = 'google_sheets';
+getElement('#employeePhone').value = '0911666888';
+await employeeSubmit({ currentTarget: getElement('#employeeForm'), submitter: null, preventDefault() {} });
+assert.equal(activationCodeCalls, 1, 'Legacy Google Sheets accounts must retain their existing activation flow');
+assert.match(managementAlerts.at(-1), /一次性啟用碼：00000000/);
 
 const appSource = await readFile('app.js', 'utf8');
 const indexSource = await readFile('index.html', 'utf8');

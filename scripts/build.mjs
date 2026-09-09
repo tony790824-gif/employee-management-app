@@ -1,4 +1,5 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { deployFiles } from './project-files.mjs';
 import { getEnvironmentProfile } from '../config/environments.mjs';
 import { createSecurityHeaders } from '../config/security-headers.mjs';
@@ -40,7 +41,6 @@ const effectiveProfile = postgresRehearsal ? Object.freeze({
 }) : profile;
 const outputDirectory = postgresRehearsal ? 'dist-staging-postgres'
   : profile.name === 'production' ? 'dist' : `dist-${profile.name}`;
-const cacheRevision = encodeURIComponent(effectiveProfile.cacheName);
 const cacheCleanupPrefix = profile.name === 'staging' ? profile.cachePrefix : effectiveProfile.cachePrefix;
 const auth0SdkSource = 'node_modules/@auth0/auth0-spa-js/dist/auth0-spa-js.production.js';
 const auth0SdkPath = '/vendor/auth0-spa-js.production.js';
@@ -90,11 +90,30 @@ manifest.short_name = effectiveProfile.manifest.shortName;
 manifest.start_url = effectiveProfile.manifest.startUrl;
 await writeFile(`${outputDirectory}/manifest.webmanifest`, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
+const authAssets = profile.auth ? ['staging-auth.js', 'vendor/auth0-spa-js.production.js'] : [];
+if (profile.auth) {
+  await mkdir(`${outputDirectory}/vendor`, { recursive: true });
+  await cp(auth0SdkSource, `${outputDirectory}/vendor/auth0-spa-js.production.js`);
+  await cp('staging-auth.js', `${outputDirectory}/staging-auth.js`);
+}
+
+// Hash the actual public build inputs, including generated configuration and the SDK.
+// Identical builds share a cache; changed assets cannot remain in an older cache.
+const buildHash = createHash('sha256');
+buildHash.update(await readFile(new URL(import.meta.url))).update('\0');
+for (const file of [...deployFiles, ...authAssets].sort()) {
+  buildHash.update(file).update('\0').update(await readFile(`${outputDirectory}/${file}`)).update('\0');
+}
+const cacheName = `${effectiveProfile.cacheName}-${buildHash.digest('hex').slice(0, 16)}`;
+const cacheRevision = encodeURIComponent(cacheName);
+const precacheFiles = ['./', ...[...deployFiles, ...authAssets]
+  .filter(file => !['service-worker.js', '_headers', '_redirects'].includes(file))
+  .map(file => `./${file}${['environment-config.js', 'manifest.webmanifest'].includes(file) ? `?v=${cacheRevision}` : ''}`)];
+
 const serviceWorker = (await readFile('service-worker.js', 'utf8'))
   .replace("const CACHE_PREFIX='banke-production-';", `const CACHE_PREFIX='${cacheCleanupPrefix}';`)
-  .replace("const CACHE='banke-production-v8';", `const CACHE='${effectiveProfile.cacheName}';`)
-  .replace("'./environment-config.js'", `'./environment-config.js?v=${cacheRevision}'`)
-  .replace("'./manifest.webmanifest'", `'./manifest.webmanifest?v=${cacheRevision}'`);
+  .replace("const CACHE='banke-production-v8';", `const CACHE='${cacheName}';`)
+  .replace(/^const FILES=.*;$/m, `const FILES=${JSON.stringify(precacheFiles)};`);
 await writeFile(`${outputDirectory}/service-worker.js`, serviceWorker, 'utf8');
 
 const indexPath = `${outputDirectory}/index.html`;
@@ -107,9 +126,6 @@ if (builtIndexHtml === originalIndexHtml) {
 }
 
 if (profile.auth) {
-  await mkdir(`${outputDirectory}/vendor`, { recursive: true });
-  await cp(auth0SdkSource, `${outputDirectory}/vendor/auth0-spa-js.production.js`);
-  await cp('staging-auth.js', `${outputDirectory}/staging-auth.js`);
   const authScripts = [
     `    <script src="${auth0SdkPath}"></script>`,
     '    <script src="staging-auth.js"></script>'

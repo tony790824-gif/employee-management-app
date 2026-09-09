@@ -59,6 +59,10 @@
   }
 
   function invite(record, activationCode) {
+    if (window.shiftEnvironment?.dataBackend === 'postgres') {
+      alert(`已新增 ${record.name} 的員工資料。\n\n登入使用 Auth0 帳號；本次不會建立登入帳號或發放 PIN 啟用碼。員工登入前仍須完成帳號與員工資料的連結。`);
+      return;
+    }
     if (!activationCode) return;
     alert(`已新增 ${record.name}。\n\n一次性啟用碼：${activationCode}\n\n請把這組啟用碼交給員工。員工第一次登入時輸入啟用碼並自行設定 6 位數 PIN；啟用後此碼立即失效。`);
   }
@@ -101,7 +105,8 @@
       leaveQuota: Number($('#employeeLeaveQuota').value)
     };
     let activationCode = '';
-    if (record.credentialState !== 'active' && record.credentialState !== 'pending' && !record.activationCodeHash) {
+    if (window.shiftEnvironment?.dataBackend !== 'postgres'
+      && record.credentialState !== 'active' && record.credentialState !== 'pending' && !record.activationCodeHash) {
       activationCode = security.generateActivationCode();
       record.activationCodeHash = await security.hashSecret(activationCode);
       record.credentialState = 'pending';

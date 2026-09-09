@@ -200,12 +200,17 @@ if (process.platform === 'win32') {
     DATABASE_MIGRATOR_URL: 'postgresql://neondb_owner:synthetic@example.invalid/neondb?sslmode=require&channel_binding=require'
   };
   delete wrapperEnv.BANK_PRODUCTION_CA_BUNDLE;
+  // PowerShell 7's module search path is incompatible with Windows PowerShell 5.1.
+  // Let the child load its own built-in certificate provider, not the parent's modules.
+  for (const name of Object.keys(wrapperEnv)) {
+    if (name.toLowerCase() === 'psmodulepath') delete wrapperEnv[name];
+  }
   const wrapper = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'scripts/validate-production-migration-input.ps1', '-InputSource', 'ProcessEnvironment'], {
     cwd: projectRoot,
     env: wrapperEnv,
     encoding: 'utf8'
   });
-  assert.equal(wrapper.status, 0, wrapper.stderr);
+  assert.equal(wrapper.status, 0, wrapper.stderr || wrapper.stdout);
   assert.equal(wrapper.stderr, '');
   assert.equal(wrapper.stdout.replace(/\r\n/g, '\n'), 'PRODUCTION_MIGRATION_INPUT_GUARD=PASS\nNETWORK_CONNECTION_ATTEMPTED=false\nPRODUCTION_MUTATION=false\n');
 
