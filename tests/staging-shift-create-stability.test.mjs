@@ -268,6 +268,24 @@ assert.match(managementAlerts.at(-1), /登入使用 Auth0 帳號/);
 assert.match(managementAlerts.at(-1), /仍須完成帳號與員工資料的連結/);
 assert.doesNotMatch(managementAlerts.at(-1), /一次性啟用碼：/);
 
+const editedEmployee = { ...currentData.employees.at(-1), revision: 4 };
+let editedPayload;
+managementWindow.shiftEmployeeAdministration = { find: id => id === editedEmployee.id ? editedEmployee : undefined, refresh: async () => {} };
+managementWindow.shiftPostgresCloud.updateEmployee = async record => { editedPayload = record; return { ok: true }; };
+getElement('#employeeId').value = editedEmployee.id;
+getElement('#employeeName').value = 'Updated employee';
+const alertsBeforeEdit = managementAlerts.length;
+await employeeSubmit({ currentTarget: getElement('#employeeForm'), submitter: null, preventDefault() {} });
+assert.equal(editedPayload.name, 'Updated employee');
+assert.equal(editedPayload.revision, 4);
+assert.equal(createEmployeeCalls, 1, 'Editing must not create another employee');
+assert.equal(managementAlerts.length, alertsBeforeEdit, 'Editing must not issue an account invitation');
+getElement('#employeeId').value = 'unknown-employee';
+await employeeSubmit({ currentTarget: getElement('#employeeForm'), submitter: null, preventDefault() {} });
+assert.equal(createEmployeeCalls, 1, 'A stale employee id must not silently become a create operation');
+assert.match(managementAlerts.at(-1), /重新取得最新資料/);
+getElement('#employeeId').value = '';
+
 const shiftSubmit = listeners.get('#shiftForm:submit');
 assert.equal(typeof shiftSubmit, 'function');
 const shiftForm = getElement('#shiftForm');

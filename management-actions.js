@@ -83,7 +83,12 @@
     const next = read();
     const before = structuredClone(next);
     const requestedId = $('#employeeId').value;
-    const existing = next.employees.find(employee => employee.id === requestedId);
+    const existing = window.shiftEmployeeAdministration?.find(requestedId)
+      || next.employees.find(employee => employee.id === requestedId);
+    if (requestedId && !existing && window.shiftEnvironment?.dataBackend === 'postgres') {
+      alert('員工資料已更新，請關閉表單並重新取得最新資料。');
+      return;
+    }
     const id = requestedId || uid();
     const phone = security.cleanPhone($('#employeePhone').value);
     if (!phone) {
@@ -115,7 +120,7 @@
     next.employees = next.employees.filter(employee => employee.id !== id);
     next.employees.push(record);
     const postgresOperation = existing
-      ? undefined
+      ? () => window.shiftPostgresCloud.updateEmployee(record)
       : () => {
           if (typeof window.shiftPostgresCloud?.createEmployee !== 'function') {
             throw new Error('PostgreSQL Staging 員工 Command 尚未連線。');
@@ -124,7 +129,8 @@
         };
     if (!await persistBossChange(before, next, '員工資料未成功寫入雲端', postgresOperation)) return;
     $('#employeeDialog').close();
-    invite(record, activationCode);
+    if (!existing) invite(record, activationCode);
+    await window.shiftEmployeeAdministration?.refresh();
   }));
 
   $('#addShift').addEventListener('click', event => {

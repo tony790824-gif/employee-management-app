@@ -28,6 +28,7 @@ export const deployFiles = Object.freeze([
   'employee-work.js',
   'boss-hours.js',
   'management-actions.js',
+  'employee-administration.js',
   'login.js',
   'cloud-sync.js',
   'google-sheets-cloud.js',

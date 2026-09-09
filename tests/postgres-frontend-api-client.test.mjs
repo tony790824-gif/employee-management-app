@@ -63,6 +63,7 @@ const client = createClient({
   fetchImpl: async (url, options) => {
     calls.push({ url, options });
     if (url.endsWith('/employees')) return response(200, { employees: [] });
+    if (url.endsWith('/employees/administration')) return response(200, { ok: true, data: [], accounts: [] });
     if (url.endsWith('/bootstrap')) return response(200, {
       ok: true, role: 'boss', data: { sync: { revision: 122 } }
     }, { 'x-bootstrap-revision': '122' });
@@ -166,7 +167,18 @@ const timeOffCommandNames = [
   'time-off-requests.approve',
   'time-off-requests.reject'
 ];
-assert.equal(commandNames.length, 18);
+assert.equal(commandNames.length, 21);
+for (const commandName of ['employees.update', 'employees.set-status', 'employees.link-account']) {
+  assert.ok(commandNames.includes(commandName));
+  await client.executeCommand(commandName, {}, { idempotencyKey: `employee-${commandName}` });
+  assert.equal(calls.at(-1).url, `https://api.staging.example/v1/commands/${commandName}`);
+  assert.equal(calls.at(-1).options.headers['X-Workspace-Id'], workspaceId);
+}
+assert.equal((await client.employeeAdministration()).ok, true);
+assert.equal(calls.at(-1).url, 'https://api.staging.example/v1/employees/administration');
+assert.equal(calls.at(-1).options.method, 'GET');
+assert.equal(calls.at(-1).options.headers['X-Workspace-Id'], workspaceId);
+assert.equal(calls.at(-1).options.cache, 'no-store');
 for (const commandName of timeOffCommandNames) {
   assert.ok(commandNames.includes(commandName), `${commandName} must be in the browser command allowlist`);
   const responsePayload = await client.executeCommand(commandName, {}, {

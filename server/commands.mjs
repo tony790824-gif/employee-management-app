@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ApiError, assert } from './errors.mjs';
 import {
   commandNames,
+  employeeCommandNames,
   notificationCommandNames,
   pushCommandNames,
   timeOffCommandNames,
@@ -12,6 +13,10 @@ import {
 } from './validation.mjs';
 
 const DATABASE_ERROR_STATUS = Object.freeze({
+  EMPLOYEE_NOT_FOUND: 404,
+  EMPLOYEE_ACCOUNT_NOT_ELIGIBLE: 409,
+  EMPLOYEE_PRIVILEGED_ACCOUNT: 403,
+  EMPLOYEE_ATTENDANCE_OPEN: 409,
   TENANT_CONTEXT_INVALID: 401,
   TENANT_CONTEXT_KEY_INVALID: 401,
   TENANT_CONTEXT_SIGNATURE_INVALID: 401,
@@ -225,7 +230,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const validated = validateCommand(commandName, input);
       const signed = context(identity, workspaceId, 'command');
       const prepared = internalInput(commandName, validated, idFactory, clock);
-      const databaseFunction = commandName === 'notifications.update-preferences'
+      const databaseFunction = employeeCommandNames.includes(commandName)
+        ? 'app_private.api_execute_employee_command'
+        : commandName === 'notifications.update-preferences'
         ? 'app_private.api_update_notification_preferences'
         : timeOffCommandNames.includes(commandName)
         ? 'app_private.api_execute_time_off_command'
@@ -242,12 +249,29 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
           [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
             idempotencyKey, requestHash(commandName, validated), requestId]);
       } catch (error) {
+        if (employeeCommandNames.includes(commandName) && notificationSchemaUnavailable(error)) {
+          throw new ApiError(503, 'EMPLOYEE_ADMIN_UNAVAILABLE', '員工管理更新尚未套用，資料未變更。');
+        }
         if ((notificationCommandNames.includes(commandName) || pushCommandNames.includes(commandName))
           && notificationSchemaUnavailable(error)) {
           const pushCommand = pushCommandNames.includes(commandName);
           throw new ApiError(503,
             pushCommand ? 'WEB_PUSH_UNAVAILABLE' : 'NOTIFICATION_CENTER_UNAVAILABLE',
             pushCommand ? 'Web Push is not enabled.' : 'Notification Center is not enabled.');
+        }
+        throw error;
+      }
+    },
+
+    async employeeAdministration({ identity, workspaceId }) {
+      const signed = context(identity, workspaceId, 'read');
+      try {
+        return await databaseCall(pool,
+          'SELECT app_private.api_employee_administration($1, $2, $3) AS result',
+          [signed.payload, signed.signature, signed.keyId]);
+      } catch (error) {
+        if (notificationSchemaUnavailable(error)) {
+          throw new ApiError(503, 'EMPLOYEE_ADMIN_UNAVAILABLE', '員工管理更新尚未套用。');
         }
         throw error;
       }

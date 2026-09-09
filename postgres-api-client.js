@@ -8,6 +8,9 @@
   const SESSION_INVALID_CODES = new Set(['SESSION_INVALID', 'TOKEN_SESSION_INVALID']);
   const COMMAND_NAMES = Object.freeze([
     'employees.create',
+    'employees.update',
+    'employees.set-status',
+    'employees.link-account',
     'shifts.create',
     'leaves.replace-month',
     'attendance.clock-in',
@@ -213,6 +216,7 @@
       establishSession: () => request('/auth/session', { method: 'POST' }),
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),
+      employeeAdministration: () => request('/employees/administration'),
       bootstrap: () => request('/bootstrap', { bootstrapRevision: true }),
       bootstrapRevision: () => request('/bootstrap/revision', { bootstrapRevision: true }),
       listTimeOffRequests: () => request('/time-off-requests'),

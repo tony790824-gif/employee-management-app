@@ -129,6 +129,24 @@ export function validateAnnouncementMutation(name, input, announcementId = '') {
 }
 
 export function validateCommand(name, input) {
+  if (employeeCommandNames.includes(name)) {
+    const common = ['employeeId', 'baseRevision'];
+    const extra = name === 'employees.update' ? ['name', 'phone', 'jobTitle', 'hourlyRate', 'leaveQuota']
+      : name === 'employees.set-status' ? ['status'] : ['userId'];
+    exactKeys(input, [...common, ...extra], [...common, ...extra]);
+    assert(ID_PATTERN.test(String(input.employeeId || '')), 400, 'COMMAND_INVALID', 'employeeId 格式不正確。');
+    const base = { employeeId: input.employeeId, baseRevision: validRevision(input.baseRevision) };
+    if (name === 'employees.update') {
+      const fields = Object.fromEntries(extra.map(key => [key, input[key]]));
+      return { ...base, ...validateCommand('employees.create', fields) };
+    }
+    if (name === 'employees.set-status') {
+      assert(['active', 'inactive', 'departed'].includes(input.status), 400, 'COMMAND_INVALID', '員工狀態不正確。');
+      return { ...base, status: input.status };
+    }
+    assert(UUID_PATTERN.test(String(input.userId || '')), 400, 'COMMAND_INVALID', 'userId 格式不正確。');
+    return { ...base, userId: input.userId };
+  }
   if (name === 'employees.create') {
     exactKeys(input, ['name', 'phone', 'jobTitle', 'hourlyRate', 'leaveQuota'], ['name', 'phone', 'hourlyRate']);
     assert(PHONE_PATTERN.test(String(input.phone || '')), 400, 'COMMAND_INVALID', 'phone 必須是 8–15 位數字。');
@@ -280,7 +298,10 @@ export function validateCommand(name, input) {
   throw new Error(`未註冊的 Command：${name}`);
 }
 
+export const employeeCommandNames = Object.freeze(['employees.update', 'employees.set-status', 'employees.link-account']);
+
 export const commandNames = Object.freeze([
+  ...employeeCommandNames,
   'employees.create',
   'shifts.create',
   'leaves.replace-month',

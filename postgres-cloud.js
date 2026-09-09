@@ -526,6 +526,21 @@
     hourlyRate: Number(employee.rate),
     leaveQuota: Number(employee.leaveQuota ?? 8)
   });
+  const updateEmployee = employee => executeAndRefresh('employees.update', {
+    employeeId: employee.id, baseRevision: employee.revision,
+    name: employee.name, phone: employee.phone, jobTitle: employee.role || '',
+    hourlyRate: Number(employee.rate), leaveQuota: Number(employee.leaveQuota ?? 8)
+  });
+  const setEmployeeStatus = (employeeId, status, baseRevision) => executeAndRefresh(
+    'employees.set-status', { employeeId, status, baseRevision });
+  const linkEmployeeAccount = (employeeId, userId, baseRevision) => executeAndRefresh(
+    'employees.link-account', { employeeId, userId, baseRevision });
+  const employeeAdministration = () => {
+    if (!client || !currentSession || window.navigator?.onLine === false) {
+      throw new Error('員工管理需要有效登入及網路連線。');
+    }
+    return client.employeeAdministration();
+  };
   const createShift = shift => executeAndRefresh('shifts.create', {
     employeeId: shift.employeeId,
     date: shift.date,
@@ -702,6 +717,10 @@
     clockInEmployee,
     clockOutEmployee,
     createEmployee,
+    updateEmployee,
+    setEmployeeStatus,
+    linkEmployeeAccount,
+    employeeAdministration,
     createShift,
     approveAttendanceHours,
     listTimeOffRequests,

@@ -20,6 +20,7 @@
     'employee-work.js',
     'boss-hours.js',
     'management-actions.js',
+    'employee-administration.js',
     'enhancements.js',
     'employee-layout.js',
     'time-off-ui.js',

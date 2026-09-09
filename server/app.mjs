@@ -62,7 +62,7 @@ function originAllowed(origin, allowedOrigins) {
 
 function operationalRoute(pathname) {
   const exact = new Set([
-    '/v1/health', '/v1/readiness', '/v1/auth/session', '/v1/auth/logout', '/v1/employees',
+    '/v1/health', '/v1/readiness', '/v1/auth/session', '/v1/auth/logout', '/v1/employees', '/v1/employees/administration',
     '/v1/bootstrap', '/v1/bootstrap/revision', '/v1/time-off-requests', '/v1/notifications',
     '/v1/announcements', '/v1/push/status'
   ]);
@@ -178,6 +178,10 @@ export function createRequestHandler({
       }
       if (request.method === 'GET' && url.pathname === '/v1/employees') {
         json(response, 200, await commandService.listEmployees({ identity, workspaceId }), requestId);
+        return;
+      }
+      if (request.method === 'GET' && url.pathname === '/v1/employees/administration') {
+        json(response, 200, await commandService.employeeAdministration({ identity, workspaceId }), requestId);
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/bootstrap') {

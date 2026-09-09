@@ -501,3 +501,4 @@ try {
 }
 
 console.log('PostgreSQL OIDC, signed tenant context, controlled function and API boundary tests passed');
+await import('./employee-management.test.mjs');

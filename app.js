@@ -89,6 +89,7 @@ function render(){
   dom.replace($('#scheduleBody'),...(scheduleRows.length?scheduleRows:[dom.emptyRow(6,'尚無員工資料')]));
   const employeeCards=data.employees.map(e=>{const card=dom.element('article',{className:'card'},[dom.element('h3',{text:e.name}),dom.element('p',{text:e.role}),dom.element('p',{text:`帳號：${e.phone||'尚未設定'}`}),dom.element('p',{text:`登入狀態：${e.credentialState==='active'?'PIN 已設定':e.credentialState==='pending'?'等待首次啟用':'需要產生啟用碼'}`}),dom.element('p',{text:`時薪 ${money(e.rate)}`})]);[['編輯',()=>openEmployee(e)],['重設 PIN',()=>window.resetEmployeePin(e.id)],['移除員工',()=>window.removeEmployee(e.id)]].forEach(([label,handler])=>{const button=dom.element('button',{text:label,attributes:{type:'button'}});button.addEventListener('click',handler);card.append(button);});return card;});
   dom.replace($('#employeeCards'),...(employeeCards.length?employeeCards:[dom.element('p',{className:'empty',text:'請先新增第一位員工。'})]));
+  if(window.shiftEmployeeAdministration) void window.shiftEmployeeAdministration.refresh();
   const removed = $('#removedEmployees');
   if(data.removedEmployees.length){
     removed.hidden=false;
