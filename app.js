@@ -20,7 +20,7 @@ let approvedLeaveCoverage = new Map();
 const $ = s => document.querySelector(s); const employee = id => data.employees.find(e => e.id === id);
 const dom = window.shiftDomSafety;
 const money = n => new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(n);
-const hours = s => { const [a,b]=[s.start,s.end].map(x=>x.split(':').map(Number)); return Math.max(0,(b[0]*60+b[1]-a[0]*60-a[1])/60); };
+const hours = s => window.BankeShiftTime.hours(s);
 const planned = e => { const shifts=data.shifts.filter(s=>s.employeeId===e.id&&s.date.startsWith(month)); const h=shifts.reduce((n,s)=>n+hours(s),0); return {shifts,h,pay:h*e.rate}; };
 const actual = e => { const att=data.attendance.filter(a=>a.employeeId===e.id&&a.date.startsWith(month)&&a.type==='出勤'); const h=att.reduce((n,a)=>n+Number(a.hours||0),0); return {h,pay:h*e.rate,count:att.length}; };
 function leaveKey(){ return `${calendarEmployeeId}-${month}`; }
@@ -85,7 +85,10 @@ function render(){
   const stats=[['員工人數',data.employees.length+' 位'],['排班時數',p.reduce((n,x)=>n+x.h,0)+' 小時'],['實際工時',a.reduce((n,x)=>n+x.h,0)+' 小時'],[window.shiftEnvironment?.dataBackend==='postgres'?'排班／出勤時薪估算（非應付薪資）':'預估成本 / 實際支出', `${money(p.reduce((n,x)=>n+x.pay,0))} / ${money(a.reduce((n,x)=>n+x.pay,0))}`]];
   dom.replace($('#stats'),...stats.map(([label,value])=>dom.element('article',{className:'stat'},[dom.element('p',{text:label}),dom.element('strong',{text:value})])));
   renderCalendar();
-  const scheduleRows=data.employees.map((e,i)=>{const t=p[i],shifts=dom.element('td');if(t.shifts.length)t.shifts.forEach(s=>shifts.append(dom.element('span',{className:'badge',text:`${s.date.slice(8)}日 ${s.start}–${s.end}`,title:s.note||''})));else shifts.append(dom.element('span',{className:'empty',text:'尚未排班'}));return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(e.role),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(money(t.pay)),shifts]);});
+  const scheduleRows=data.employees.map((e,i)=>{const t=p[i],shifts=dom.element('td');if(t.shifts.length)t.shifts.forEach(s=>{
+    shifts.append(dom.element('span',{className:'badge',text:`${s.date.slice(8)}日 ${window.BankeShiftTime.label(s)}`,title:s.note||''}));
+    if(!document.body.classList.contains('employee-mode')){const edit=dom.element('button',{text:'編輯',attributes:{type:'button','aria-label':`編輯 ${e.name} ${s.date} 班次`}});edit.addEventListener('click',()=>window.shiftScheduleEditor?.open(s));shifts.append(edit);}
+  });else shifts.append(dom.element('span',{className:'empty',text:'尚未排班'}));return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(e.role),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(money(t.pay)),shifts]);});
   dom.replace($('#scheduleBody'),...(scheduleRows.length?scheduleRows:[dom.emptyRow(6,'尚無員工資料')]));
   const employeeCards=data.employees.map(e=>{const card=dom.element('article',{className:'card'},[dom.element('h3',{text:e.name}),dom.element('p',{text:e.role}),dom.element('p',{text:`帳號：${e.phone||'尚未設定'}`}),dom.element('p',{text:`登入狀態：${e.credentialState==='active'?'PIN 已設定':e.credentialState==='pending'?'等待首次啟用':'需要產生啟用碼'}`}),dom.element('p',{text:`時薪 ${money(e.rate)}`})]);[['編輯',()=>openEmployee(e)],['重設 PIN',()=>window.resetEmployeePin(e.id)],['移除員工',()=>window.removeEmployee(e.id)]].forEach(([label,handler])=>{const button=dom.element('button',{text:label,attributes:{type:'button'}});button.addEventListener('click',handler);card.append(button);});return card;});
   dom.replace($('#employeeCards'),...(employeeCards.length?employeeCards:[dom.element('p',{className:'empty',text:'請先新增第一位員工。'})]));

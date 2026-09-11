@@ -36,6 +36,7 @@ try {
   await admin.query('BEGIN');
   await admin.query(await readFile('database/pending/0023_employee_management.up.sql','utf8'));
   await admin.query(await readFile('database/pending/0024_payroll.up.sql','utf8'));
+  await admin.query(await readFile('database/pending/0025_overnight_shifts.up.sql','utf8'));
   await admin.query('COMMIT');
   const ws=`ws_${'a'.repeat(32)}`,other=`ws_${'b'.repeat(32)}`;
   const manager=randomUUID(),employee=randomUUID(),candidate=randomUUID(),outsider=randomUUID();
@@ -60,6 +61,8 @@ try {
       TO banke_staff_test_api;`);
   await admin.query(`GRANT EXECUTE ON FUNCTION app_private.api_payroll_month(text,text,text,text),
     app_private.api_execute_payroll_command(text,text,text,text,jsonb,text,text,text) TO banke_staff_test_api`);
+  await admin.query(`GRANT EXECUTE ON FUNCTION app_private.api_execute_shift_command(text,text,text,text,jsonb,text,text,text),
+    app_private.api_execute_command(text,text,text,text,jsonb,text,text,text) TO banke_staff_test_api`);
   const key=randomBytes(32);
   await admin.query(`INSERT INTO app_private.tenant_context_keys(key_id,secret,expires_at) VALUES('test',$1,clock_timestamp()+interval '1 day')`,[key]);
   pool=new pg.Pool({host:'127.0.0.1',port,user:'banke_staff_test_api',database:'postgres',ssl:false,max:3});
@@ -71,6 +74,8 @@ try {
   for(const id of [boss,worker]) await service.establishSession({identity:id,workspaceId:ws});
   const { testPayrollDatabase } = await import('./payroll-database.test.mjs');
   await testPayrollDatabase({admin,pool,service,boss,worker,ws,other,signer});
+  const { testOvernightDatabase } = await import('./overnight-shifts-database.test.mjs');
+  await testOvernightDatabase({admin,pool,service,boss,worker,ws,other,signer});
   const command=(name,input,who=boss,workspaceId=ws,idempotencyKey=randomUUID())=>service.execute({
     identity:who,workspaceId,commandName:name,input,idempotencyKey,requestId:randomUUID()});
   const read=()=>service.employeeAdministration({identity:boss,workspaceId:ws});

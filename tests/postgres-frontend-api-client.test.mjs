@@ -167,7 +167,7 @@ const timeOffCommandNames = [
   'time-off-requests.approve',
   'time-off-requests.reject'
 ];
-assert.equal(commandNames.length, 24);
+assert.equal(commandNames.length, 25);
 for (const commandName of ['employees.update', 'employees.set-status', 'employees.link-account']) {
   assert.ok(commandNames.includes(commandName));
   await client.executeCommand(commandName, {}, { idempotencyKey: `employee-${commandName}` });

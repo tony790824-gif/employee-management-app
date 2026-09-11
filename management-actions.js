@@ -3,6 +3,7 @@
   const stateStore = window.shiftStateStore;
   const security = window.shiftAccountSecurity;
   const pendingForms = new WeakSet();
+  let editingShift = null;
   const read = () => stateStore.read();
   const write = data => stateStore.write(data);
   const uid = () => globalThis.crypto?.randomUUID?.() || String(Date.now());
@@ -137,10 +138,22 @@
     event.preventDefault();
     const data = read();
     if (!data.employees.length) return alert('請先新增員工。');
+    editingShift = null;
     window.fillEmployeeSelect($('#shiftEmployee'));
     $('#shiftDate').value = `${$('#monthPicker').value}-01`;
     $('#shiftDialog').showModal();
   });
+  window.shiftScheduleEditor = Object.freeze({ open: shift => {
+    if (window.shiftEnvironment?.dataBackend === 'postgres' && !['boss','manager'].includes(window.shiftPostgresCloud?.getCurrentUser?.()?.role)) return;
+    editingShift = { ...shift };
+    window.fillEmployeeSelect($('#shiftEmployee'));
+    $('#shiftEmployee').value = shift.employeeId;
+    $('#shiftDate').value = shift.date;
+    $('#shiftStart').value = shift.start;
+    $('#shiftEnd').value = shift.end;
+    $('#shiftNote').value = shift.note || '';
+    $('#shiftDialog').showModal();
+  } });
 
   $('#shiftForm').addEventListener('submit', event => submitOnce(event, async form => {
     const next = read();
@@ -149,25 +162,29 @@
     const date = $('#shiftDate').value;
     const start = $('#shiftStart').value;
     const end = $('#shiftEnd').value;
-    if (end <= start) {
-      alert('結束時間須晚於開始時間。');
+    const shift = { ...(editingShift || {}), id: editingShift?.id || uid(), employeeId, date, start, end, note: $('#shiftNote').value };
+    try { window.BankeShiftTime.interval(shift); } catch {
+      alert('請輸入有效班次時間；起訖不可相同。結束早於開始代表次日下班。');
       return;
     }
-    const clash = next.shifts.some(shift => shift.employeeId === employeeId && shift.date === date && start < shift.end && end > shift.start);
-    if (clash && !confirm('這位員工在同一時段已有班次，仍要新增嗎？')) return;
-    const leaves = next.leaves?.[`${employeeId}-${date.slice(0, 7)}`] || [];
-    if (leaves.includes(date) && !confirm('這天已核准休假，仍要新增班次嗎？')) return;
-    const shift = { id: uid(), employeeId, date, start, end, note: $('#shiftNote').value };
+    const clash = next.shifts.some(item => item.id !== editingShift?.id && item.employeeId === employeeId && window.BankeShiftTime.overlaps(item,shift));
+    if (clash) return alert('這位員工已有重疊班次（含前一天跨日班），請調整時間。');
+    const finishDate = window.BankeShiftTime.interval(shift).endDate;
+    const dates = [date, ...(finishDate !== date && end !== '00:00' ? [finishDate] : [])];
+    if (dates.some(day => (next.leaves?.[`${employeeId}-${day.slice(0,7)}`] || []).includes(day)) && !confirm('班次涵蓋已核准休假日，仍要儲存班次嗎？')) return;
+    if (editingShift && !next.shifts.some(item=>item.id===editingShift.id)) return alert('班次已更新，請重新開啟。');
+    next.shifts = next.shifts.filter(item=>item.id!==editingShift?.id);
     next.shifts.push(shift);
     if (!await persistBossChange(
       before,
       next,
       '班次未成功寫入雲端',
       () => {
-        if (typeof window.shiftPostgresCloud?.createShift !== 'function') {
+        const operation = editingShift ? 'updateShift' : 'createShift';
+        if (typeof window.shiftPostgresCloud?.[operation] !== 'function') {
           throw new Error('PostgreSQL Staging 班次 Command 尚未連線。');
         }
-        return window.shiftPostgresCloud.createShift(shift);
+        return window.shiftPostgresCloud[operation](shift);
       }
     )) return;
     $('#shiftDialog').close();

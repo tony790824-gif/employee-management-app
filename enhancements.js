@@ -81,10 +81,7 @@
       if (!employee) return;
       const hours = data.shifts
         .filter(shift => shift.employeeId === employee.id && shift.date.startsWith(month))
-        .reduce((sum, shift) => {
-          const [start, end] = [shift.start, shift.end].map(value => value.split(':').map(Number));
-          return sum + (end[0] * 60 + end[1] - start[0] * 60 - start[1]) / 60;
-        }, 0);
+        .reduce((sum, shift) => sum + window.BankeShiftTime.hours(shift), 0);
       const adjustments = (data.payrollAdjustments[`${employee.id}-${month}`] || [])
         .reduce((sum, item) => sum + item.amount, 0);
       const content = [dom.element('strong', { text: money(hours * employee.rate + adjustments) })];

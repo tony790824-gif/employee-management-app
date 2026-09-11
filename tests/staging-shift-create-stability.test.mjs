@@ -249,6 +249,7 @@ const managementContext = vm.createContext({
   crypto: { randomUUID: () => 'shift-local-1' },
   console
 });
+vm.runInContext(await readFile('shift-time.js','utf8'), managementContext);
 vm.runInContext(managementSource, managementContext, { filename: 'management-actions.js' });
 
 const employeeSubmit = listeners.get('#employeeForm:submit');
@@ -305,6 +306,28 @@ assert.equal(reloadCount, 0, 'successful shift creation must not reload the whol
 assert.equal(currentData.shifts.length, 1);
 assert.equal(primaryButton.disabled, false);
 
+let shiftEdit;
+managementWindow.shiftPostgresCloud.getCurrentUser = () => ({role:'boss'});
+managementWindow.shiftPostgresCloud.updateShift = async record => {shiftEdit=record;return {ok:true};};
+managementWindow.shiftScheduleEditor.open({...currentData.shifts[0],revision:1});
+getElement('#shiftDate').value='2026-07-31';
+getElement('#shiftStart').value='22:00';
+getElement('#shiftEnd').value='06:00';
+await shiftSubmit(event);
+assert.equal(shiftEdit.start,'22:00');
+assert.equal(shiftEdit.end,'06:00');
+assert.equal(shiftEdit.revision,1);
+assert.equal(currentData.shifts.length,1,'Editing replaces the old shift');
+assert.equal(createShiftCalls,1,'Editing must not create another shift');
+getElement('#monthPicker').value='2026-08';
+listeners.get('#addShift:click')({preventDefault(){}});
+getElement('#shiftDate').value='2026-08-01';
+getElement('#shiftStart').value='05:00';
+getElement('#shiftEnd').value='07:00';
+await shiftSubmit(event);
+assert.equal(createShiftCalls,1,'Prior-month overnight overlap must block creation');
+assert.match(managementAlerts.at(-1),/重疊班次/);
+
 managementWindow.shiftEnvironment.dataBackend = 'google_sheets';
 getElement('#employeePhone').value = '0911666888';
 await employeeSubmit({ currentTarget: getElement('#employeeForm'), submitter: null, preventDefault() {} });
@@ -332,7 +355,7 @@ assert.doesNotMatch(shiftSubmitSource, /location\.reload\(\)/);
 assert.doesNotMatch(employeeSubmitSource, /location\.reload\(\)/);
 assert.match(employeeLeaveEntrySource, /dataBackend === 'postgres'[\s\S]*\[data-tab="schedule"\][\s\S]*calendar-box/);
 assert.match(appSource, /postgres-bootstrap-refreshed[\s\S]*stateStore\.read\(\)[\s\S]*render\(\)/);
-assert.match(indexSource, /目前可新增班次，修改與刪除功能尚未開放。/);
+assert.match(indexSource, /可新增與編輯班次；跨日班歸屬上班日/);
 assert.match(loginSource, /addEventListener\('shift-session-invalid'/);
 assert.match(loginSource, /clearSession\(\);\s*clearCloudSensitiveCache\(\);\s*window\.SHIFT_AUTHORIZED = false;\s*try \{/);
 assert.match(apiClientSource, /new CustomEvent\('shift-session-invalid'/);

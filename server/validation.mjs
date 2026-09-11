@@ -183,12 +183,15 @@ export function validateCommand(name, input) {
       leaveQuota
     };
   }
-  if (name === 'shifts.create') {
-    exactKeys(input, ['employeeId', 'date', 'startTime', 'endTime', 'note'], ['employeeId', 'date', 'startTime', 'endTime']);
+  if (name === 'shifts.create' || name === 'shifts.update') {
+    const editKeys = name === 'shifts.update' ? ['shiftId','baseRevision'] : [];
+    exactKeys(input, ['employeeId', 'date', 'startTime', 'endTime', 'note', ...editKeys], ['employeeId', 'date', 'startTime', 'endTime', ...editKeys]);
+    if (editKeys.length) assert(typeof input.shiftId === 'string' && ID_PATTERN.test(input.shiftId),400,'COMMAND_INVALID','班次 ID 不正確。');
     assert(ID_PATTERN.test(String(input.employeeId || '')), 400, 'COMMAND_INVALID', 'employeeId 格式不正確。');
-    assert(TIME_PATTERN.test(String(input.startTime || '')) && TIME_PATTERN.test(String(input.endTime || '')) && input.startTime < input.endTime, 400, 'COMMAND_INVALID', '班次時間格式或順序不正確。');
+    assert(TIME_PATTERN.test(String(input.startTime || '')) && TIME_PATTERN.test(String(input.endTime || '')) && input.startTime !== input.endTime, 400, 'COMMAND_INVALID', '班次時間格式不正確或起訖相同。');
     return {
       employeeId: input.employeeId,
+      ...(editKeys.length ? { shiftId: input.shiftId, baseRevision: validRevision(input.baseRevision) } : {}),
       date: validDate(input.date),
       startTime: input.startTime,
       endTime: input.endTime,
@@ -332,6 +335,7 @@ export const commandNames = Object.freeze([
   ...payrollCommandNames,
   'employees.create',
   'shifts.create',
+  'shifts.update',
   'leaves.replace-month',
   'attendance.clock-in',
   'attendance.clock-out',

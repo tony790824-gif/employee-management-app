@@ -555,6 +555,10 @@
     endTime: shift.end,
     note: shift.note || ''
   });
+  const updateShift = shift => executeAndRefresh('shifts.update', {
+    shiftId: shift.id, baseRevision: shift.revision, employeeId: shift.employeeId, date: shift.date,
+    startTime: shift.start, endTime: shift.end, note: shift.note || ''
+  });
   const approveAttendanceHours = (attendanceId, hours, baseRevision) => executeAndRefresh(
     'attendance.approve-hours',
     { attendanceId, hours, baseRevision }
@@ -733,6 +737,7 @@
     voidPayrollAdjustment,
     employeeAdministration,
     createShift,
+    updateShift,
     approveAttendanceHours,
     listTimeOffRequests,
     submitScheduleLeaveRequest,

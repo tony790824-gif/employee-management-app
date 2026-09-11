@@ -21,6 +21,8 @@ const DATABASE_ERROR_STATUS = Object.freeze({
   EMPLOYEE_ATTENDANCE_OPEN: 409,
   PAYROLL_ITEM_NOT_FOUND: 404,
   PAYROLL_ITEM_VOIDED: 409,
+  SHIFT_NOT_FOUND: 404,
+  SHIFT_OVERLAP: 409,
   TENANT_CONTEXT_INVALID: 401,
   TENANT_CONTEXT_KEY_INVALID: 401,
   TENANT_CONTEXT_SIGNATURE_INVALID: 401,
@@ -234,7 +236,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
       const validated = validateCommand(commandName, input);
       const signed = context(identity, workspaceId, 'command');
       const prepared = internalInput(commandName, validated, idFactory, clock);
-      const databaseFunction = payrollCommandNames.includes(commandName)
+      const databaseFunction = ['shifts.create','shifts.update'].includes(commandName)
+        ? 'app_private.api_execute_shift_command'
+        : payrollCommandNames.includes(commandName)
         ? 'app_private.api_execute_payroll_command'
         : employeeCommandNames.includes(commandName)
         ? 'app_private.api_execute_employee_command'
@@ -255,6 +259,9 @@ export function createCommandService({ pool, tenantContextSigner, clock = () => 
           [signed.payload, signed.signature, signed.keyId, commandName, JSON.stringify(prepared),
             idempotencyKey, requestHash(commandName, validated), requestId]);
       } catch (error) {
+        if (['shifts.create','shifts.update'].includes(commandName) && notificationSchemaUnavailable(error)) {
+          throw new ApiError(503, 'SHIFT_MANAGEMENT_UNAVAILABLE', '班次更新尚未套用，資料未變更。');
+        }
         if (payrollCommandNames.includes(commandName) && notificationSchemaUnavailable(error)) {
           throw new ApiError(503, 'PAYROLL_UNAVAILABLE', '薪資更新尚未套用，資料未變更。');
         }

@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+import {validateCommand} from '../server/validation.mjs';
+import {createCommandService} from '../server/commands.mjs';
+const context=vm.createContext({window:{}});
+vm.runInContext(await readFile('shift-time.js','utf8'),context);
+const time=context.window.BankeShiftTime;
+const night={date:'2026-09-30',start:'22:00',end:'06:00'};
+assert.equal(time.hours(night),8);
+assert.equal(time.interval(night).endDate,'2026-10-01');
+assert.equal(time.label(night),'22:00–次日 06:00');
+assert.equal(time.interval({...night,date:'2026-12-31'}).endDate,'2027-01-01');
+assert.equal(time.interval({...night,date:'2028-02-29'}).endDate,'2028-03-01');
+assert.equal(time.overlaps(night,{date:'2026-10-01',start:'05:00',end:'07:00'}),true);
+assert.equal(time.overlaps(night,{date:'2026-10-01',start:'06:00',end:'14:00'}),false);
+assert.equal(time.hours({...night,start:'09:00',end:'18:00'}),9);
+for(const patch of [{end:'22:00'},{start:'24:00'},{end:'oops'},{date:'2026-02-30'}]) assert.throws(()=>time.interval({...night,...patch}));
+const input={employeeId:'e_one',date:night.date,startTime:night.start,endTime:night.end,note:''};
+assert.equal(validateCommand('shifts.create',input).endTime,'06:00');
+assert.equal(validateCommand('shifts.update',{...input,shiftId:'shift-one',baseRevision:1}).baseRevision,1);
+for(const patch of [{endTime:'22:00'},{date:'2026-02-30'},{workspaceId:'foreign'}]) assert.throws(()=>validateCommand('shifts.create',{...input,...patch}));
+assert.throws(()=>validateCommand('shifts.update',input));
+const calls=[];
+const service=createCommandService({pool:{query:async(sql,args)=>{calls.push({sql,args});return{rows:[{result:{ok:true}}]};}},tenantContextSigner:{sign:()=>({})}});
+for(const name of ['shifts.create','shifts.update']) {
+ await service.execute({commandName:name,input:name==='shifts.update'?{...input,shiftId:'shift-one',baseRevision:1}:input,idempotencyKey:'night-test-key',requestId:'night-test-request'});
+ assert.match(calls.at(-1).sql,/api_execute_shift_command/);
+}
+console.log('Overnight shift duration, month/year/leap boundaries, overlap, validation and service routing passed.');

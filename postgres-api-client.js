@@ -15,6 +15,7 @@
     'payroll.adjustment-save',
     'payroll.adjustment-void',
     'shifts.create',
+    'shifts.update',
     'leaves.replace-month',
     'attendance.clock-in',
     'attendance.clock-out',
