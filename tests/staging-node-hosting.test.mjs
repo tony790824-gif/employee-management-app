@@ -71,3 +71,16 @@ assert.match(runbook, /0011_ui_bootstrap.*applied separately.*Neon Staging/i);
 assert.match(runbook, /Production.*not modified/i);
 
 console.log('Isolated Staging Node hosting configuration tests passed.');
+
+const production = await readFile('render.production.yaml', 'utf8');
+for (const line of ['name: bankeban-production-node-api', 'plan: free', 'runtime: node',
+  'autoDeployTrigger: off', 'startCommand: node server/index.mjs', 'healthCheckPath: /v1/readiness',
+  'value: production', 'key: BANK_PRODUCTION_DATABASE_HOST']) assert.ok(production.includes(line));
+assert.match(production, /key: BANK_WEB_PUSH_ENABLED\s+value: false/);
+assert.doesNotMatch(production, /preDeployCommand|db:migrate|postgres(?:ql)?:\/\//i);
+assert.doesNotMatch(production, /DATABASE_PUSH_URL|BANK_WEB_PUSH_PRIVATE_KEY/);
+for (const key of ['DATABASE_API_URL', 'BANK_TENANT_CONTEXT_KEY', 'BANK_TENANT_CONTEXT_KEY_ID',
+  'BANK_OIDC_ISSUER', 'BANK_OIDC_AUDIENCE', 'BANK_OIDC_JWKS_URL']) {
+  assert.match(production, new RegExp(`key: ${key}\\r?\\n\\s+sync: false`));
+}
+console.log('Production Node configuration is isolated, Free-only and migration-free.');

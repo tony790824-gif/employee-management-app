@@ -372,4 +372,45 @@ const timeoutClient = createClient({
 await assert.rejects(timeoutClient.bootstrap(), error =>
   error instanceof PostgresApiError && error.code === 'POSTGRES_API_TIMEOUT');
 
-console.log('PostgreSQL frontend API client tests passed.');
+// Every core feature uses one injected origin; errors never select a legacy backend.
+const productionBase = 'https://api.production.example/v1';
+const productionCalls = [];
+const productionClient = createClient({
+  ...baseConfig,
+  baseUrl: productionBase,
+  fetchImpl: async (url, options) => {
+    productionCalls.push({ url, options });
+    return response(200, { ok: true, revision: 1, data: { sync: { revision: 1 } } },
+      { 'x-bootstrap-revision': '1' });
+  }
+});
+for (const read of [() => productionClient.health(), () => productionClient.readiness(),
+  () => productionClient.listEmployees(), () => productionClient.employeeAdministration(),
+  () => productionClient.payroll('2026-09'), () => productionClient.bootstrap(),
+  () => productionClient.listTimeOffRequests(), () => productionClient.listAnnouncements(),
+  () => productionClient.listNotifications()]) await read();
+await productionClient.establishSession();
+for (const name of commandNames) await productionClient.executeCommand(name, {}, { idempotencyKey: `route-${name}` });
+for (const { url, options } of productionCalls) {
+  assert.ok(url.startsWith(`${productionBase}/`));
+  assert.equal(options.credentials, 'omit');
+  assert.equal(options.redirect, 'error');
+  assert.equal(options.cache, 'no-store');
+  if (!url.endsWith('/health') && !url.endsWith('/readiness')) {
+    assert.equal(options.headers['X-Workspace-Id'], workspaceId);
+    assert.equal(options.headers.Authorization, `Bearer ${accessToken}`);
+  }
+}
+for (const mode of ['network', 'unavailable', 'unauthorized']) {
+  const attempted = [];
+  const failing = createClient({ ...baseConfig, baseUrl: productionBase,
+    fetchImpl: async url => {
+      attempted.push(url);
+      if (mode === 'network') throw new TypeError('offline');
+      return response(mode === 'unavailable' ? 503 : 401, { code: 'SERVICE_NOT_READY' });
+    }
+  });
+  await assert.rejects(failing.listEmployees());
+  assert.deepEqual(attempted, [`${productionBase}/employees`], 'No retry or hidden fallback to another API');
+}
+console.log('PostgreSQL frontend API client and single Production route tests passed.');

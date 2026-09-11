@@ -4,13 +4,39 @@ import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/pr
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { environmentProfiles } from '../config/environments.mjs';
+import { environmentProfiles, getEnvironmentProfile } from '../config/environments.mjs';
 import { deployFiles } from '../scripts/project-files.mjs';
 
 const build = (environment, env = process.env) => {
   const result = spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`], { encoding: 'utf8', env });
   assert.equal(result.status, 0, result.stderr || `Failed to build ${environment}`);
 };
+const productionApi = 'https://api.production.example/v1';
+const productionInputs = {
+  BANKE_PRODUCTION_POSTGRES_API_URL: productionApi,
+  BANKE_PRODUCTION_WORKSPACE_ID: `ws_${'b'.repeat(32)}`
+};
+const savedInputs = { ...process.env };
+try {
+  Object.assign(process.env, productionInputs);
+  assert.equal(getEnvironmentProfile('production').postgresApiUrl, productionApi);
+  for (const invalid of ['', 'postgresql://user:secret@database.example/neondb',
+    'https://user:secret@api.example/v1', 'http://api.example/v1', 'https://localhost/v1',
+    'https://127.0.0.1/v1', 'https://[::1]/v1', 'https://api.staging.example/v1',
+    'https://steady-salmiakki-4aaa19.netlify.app/v1', 'https://api.example/.netlify/functions/api',
+    'https://api.example/v1?secret=value', 'https://api.example/v1#fragment']) {
+    process.env.BANKE_PRODUCTION_POSTGRES_API_URL = invalid;
+    assert.throws(() => getEnvironmentProfile('production'), /^Error: PRODUCTION_API_URL_[A-Z_]+$/);
+  }
+  process.env.BANKE_PRODUCTION_POSTGRES_API_URL = productionApi;
+  process.env.BANKE_PRODUCTION_WORKSPACE_ID = '';
+  assert.throws(() => getEnvironmentProfile('production'), /PRODUCTION_WORKSPACE_ID_REQUIRED_OR_INVALID/);
+} finally {
+  for (const key of Object.keys(productionInputs)) {
+    if (Object.hasOwn(savedInputs, key)) process.env[key] = savedInputs[key];
+    else delete process.env[key];
+  }
+}
 
 const rehearsalBuild = spawnSync(process.execPath, ['scripts/build.mjs', '--environment=staging', '--postgres-rehearsal'], {
   encoding: 'utf8',
@@ -27,6 +53,9 @@ build('local');
 build('staging');
 build('production', {
   ...process.env,
+  ...productionInputs,
+  DATABASE_API_URL: 'postgresql://test:secret@database.invalid/neondb',
+  BANK_TENANT_CONTEXT_KEY: 'SYNTHETIC_SERVER_ONLY_MARKER',
   BANKE_PRODUCTION_AUTH0_DOMAIN: 'production-tenant.us.auth0.com',
   BANKE_PRODUCTION_AUTH0_CLIENT_ID: 'production-client-id',
   BANKE_PRODUCTION_AUTH0_AUDIENCE: 'https://bankeban-production-api'
@@ -41,14 +70,18 @@ assert.equal(environmentProfiles.staging.dataBackend, 'google_sheets');
 assert.equal(environmentProfiles.production.dataBackend, 'postgres');
 assert.equal(environmentProfiles.local.postgresApiUrl, '');
 assert.equal(environmentProfiles.staging.postgresApiUrl, '');
-assert.equal(environmentProfiles.production.postgresApiUrl, 'https://steady-salmiakki-4aaa19.netlify.app/v1');
+assert.equal(environmentProfiles.production.postgresApiUrl, '', 'No implicit Production endpoint');
 
 const productionEnvironment = await readFile('dist/environment-config.js', 'utf8');
 const productionHeaders = await readFile('dist/_headers', 'utf8');
 const productionIndex = await readFile('dist/index.html', 'utf8');
 const productionAuth0Sdk = await readFile('dist/vendor/auth0-spa-js.production.js', 'utf8');
 assert.match(productionEnvironment, /"dataBackend": "postgres"/);
-assert.match(productionEnvironment, /https:\/\/steady-salmiakki-4aaa19\.netlify\.app\/v1/);
+assert.ok(productionEnvironment.includes(productionApi));
+assert.ok(productionEnvironment.includes(productionInputs.BANKE_PRODUCTION_WORKSPACE_ID));
+assert.doesNotMatch(productionIndex, /<script src="(?:google-sheets-config|cloud-sync|google-sheets-cloud)\.js"/);
+assert.doesNotMatch(productionEnvironment, /DATABASE_API_URL|DATABASE_PUSH_URL|BANK_TENANT_CONTEXT_KEY/);
+assert.doesNotMatch(productionEnvironment, /database\.invalid|SYNTHETIC_SERVER_ONLY_MARKER/);
 assert.match(productionEnvironment, /"clientId": "production-client-id"/);
 assert.match(productionEnvironment, /"audience": "https:\/\/bankeban-production-api"/);
 assert.doesNotMatch(productionEnvironment, /script\.google\.com|bankeban-staging-api|nOBwjFDzFaEVnsWCfeoofsCyeDMqkrMu/);
@@ -65,7 +98,7 @@ const stagingText = (await Promise.all(stagingFiles
   .filter(file => /\.(?:js|html|webmanifest)$/.test(file))
   .map(file => readFile(`dist-staging/${file}`, 'utf8')))).join('\n');
 assert.ok(stagingText.includes(environmentProfiles.staging.backendUrl), 'Staging build 必須包含 Staging backend');
-assert.ok(!stagingText.includes(environmentProfiles.production.postgresApiUrl), 'Staging build 不得包含 Production API');
+assert.ok(!stagingText.includes(productionApi), 'Staging build 不得包含 Production API');
 
 const stagingEnvironment = await readFile('dist-staging/environment-config.js', 'utf8');
 const stagingHeaders = await readFile('dist-staging/_headers', 'utf8');
@@ -118,7 +151,7 @@ assert.match(rehearsalEnvironment, /"backendUrl": ""/,
   'PostgreSQL rehearsal must not embed a Google Sheets backend URL');
 assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.staging.backendUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
   'PostgreSQL rehearsal must not load the Google Sheets Staging iframe');
-assert.doesNotMatch(rehearsalEnvironment, new RegExp(environmentProfiles.production.postgresApiUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+assert.ok(!rehearsalEnvironment.includes(productionApi));
 assert.match(rehearsalHeaders, /https:\/\/api\.staging\.example/);
 assert.match(rehearsalHeaders, /https:\/\/dev-nkduawjn5itjlhx4\.us\.auth0\.com/);
 assert.doesNotMatch(rehearsalHeaders, /script\.google\.com|AKfycbw/);
@@ -210,6 +243,11 @@ assert.match(pwaSource, /updateViaCache:\s*'none'/, 'Service Worker 更新檢查
 const googleSheetsCloudSource = await readFile('google-sheets-cloud.js', 'utf8');
 assert.match(googleSheetsCloudSource, /shiftEnvironment\?\.dataBackend === 'postgres'/,
   'Google Sheets adapter must fail closed when the PostgreSQL backend is active');
+vm.runInNewContext(await readFile('cloud-sync.js', 'utf8'), {
+  window: { shiftEnvironment: { dataBackend: 'postgres' } },
+  document: { querySelector() { throw new Error('Legacy UI must remain inactive'); } },
+  localStorage: { setItem() { throw new Error('Legacy configuration must not overwrite PostgreSQL'); } }
+});
 
 for (const file of ['state-store.js', 'access.js', 'cloud-sync.js', 'google-sheets-cloud.js', 'login.js']) {
   const source = await readFile(file, 'utf8');
@@ -301,6 +339,7 @@ try {
   }
   const fixtureEnv = {
     ...process.env,
+    ...productionInputs,
     BANKE_PRODUCTION_AUTH0_DOMAIN: 'production-tenant.us.auth0.com',
     BANKE_PRODUCTION_AUTH0_CLIENT_ID: 'production-client-id',
     BANKE_PRODUCTION_AUTH0_AUDIENCE: 'https://bankeban-production-api'
@@ -323,6 +362,9 @@ try {
   }
   fixtureEnv.BANKE_PRODUCTION_AUTH0_CLIENT_ID = 'updated-production-client-id';
   assert.notEqual(await fixtureBuild(), previous, 'Runtime configuration changes must invalidate caches');
+  previous = await fixtureBuild();
+  fixtureEnv.BANKE_PRODUCTION_POSTGRES_API_URL = 'https://replacement.production.example/v1';
+  assert.notEqual(await fixtureBuild(), previous, 'API route changes must invalidate installed caches');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });
 }

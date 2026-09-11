@@ -121,6 +121,11 @@ const originalIndexHtml = await readFile(indexPath, 'utf8');
 let builtIndexHtml = originalIndexHtml
   .replace('src="environment-config.js"', `src="environment-config.js?v=${cacheRevision}"`)
   .replace('href="manifest.webmanifest"', `href="manifest.webmanifest?v=${cacheRevision}"`);
+if (effectiveProfile.dataBackend === 'postgres') {
+  for (const legacy of ['google-sheets-config.js', 'cloud-sync.js', 'google-sheets-cloud.js']) {
+    builtIndexHtml = builtIndexHtml.replace(`<script src="${legacy}"></script>`, '');
+  }
+}
 if (builtIndexHtml === originalIndexHtml) {
   throw new Error('Unable to add the environment cache revision to the frontend entry point.');
 }

@@ -1,5 +1,26 @@
 # 班客邦
 
+## 現行 APP 發布路徑（2026-09-12）
+
+正式環境只使用：Netlify 靜態 PWA → 單一 HTTPS Node API `/v1` → PostgreSQL。
+沿用 `postgres-api-client.js`；不回退 Google Sheets、Staging 或 Netlify Functions。
+`netlify.toml` 停止打包舊 Functions；`/v1/*` 舊本站入口回 404、舊 Functions 入口回 410。
+
+Netlify Production 建置設定（公開值，不是資料庫密碼）：
+
+- `BANKE_PRODUCTION_POSTGRES_API_URL`：已驗證的正式 API 完整 HTTPS base URL，結尾 `/v1`。不可填 Netlify 前端、Staging、localhost 或資料庫 URL。
+- `BANKE_PRODUCTION_WORKSPACE_ID`：既有正式店家 `ws_` 識別碼；不是授權憑證，API 仍驗證登入者的 membership。不得用測試店家或自行建立正式店家。
+- 沿用 `BANKE_PRODUCTION_AUTH0_DOMAIN`、`BANKE_PRODUCTION_AUTH0_CLIENT_ID`、`BANKE_PRODUCTION_AUTH0_AUDIENCE`。
+
+API 位址或店家 ID 缺少／不合法時，Production build 失敗，不產生替代路由。只將明確列出的公開設定寫入瀏覽器資產；`DATABASE_API_URL`、tenant key、任何 token 只屬於伺服器。
+
+Render Node API 的 Production 設定在 `render.production.yaml`（Free、手動部署、不執行 Migration、Push 關閉）；原 `render.yaml` 仍只管理 Staging。先確認是否已有正式服務；不存在才建立 `bankeban-production-node-api`，不要重複建立。確認 `/v1/health`、`/v1/readiness` 後再填前端 API 設定及發布；不得把範例 URL 當正式可用位址。
+
+本機可用 `node scripts/build.mjs --environment=local`；正式／Staging 分別使用 `--environment=production`、`--environment=staging`。測試中的 `*.example` API 與合成店家只供離線建置回歸，不能發布。
+實機操作見 [DEVICE_ACCEPTANCE_CHECKLIST.md](DEVICE_ACCEPTANCE_CHECKLIST.md)。自動測試 PASS 不代表正式 API 已部署或裝置驗收 PASS。
+
+以下為歷史紀錄，不再代表目前資料庫狀態，也不作為新的發布前置條件。
+
 Sprint 62 reconstructed and machine-validated the authoritative 22-Gate Production Migration preflight matrix. Four Gates remain PASS and 18 remain non-PASS, classified exactly once across Repository, read-only Production, external configuration, Production mutation, human authorization and dependency closure paths. Production remains 70% / NOT READY; Migration Technical Readiness is NO-GO and authorization is NOT GRANTED. No Production operation occurred.
 
 Sprint 61 revalidated the exact 21-version Repository inventory, excluded `0010`, and reran disposable PostgreSQL 18.4 upgrade/fresh-install structural parity plus the final 22-Gate simulation. Repository integrity and disposable paths PASS, but Production Migration Technical Readiness remains NO-GO and authorization remains NOT GRANTED: event-time read-only evidence is unavailable, RPO is NOT_PROVEN, the pre-Migration restore point is BLOCKED, and 18 Production Gates remain non-PASS. Production remains 70% / NOT READY.

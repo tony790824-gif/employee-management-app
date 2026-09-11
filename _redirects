@@ -1,2 +1,3 @@
-/v1/* /.netlify/functions/api/:splat 200
+/v1/* /index.html 404!
+/.netlify/functions/* /index.html 410!
 /* /index.html 200

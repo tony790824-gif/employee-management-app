@@ -7,6 +7,5 @@
   PNPM_VERSION = "11.9.0"
 
 [functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-  external_node_modules = ["pg", "web-push"]
+  # Static frontend only. Archived adapters are not deployed and push stays deferred.
+  directory = "netlify/static-only"

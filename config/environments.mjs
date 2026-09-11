@@ -22,7 +22,7 @@ export const environmentProfiles = Object.freeze({
     name: 'production', label: '',
     dataBackend: 'postgres',
     backendUrl: '',
-    postgresApiUrl: 'https://steady-salmiakki-4aaa19.netlify.app/v1',
+    postgresApiUrl: '',
     auth: Object.freeze({
       domain: String(process.env.BANKE_PRODUCTION_AUTH0_DOMAIN || '').trim(),
       clientId: String(process.env.BANKE_PRODUCTION_AUTH0_CLIENT_ID || '').trim(),
@@ -36,5 +36,23 @@ export const environmentProfiles = Object.freeze({
 export function getEnvironmentProfile(name) {
   const profile = environmentProfiles[name];
   if (!profile) throw new Error(`Unsupported frontend environment: ${name}`);
+  if (name === 'production') {
+    const raw = String(process.env.BANKE_PRODUCTION_POSTGRES_API_URL || '').trim();
+    let url;
+    try { url = new URL(raw); } catch { throw new Error('PRODUCTION_API_URL_REQUIRED_OR_INVALID'); }
+    const host = url.hostname.toLowerCase();
+    const stagingApi = String(process.env.BANKE_STAGING_POSTGRES_API_URL || '').trim().replace(/\/$/, '');
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash
+      || !/^\/v1\/?$/.test(url.pathname)
+      || host === 'steady-salmiakki-4aaa19.netlify.app'
+      || /(^|[.-])(localhost|local|staging)([.-]|$)/.test(host)
+      || host === '[::1]' || /^127\./.test(host)
+      || url.href.replace(/\/$/, '') === stagingApi) {
+      throw new Error('PRODUCTION_API_URL_INVALID');
+    }
+    const workspaceId = String(process.env.BANKE_PRODUCTION_WORKSPACE_ID || '').trim();
+    if (!/^ws_[a-f0-9]{32}$/.test(workspaceId)) throw new Error('PRODUCTION_WORKSPACE_ID_REQUIRED_OR_INVALID');
+    return Object.freeze({ ...profile, postgresApiUrl: url.href.replace(/\/$/, ''), postgresWorkspaceId: workspaceId });
+  }
   return profile;
 }

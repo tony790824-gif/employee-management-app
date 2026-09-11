@@ -1,0 +1,44 @@
+# Inspect existing services before creating this requested Production service; Free only.
+services:
+  - type: web
+    name: bankeban-production-node-api
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: off
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod
+    startCommand: node server/index.mjs
+    healthCheckPath: /v1/readiness
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: CI
+        value: true
+      - key: BANK_ENV
+        value: production
+      - key: BANK_API_BIND_HOST
+        value: 0.0.0.0
+      - key: DATABASE_SSL
+        value: require
+      - key: DATABASE_POOL_MAX
+        value: 5
+      - key: BANK_WEB_PUSH_ENABLED
+        value: false
+      - key: BANK_ALLOWED_ORIGINS
+        value: https://steady-salmiakki-4aaa19.netlify.app
+      - key: BANK_OIDC_SESSION_CLAIM
+        value: https://banke.tw/session_id
+      - key: DATABASE_API_URL
+        sync: false
+      - key: BANK_PRODUCTION_DATABASE_HOST
+        sync: false
+      - key: BANK_OIDC_ISSUER
+        sync: false
+      - key: BANK_OIDC_AUDIENCE
+        sync: false
+      - key: BANK_OIDC_JWKS_URL
+        sync: false
+      - key: BANK_TENANT_CONTEXT_KEY
+        sync: false
+      - key: BANK_TENANT_CONTEXT_KEY_ID
+        sync: false

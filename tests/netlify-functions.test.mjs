@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { createRequestHandler } from '../server/app.mjs';
 import { createNetlifyApiHandler } from '../server/netlify-adapter.mjs';
 import { createScheduledPushDrain } from '../server/netlify-push-drain.mjs';
@@ -114,14 +114,18 @@ const [netlifyConfig, redirects] = await Promise.all([
   readFile('netlify.toml', 'utf8'),
   readFile('_redirects', 'utf8')
 ]);
-assert.match(netlifyConfig, /directory = "netlify\/functions"/);
+assert.match(netlifyConfig, /directory = "netlify\/static-only"/);
+assert.deepEqual(await readdir('netlify/static-only'), ['README.md'], 'No API or scheduled function may be deployed');
 assert.doesNotMatch(netlifyConfig, /schedule\s*=/,
   'Initial Production launch must defer scheduled push drains to avoid unnecessary Free-plan usage.');
 assert.match(netlifyConfig, /publish = "dist"/);
 assert.match(netlifyConfig, /NODE_VERSION = "22\.14\.0"/,
   'Netlify must use Node 22.14 or newer Corepack keys with pnpm 11.9');
 assert.ok(redirects.indexOf('/v1/*') < redirects.indexOf('/* /index.html'),
-  'API function rewrite must precede the SPA fallback');
+  'Retired API paths must fail explicitly before the SPA fallback');
+assert.match(redirects, /\/v1\/\* \/index\.html 404!/);
+assert.match(redirects, /\/\.netlify\/functions\/\* \/index\.html 410!/);
+assert.doesNotMatch(redirects, /\/\.netlify\/functions\/api\/|200.*functions/);
 
 const apiFunction = await import('../netlify/functions/api.mjs');
 const pushFunction = await import('../netlify/functions/push-drain.mjs');
