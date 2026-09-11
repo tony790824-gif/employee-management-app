@@ -82,7 +82,7 @@ async function toggleLeave(date){
 function render(){
   $('#monthTitle').textContent=new Date(month+'-01T00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long'}); $('#monthPicker').value=month;
   const p=data.employees.map(planned), a=data.employees.map(actual), attendance=data.attendance.filter(a=>a.date.startsWith(month));
-  const stats=[['員工人數',data.employees.length+' 位'],['排班時數',p.reduce((n,x)=>n+x.h,0)+' 小時'],['實際工時',a.reduce((n,x)=>n+x.h,0)+' 小時'],['預估成本 / 實際支出', `${money(p.reduce((n,x)=>n+x.pay,0))} / ${money(a.reduce((n,x)=>n+x.pay,0))}`]];
+  const stats=[['員工人數',data.employees.length+' 位'],['排班時數',p.reduce((n,x)=>n+x.h,0)+' 小時'],['實際工時',a.reduce((n,x)=>n+x.h,0)+' 小時'],[window.shiftEnvironment?.dataBackend==='postgres'?'排班／出勤時薪估算（非應付薪資）':'預估成本 / 實際支出', `${money(p.reduce((n,x)=>n+x.pay,0))} / ${money(a.reduce((n,x)=>n+x.pay,0))}`]];
   dom.replace($('#stats'),...stats.map(([label,value])=>dom.element('article',{className:'stat'},[dom.element('p',{text:label}),dom.element('strong',{text:value})])));
   renderCalendar();
   const scheduleRows=data.employees.map((e,i)=>{const t=p[i],shifts=dom.element('td');if(t.shifts.length)t.shifts.forEach(s=>shifts.append(dom.element('span',{className:'badge',text:`${s.date.slice(8)}日 ${s.start}–${s.end}`,title:s.note||''})));else shifts.append(dom.element('span',{className:'empty',text:'尚未排班'}));return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(e.role),dom.cell(money(e.rate)),dom.cell(`${t.h} 小時`),dom.cell(money(t.pay)),shifts]);});
@@ -97,7 +97,8 @@ function render(){
     dom.replace(removed,dom.element('h3',{text:'已移除員工（保留 3 天）'}),dom.element('p',{text:'員工已不能登入；保留期限到後，系統會永久刪除資料。'}),...archivedCards);
   }else{removed.hidden=true;removed.replaceChildren();}
   const payrollRows=data.employees.map((e,i)=>{const estimated=p[i],recorded=a[i];return dom.element('tr',{},[dom.element('td',{},[dom.element('strong',{text:e.name})]),dom.cell(money(e.rate)),dom.cell(`${estimated.h} 小時`),dom.cell(`${recorded.h} 小時`),dom.element('td',{},[dom.element('strong',{text:money(estimated.pay)})]),dom.element('td',{},[dom.element('strong',{text:money(recorded.pay)})])]);});
-  dom.replace($('#payrollBody'),...(payrollRows.length?payrollRows:[dom.emptyRow(6,'尚無資料')]));
+  if(window.shiftPayroll) void window.shiftPayroll.refresh();
+  else dom.replace($('#payrollBody'),...(payrollRows.length?payrollRows:[dom.emptyRow(6,'尚無資料')]));
   const attendanceRows=attendance.sort((a,b)=>b.date.localeCompare(a.date)).map(a=>{const remove=dom.element('button',{className:'icon',text:'×',title:'刪除紀錄',attributes:{type:'button'}});remove.addEventListener('click',()=>window.removeAttendance(a.id));return dom.element('tr',{},[dom.cell(a.date),dom.element('td',{},[dom.element('strong',{text:employee(a.employeeId)?.name||'已刪除員工'})]),dom.element('td',{},[dom.element('span',{className:'badge',text:a.type})]),dom.cell(`${a.hours} 小時`),dom.cell(a.note||'—'),dom.element('td',{},[remove])]);});
   dom.replace($('#attendanceBody'),...(attendanceRows.length?attendanceRows:[dom.emptyRow(6,'本月尚無出勤或請假紀錄')]));
 }

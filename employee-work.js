@@ -30,7 +30,7 @@
   const clockOut = dom.element('button', { className: 'ghost', text: '打卡下班', attributes: { type: 'button' } }); clockOut.id = 'clockOutBtn';
   panel.append(
     dom.element('div', {}, [dom.element('p', { className: 'eyebrow', text: '我的出勤' }), dom.element('h3', { text: '今日打卡與本月收入' }), clockStatus]),
-    dom.element('div', { className: 'work-actions' }, [earnings, dom.element('small', { text: '本月目前工作收入' }), dom.element('div', {}, [clockIn, clockOut])])
+    dom.element('div', { className: 'work-actions' }, [earnings, dom.element('small', { text: window.shiftEnvironment?.dataBackend === 'postgres' ? '工時收入估算（未含固定底薪、加扣項及佣金）' : '本月目前工作收入' }), dom.element('div', {}, [clockIn, clockOut])])
   );
   $('#schedule .calendar-box').insertAdjacentElement('afterend', panel);
 

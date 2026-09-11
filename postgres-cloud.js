@@ -535,6 +535,13 @@
     'employees.set-status', { employeeId, status, baseRevision });
   const linkEmployeeAccount = (employeeId, userId, baseRevision) => executeAndRefresh(
     'employees.link-account', { employeeId, userId, baseRevision });
+  const payroll = month => {
+    if (!client || !currentSession || window.navigator?.onLine === false) throw new Error('薪資需要有效的線上登入。');
+    return client.payroll(month);
+  };
+  const saveMonthlyPayroll = input => executeAndRefresh('payroll.monthly-save', input);
+  const savePayrollAdjustment = input => executeAndRefresh('payroll.adjustment-save', input);
+  const voidPayrollAdjustment = input => executeAndRefresh('payroll.adjustment-void', input);
   const employeeAdministration = () => {
     if (!client || !currentSession || window.navigator?.onLine === false) {
       throw new Error('員工管理需要有效登入及網路連線。');
@@ -720,6 +727,10 @@
     updateEmployee,
     setEmployeeStatus,
     linkEmployeeAccount,
+    payroll,
+    saveMonthlyPayroll,
+    savePayrollAdjustment,
+    voidPayrollAdjustment,
     employeeAdministration,
     createShift,
     approveAttendanceHours,

@@ -72,6 +72,7 @@
   };
 
   function payroll() {
+    if (window.shiftEnvironment?.dataBackend === 'postgres') return;
     const data = read();
     const month = $('#monthPicker').value;
     data.payrollAdjustments ||= {};

@@ -63,7 +63,7 @@ function originAllowed(origin, allowedOrigins) {
 function operationalRoute(pathname) {
   const exact = new Set([
     '/v1/health', '/v1/readiness', '/v1/auth/session', '/v1/auth/logout', '/v1/employees', '/v1/employees/administration',
-    '/v1/bootstrap', '/v1/bootstrap/revision', '/v1/time-off-requests', '/v1/notifications',
+    '/v1/bootstrap', '/v1/bootstrap/revision', '/v1/time-off-requests', '/v1/notifications', '/v1/payroll',
     '/v1/announcements', '/v1/push/status'
   ]);
   if (exact.has(pathname)) return pathname;
@@ -182,6 +182,13 @@ export function createRequestHandler({
       }
       if (request.method === 'GET' && url.pathname === '/v1/employees/administration') {
         json(response, 200, await commandService.employeeAdministration({ identity, workspaceId }), requestId);
+        return;
+      }
+      if (request.method === 'GET' && url.pathname === '/v1/payroll') {
+        if ([...url.searchParams.keys()].some(key => key !== 'month') || url.searchParams.getAll('month').length !== 1) {
+          throw new ApiError(400, 'COMMAND_INVALID', '只接受一個薪資月份。');
+        }
+        json(response, 200, await commandService.payroll({ identity, workspaceId, month: url.searchParams.get('month') }), requestId);
         return;
       }
       if (request.method === 'GET' && url.pathname === '/v1/bootstrap') {

@@ -22,6 +22,7 @@
     'management-actions.js',
     'employee-administration.js',
     'enhancements.js',
+    'payroll-ui.js',
     'employee-layout.js',
     'time-off-ui.js',
     'notification-center.js',

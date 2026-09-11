@@ -129,6 +129,28 @@ export function validateAnnouncementMutation(name, input, announcementId = '') {
 }
 
 export function validateCommand(name, input) {
+  if (payrollCommandNames.includes(name)) {
+    const common = ['employeeId', 'month', 'baseRevision'];
+    const fields = name === 'payroll.monthly-save' ? ['baseMode', 'baseSalary', 'commission', 'note']
+      : name === 'payroll.adjustment-save' ? ['id', 'kind', 'name', 'amount', 'note'] : ['id'];
+    exactKeys(input, [...common, ...fields], [...common, ...fields]);
+    assert(typeof input.employeeId === 'string' && ID_PATTERN.test(input.employeeId), 400, 'COMMAND_INVALID', '員工格式不正確。');
+    const result = { employeeId: input.employeeId, month: validatePayrollMonth(input.month), baseRevision: validRevision(input.baseRevision) };
+    const money = (value, positive = false) => {
+      assert(Number.isSafeInteger(value) && value >= (positive ? 1 : 0) && value <= 999999999,
+        400, 'COMMAND_INVALID', '金額須為有效的新台幣整數元。');
+      return value;
+    };
+    if (name === 'payroll.monthly-save') {
+      assert(['hourly', 'fixed'].includes(input.baseMode), 400, 'COMMAND_INVALID', '薪資方式不正確。');
+      assert(input.baseMode !== 'hourly' || input.baseSalary === 0, 400, 'COMMAND_INVALID', '時薪制不另加固定底薪。');
+      return { ...result, baseMode: input.baseMode, baseSalary: money(input.baseSalary), commission: money(input.commission), note: text(input.note, 'note') };
+    }
+    result.id = validRequestId(input.id, 'id');
+    if (name === 'payroll.adjustment-void') return result;
+    assert(['addition', 'deduction'].includes(input.kind), 400, 'COMMAND_INVALID', '加扣項類型不正確。');
+    return { ...result, kind: input.kind, name: text(input.name, 'name', { min: 1, max: 120 }), amount: money(input.amount, true), note: text(input.note, 'note') };
+  }
   if (employeeCommandNames.includes(name)) {
     const common = ['employeeId', 'baseRevision'];
     const extra = name === 'employees.update' ? ['name', 'phone', 'jobTitle', 'hourlyRate', 'leaveQuota']
@@ -299,9 +321,15 @@ export function validateCommand(name, input) {
 }
 
 export const employeeCommandNames = Object.freeze(['employees.update', 'employees.set-status', 'employees.link-account']);
+export function validatePayrollMonth(value) {
+  assert(typeof value === 'string' && /^(?:19|20|21)\d{2}-(?:0[1-9]|1[0-2])$/.test(value), 400, 'COMMAND_INVALID', '薪資月份須為 1900–2199 年的 YYYY-MM。');
+  return value;
+}
+export const payrollCommandNames = Object.freeze(['payroll.monthly-save', 'payroll.adjustment-save', 'payroll.adjustment-void']);
 
 export const commandNames = Object.freeze([
   ...employeeCommandNames,
+  ...payrollCommandNames,
   'employees.create',
   'shifts.create',
   'leaves.replace-month',

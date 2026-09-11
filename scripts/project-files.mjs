@@ -33,6 +33,7 @@ export const deployFiles = Object.freeze([
   'cloud-sync.js',
   'google-sheets-cloud.js',
   'enhancements.js',
+  'payroll-ui.js',
   'pwa.js',
   'employee-layout.js',
   'time-off-ui.js',
