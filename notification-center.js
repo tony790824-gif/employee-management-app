@@ -631,6 +631,8 @@
 
   async function loadNotifications({ silent = false } = {}) {
     if (!cloud.isConnected()) return null;
+    // Loading errors must not make the authenticated navigation disappear.
+    trigger.hidden = false;
     if (loadPromise) return loadPromise;
     loadPromise = (async () => {
       try {
@@ -645,7 +647,7 @@
         renderPreferences();
         return next;
       } catch (error) {
-        if (!silent) setMessage(error?.message || '通知載入失敗，請稍後再試。');
+        if (!silent || dialog.open) setMessage(error?.message || '通知載入失敗，請稍後再試。');
         return null;
       } finally {
         loadPromise = null;

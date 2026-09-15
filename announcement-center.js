@@ -143,6 +143,8 @@
 
   async function load({ silent = false } = {}) {
     if (!cloud.isConnected()) return null;
+    // Keep the authenticated entry reachable even when the first request fails.
+    trigger.hidden = false;
     if (loadPromise) return loadPromise;
     const operation = (async () => {
       try {
@@ -158,7 +160,7 @@
         setMode(uiMode);
         return payload;
       } catch (error) {
-        if (!silent) setMessage(error?.message || '公告載入失敗，請稍後再試。');
+        if (!silent || dialog.open) setMessage(error?.message || '公告載入失敗，請稍後再試。');
         return null;
       }
     })();
@@ -174,8 +176,7 @@
       setMessage('公告服務尚未連線，請稍後再試。');
       return false;
     }
-    const loaded = await load({ silent: true });
-    if (!loaded && !items.length) setMessage('公告載入失敗，請稍後再試。');
+    await load();
     if (!announcementId) {
       showList();
       return true;

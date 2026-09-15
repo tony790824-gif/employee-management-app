@@ -743,4 +743,54 @@ assert.equal(elements.get('#pushNotificationTest').hidden, true,
   'Test Push remains unavailable until the current Session binding is confirmed by the server.');
 pushRegisterPersists = true;
 
+for (const role of ['boss', 'employee']) {
+  const nodes = new Map(selectors.map(selector => [selector, node()]));
+  nodes.get('#notificationButton').hidden = true;
+  const events = new Map();
+  let connected = true;
+  let failed = true;
+  const isolated = {
+    ...sandbox,
+    navigator: {},
+    window: {
+      ...sandbox.window,
+      navigator: {},
+      shiftEnvironment: { name: 'production', dataBackend: 'postgres' },
+      location: { pathname: '/', search: '' },
+      shiftPostgresCloud: {
+        isConnected: () => connected,
+        getCurrentUser: () => ({ role }),
+        listNotifications: async () => {
+          if (failed) throw new Error('Database access was denied.');
+          return { ok: true, items: [], unreadCount: 0 };
+        },
+        pushStatus: async () => ({ ok: true, available: false })
+      }
+    },
+    document: {
+      querySelector: selector => nodes.get(selector) || null,
+      addEventListener: (type, listener) => events.set(type, listener)
+    }
+  };
+  vm.runInNewContext(navigationSource, isolated);
+  vm.runInNewContext(source, isolated);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get('#notificationButton').hidden, false,
+    `${role} can reach Notification Center after an initial load failure`);
+  nodes.get('#notificationButton').click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get('#notificationDialog').open, true);
+  assert.equal(nodes.get('#notificationMessage').textContent, 'Database access was denied.');
+  failed = false;
+  nodes.get('#notificationButton').click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get('#notificationButton').hidden, false);
+  assert.equal(nodes.get('#notificationList').children[0].textContent, '目前沒有通知。');
+  assert.equal(nodes.get('#notificationBadge').hidden, true);
+  connected = false;
+  events.get('postgres-session-cleared')();
+  assert.equal(nodes.get('#notificationButton').hidden, true);
+  assert.equal(nodes.get('#notificationDialog').open, false);
+}
+
 console.log('Notification Center UI, badge, read state and revision refresh tests passed.');

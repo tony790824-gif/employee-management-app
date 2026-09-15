@@ -394,4 +394,48 @@ assert.equal(directRouteElements.get('#announcementDetailTitle').textContent, an
 assert.equal(directRouteElements.get('#announcementEditor').hidden, true,
   'A direct Employee route does not expose Announcement management controls.');
 
+for (const role of ['boss', 'employee']) {
+  const nodes = new Map(announcementSelectors.map(selector => [selector, uiNode()]));
+  nodes.get('#announcementButton').hidden = true;
+  const events = new Map();
+  let connected = true;
+  let failed = true;
+  const isolated = {
+    ...announcementUiContext,
+    window: {
+      ...announcementUiContext.window,
+      location: { pathname: '/' },
+      shiftPostgresCloud: {
+        isConnected: () => connected,
+        getCurrentUser: () => ({ role }),
+        listAnnouncements: async () => {
+          if (failed) throw new Error('Database access was denied.');
+          return { ok: true, items: [], unreadCount: 0 };
+        }
+      }
+    },
+    document: {
+      querySelector: selector => nodes.get(selector) || null,
+      addEventListener: (type, listener) => events.set(type, listener)
+    }
+  };
+  vm.runInNewContext(navigationSource, isolated);
+  vm.runInNewContext(uiSource, isolated);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(nodes.get('#announcementButton').hidden, false,
+    `${role} can reach Announcement Center after an initial load failure`);
+  await nodes.get('#announcementButton').click();
+  assert.equal(nodes.get('#announcementDialog').open, true);
+  assert.equal(nodes.get('#announcementMessage').textContent, 'Database access was denied.');
+  failed = false;
+  await nodes.get('#announcementButton').click();
+  assert.equal(nodes.get('#announcementButton').hidden, false);
+  assert.equal(nodes.get('#announcementList').children[0].textContent, '目前沒有公告。');
+  assert.equal(nodes.get('#announcementCreate').hidden, role !== 'boss');
+  connected = false;
+  events.get('postgres-session-cleared')();
+  assert.equal(nodes.get('#announcementButton').hidden, true);
+  assert.equal(nodes.get('#announcementDialog').open, false);
+}
+
 console.log('Announcement REST API, client navigation, read marker, and frontend boundary tests passed.');
