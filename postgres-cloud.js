@@ -209,7 +209,7 @@
   }
 
   async function refreshBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
-    if (!client) throw new Error('PostgreSQL Staging 尚未連線。');
+    if (!client) throw new Error('PostgreSQL 尚未連線。');
     const activeClient = client;
     const activeSession = currentSession;
     const bootstrap = validateBootstrap(await activeClient.bootstrap());
@@ -399,7 +399,7 @@
 
   function activateForegroundSync() {
     if (!client || !currentSession) {
-      throw new Error('PostgreSQL Staging Session 尚未完成，無法啟動同步。');
+      throw new Error('PostgreSQL Session 尚未完成，無法啟動同步。');
     }
     foregroundSyncActivated = true;
     lastUserActivityAt = Date.now();
@@ -498,7 +498,7 @@
   }
 
   async function executeAndRefresh(commandName, input) {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     const idempotencyKey = offlineRuntime ? window.crypto.randomUUID() : '';
     if (window.navigator?.onLine === false) return enqueueOfflineCommand(commandName, input, idempotencyKey);
     try {
@@ -564,7 +564,7 @@
     { attendanceId, hours, baseRevision }
   );
   const listTimeOffRequests = async () => {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     if (window.navigator?.onLine === false) {
       const cached = offlineRuntime?.readResource('timeOff');
       if (cached) return cached;
@@ -596,7 +596,7 @@
     { requestId, baseRevision, reviewNote }
   );
   const listNotifications = async () => {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     if (window.navigator?.onLine === false) {
       const cached = offlineRuntime?.readResource('notifications');
       if (cached) return cached;
@@ -610,7 +610,7 @@
     }
   };
   const listAnnouncements = async () => {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     if (window.navigator?.onLine === false) {
       const cached = offlineRuntime?.readResource('announcements');
       if (cached) return cached;
@@ -625,11 +625,11 @@
     }
   };
   const getAnnouncement = announcementId => {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     return client.getAnnouncement(announcementId);
   };
   async function announcementMutation(operation) {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     const result = await operation(client);
     await refreshBootstrap({ source: 'announcement-command' });
     document.dispatchEvent(new CustomEvent('announcement-changed'));
@@ -654,7 +654,7 @@
     'notifications.update-preferences', preferences
   );
   const pushStatus = () => {
-    if (!client || !currentSession) throw new Error('PostgreSQL Staging 登入狀態已失效，請重新登入。');
+    if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
     return client.pushStatus();
   };
   const registerPushSubscription = input => executeAndRefresh('push.register', input);
@@ -769,5 +769,12 @@
   });
 
   const cloudStatus = document.querySelector('#cloudStatus');
-  if (cloudStatus) cloudStatus.textContent = 'PostgreSQL Staging';
+  if (cloudStatus) {
+    const environmentLabel = {
+      production: 'Production（正式環境）',
+      staging: 'Staging（測試環境）',
+      local: 'Local（本機環境）'
+    }[environment.name] || '環境未確認';
+    cloudStatus.textContent = `PostgreSQL ${environmentLabel}`;
+  }
 })();

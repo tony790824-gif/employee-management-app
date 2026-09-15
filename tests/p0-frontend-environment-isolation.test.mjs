@@ -241,6 +241,33 @@ const pwaSource = await readFile('pwa.js', 'utf8');
 assert.match(pwaSource, /updateViaCache:\s*'none'/, 'Service Worker 更新檢查不得使用舊 HTTP cache');
 
 const googleSheetsCloudSource = await readFile('google-sheets-cloud.js', 'utf8');
+const postgresCloudSource = await readFile('postgres-cloud.js', 'utf8');
+for (const [name, expected] of [
+  ['production', 'PostgreSQL Production（正式環境）'],
+  ['staging', 'PostgreSQL Staging（測試環境）'],
+  ['local', 'PostgreSQL Local（本機環境）'],
+  [undefined, 'PostgreSQL 環境未確認'],
+  ['unexpected', 'PostgreSQL 環境未確認']
+]) {
+  const status = { textContent: '' };
+  const configuredApi = 'https://api.production.example/v1';
+  const runtimeEnvironment = Object.freeze({
+    name, dataBackend: 'postgres', postgresApiUrl: configuredApi,
+    storageKey: key => `test:${key}`
+  });
+  const runtime = {
+    window: { shiftEnvironment: runtimeEnvironment, addEventListener() {} },
+    document: {
+      querySelector: selector => selector === '#cloudStatus' ? status : null,
+      addEventListener() {}
+    },
+    fetch() { throw new Error('Displaying the environment must not issue API requests'); }
+  };
+  vm.runInNewContext(postgresCloudSource, runtime, { filename: 'postgres-cloud.js' });
+  assert.equal(status.textContent, expected);
+  assert.equal(runtime.window.shiftEnvironment.postgresApiUrl, configuredApi,
+    'Environment labeling must not change the API target');
+}
 assert.match(googleSheetsCloudSource, /shiftEnvironment\?\.dataBackend === 'postgres'/,
   'Google Sheets adapter must fail closed when the PostgreSQL backend is active');
 vm.runInNewContext(await readFile('cloud-sync.js', 'utf8'), {

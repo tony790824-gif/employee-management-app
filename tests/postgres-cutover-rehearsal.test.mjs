@@ -45,6 +45,7 @@ const context = vm.createContext({
   clearTimeout: id => timers.delete(id),
   window: {
     shiftEnvironment: {
+      name: 'staging',
       dataBackend: 'postgres', postgresApiUrl: 'https://api.staging.example/v1', postgresWorkspaceId: workspaceId,
       storageKey: key => `banke:staging-postgres:${key}`
     },
@@ -80,7 +81,7 @@ assert.equal(written.length, 1);
 assert.equal(written[0].employees.length, 1);
 assert.equal(context.window.shiftPostgresCloud.isConnected(), true);
 assert.equal(context.window.shiftPostgresCloud.hasEmployeeSession(), true);
-assert.equal(cloudStatus.textContent, 'PostgreSQL Staging');
+assert.equal(cloudStatus.textContent, 'PostgreSQL Staging（測試環境）');
 context.window.shiftPostgresCloud.activateForegroundSync();
 
 await context.window.shiftPostgresCloud.saveEmployeeLeave('2026-07', ['2026-07-23']);
