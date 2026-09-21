@@ -27,6 +27,15 @@
   let inAppBrowserNotice;
   let initializationPhase = 'auth0';
   let verifiedOfflineBinding = '';
+  let boundSessionId = '';
+  let boundSubject = '';
+  let renewalPromise;
+  let redirectStarted = false;
+  let authenticationClosed = false;
+  const silentReauthenticationCodes = new Set([
+    'login_required', 'consent_required', 'interaction_required', 'account_selection_required', 'timeout'
+  ]);
+  const authError = (code, message) => Object.assign(new Error(message), { code });
   const emptyClaimVerification = () => Object.freeze({
     checked: false,
     exists: false,
@@ -44,10 +53,7 @@
     return JSON.parse(new TextDecoder().decode(bytes));
   };
 
-  const verifySessionClaim = async () => {
-    const accessToken = await client.getTokenSilently({
-      authorizationParams: { audience: authConfig.audience }
-    });
+  const inspectSessionClaim = async accessToken => {
     const payload = decodeJwtPayload(accessToken);
     const claimValue = payload[sessionClaimName];
     const idTokenClaims = await client.getIdTokenClaims();
@@ -61,12 +67,70 @@
         typeof auth0SessionId === 'string' &&
         claimValue === auth0SessionId
     });
+    return { payload, auth0SessionId, verification: claimVerification };
+  };
+
+  const verifySessionClaim = async () => {
+    const accessToken = await client.getTokenSilently({
+      authorizationParams: { audience: authConfig.audience }
+    });
+    const { payload, auth0SessionId } = await inspectSessionClaim(accessToken);
     if (claimVerification.matchesAuth0SessionId && window.crypto?.subtle) {
+      boundSessionId = auth0SessionId;
+      boundSubject = payload.sub;
       const bytes = new TextEncoder().encode(`${authConfig.domain}\u0000${auth0SessionId}`);
       const digest = new Uint8Array(await window.crypto.subtle.digest('SHA-256', bytes));
       verifiedOfflineBinding = [...digest].map(value => value.toString(16).padStart(2, '0')).join('');
     }
     return claimVerification;
+  };
+
+  // Never carry a command body through an authentication redirect or replay it.
+  const redirectForRenewal = async () => {
+    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+    if (!redirectStarted) {
+      redirectStarted = true;
+      try {
+        await client.loginWithRedirect({ appState: { authenticationRenewal: true } });
+      } catch {
+        throw authError('AUTH_REAUTHENTICATION_REQUIRED', '登入續期未完成，請重新開啟 APP 登入；原操作未送出。');
+      }
+    }
+    throw authError('AUTH_REAUTHENTICATION_REQUIRED', '正在更新登入，原操作未送出；返回後請重新確認並儲存。');
+  };
+
+  const getAccessToken = async ({ write = false } = {}) => {
+    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+    if (redirectStarted) {
+      throw authError('AUTH_REAUTHENTICATION_REQUIRED', '正在更新登入，原操作未送出。');
+    }
+    const options = { authorizationParams: { audience: authConfig.audience } };
+    const cached = await client.getTokenSilently({ ...options, cacheMode: 'cache-only' });
+    let token = cached;
+    if (!token) {
+      if (!renewalPromise) {
+        renewalPromise = client.getTokenSilently(options).finally(() => { renewalPromise = undefined; });
+      }
+      try {
+        token = await renewalPromise;
+      } catch (error) {
+        if (silentReauthenticationCodes.has(error?.error || error?.code)) return redirectForRenewal();
+        throw error;
+      }
+    }
+    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+    const { payload, auth0SessionId, verification } = await inspectSessionClaim(token);
+    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+    if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
+      throw authError('TOKEN_SESSION_INVALID', '登入 session 驗證失敗，原操作未送出。');
+    }
+    // A new Auth0 session must pass the normal callback / establish / bootstrap
+    // path, including the database's revocation checks, before using cached UI.
+    if (auth0SessionId !== boundSessionId || payload.sub !== boundSubject) return redirectForRenewal();
+    if (write && !cached) {
+      throw authError('AUTH_RENEWED_RETRY_REQUIRED', '登入已更新，這次操作尚未送出；請確認內容後再按一次儲存。');
+    }
+    return token;
   };
 
   const setStatus = message => {
@@ -193,9 +257,9 @@
       authorizationParams: {
         redirect_uri: redirectUri,
         audience: authConfig.audience,
-        scope: 'openid profile offline_access'
+        scope: 'openid profile'
       },
-      useRefreshTokens: true,
+      useRefreshTokens: false,
       cacheLocation: 'memory'
     });
 
@@ -215,7 +279,7 @@
         initializationPhase = 'app-session';
         setStatus(`Auth0 驗證成功，正在載入 PostgreSQL ${environmentLabel} 資料…`);
         const bootstrap = await window.shiftPostgresCloud.connect({
-          getAccessToken: () => client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
+          getAccessToken,
           offlineIdentityBinding: verifiedOfflineBinding
         });
         initializationPhase = 'app-ui';
@@ -247,8 +311,11 @@
   };
 
   const resetLoggedOutUi = () => {
+    authenticationClosed = true;
     claimVerification = emptyClaimVerification();
     verifiedOfflineBinding = '';
+    boundSessionId = '';
+    boundSubject = '';
     setStatus(`${environmentLabelUpper} 僅使用 Auth0 Authorization Code + PKCE 登入。`);
     if (loginButton) {
       loginButton.disabled = false;
@@ -315,7 +382,7 @@
   const publicAuth = Object.freeze({
     loginWithRedirect,
     logoutProvider,
-    getAccessToken: () => client?.getTokenSilently({ authorizationParams: { audience: authConfig.audience } }),
+    getAccessToken,
     getClaimVerification: () => claimVerification,
     redirectUri,
     audience: authConfig?.audience || ''

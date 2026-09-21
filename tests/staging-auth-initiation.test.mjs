@@ -40,7 +40,8 @@ const authSource = await readFile('staging-auth.js', 'utf8');
 assert.match(authSource, /\['staging', 'production'\]\.includes\(environment\?\.name\)/);
 assert.match(authSource, /new URL\('\.\/', window\.location\.href\)\.href/);
 assert.match(authSource, /authorizationParams:\s*\{[\s\S]*redirect_uri: redirectUri,[\s\S]*audience: authConfig\.audience/);
-assert.match(authSource, /useRefreshTokens: true/);
+assert.match(authSource, /useRefreshTokens: false/);
+assert.doesNotMatch(authSource, /offline_access/);
 assert.match(authSource, /cacheLocation: 'memory'/);
 assert.match(authSource, /await client\.loginWithRedirect\(\)/);
 assert.match(authSource, /client\.getTokenSilently/);
@@ -229,6 +230,7 @@ assert.deepEqual(successfulOrder, [
   'id-token',
   'connect',
   'access-token',
+  'id-token',
   'enter-ui',
   'activate-sync'
 ], 'Auth0 callback, App Session, bootstrap UI, and polling activation must remain strictly ordered.');
@@ -436,3 +438,4 @@ assert.equal(installedPwa.authClientCreations, 1, 'Installed PWA mode must not b
 assert.equal(installedPwa.body.children.length, 0, 'Installed PWA mode must not display the compatibility notice.');
 
 console.log('Staging Auth0 PKCE initiation tests passed.');
+await import('./auth0-authorize-renewal.test.mjs');

@@ -95,7 +95,9 @@
     } = {}) {
       const headers = { Accept: 'application/json', 'X-Request-Id': cryptoImpl.randomUUID() };
       if (authenticated) {
-        const token = String(await getAccessToken() || '').trim();
+        const token = String(await getAccessToken({
+          write: !['GET', 'HEAD'].includes(method) && !path.startsWith('/auth/')
+        }) || '').trim();
         const workspaceId = String(await getWorkspaceId() || '').trim();
         if (!token || token.length > 16_384) {
           throw new PostgresApiError('登入狀態無法使用。', { code: 'ACCESS_TOKEN_INVALID' });
