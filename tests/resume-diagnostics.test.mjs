@@ -138,3 +138,98 @@ const worker = await readFile('service-worker.js', 'utf8');
 assert.match(worker, /await diagnostics\.put[\s\S]*reason:'SW_NOTIFICATION_OPEN'[\s\S]*await self\.clients\.openWindow/);
 assert.doesNotMatch(source, /fetch\(|sendBeacon\(|console\.|innerHTML|location\.search|localStorage\.clear/);
 console.log('Persistent resume diagnostics passed: reload continuity, navigation attribution, lifecycle, privacy, bounded storage, keyboard and copy.');
+
+// Dedicated login summaries survive noisy polling, redirects and reloads. No network access.
+const loginKey = 'banke:login-performance:v1';
+const summary = page => page.snapshot().login_performance.summaries.at(-1);
+function loginMark(page, event, data = {}) {
+  page.diag.mark(event, { caller: 'staging-auth', run_id: 1, stale_result_ignored: false, ...data });
+}
+function apiStage(page, operation, duration, success = true) {
+  loginMark(page, 'API_REQUEST_START', { operation }); page.advance(duration);
+  loginMark(page, 'API_REQUEST_END', { operation, success });
+}
+const login = boot();
+login.advance(100);
+loginMark(login, 'AUTH_INIT_START');
+login.advance(400);
+loginMark(login, 'AUTH_CALLBACK_START');
+login.advance(200);
+loginMark(login, 'AUTH_CALLBACK_END', { success: true });
+login.advance(100);
+loginMark(login, 'TOKEN_READY', { success: true });
+apiStage(login, 'readiness', 231);
+apiStage(login, 'session-establish', 210);
+apiStage(login, 'bootstrap', 250);
+loginMark(login, 'HOME_RENDER_START'); login.advance(800);
+loginMark(login, 'HOME_RENDER_END', { success: true });
+loginMark(login, 'UI_USABLE');
+const measured = summary(login);
+assert.equal(measured.status, 'PASS');
+assert.deepEqual(measured.durations_ms, { app_open_to_usable: 2291, readiness: 231,
+  auth0_and_claim_validation: 700, api_session_tenant_bootstrap: 210,
+  first_home_data: 250, home_scripts_and_render: 800, other_frontend_and_user_wait: 900 });
+assert.equal(measured.temperature, 'WARM_AT_READINESS');
+assert.equal(measured.temperature_at_app_open, 'UNKNOWN', 'fast post-login readiness cannot prove warmth before login');
+assert.equal(Object.keys(measured.stages).length, 14);
+const saved = login.shared.get(loginKey);
+for (let i = 0; i < 350; i++) {
+  login.diag.mark('TOKEN_CHECK', { has_token: true });
+  login.diag.mark('UI_USABLE'); // Foreground polling is not another login.
+  login.diag.mark('API_REQUEST_END', { operation: 'bootstrap-revision', success: true });
+}
+assert.equal(login.snapshot().analysis.reason, 'BOOT_NOT_RETAINED');
+assert.equal(login.shared.get(loginKey), saved);
+assert.deepEqual(summary(login), measured);
+
+const interactive = boot();
+loginMark(interactive, 'AUTH_INIT_START');
+interactive.advance(500);
+loginMark(interactive, 'AUTHORIZE_REDIRECT_REQUESTED', { reason: 'USER_LOGIN' });
+const callback = boot({ shared: interactive.shared, tab: interactive.tab, now: 3500 });
+loginMark(callback, 'AUTH_INIT_START'); loginMark(callback, 'AUTH_CALLBACK_START');
+callback.advance(100); loginMark(callback, 'AUTH_CALLBACK_END', { success: true });
+callback.advance(100); loginMark(callback, 'TOKEN_READY', { success: true });
+assert.equal(callback.snapshot().login_performance.summaries.length, 1, 'callback joins only a pending same-tab redirect');
+assert.equal(summary(callback).durations_ms.auth0_and_claim_validation, 2200);
+assert.equal(summary(callback).stages.TOKEN_READY.elapsed_ms, 2700, 'total retains original document start across redirect');
+const separateTab = boot({ shared: interactive.shared, now: 4000 });
+loginMark(separateTab, 'AUTH_INIT_START'); loginMark(separateTab, 'AUTH_CALLBACK_START');
+assert.equal(summary(separateTab).stages.AUTH_START.elapsed_ms, 0, 'different tabs cannot adopt another login');
+
+const slow = boot(); loginMark(slow, 'AUTH_INIT_START');
+apiStage(slow, 'readiness', 6000);
+assert.equal(summary(slow).temperature, 'UNKNOWN', 'slow request alone does not prove Render cold start');
+const failed = boot(); loginMark(failed, 'AUTH_INIT_START');
+apiStage(failed, 'readiness', 15000, false);
+assert.equal(summary(failed).status, 'FAIL');
+assert.equal(summary(failed).stages.READINESS_END.success, false);
+assert.equal(summary(failed).durations_ms.app_open_to_usable, null, 'failure must not invent usable time');
+loginMark(failed, 'AUTH_INIT_START', { reason: 'API_RETRY', run_id: 2 });
+const retryBefore = failed.shared.get(loginKey);
+loginMark(failed, 'AUTH_INIT_END', { run_id: 1, success: false, stale_result_ignored: true });
+assert.equal(failed.shared.get(loginKey), retryBefore, 'stale completion cannot corrupt a new attempt');
+assert.equal(summary(failed).kind, 'API_RETRY', 'retry is not reported as an initial login');
+assert.equal(summary(failed).stages.READINESS_END.status, 'NOT_OBSERVED');
+
+const bounded = new Map();
+for (let i = 0; i < 15; i++) boot({ shared: bounded, now: 1000 + i });
+assert.equal(JSON.parse(bounded.get(loginKey)).length, 10);
+const poisoned = JSON.parse(login.shared.get(loginKey));
+poisoned[0].token = 'DO_NOT_RECORD'; poisoned[0].error_code = 'DO_NOT_RECORD';
+poisoned[0].stages.APP_BOOT.secret = 'DO_NOT_RECORD';
+poisoned[0].stages.DO_NOT_RECORD = { timestamp: 1000, success: true };
+login.shared.set(loginKey, JSON.stringify(poisoned));
+assert.doesNotMatch(JSON.stringify(login.snapshot()), /DO_NOT_RECORD/);
+const unavailable = boot({ failingStorage: true });
+loginMark(unavailable, 'AUTH_INIT_START'); loginMark(unavailable, 'TOKEN_READY', { success: true });
+assert.equal(unavailable.snapshot().login_performance.persistence, 'UNAVAILABLE');
+assert.equal(summary(unavailable).stages.TOKEN_READY.success, true);
+login.diag.open();
+await login.nodes.find(n => n.textContent === '複製登入效能摘要').handlers.click();
+assert.equal(JSON.parse(login.copied()).summaries[0].durations_ms.readiness, 231);
+assert.doesNotMatch(login.copied(), /DO_NOT_RECORD/);
+assert.match(auth, /diagnostic\('TOKEN_READY'/);
+assert.match(auth, /diagnostic\('HOME_RENDER_START'/);
+assert.match(auth, /finally\s*\{\s*diagnostic\('HOME_RENDER_END'/);
+console.log('Login performance summaries passed: independent capacity, exact stage durations, same-tab redirects, stale isolation, warm evidence, failures and secret-free copy.');

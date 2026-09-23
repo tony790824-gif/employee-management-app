@@ -409,6 +409,7 @@
       return true;
     });
     if (authenticated) {
+      diagnostic('TOKEN_READY', { ...runFields(run), success: true });
       if (environment.dataBackend === 'postgres') {
         if (!verifiedOfflineBinding) throw new Error('Auth0 identity binding is unavailable.');
         initializationPhase = 'app-session';
@@ -422,7 +423,16 @@
         }));
         initializationPhase = 'app-ui';
         run.stage = 'app-ui';
-        await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '', { isCurrent: () => currentRun(run) });
+        const homeRenderStarted = Date.now();
+        diagnostic('HOME_RENDER_START', { ...runFields(run), elapsed_ms: 0 });
+        let homeRenderSucceeded = false;
+        try {
+          await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '', { isCurrent: () => currentRun(run) });
+          homeRenderSucceeded = currentRun(run);
+        } finally {
+          diagnostic('HOME_RENDER_END', { ...runFields(run), elapsed_ms: Date.now() - homeRenderStarted,
+            success: homeRenderSucceeded });
+        }
         assertCurrentRun(run);
         window.shiftPostgresCloud.activateForegroundSync();
         diagnostic('UI_USABLE', runFields(run));

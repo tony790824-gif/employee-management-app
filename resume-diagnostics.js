@@ -20,7 +20,7 @@
     'SW_INSTALLED', 'SW_ACTIVATED', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END',
     'AUTH_SESSION_INIT_START', 'AUTH_SESSION_INIT_END', 'API_BOOTSTRAP_START', 'API_BOOTSTRAP_END',
     'API_BOOTSTRAP_TIMEOUT', 'API_BOOTSTRAP_FAIL', 'API_REQUEST_START', 'API_REQUEST_END',
-    'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL']);
+    'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL', 'TOKEN_READY', 'HOME_RENDER_START', 'HOME_RENDER_END']);
   const reasons = new Set(['AUTH_AUTHORIZE_RENEWAL', 'USER_LOGIN', 'AUTH_LOGOUT',
     'BACKUP_RESTORE', 'LEGACY_PAYROLL_SAVE', 'LEGACY_ATTENDANCE_SAVE', 'LEGACY_LEAVE_DECISION',
     'LEGACY_STORAGE_ATTENDANCE', 'LEGACY_CLOUD_REFRESH', 'LEGACY_LOGOUT',
@@ -67,6 +67,147 @@
   }
   let memory = [];
   let persistence = true;
+  // Independent of the lifecycle ring: polling cannot evict login measurements.
+  const LOGIN_KEY = 'banke:login-performance:v1';
+  const loginStages = ['APP_BOOT', 'AUTH_START', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END', 'TOKEN_READY',
+    'READINESS_START', 'READINESS_END', 'BOOTSTRAP_START', 'BOOTSTRAP_END',
+    'FIRST_HOME_DATA_START', 'FIRST_HOME_DATA_END', 'HOME_RENDER_START', 'HOME_RENDER_END', 'UI_USABLE'];
+  const loginKinds = ['APP_LOGIN', 'API_RETRY', 'AUTHORIZE_RENEWAL'];
+  const validTime = value => Number.isSafeInteger(value) && value >= 0;
+  const validId = value => /^[a-f0-9-]{36}$/.test(value || '');
+  const pageStarted = Number.isFinite(performance.timeOrigin) && performance.timeOrigin > 0
+    ? Math.min(Date.now(), Math.round(performance.timeOrigin)) : Date.now();
+  let loginMemory = [], loginPersistent = true, currentLogin;
+  function cleanLogin(value) {
+    if (!value || !validId(value.id) || !validId(value.tab_id) || !validId(value.boot_id)
+      || !validTime(value.started) || !validTime(value.updated) || !loginKinds.includes(value.kind)) return null;
+    const stages = {};
+    for (const name of loginStages) {
+      const stage = value.stages?.[name];
+      if (stage && validTime(stage.timestamp) && (stage.success === null || typeof stage.success === 'boolean')) {
+        stages[name] = { timestamp: stage.timestamp, success: stage.success };
+      }
+    }
+    return { id: value.id, tab_id: value.tab_id, boot_id: value.boot_id, kind: value.kind,
+      started: value.started, updated: value.updated, stages,
+      run_id: validTime(value.run_id) ? value.run_id : null,
+      awaiting_callback: value.awaiting_callback === true,
+      failed: value.failed === true,
+      error_code: errorCodes.has(value.error_code) ? value.error_code : null };
+  }
+  function readLogins() {
+    try {
+      const raw = localStorage.getItem(LOGIN_KEY);
+      if (raw && raw.length > 100000) return [];
+      const values = JSON.parse(raw || '[]');
+      return Array.isArray(values) ? values.slice(-10).map(cleanLogin).filter(Boolean) : [];
+    } catch { loginPersistent = false; return loginMemory; }
+  }
+  function saveLogin(removeId) {
+    loginMemory = [...readLogins().filter(item => item.id !== currentLogin.id && item.id !== removeId),
+      cleanLogin(currentLogin)].filter(Boolean).slice(-10);
+    try { localStorage.setItem(LOGIN_KEY, JSON.stringify(loginMemory)); loginPersistent = true; }
+    catch { loginPersistent = false; }
+  }
+  function newLogin(timestamp, kind = 'APP_LOGIN') {
+    return { id: id(), tab_id: tabId, boot_id: bootId, kind, started: pageStarted, updated: timestamp,
+      stages: { APP_BOOT: { timestamp: pageStarted, success: true } },
+      run_id: null, awaiting_callback: false, failed: false, error_code: null };
+  }
+  function captureLogin(entry) {
+    if (entry.stale_result_ignored) return;
+    const { event, timestamp } = entry;
+    if (event === 'BOOT') { currentLogin = newLogin(timestamp); saveLogin(); return; }
+    if (!currentLogin) return;
+    if (event === 'AUTHORIZE_REDIRECT_REQUESTED') {
+      if (currentLogin.stages.UI_USABLE || currentLogin.failed) currentLogin = newLogin(timestamp,
+        entry.reason === 'AUTH_AUTHORIZE_RENEWAL' ? 'AUTHORIZE_RENEWAL' : 'APP_LOGIN');
+      currentLogin.stages.AUTH_START = { timestamp, success: null };
+      currentLogin.awaiting_callback = true;
+      currentLogin.updated = timestamp;
+      saveLogin(); return;
+    }
+    if (event === 'AUTH_INIT_START') {
+      if (entry.reason === 'API_RETRY' || currentLogin.stages.UI_USABLE || currentLogin.failed) {
+        currentLogin = newLogin(timestamp, entry.reason === 'API_RETRY' ? 'API_RETRY' : 'APP_LOGIN');
+      }
+      currentLogin.run_id = entry.run_id ?? null;
+    }
+    if (entry.run_id !== undefined && currentLogin.run_id !== null && entry.run_id !== currentLogin.run_id) return;
+    if (currentLogin.stages.UI_USABLE || currentLogin.failed) return;
+    let removeId;
+    if (event === 'AUTH_CALLBACK_START') {
+      // Join only this tab's recorded redirect, never infer a callback from a URL/identity.
+      const previous = readLogins().findLast(item => item.id !== currentLogin.id && item.tab_id === tabId
+        && item.awaiting_callback && !item.failed && !item.stages.UI_USABLE
+        && timestamp >= item.updated && timestamp - item.updated <= 15 * 60 * 1000);
+      if (previous) {
+        removeId = currentLogin.id;
+        currentLogin = { ...previous, boot_id: bootId, run_id: entry.run_id ?? null,
+          stages: { ...currentLogin.stages, ...previous.stages } };
+      }
+      currentLogin.awaiting_callback = false;
+    }
+    let name = {
+      AUTH_INIT_START: 'AUTH_START', AUTH_CALLBACK_START: 'AUTH_CALLBACK_START',
+      AUTH_CALLBACK_END: 'AUTH_CALLBACK_END', TOKEN_READY: 'TOKEN_READY',
+      HOME_RENDER_START: 'HOME_RENDER_START', HOME_RENDER_END: 'HOME_RENDER_END'
+    }[event];
+    if (event === 'UI_USABLE' && entry.caller === 'staging-auth' && entry.run_id === currentLogin.run_id) name = 'UI_USABLE';
+    if (event === 'API_REQUEST_START' || event === 'API_REQUEST_END') {
+      const prefix = { readiness: 'READINESS', 'session-establish': 'BOOTSTRAP', bootstrap: 'FIRST_HOME_DATA' }[entry.operation];
+      if (prefix) name = `${prefix}_${event === 'API_REQUEST_START' ? 'START' : 'END'}`;
+    }
+    const failure = (['AUTH_INIT_END', 'AUTH_CALLBACK_END', 'AUTH_SESSION_INIT_END', 'API_REQUEST_END', 'HOME_RENDER_END'].includes(event)
+      && entry.success === false && (event !== 'API_REQUEST_END' || name));
+    if (!name && !failure && event !== 'NAV_CANCELLED') return;
+    if (name && !currentLogin.stages[name]) currentLogin.stages[name] = {
+      timestamp, success: name.endsWith('_START') || name === 'AUTH_START' ? null : entry.success !== false
+    };
+    if (name === 'TOKEN_READY') currentLogin.stages.AUTH_START.success = true;
+    if (failure || event === 'NAV_CANCELLED') {
+      currentLogin.failed = true;
+      currentLogin.awaiting_callback = false;
+      currentLogin.error_code = entry.error_code || 'OTHER';
+    }
+    currentLogin.updated = timestamp;
+    saveLogin(removeId);
+  }
+  function loginSnapshot() {
+    const summaries = readLogins().map(item => {
+      const diff = (start, end) => item.stages[start] && item.stages[end]
+        ? Math.max(0, item.stages[end].timestamp - item.stages[start].timestamp) : null;
+      const readiness = diff('READINESS_START', 'READINESS_END');
+      // Fast readiness establishes warmth at this request, not cold/warm at app launch.
+      // Slow readiness is NOT evidence of a Render cold start (network/DB can also be slow).
+      const classification = item.stages.READINESS_END?.success === true && readiness !== null && readiness <= 1000
+        ? 'WARM_AT_READINESS' : 'UNKNOWN';
+      const basis = classification === 'WARM_AT_READINESS' ? 'READINESS_PASS_WITHIN_1000_MS' : 'INSUFFICIENT_EVIDENCE';
+      const stages = {};
+      for (const name of loginStages) {
+        const stage = item.stages[name];
+        stages[name] = { elapsed_ms: stage ? Math.max(0, stage.timestamp - item.started) : null,
+          success: stage?.success ?? null, status: !stage ? 'NOT_OBSERVED' : stage.success === null ? 'STARTED' : stage.success ? 'PASS' : 'FAIL',
+          temperature: classification, temperature_basis: basis };
+      }
+      const auth = diff('AUTH_START', 'TOKEN_READY');
+      const bootstrap = diff('BOOTSTRAP_START', 'BOOTSTRAP_END');
+      const home = diff('FIRST_HOME_DATA_START', 'FIRST_HOME_DATA_END');
+      const total = diff('APP_BOOT', 'UI_USABLE');
+      return { login_id: item.id, kind: item.kind, run_id: item.run_id,
+        status: item.stages.UI_USABLE ? 'PASS' : item.failed ? 'FAIL' : 'INCOMPLETE',
+        temperature: classification, temperature_basis: basis, temperature_at_app_open: 'UNKNOWN',
+        error_code: item.error_code, stages,
+        durations_ms: { app_open_to_usable: total, readiness, auth0_and_claim_validation: auth,
+          api_session_tenant_bootstrap: bootstrap, first_home_data: home,
+          home_scripts_and_render: diff('HOME_RENDER_START', 'HOME_RENDER_END'),
+          other_frontend_and_user_wait: total !== null && [auth, readiness, bootstrap, home].every(x => x !== null)
+            ? Math.max(0, total - auth - readiness - bootstrap - home) : null } };
+    });
+    return { version: 1, persistence: loginPersistent ? 'LOCAL_STORAGE' : 'UNAVAILABLE', limit: 10,
+      measurement: 'DOCUMENT_START_TO_DOM_USABLE; AUTH_INCLUDES_INTERACTIVE_USER_WAIT_IF_ANY',
+      operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' }, summaries };
+  }
   let swNavigation = null;
   // The SW cannot use localStorage. Its sole openWindow path persists one fixed,
   // destination-free record in same-origin CacheStorage before navigation.
@@ -94,6 +235,7 @@
     try {
       const entry = sanitize({ ...data, event, timestamp: Date.now(), boot_id: bootId, tab_id: tabId });
       if (!entry) return;
+      try { captureLogin(entry); } catch { /* Measurement cannot affect the application. */ }
       memory = [...read(), entry].slice(-LIMIT);
       try { localStorage.setItem(KEY, JSON.stringify(memory)); persistence = true; }
       catch { persistence = false; }
@@ -151,7 +293,7 @@
     const records = read();
     return { version: 1, persistence: persistence ? 'LOCAL_STORAGE' : 'UNAVAILABLE',
       current_boot_id: bootId, analysis: analyze(records), events: records,
-      sw_navigation: swNavigation };
+      sw_navigation: swNavigation, login_performance: loginSnapshot() };
   }
   let dialog;
   function open() {
@@ -162,7 +304,7 @@
       dialog.setAttribute('aria-label', '診斷紀錄');
       dialog.style.cssText = 'width:min(90vw,900px);max-height:85vh;overflow:auto';
       const title = document.createElement('h2'); title.textContent = '診斷紀錄（僅限本機）';
-      const help = document.createElement('p'); help.textContent = '僅保留最近 200 筆非敏感事件。分類是線索；controllerchange 不等於已證明更新造成重載。';
+      const help = document.createElement('p'); help.textContent = '登入效能摘要獨立保留最近 10 次，不受 200 筆生命週期紀錄覆蓋。快速 readiness 只證明當次請求已醒著；慢回應不等於冷啟動。';
       const output = document.createElement('textarea'); output.readOnly = true;
       output.setAttribute('aria-label', '安全診斷紀錄'); output.style.cssText = 'width:100%;height:45vh;font:12px monospace';
       const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '複製診斷紀錄';
@@ -172,8 +314,14 @@
         catch { output.focus(); output.select(); status.textContent = '請按 Ctrl+C 複製已選取的安全紀錄。'; }
       });
       const close = document.createElement('button'); close.type = 'button'; close.textContent = '關閉';
+      const copyLogin = document.createElement('button'); copyLogin.type = 'button'; copyLogin.textContent = '複製登入效能摘要';
+      copyLogin.addEventListener('click', async () => {
+        output.value = JSON.stringify(loginSnapshot(), null, 2);
+        try { await navigator.clipboard.writeText(output.value); status.textContent = '已複製登入效能摘要。'; }
+        catch { output.focus(); output.select(); status.textContent = '請按 Ctrl+C 複製已選取的安全摘要。'; }
+      });
       close.addEventListener('click', () => dialog.close());
-      dialog.append(title, help, output, copy, close, status);
+      dialog.append(title, help, output, copy, copyLogin, close, status);
       document.body.append(dialog);
     }
     dialog.querySelector('textarea').value = JSON.stringify(snapshot(), null, 2);
