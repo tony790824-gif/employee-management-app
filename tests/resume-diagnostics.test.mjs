@@ -169,6 +169,10 @@ assert.equal(measured.status, 'PASS');
 assert.deepEqual(measured.durations_ms, { app_open_to_usable: 2291, readiness: 231,
   auth0_and_claim_validation: 700, api_session_tenant_bootstrap: 210,
   first_home_data: 250, home_scripts_and_render: 800, other_frontend_and_user_wait: 900 });
+assert.deepEqual(measured.phase_breakdown_ms, { pre_auth_and_user_wait: 100,
+  auth_interactive_roundtrip_including_user_wait: 400, auth_callback_processing: 200,
+  token_and_claim_processing_after_callback: 100, system_after_callback_to_usable: 1791,
+  token_ready_to_usable: 1491 });
 assert.equal(measured.temperature, 'WARM_AT_READINESS');
 assert.equal(measured.temperature_at_app_open, 'UNKNOWN', 'fast post-login readiness cannot prove warmth before login');
 assert.equal(Object.keys(measured.stages).length, 14);
@@ -211,6 +215,26 @@ loginMark(failed, 'AUTH_INIT_END', { run_id: 1, success: false, stale_result_ign
 assert.equal(failed.shared.get(loginKey), retryBefore, 'stale completion cannot corrupt a new attempt');
 assert.equal(summary(failed).kind, 'API_RETRY', 'retry is not reported as an initial login');
 assert.equal(summary(failed).stages.READINESS_END.status, 'NOT_OBSERVED');
+assert.equal(summary(failed).phase_breakdown_ms.auth_interactive_roundtrip_including_user_wait, null,
+  'API retry without callback must not invent an interactive wait');
+assert.equal(summary(failed).phase_breakdown_ms.system_after_callback_to_usable, null);
+
+// Reproduce the supplied Windows timing without changing any authentication behavior.
+const windowsTiming = boot();
+windowsTiming.advance(5727); loginMark(windowsTiming, 'AUTH_INIT_START');
+windowsTiming.advance(17159); loginMark(windowsTiming, 'AUTH_CALLBACK_START');
+windowsTiming.advance(655); loginMark(windowsTiming, 'AUTH_CALLBACK_END', { success: true });
+windowsTiming.advance(3); loginMark(windowsTiming, 'TOKEN_READY', { success: true });
+windowsTiming.advance(1614); loginMark(windowsTiming, 'UI_USABLE');
+assert.deepEqual(summary(windowsTiming).phase_breakdown_ms, {
+  pre_auth_and_user_wait: 5727, auth_interactive_roundtrip_including_user_wait: 17159,
+  auth_callback_processing: 655, token_and_claim_processing_after_callback: 3,
+  system_after_callback_to_usable: 2272, token_ready_to_usable: 1614
+});
+assert.equal(summary(windowsTiming).durations_ms.app_open_to_usable, 25158);
+assert.equal(summary(windowsTiming).durations_ms.auth0_and_claim_validation, 17817,
+  'legacy v1 totals remain unchanged for existing consumers');
+assert.match(windowsTiming.snapshot().login_performance.phase_measurement, /ROUNDTRIP_INCLUDES_USER_WAIT_AND_NETWORK/);
 
 const bounded = new Map();
 for (let i = 0; i < 15; i++) boot({ shared: bounded, now: 1000 + i });

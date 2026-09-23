@@ -202,10 +202,22 @@
           api_session_tenant_bootstrap: bootstrap, first_home_data: home,
           home_scripts_and_render: diff('HOME_RENDER_START', 'HOME_RENDER_END'),
           other_frontend_and_user_wait: total !== null && [auth, readiness, bootstrap, home].every(x => x !== null)
-            ? Math.max(0, total - auth - readiness - bootstrap - home) : null } };
+            ? Math.max(0, total - auth - readiness - bootstrap - home) : null },
+        // Additive presentation only: retain all v1 durations and persisted records.
+        // The off-origin interval includes user interaction AND redirect/network time;
+        // it cannot be attributed to Auth0 processing or measured as pure human wait.
+        phase_breakdown_ms: {
+          pre_auth_and_user_wait: diff('APP_BOOT', 'AUTH_START'),
+          auth_interactive_roundtrip_including_user_wait: diff('AUTH_START', 'AUTH_CALLBACK_START'),
+          auth_callback_processing: diff('AUTH_CALLBACK_START', 'AUTH_CALLBACK_END'),
+          token_and_claim_processing_after_callback: diff('AUTH_CALLBACK_END', 'TOKEN_READY'),
+          system_after_callback_to_usable: diff('AUTH_CALLBACK_START', 'UI_USABLE'),
+          token_ready_to_usable: diff('TOKEN_READY', 'UI_USABLE')
+        } };
     });
     return { version: 1, persistence: loginPersistent ? 'LOCAL_STORAGE' : 'UNAVAILABLE', limit: 10,
       measurement: 'DOCUMENT_START_TO_DOM_USABLE; AUTH_INCLUDES_INTERACTIVE_USER_WAIT_IF_ANY',
+      phase_measurement: 'PRE_AUTH_AND_INTERACTIVE_ROUNDTRIP_EXCLUDED_FROM_SYSTEM_AFTER_CALLBACK; ROUNDTRIP_INCLUDES_USER_WAIT_AND_NETWORK; NULL_MEANS_NOT_OBSERVED; INTERVALS_OVERLAP_DO_NOT_SUM',
       operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' }, summaries };
   }
   let swNavigation = null;
