@@ -106,7 +106,8 @@
     }
   }
 
-  async function enter(role, employeeId = '') {
+  async function enter(role, employeeId = '', { isCurrent = () => true } = {}) {
+    if (!isCurrent()) return;
     if (role !== 'boss' && role !== 'employee') throw new Error('登入身份無效。');
     if (role === 'employee' && !employeeId) throw new Error('找不到員工身份，請重新登入。');
 
@@ -117,6 +118,7 @@
     try {
       await loadAuthenticatedApp();
     } catch (error) {
+      if (!isCurrent()) return;
       window.SHIFT_AUTHORIZED = false;
       document.body.classList.remove('app-authenticated', 'employee-mode');
       purgeRenderedData();
@@ -125,6 +127,7 @@
       throw error;
     }
 
+    if (!isCurrent()) return;
     sessionStorage.setItem(storageKey('shift-signed-in'), 'yes');
     document.body.classList.add('app-authenticated');
     $('#installAppBtn').hidden = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;

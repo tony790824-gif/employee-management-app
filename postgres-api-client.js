@@ -96,6 +96,7 @@
     cryptoImpl = globalThis.crypto,
     eventTarget = globalThis,
     onCommandRevision,
+    diagnosticContext,
     timeoutMs = DEFAULT_TIMEOUT_MS
   }) {
     const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
@@ -109,7 +110,43 @@
       throw new PostgresApiError('PostgreSQL API timeout 設定不正確。', { code: 'POSTGRES_API_CONFIG_INVALID' });
     }
 
-    async function request(path, {
+    let requestSequence = 0;
+    // Fixed operation labels only: never retain query strings or object/employee IDs.
+    const operationName = path => {
+      const route = path.split('?')[0];
+      const names = { '/health': 'health', '/readiness': 'readiness', '/auth/session': 'session-establish',
+        '/auth/logout': 'session-logout', '/bootstrap': 'bootstrap', '/bootstrap/revision': 'bootstrap-revision',
+        '/employees': 'employees', '/employees/administration': 'employee-administration', '/payroll': 'payroll',
+        '/time-off-requests': 'time-off-requests', '/notifications': 'notifications', '/announcements': 'announcements',
+        '/push/status': 'push-status' };
+      return names[route] || (route.startsWith('/commands/') ? 'command'
+        : route.startsWith('/announcements/') ? 'announcement-detail' : 'other');
+    };
+    async function request(path, options = {}) {
+      const operation = operationName(path);
+      const started = Date.now();
+      const context = typeof diagnosticContext === 'function' ? diagnosticContext() : {};
+      const fields = { ...context, request_id: ++requestSequence, operation, error_stage: 'api-request',
+        reason: 'API_REQUEST', caller: 'postgres-api-client',
+        started_hidden: globalThis.document?.visibilityState === 'hidden' };
+      const mark = (event, data = {}) => globalThis.window?.shiftResumeDiagnostics?.mark(event,
+        { ...fields, stale_result_ignored: typeof diagnosticContext === 'function'
+          ? diagnosticContext().stale_result_ignored === true : false,
+        elapsed_ms: Date.now() - started, ...data });
+      mark('API_REQUEST_START');
+      try {
+        const result = await performRequest(path, options);
+        mark('API_REQUEST_END', { success: true });
+        return result;
+      } catch (error) {
+        if (error && typeof error === 'object') error.operation = operation;
+        const data = { success: false, ...globalThis.window?.shiftResumeDiagnostics?.authError(error) };
+        mark(error?.code === 'POSTGRES_API_TIMEOUT' ? 'API_REQUEST_TIMEOUT' : 'API_REQUEST_FAIL', data);
+        mark('API_REQUEST_END', data);
+        throw error;
+      }
+    }
+    async function performRequest(path, {
       method = 'GET',
       body,
       idempotencyKey = '',

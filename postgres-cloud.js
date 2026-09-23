@@ -233,11 +233,12 @@
     return tracked;
   }
 
-  async function readBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
+  async function readBootstrap({ onlyIfChanged = false, source = 'manual', assertCurrent = () => {} } = {}) {
     if (!client) throw new Error('PostgreSQL 尚未連線。');
     const activeClient = client;
     const activeSession = currentSession;
     const bootstrap = validateBootstrap(await activeClient.bootstrap());
+    assertCurrent();
     if (activeClient !== client || activeSession !== currentSession) {
       return { ...bootstrap, changed: false, stale: true };
     }
@@ -419,7 +420,8 @@
     return tracked;
   }
 
-  async function initializeConnection({ getAccessToken, offlineIdentityBinding = '' }) {
+  async function initializeConnection({ getAccessToken, offlineIdentityBinding = '', assertCurrent = () => {}, diagnosticContext }) {
+    assertCurrent();
     if (typeof getAccessToken !== 'function') throw new Error('PostgreSQL 登入缺少 Access Token provider。');
     if (offlineIdentityBinding && !ownerBindingPattern.test(offlineIdentityBinding)) {
       throw new Error('PostgreSQL 離線身份綁定格式不正確。');
@@ -431,6 +433,7 @@
     client = window.BankePostgresApi.createClient({
       baseUrl: environment.postgresApiUrl,
       getAccessToken,
+      diagnosticContext,
       getWorkspaceId: async () => environment.postgresWorkspaceId,
       onCommandRevision: revision => {
         commandRevision = revision;
@@ -439,10 +442,14 @@
     });
     const connectingClient = client;
     await connectingClient.readiness();
+    assertCurrent();
     if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
     await connectingClient.establishSession();
+    assertCurrent();
     if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
-    const bootstrap = await refreshBootstrap();
+    const bootstrap = await refreshBootstrap({ assertCurrent });
+    assertCurrent();
+    if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
     lastForegroundCompletedAt = Date.now();
     lastUserActivityAt = Date.now();
     void drainOfflineQueue();

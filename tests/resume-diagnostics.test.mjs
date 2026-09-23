@@ -82,6 +82,19 @@ privacy.diag.mark('SILENT_RENEW_FAIL', privacy.diag.authError({ name: 'DO_NOT_RE
 privacy.diag.mark('TOKEN_CHECK', { has_token: true, seconds_to_expiry: 60.8, token: 'DO_NOT_RECORD', cookie: 'DO_NOT_RECORD', code: 'DO_NOT_RECORD' });
 privacy.diag.intent('DO_NOT_RECORD', 'DO_NOT_RECORD');
 privacy.diag.mark('DO_NOT_RECORD', { value: 'DO_NOT_RECORD' });
+privacy.diag.mark('API_REQUEST_TIMEOUT', { run_id: 7, auth_run_id: 7, generation: 3,
+  request_id: 2, elapsed_ms: 15000, reason: 'API_REQUEST', caller: 'postgres-api-client',
+  operation: 'readiness', error_stage: 'api-request', stale_result_ignored: false,
+  ...privacy.diag.authError({ name: 'PostgresApiError', code: 'POSTGRES_API_TIMEOUT', message: 'DO_NOT_RECORD' }) });
+privacy.diag.mark('AUTH_SESSION_INIT_END', { run_id: 'DO_NOT_RECORD', generation: -1,
+  operation: '/employees/DO_NOT_RECORD', caller: 'DO_NOT_RECORD', error_stage: 'DO_NOT_RECORD',
+  elapsed_ms: Infinity, token: 'DO_NOT_RECORD' });
+const requestTimeout = privacy.snapshot().events.find(e => e.event === 'API_REQUEST_TIMEOUT');
+assert.equal(requestTimeout.operation, 'readiness');
+assert.equal(requestTimeout.error_code, 'POSTGRES_API_TIMEOUT');
+assert.equal(requestTimeout.run_id, 7);
+assert.equal(requestTimeout.elapsed_ms, 15000);
+assert.equal(requestTimeout.stale_result_ignored, false);
 assert.equal(privacy.snapshot().events[0].pathname, '/[redacted]');
 assert.equal(privacy.snapshot().events.find(e => e.event === 'TOKEN_CHECK').seconds_to_expiry, 60);
 assert.doesNotMatch(JSON.stringify(privacy.snapshot()), /DO_NOT_RECORD|private@example|\?code|\?state/);

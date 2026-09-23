@@ -17,23 +17,33 @@
     'TOKEN_CHECK', 'SILENT_RENEW_START', 'SILENT_RENEW_PASS', 'SILENT_RENEW_FAIL',
     'AUTHORIZE_REDIRECT_REQUESTED', 'AUTH_CALLBACK_DETECTED', 'BOOTSTRAP_START', 'BOOTSTRAP_END',
     'UI_USABLE', 'NAV_INTENT', 'NAV_CANCELLED', 'SW_CONTROLLERCHANGE', 'SW_UPDATE_FOUND',
-    'SW_INSTALLED', 'SW_ACTIVATED']);
+    'SW_INSTALLED', 'SW_ACTIVATED', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END',
+    'AUTH_SESSION_INIT_START', 'AUTH_SESSION_INIT_END', 'API_BOOTSTRAP_START', 'API_BOOTSTRAP_END',
+    'API_BOOTSTRAP_TIMEOUT', 'API_BOOTSTRAP_FAIL', 'API_REQUEST_START', 'API_REQUEST_END',
+    'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL']);
   const reasons = new Set(['AUTH_AUTHORIZE_RENEWAL', 'USER_LOGIN', 'AUTH_LOGOUT',
     'BACKUP_RESTORE', 'LEGACY_PAYROLL_SAVE', 'LEGACY_ATTENDANCE_SAVE', 'LEGACY_LEAVE_DECISION',
     'LEGACY_STORAGE_ATTENDANCE', 'LEGACY_CLOUD_REFRESH', 'LEGACY_LOGOUT',
-    'SERVICE_WORKER_UPDATE_RELOAD', 'SW_NOTIFICATION_OPEN', 'USER_LINK', 'USER_FORM']);
+    'SERVICE_WORKER_UPDATE_RELOAD', 'SW_NOTIFICATION_OPEN', 'USER_LINK', 'USER_FORM',
+    'APP_BOOT', 'API_RETRY', 'API_REQUEST']);
   const sources = new Set(['staging-auth', 'enhancements', 'management-actions', 'access',
-    'boss-hours', 'google-sheets-cloud', 'login', 'pwa', 'service-worker', 'document']);
+    'boss-hours', 'google-sheets-cloud', 'login', 'pwa', 'service-worker', 'document', 'postgres-api-client']);
   const errorCodes = new Set(['login_required', 'consent_required', 'interaction_required',
     'account_selection_required', 'timeout', 'invalid_grant', 'access_denied',
     'TOKEN_SESSION_INVALID', 'SESSION_INVALID', 'AUTH_REAUTHENTICATION_REQUIRED',
-    'AUTH_RENEWAL_DEFERRED', 'AUTH_RENEWAL_TEMPORARILY_UNAVAILABLE', 'OTHER']);
+    'AUTH_RENEWAL_DEFERRED', 'AUTH_RENEWAL_TEMPORARILY_UNAVAILABLE', 'AUTH_INIT_CANCELLED',
+    'POSTGRES_API_TIMEOUT', 'POSTGRES_API_UNAVAILABLE', 'POSTGRES_API_REQUEST_FAILED',
+    'missing_transaction', 'state_mismatch', 'OTHER']);
   const errorTypes = new Set(['Error', 'TypeError', 'TimeoutError', 'AbortError',
-    'AuthenticationError', 'GenericError', 'PopupTimeoutError', 'OTHER']);
+    'AuthenticationError', 'GenericError', 'PopupTimeoutError', 'PostgresApiError', 'OTHER']);
+  const operations = new Set(['health', 'readiness', 'session-establish', 'session-logout', 'bootstrap',
+    'bootstrap-revision', 'employees', 'employee-administration', 'payroll', 'time-off-requests',
+    'notifications', 'announcements', 'push-status', 'command', 'announcement-detail', 'other']);
   const paths = new Set(['/', '/index.html', '/announcements', '/announcements/[redacted]', '/[redacted]']);
   const safePath = value => paths.has(value) ? value
     : /^\/announcements\//.test(value || '') ? '/announcements/[redacted]' : '/[redacted]';
-  const bools = ['was_discarded', 'online', 'standalone', 'sw_controller', 'persisted', 'has_token', 'success'];
+  const bools = ['was_discarded', 'online', 'standalone', 'sw_controller', 'persisted', 'has_token', 'success',
+    'stale_result_ignored', 'started_hidden'];
   function sanitize(value) {
     if (!value || !events.has(value.event) || !Number.isFinite(value.timestamp)
       || !/^[a-f0-9-]{36}$/.test(value.boot_id || '') || !/^[a-f0-9-]{36}$/.test(value.tab_id || '')) return null;
@@ -44,6 +54,12 @@
     if (typeof value.pathname === 'string') result.pathname = safePath(value.pathname);
     if (reasons.has(value.reason)) result.reason = value.reason;
     if (sources.has(value.source)) result.source = value.source;
+    if (sources.has(value.caller)) result.caller = value.caller;
+    if (operations.has(value.operation)) result.operation = value.operation;
+    if (['auth-callback', 'auth-session', 'api-bootstrap', 'api-request', 'app-ui'].includes(value.error_stage)) result.error_stage = value.error_stage;
+    for (const key of ['run_id', 'auth_run_id', 'generation', 'elapsed_ms', 'request_id']) {
+      if (Number.isSafeInteger(value[key]) && value[key] >= 0 && value[key] <= 2147483647) result[key] = value[key];
+    }
     if (errorCodes.has(value.error_code)) result.error_code = value.error_code;
     if (errorTypes.has(value.error_type)) result.error_type = value.error_type;
     if (Number.isFinite(value.seconds_to_expiry)) result.seconds_to_expiry = Math.max(-86400, Math.min(31536000, Math.floor(value.seconds_to_expiry)));

@@ -442,3 +442,4 @@ assert.equal(installedPwa.body.children.length, 0, 'Installed PWA mode must not 
 
 console.log('Staging Auth0 PKCE initiation tests passed.');
 await import('./auth0-authorize-renewal.test.mjs');
+await import('./auth-initialization-completion.test.mjs');

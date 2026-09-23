@@ -737,6 +737,31 @@ resetForegroundObservations();
 await Promise.all(Array.from({ length: 8 }, () => foregroundWindow.shiftPostgresCloud.refreshBootstrap()));
 assert.equal(foregroundBootstrapCalls, 1, 'concurrent bootstrap consumers must share one request');
 
+// A read started before backgrounding may time out after resume. It must keep
+// the authenticated screen and permit one later read, never replay a command.
+resetForegroundObservations();
+foregroundNow += 2_000;
+let rejectBackgroundRead;
+foregroundGate = { promise: new Promise((resolve, reject) => { rejectBackgroundRead = reject; }) };
+foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
+await fireForegroundTimers(250);
+assert.equal(foregroundRevisionCalls, 1);
+foregroundDocument.visibilityState = 'hidden';
+foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
+foregroundNow += 8_000;
+foregroundDocument.visibilityState = 'visible';
+foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
+foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
+rejectBackgroundRead(Object.assign(new Error('fixture timeout'), { code: 'POSTGRES_API_TIMEOUT' }));
+foregroundGate = null;
+for (let i = 0; i < 30; i++) await Promise.resolve();
+assert.equal(foregroundWrites, 0, 'timed-out reads preserve the existing screen data');
+assert.equal(foregroundSessionValues.has('staging:shift-postgres-auth'), true, 'API timeout must not clear authentication');
+await fireForegroundTimers(2_000);
+assert.equal(foregroundRevisionCalls, 2, 'resume polling recovers once after the old read settles');
+assert.equal(foregroundBootstrapCalls, 0, 'unchanged data does not trigger another full bootstrap');
+assert.equal(foregroundWrites, 0);
+
 resetForegroundObservations();
 await foregroundWindow.shiftPostgresCloud.logout();
 assert.equal(foregroundTimers.size, 0, 'logout must stop all foreground timers');

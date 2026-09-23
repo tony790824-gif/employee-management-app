@@ -27,6 +27,10 @@
   let client;
   let inAppBrowserNotice;
   let initializationPhase = 'auth0';
+  let initializationPromise;
+  let authGeneration = 0;
+  let authRunSequence = 0;
+  let activeAuthRun;
   let verifiedOfflineBinding = '';
   let boundSessionId = '';
   let boundSubject = '';
@@ -37,10 +41,11 @@
   let verifiedTokenExpiresAt = 0;
   let renewalRetryAt = 0;
   let reconnectNotice;
-  const diagnostic = (event, data) => window.shiftResumeDiagnostics?.mark(event, data);
+  const diagnostic = (event, data) => window.shiftResumeDiagnostics?.mark(event,
+    { ...(activeAuthRun ? runFields(activeAuthRun) : {}), ...data });
   const timing = event => {
     window.shiftRuntimeTiming?.mark(event);
-    const names = { 'auth-init-start': 'AUTH_INIT_START', 'auth-init-end': 'AUTH_INIT_END', 'ui-usable': 'UI_USABLE' };
+    const names = { 'ui-usable': 'UI_USABLE' };
     if (names[event]) diagnostic(names[event]);
   };
   const tokenUsable = () => Boolean(verifiedToken && Date.now() < verifiedTokenExpiresAt);
@@ -82,7 +87,7 @@
     const claimValue = payload[sessionClaimName];
     const idTokenClaims = await client.getIdTokenClaims();
     const auth0SessionId = idTokenClaims?.sid;
-    claimVerification = Object.freeze({
+    const verification = Object.freeze({
       checked: true,
       exists: Object.hasOwn(payload, sessionClaimName),
       nonEmptyString: typeof claimValue === 'string' && claimValue.trim().length > 0,
@@ -91,10 +96,10 @@
         typeof auth0SessionId === 'string' &&
         claimValue === auth0SessionId
     });
-    return { payload, auth0SessionId, verification: claimVerification };
+    return { payload, auth0SessionId, verification };
   };
 
-  const verifySessionClaim = async () => {
+  const verifySessionClaim = async run => {
     diagnostic('SILENT_RENEW_START');
     let accessToken;
     try {
@@ -104,15 +109,19 @@
       diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
       throw error;
     }
-    const { payload, auth0SessionId } = await inspectSessionClaim(accessToken);
-    if (claimVerification.matchesAuth0SessionId && window.crypto?.subtle) {
+    assertCurrentRun(run);
+    const { payload, auth0SessionId, verification } = await inspectSessionClaim(accessToken);
+    assertCurrentRun(run);
+    if (verification.matchesAuth0SessionId && window.crypto?.subtle) {
+      const bytes = new TextEncoder().encode(`${authConfig.domain}\u0000${auth0SessionId}`);
+      const digest = new Uint8Array(await window.crypto.subtle.digest('SHA-256', bytes));
+      assertCurrentRun(run);
       boundSessionId = auth0SessionId;
       boundSubject = payload.sub;
       rememberToken(accessToken, payload);
-      const bytes = new TextEncoder().encode(`${authConfig.domain}\u0000${auth0SessionId}`);
-      const digest = new Uint8Array(await window.crypto.subtle.digest('SHA-256', bytes));
       verifiedOfflineBinding = [...digest].map(value => value.toString(16).padStart(2, '0')).join('');
     }
+    claimVerification = verification;
     return claimVerification;
   };
 
@@ -173,6 +182,7 @@
           verifiedToken = '';
           return redirectForRenewal();
         }
+        claimVerification = verification;
         rememberToken(token, payload);
         renewalRetryAt = 0;
         showReconnect(false);
@@ -311,7 +321,39 @@
     return true;
   };
 
-  const initialize = async () => {
+  const currentRun = run => !authenticationClosed && run.generation === authGeneration;
+  function assertCurrentRun(run) {
+    if (!currentRun(run)) throw authError('AUTH_INIT_CANCELLED', '登入初始化已取消。');
+  }
+  const runFields = run => ({ run_id: run.id, auth_run_id: run.id, generation: run.generation,
+    reason: run.reason, caller: 'staging-auth', elapsed_ms: Date.now() - run.started,
+    stale_result_ignored: !currentRun(run) });
+  async function runStage(run, stage, event, operation) {
+    assertCurrentRun(run);
+    run.stage = stage;
+    const started = Date.now();
+    diagnostic(`${event}_START`, { ...runFields(run), error_stage: stage, elapsed_ms: 0 });
+    let failure;
+    try {
+      const result = await operation();
+      assertCurrentRun(run);
+      return result;
+    } catch (error) {
+      failure = error;
+      if (event === 'API_BOOTSTRAP') diagnostic(error?.code === 'POSTGRES_API_TIMEOUT'
+        ? 'API_BOOTSTRAP_TIMEOUT' : 'API_BOOTSTRAP_FAIL', {
+        ...runFields(run), error_stage: stage, operation: error?.operation,
+        ...window.shiftResumeDiagnostics?.authError(error)
+      });
+      throw error;
+    } finally {
+      diagnostic(`${event}_END`, { ...runFields(run), error_stage: stage,
+        elapsed_ms: Date.now() - started, success: !failure,
+        ...(failure ? window.shiftResumeDiagnostics?.authError(failure) : {}) });
+    }
+  }
+
+  const initialize = async run => {
     if (showInAppBrowserNotice()) return;
     if (!authConfig?.domain || !authConfig?.clientId || !authConfig?.audience) {
       throw new Error(`${environmentLabel} Auth0 public configuration is incomplete.`);
@@ -320,8 +362,7 @@
       throw new Error('Auth0 SPA SDK failed to load.');
     }
 
-    timing('auth-init-start');
-    client = new auth0Sdk.Auth0Client({
+    if (!client) client = new auth0Sdk.Auth0Client({
       domain: authConfig.domain,
       clientId: authConfig.clientId,
       authorizationParams: {
@@ -334,41 +375,57 @@
       cacheLocation: 'memory'
     });
 
-    const query = new URLSearchParams(window.location.search);
-    if (query.has('code') && query.has('state')) {
-      diagnostic('AUTH_CALLBACK_DETECTED');
-      await client.handleRedirectCallback();
-      window.history.replaceState({}, document.title, redirectUri);
-    } else {
-      // The factory performs this even before callback processing; do it only on cold loads.
-      diagnostic('SILENT_RENEW_START');
-      try {
-        await client.checkSession({ timeoutInSeconds: 8 });
-        diagnostic('SILENT_RENEW_PASS');
-      } catch (error) {
-        diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
-        throw error;
+    const authenticated = await runStage(run, 'auth-session', 'AUTH_SESSION_INIT', async () => {
+      // Explicit API retry may reuse the already verified identity, not restart Auth0.
+      if (run.reason === 'API_RETRY' && tokenUsable() && verifiedOfflineBinding) return true;
+      const query = new URLSearchParams(window.location.search);
+      if (query.get('code') && query.get('state')) {
+        diagnostic('AUTH_CALLBACK_DETECTED', runFields(run));
+        await runStage(run, 'auth-callback', 'AUTH_CALLBACK', async () => {
+          await client.handleRedirectCallback();
+          assertCurrentRun(run);
+          window.history.replaceState({}, document.title, redirectUri);
+        });
+        run.stage = 'auth-session';
+      } else {
+        // The factory performs this even before callback processing; do it only on cold loads.
+        diagnostic('SILENT_RENEW_START');
+        try {
+          await client.checkSession({ timeoutInSeconds: 8 });
+          diagnostic('SILENT_RENEW_PASS');
+        } catch (error) {
+          diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
+          throw error;
+        }
       }
-    }
-    timing('auth-init-end');
-
-    if (await client.isAuthenticated()) {
-      const verification = await verifySessionClaim();
+      assertCurrentRun(run);
+      const authenticated = await client.isAuthenticated();
+      assertCurrentRun(run);
+      if (!authenticated) return false;
+      const verification = await verifySessionClaim(run);
       if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
         throw new Error('Auth0 session claim validation failed closed.');
       }
+      return true;
+    });
+    if (authenticated) {
       if (environment.dataBackend === 'postgres') {
         if (!verifiedOfflineBinding) throw new Error('Auth0 identity binding is unavailable.');
         initializationPhase = 'app-session';
         setStatus(`Auth0 驗證成功，正在載入 PostgreSQL ${environmentLabel} 資料…`);
-        const bootstrap = await window.shiftPostgresCloud.connect({
+        if (loginButton) loginButton.textContent = '正在載入資料…';
+        const bootstrap = await runStage(run, 'api-bootstrap', 'API_BOOTSTRAP', () => window.shiftPostgresCloud.connect({
           getAccessToken,
-          offlineIdentityBinding: verifiedOfflineBinding
-        });
+          offlineIdentityBinding: verifiedOfflineBinding,
+          assertCurrent: () => assertCurrentRun(run),
+          diagnosticContext: () => runFields(run)
+        }));
         initializationPhase = 'app-ui';
-        await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
+        run.stage = 'app-ui';
+        await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '', { isCurrent: () => currentRun(run) });
+        assertCurrentRun(run);
         window.shiftPostgresCloud.activateForegroundSync();
-        timing('ui-usable');
+        diagnostic('UI_USABLE', runFields(run));
         setStatus(`PostgreSQL ${environmentLabel} 資料載入完成。`);
       } else {
         setStatus(`Auth0 ${environmentLabel} login succeeded; the session claim is present and matches the Auth0 session ID.`);
@@ -399,6 +456,7 @@
 
   const resetLoggedOutUi = () => {
     authenticationClosed = true;
+    authGeneration += 1;
     verifiedToken = '';
     verifiedTokenExpiresAt = 0;
     showReconnect(false);
@@ -474,6 +532,7 @@
     loginWithRedirect,
     logoutProvider,
     getAccessToken,
+    ensureInitialized: () => startInitialization(),
     getClaimVerification: () => claimVerification,
     redirectUri,
     audience: authConfig?.audience || ''
@@ -481,14 +540,40 @@
   window.shiftAuth = publicAuth;
   window.shiftStagingAuth = publicAuth;
 
-  initialize().catch(async error => {
-    diagnostic('AUTH_INIT_END', { success: false, ...window.shiftResumeDiagnostics?.authError(error) });
-    if (await recoverInvalidPostgresSession(error)) return;
-    if (recoverDeniedPostgresIdentity(error)) return;
-    const system = initializationPhase === 'auth0'
-      ? `Auth0 ${environmentLabel}`
-      : `PostgreSQL ${environmentLabel}`;
-    setStatus(`${system} 初始化失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
-    if (loginButton) loginButton.disabled = true;
-  });
+  function startInitialization(reason = 'APP_BOOT') {
+    if (initializationPromise) return initializationPromise;
+    if (authenticationClosed) return Promise.resolve();
+    const run = { id: ++authRunSequence, generation: ++authGeneration, reason, started: Date.now(), stage: 'auth-session' };
+    activeAuthRun = run;
+    initializationPhase = 'auth0';
+    diagnostic('AUTH_INIT_START', runFields(run));
+    let failed = false;
+    const operation = initialize(run).catch(async error => {
+      failed = true;
+      run.error = error;
+      if (!currentRun(run)) return;
+      if (await recoverInvalidPostgresSession(error)) return;
+      if (!currentRun(run)) return;
+      if (recoverDeniedPostgresIdentity(error)) return;
+      const system = initializationPhase === 'auth0'
+        ? `Auth0 ${environmentLabel}`
+        : `PostgreSQL ${environmentLabel}`;
+      setStatus(`${system} 初始化未完成，請稍後重試。`);
+      // A data-connection error must never leave the Auth0 spinner/button stuck.
+      const retryApi = run.stage === 'api-bootstrap' &&
+        ['POSTGRES_API_TIMEOUT', 'POSTGRES_API_UNAVAILABLE'].includes(error?.code);
+      if (loginButton) {
+        loginButton.disabled = !retryApi;
+        loginButton.textContent = retryApi ? '重新連線' : '初始化未完成';
+        if (retryApi) loginButton.onclick = () => startInitialization('API_RETRY');
+      }
+    }).finally(() => {
+      diagnostic('AUTH_INIT_END', { ...runFields(run), success: !failed,
+        error_stage: run.stage, ...(run.error ? window.shiftResumeDiagnostics?.authError(run.error) : {}) });
+      if (failed && initializationPromise === operation) initializationPromise = undefined;
+    });
+    initializationPromise = operation;
+    return operation;
+  }
+  void startInitialization();
 })();
