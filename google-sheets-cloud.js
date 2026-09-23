@@ -261,7 +261,7 @@
       const result = await fetchSessionData();
       const local = localStorage.getItem(stateKey);
       const remote = JSON.stringify(result.data);
-      if (local !== remote) { writeRemote(result.data); location.reload(); }
+      if (local !== remote) { writeRemote(result.data); window.shiftResumeDiagnostics?.intent('LEGACY_CLOUD_REFRESH', 'google-sheets-cloud'); location.reload(); }
       status('Google Sheets 已連線');
     } catch (error) {
       status(error?.code === 'SESSION_INVALID' ? '登入已過期' : 'Google Sheets 雲端連線失敗');

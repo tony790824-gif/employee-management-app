@@ -37,7 +37,12 @@
   let verifiedTokenExpiresAt = 0;
   let renewalRetryAt = 0;
   let reconnectNotice;
-  const timing = event => window.shiftRuntimeTiming?.mark(event);
+  const diagnostic = (event, data) => window.shiftResumeDiagnostics?.mark(event, data);
+  const timing = event => {
+    window.shiftRuntimeTiming?.mark(event);
+    const names = { 'auth-init-start': 'AUTH_INIT_START', 'auth-init-end': 'AUTH_INIT_END', 'ui-usable': 'UI_USABLE' };
+    if (names[event]) diagnostic(names[event]);
+  };
   const tokenUsable = () => Boolean(verifiedToken && Date.now() < verifiedTokenExpiresAt);
   const isBackground = () => document.visibilityState === 'hidden';
   const showReconnect = visible => {
@@ -90,9 +95,15 @@
   };
 
   const verifySessionClaim = async () => {
-    const accessToken = await client.getTokenSilently({
-      authorizationParams: { audience: authConfig.audience }
-    });
+    diagnostic('SILENT_RENEW_START');
+    let accessToken;
+    try {
+      accessToken = await client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } });
+      diagnostic('SILENT_RENEW_PASS');
+    } catch (error) {
+      diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
+      throw error;
+    }
     const { payload, auth0SessionId } = await inspectSessionClaim(accessToken);
     if (claimVerification.matchesAuth0SessionId && window.crypto?.subtle) {
       boundSessionId = auth0SessionId;
@@ -118,8 +129,11 @@
     if (!redirectStarted) {
       redirectStarted = true;
       try {
+        diagnostic('AUTHORIZE_REDIRECT_REQUESTED', { reason: 'AUTH_AUTHORIZE_RENEWAL', source: 'staging-auth' });
+        window.shiftResumeDiagnostics?.intent('AUTH_AUTHORIZE_RENEWAL', 'staging-auth');
         await client.loginWithRedirect({ appState: { authenticationRenewal: true } });
       } catch {
+        diagnostic('NAV_CANCELLED', { reason: 'AUTH_AUTHORIZE_RENEWAL', source: 'staging-auth' });
         throw authError('AUTH_REAUTHENTICATION_REQUIRED', '登入續期未完成，請重新開啟 APP 登入；原操作未送出。');
       }
     }
@@ -127,6 +141,8 @@
   };
 
   const getAccessToken = async ({ write = false } = {}) => {
+    diagnostic('TOKEN_CHECK', { has_token: Boolean(verifiedToken),
+      seconds_to_expiry: verifiedToken ? (verifiedTokenExpiresAt + 5_000 - Date.now()) / 1000 : undefined });
     if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
     if (redirectStarted) {
       throw authError('AUTH_REAUTHENTICATION_REQUIRED', '正在更新登入，原操作未送出。');
@@ -142,9 +158,11 @@
       timing('auth-renewal-start');
       showReconnect(!hadUsableToken);
       renewalPromise = (async () => {
+        diagnostic('SILENT_RENEW_START');
         const token = await client.getTokenSilently({
           authorizationParams: { audience: authConfig.audience }, cacheMode: 'off', timeoutInSeconds: 8
         });
+        diagnostic('SILENT_RENEW_PASS');
         if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
         const { payload, auth0SessionId, verification } = await inspectSessionClaim(token);
         if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
@@ -160,6 +178,7 @@
         showReconnect(false);
         return token;
       })().catch(error => {
+        diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
         if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
         if (silentReauthenticationCodes.has(error?.error || error?.code)) {
           if (!tokenUsable()) return redirectForRenewal();
@@ -317,11 +336,19 @@
 
     const query = new URLSearchParams(window.location.search);
     if (query.has('code') && query.has('state')) {
+      diagnostic('AUTH_CALLBACK_DETECTED');
       await client.handleRedirectCallback();
       window.history.replaceState({}, document.title, redirectUri);
     } else {
       // The factory performs this even before callback processing; do it only on cold loads.
-      await client.checkSession({ timeoutInSeconds: 8 });
+      diagnostic('SILENT_RENEW_START');
+      try {
+        await client.checkSession({ timeoutInSeconds: 8 });
+        diagnostic('SILENT_RENEW_PASS');
+      } catch (error) {
+        diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
+        throw error;
+      }
     }
     timing('auth-init-end');
 
@@ -360,8 +387,11 @@
     if (!client) return;
     setBusy(true);
     try {
+      diagnostic('AUTHORIZE_REDIRECT_REQUESTED', { reason: 'USER_LOGIN', source: 'staging-auth' });
+      window.shiftResumeDiagnostics?.intent('USER_LOGIN', 'staging-auth');
       await client.loginWithRedirect();
     } catch (error) {
+      diagnostic('NAV_CANCELLED', { reason: 'USER_LOGIN', source: 'staging-auth' });
       setStatus(`Auth0 登入無法啟動：${error instanceof Error ? error.message : '未知錯誤'}`);
       setBusy(false);
     }
@@ -387,6 +417,7 @@
   const logoutProvider = async () => {
     resetLoggedOutUi();
     if (!client) return;
+    window.shiftResumeDiagnostics?.intent('AUTH_LOGOUT', 'staging-auth');
     await client.logout({ logoutParams: { returnTo: redirectUri } });
   };
 
@@ -451,6 +482,7 @@
   window.shiftStagingAuth = publicAuth;
 
   initialize().catch(async error => {
+    diagnostic('AUTH_INIT_END', { success: false, ...window.shiftResumeDiagnostics?.authError(error) });
     if (await recoverInvalidPostgresSession(error)) return;
     if (recoverDeniedPostgresIdentity(error)) return;
     const system = initializationPhase === 'auth0'

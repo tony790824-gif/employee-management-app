@@ -23,7 +23,15 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        await navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' });
+        const registration = await navigator.serviceWorker.register(serviceWorkerUrl, { updateViaCache: 'none' });
+        registration.addEventListener?.('updatefound', () => {
+          window.shiftResumeDiagnostics?.mark('SW_UPDATE_FOUND');
+          const worker = registration.installing;
+          worker?.addEventListener?.('statechange', () => {
+            if (worker.state === 'installed') window.shiftResumeDiagnostics?.mark('SW_INSTALLED');
+            if (worker.state === 'activated') window.shiftResumeDiagnostics?.mark('SW_ACTIVATED');
+          });
+        });
         await publishClientMode();
       } catch {}
     });

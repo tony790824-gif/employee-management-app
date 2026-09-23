@@ -24,7 +24,11 @@
   let connectPromise = null;
   let connectProvider = null;
   let connectionGeneration = 0;
-  const timing = event => window.shiftRuntimeTiming?.mark(event);
+  const timing = event => {
+    window.shiftRuntimeTiming?.mark(event);
+    const names = { 'bootstrap-start': 'BOOTSTRAP_START', 'bootstrap-end': 'BOOTSTRAP_END', 'ui-usable': 'UI_USABLE' };
+    if (names[event]) window.shiftResumeDiagnostics?.mark(names[event]);
+  };
   let foregroundFailureReported = false;
   let foregroundSyncActivated = false;
   let lastForegroundCompletedAt = 0;

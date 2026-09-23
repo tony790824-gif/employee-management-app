@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import vm from 'node:vm';
 import { environmentProfiles } from '../config/environments.mjs';
+import './resume-diagnostics.test.mjs';
 
 const result = spawnSync(process.execPath, ['scripts/build.mjs', '--environment=staging'], { encoding: 'utf8' });
 assert.equal(result.status, 0, result.stderr || 'Staging build failed.');

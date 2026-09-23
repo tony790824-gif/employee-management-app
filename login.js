@@ -322,6 +322,7 @@
       }
       return;
     }
+    window.shiftResumeDiagnostics?.intent('LEGACY_LOGOUT', 'login');
     location.reload();
   };
 

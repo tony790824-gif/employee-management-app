@@ -240,6 +240,7 @@
     if (!await persistBossChange(before, next, '出勤資料未成功寫入雲端')) return;
     $('#attendanceEmployee').disabled = false;
     $('#attendanceDialog').close();
+    window.shiftResumeDiagnostics?.intent('LEGACY_ATTENDANCE_SAVE', 'management-actions');
     location.reload();
   }));
 })();

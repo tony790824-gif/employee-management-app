@@ -125,7 +125,16 @@ self.addEventListener('notificationclick',event=>{
         }
       }catch{}
     }
-    if(self.clients.openWindow)await self.clients.openWindow(target.href);
+    if(self.clients.openWindow){
+      // This creates a window, not a reload of an existing PWA. Never store the target URL.
+      try{
+        const diagnostics=await caches.open('banke-resume-navigation-v1');
+        await diagnostics.put('./__resume_nav_intent__',new Response(JSON.stringify({
+          event:'NAV_INTENT',reason:'SW_NOTIFICATION_OPEN',source:'service-worker',timestamp:Date.now()
+        })));
+      }catch{}
+      await self.clients.openWindow(target.href);
+    }
   })());
 });
 self.addEventListener('pushsubscriptionchange',event=>{

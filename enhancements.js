@@ -63,6 +63,7 @@
         access: current.access
       });
       if (!await window.shiftBossData.persist(current, restored, '備份未成功寫入雲端')) return;
+      window.shiftResumeDiagnostics?.intent('BACKUP_RESTORE', 'enhancements');
       location.reload();
     } catch {
       alert('這不是有效的班表備份檔。');
@@ -123,6 +124,7 @@
         return;
       }
       alert('已儲存薪資調整。');
+      window.shiftResumeDiagnostics?.intent('LEGACY_PAYROLL_SAVE', 'enhancements');
       location.reload();
     };
   }

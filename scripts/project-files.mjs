@@ -14,6 +14,7 @@ export const deployFiles = Object.freeze([
   'announcement-center.css',
   'environment.css',
   'environment-config.js',
+  'resume-diagnostics.js',
   'postgres-api-client.js',
   'postgres-offline.js',
   'postgres-cloud.js',

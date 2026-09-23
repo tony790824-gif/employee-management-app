@@ -349,6 +349,7 @@
       data.leaveHistory.push({ ...item, employeeId, status: '已退回', approvedAt: new Date().toISOString() });
     }
     write(data);
+    window.shiftResumeDiagnostics?.intent('LEGACY_LEAVE_DECISION', 'access');
     location.reload();
   }, true);
 

@@ -92,7 +92,10 @@
   document.addEventListener('employee-view-update', enhanceAttendance);
   document.addEventListener('boss-hours-updated', enhanceAttendance);
   window.addEventListener('storage', event => {
-    if (event.key === key && !document.body.classList.contains('employee-mode') && document.querySelector('#attendance.active')) location.reload();
+    if (event.key === key && !document.body.classList.contains('employee-mode') && document.querySelector('#attendance.active')) {
+      window.shiftResumeDiagnostics?.intent('LEGACY_STORAGE_ATTENDANCE', 'boss-hours');
+      location.reload();
+    }
   });
   enhanceAttendance();
 })();
