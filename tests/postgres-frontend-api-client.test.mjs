@@ -414,3 +414,22 @@ for (const mode of ['network', 'unavailable', 'unauthorized']) {
   assert.deepEqual(attempted, [`${productionBase}/employees`], 'No retry or hidden fallback to another API');
 }
 console.log('PostgreSQL frontend API client and single Production route tests passed.');
+
+for (const debug of [false, true]) {
+  const values = new Map();
+  const logs = [];
+  const browser = { location: { href: `https://synthetic.example/${debug ? '?debugResume=1' : ''}` } };
+  const timingContext = vm.createContext({ window: browser, URL, performance: { now: () => 123.4 },
+    sessionStorage: { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) },
+    console: { debug: (...args) => logs.push(args) } });
+  vm.runInContext(source, timingContext);
+  browser.shiftRuntimeTiming.mark('synthetic-secret-value');
+  for (let i = 0; i < 250; i += 1) browser.shiftRuntimeTiming.mark('window-focus');
+  const records = browser.shiftRuntimeTiming.snapshot();
+  assert.equal(records.length, debug ? 240 : 0);
+  assert.equal(logs.length, debug ? 250 : 0);
+  assert.ok(records.every(record => Object.keys(record).join(',') === 'event,timestamp,elapsedMs'));
+  assert.ok(records.every(record => record.event === 'window-focus'));
+  assert.ok(!JSON.stringify(logs).includes('synthetic-secret-value'));
+}
+console.log('Resume timing is opt-in, bounded and contains only allowlisted event names and timestamps.');

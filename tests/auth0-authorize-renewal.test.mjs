@@ -27,6 +27,11 @@ const signer = createTenantContextSigner({ key: Buffer.alloc(32, 7).toString('ba
   keyId: 'synthetic-renewal-key', now: () => now * 1000 });
 
 async function scenario({ sid = 'session-browser-A', sub = 'synthetic-user', revoked = false } = {}) {
+  let clock = now * 1000;
+  let corruptRenewal = false;
+  let constructions = 0;
+  const verifier = createOidcVerifier({ issuer, audience, jwksUri: `${issuer}.well-known/jwks.json`,
+    now: () => clock, fetcher: async () => ({ ok: true, headers: { get: () => null }, json: async () => ({ keys: [jwk] }) }) });
   let cached = true;
   let nextSid = sid;
   let nextSub = sub;
@@ -40,15 +45,17 @@ async function scenario({ sid = 'session-browser-A', sub = 'synthetic-user', rev
   const requests = [];
   const sessions = new Map([[sid, { subject: sub, status: revoked ? 'revoked' : 'active' }]]);
   const sdk = {
+    checkSession: async () => {},
     isAuthenticated: async () => true,
     getTokenSilently: async options => {
       assert.equal(options.authorizationParams.audience, audience);
       if (options.cacheMode === 'cache-only') return cached ? token : undefined;
-      if (!cached) {
+      if (!cached || options.cacheMode === 'off') {
         renewals += 1;
         if (renewalPause) await renewalPause;
         if (nextError) throw nextError;
-        token = issue(nextSid, nextSub);
+        token = issue(corruptRenewal ? 'wrong-session-id' : nextSid, nextSub,
+          { iat: Math.floor(clock / 1000), exp: Math.floor(clock / 1000) + 300 });
         idSid = nextSid;
         cached = true;
       }
@@ -66,7 +73,8 @@ async function scenario({ sid = 'session-browser-A', sub = 'synthetic-user', rev
     shiftEnvironment: { name: 'production', dataBackend: 'postgres',
       auth: { domain: 'authorize-renewal.example', clientId: 'synthetic-client', audience }, storageKey: x => `test:${x}` },
     location: { href: 'https://app.authorize-renewal.example/' }, history: { replaceState() {} },
-    auth0: { createAuth0Client: async options => { clientOptions = options; return sdk; } },
+    auth0: { Auth0Client: function (options) { constructions += 1; clientOptions = options; return sdk; },
+      createAuth0Client: () => { throw new Error('The factory must never run implicit silent authentication before callback'); } },
     shiftPostgresCloud: {
       connect: async ({ getAccessToken }) => {
         api = sandbox.BankePostgresApi.createClient({ baseUrl: `${audience}/v1`, getAccessToken,
@@ -89,8 +97,9 @@ async function scenario({ sid = 'session-browser-A', sub = 'synthetic-user', rev
     },
     shiftAppSession: { enter: async () => {} }, shiftStateStore: { clearSensitive() {} }
   };
-  const sandbox = vm.createContext({ window: browser,
-    document: { title: 'test', querySelector: id => id === '#bossLogin' ? loginButton : id === '#loginHint' ? hint : null },
+  const document = { title: 'test', visibilityState: 'visible', querySelector: id => id === '#bossLogin' ? loginButton : id === '#loginHint' ? hint : null };
+  const sandbox = vm.createContext({ window: browser, Date: class extends Date { static now() { return clock; } },
+    document,
     sessionStorage: { removeItem() {} }, URL, URLSearchParams, TextEncoder, TextDecoder, Uint8Array,
     atob: x => Buffer.from(x, 'base64').toString('binary'), AbortController, setTimeout, clearTimeout });
   vm.runInContext(transport, sandbox);
@@ -102,15 +111,20 @@ async function scenario({ sid = 'session-browser-A', sub = 'synthetic-user', rev
   assert.equal(clientOptions.useRefreshTokens, false);
   assert.equal(clientOptions.cacheLocation, 'memory');
   assert.equal(clientOptions.authorizationParams.scope, 'openid profile');
-  return { browser, get api() { return api; }, requests, sessions, redirects,
+  return { browser, document, get api() { return api; }, requests, sessions, redirects,
+    get constructions() { return constructions; },
+    initializeAgain() { vm.runInContext(source, sandbox); },
+    advance(ms) { clock += ms; },
     get renewals() { return renewals; },
     pauseRenewal(promise) { renewalPause = promise; },
-    expire({ session = sid, subject = sub, error } = {}) { cached = false; nextSid = session; nextSub = subject; nextError = error; },
-    corruptClaim() { cached = true; token = issue('wrong-session-id'); }
+    expire({ session = sid, subject = sub, error } = {}) { clock += 300_000; cached = false; nextSid = session; nextSub = subject; nextError = error; },
+    corruptClaim() { clock += 300_000; cached = false; corruptRenewal = true; }
   };
 }
 
 const normal = await scenario();
+normal.initializeAgain();
+assert.equal(normal.constructions, 1, 'duplicate script execution must not initialize auth twice');
 assert.equal(normal.browser.shiftAuth.getClaimVerification().matchesAuth0SessionId, true);
 normal.expire();
 assert.equal((await normal.api.listEmployees()).ok, true, 'silent authorize renewal must reach the API with the same signed session');
@@ -127,7 +141,7 @@ assert.equal(write.requests.length, 0, 'the rejected command must never automati
 await write.api.executeCommand('shifts.create', {});
 assert.equal(write.requests.length, 1, 'only a separate explicit user attempt sends a command');
 
-for (const error of ['login_required', 'consent_required', 'interaction_required', 'timeout']) {
+for (const error of ['login_required', 'consent_required', 'interaction_required']) {
   const fallback = await scenario();
   fallback.expire({ error: { error } });
   await assert.rejects(() => fallback.api.executeCommand('shifts.create', {}), e => e.code === 'AUTH_REAUTHENTICATION_REQUIRED');
@@ -178,6 +192,49 @@ const denied = await scenario();
 denied.expire({ error: { error: 'access_denied' } });
 await assert.rejects(() => denied.api.listEmployees(), e => e.error === 'access_denied');
 assert.equal(denied.redirects.length, 0, 'security denials must not be bypassed with a new login loop');
+
+for (const error of [{ error: 'timeout' }, { name: 'AbortError' }, { name: 'TypeError' }]) {
+  const transient = await scenario();
+  transient.expire({ error });
+  await assert.rejects(() => transient.api.listEmployees(), e => e.code === 'AUTH_RENEWAL_TEMPORARILY_UNAVAILABLE');
+  await assert.rejects(() => transient.api.listEmployees(), e => e.code === 'AUTH_RENEWAL_DEFERRED');
+  assert.equal(transient.renewals, 1, 'transient failures must use backoff, not start a request storm');
+  assert.equal(transient.redirects.length, 0, 'timeout/abort alone must never start a top-level login');
+  assert.equal(transient.requests.length, 0);
+}
+const hidden = await scenario();
+hidden.expire();
+hidden.document.visibilityState = 'hidden';
+await assert.rejects(() => hidden.api.listEmployees(), e => e.code === 'AUTH_RENEWAL_DEFERRED');
+assert.equal(hidden.renewals, 0, 'background throttling must not trigger auth');
+hidden.document.visibilityState = 'visible';
+assert.equal((await hidden.api.listEmployees()).ok, true);
+
+const concurrent = await scenario();
+let releaseConcurrent;
+concurrent.pauseRenewal(new Promise(resolve => { releaseConcurrent = resolve; }));
+concurrent.expire();
+const reads = [concurrent.api.listEmployees(), concurrent.api.listAnnouncements(), concurrent.api.listNotifications()];
+await new Promise(resolve => setTimeout(resolve, 10));
+assert.equal(concurrent.renewals, 1, 'all consumers must share one complete renewal and claim validation');
+releaseConcurrent();
+await Promise.all(reads);
+assert.equal(concurrent.redirects.length, 0);
+
+// Fake-clock matrix is deterministic regression coverage, NOT a real Edge PWA timing measurement.
+for (const [seconds, count] of [[5, 10], [30, 10], [60, 5], [360, 5]]) {
+  const resume = await scenario();
+  for (let i = 0; i < count; i += 1) {
+    resume.document.visibilityState = 'hidden';
+    resume.advance(seconds * 1000);
+    resume.document.visibilityState = 'visible';
+    await Promise.all([resume.api.listEmployees(), resume.api.listAnnouncements(), resume.api.listNotifications()]);
+  }
+  assert.equal(resume.constructions, 1);
+  assert.equal(resume.redirects.length, 0);
+  assert.ok(resume.requests.every(request => request.method === 'GET'), 'resume must not replay writes');
+  if (seconds === 5) assert.equal(resume.renewals, 0, 'short switches with a valid token must never renew');
+}
 
 // The existing SQL contract still requires the verified session, and logout revokes it.
 const bindingSql = await readFile('database/migrations/0005_identity_context_name_resolution.up.sql', 'utf8');

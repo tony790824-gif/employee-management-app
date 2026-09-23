@@ -1,4 +1,28 @@
 (() => {
+  // Opt-in timing only; never collect URLs, request bodies, identities, tokens or errors.
+  if (typeof window !== 'undefined' && !window.shiftRuntimeTiming) {
+    let enabled = false;
+    try {
+      const requested = new URL(window.location.href).searchParams.get('debugResume');
+      if (requested === '1') sessionStorage.setItem('banke:debug-resume', '1');
+      if (requested === '0') sessionStorage.removeItem('banke:debug-resume');
+      enabled = sessionStorage.getItem('banke:debug-resume') === '1';
+    } catch {}
+    const records = [];
+    const events = new Set(['window-focus', 'window-blur', 'visibility-visible', 'auth-init-start',
+      'auth-init-end', 'auth-renewal-start', 'auth-renewal-end', 'bootstrap-start', 'bootstrap-end',
+      'api-start', 'api-end', 'ui-usable']);
+    window.shiftRuntimeTiming = Object.freeze({
+      mark(event) {
+        if (!enabled || !events.has(event)) return;
+        const record = Object.freeze({ event, timestamp: Date.now(), elapsedMs: Math.round(performance.now()) });
+        records.push(record);
+        if (records.length > 240) records.shift();
+        console.debug('[Bankeban timing]', record);
+      },
+      snapshot: () => records.map(record => ({ ...record }))
+    });
+  }
   const MAX_REQUEST_BYTES = 1_048_576;
   const MAX_RESPONSE_BYTES = 2_097_152;
   const DEFAULT_TIMEOUT_MS = 15_000;
@@ -126,6 +150,8 @@
       }
 
       const controller = new AbortController();
+      const timing = event => globalThis.window?.shiftRuntimeTiming?.mark(event);
+      timing('api-start');
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       let response;
       try {
@@ -145,6 +171,7 @@
         throw new PostgresApiError('PostgreSQL API 無法連線。', { code: 'POSTGRES_API_UNAVAILABLE' });
       } finally {
         clearTimeout(timer);
+        timing('api-end');
       }
 
       const contentLength = Number(response.headers?.get?.('content-length') || 0);

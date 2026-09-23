@@ -3,6 +3,7 @@
 
   const environment = window.shiftEnvironment;
   if (!['staging', 'production'].includes(environment?.name)) return;
+  if (window.shiftAuth) return;
 
   const environmentLabel = environment.name === 'production' ? 'Production' : 'Staging';
   const environmentLabelUpper = environmentLabel.toUpperCase();
@@ -32,8 +33,26 @@
   let renewalPromise;
   let redirectStarted = false;
   let authenticationClosed = false;
+  let verifiedToken = '';
+  let verifiedTokenExpiresAt = 0;
+  let renewalRetryAt = 0;
+  let reconnectNotice;
+  const timing = event => window.shiftRuntimeTiming?.mark(event);
+  const tokenUsable = () => Boolean(verifiedToken && Date.now() < verifiedTokenExpiresAt);
+  const isBackground = () => document.visibilityState === 'hidden';
+  const showReconnect = visible => {
+    if (!reconnectNotice && visible && document.createElement && document.body) {
+      reconnectNotice = document.createElement('div');
+      reconnectNotice.id = 'authReconnectStatus';
+      reconnectNotice.setAttribute('role', 'status');
+      reconnectNotice.textContent = '正在重新連線…（目前畫面已保留）';
+      reconnectNotice.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:1000;padding:8px 12px;background:#fff8e6;color:#513e18;border:1px solid #d8c69e;border-radius:8px;pointer-events:none';
+      document.body.append(reconnectNotice);
+    }
+    if (reconnectNotice) reconnectNotice.hidden = !visible;
+  };
   const silentReauthenticationCodes = new Set([
-    'login_required', 'consent_required', 'interaction_required', 'account_selection_required', 'timeout'
+    'login_required', 'consent_required', 'interaction_required', 'account_selection_required'
   ]);
   const authError = (code, message) => Object.assign(new Error(message), { code });
   const emptyClaimVerification = () => Object.freeze({
@@ -78,6 +97,7 @@
     if (claimVerification.matchesAuth0SessionId && window.crypto?.subtle) {
       boundSessionId = auth0SessionId;
       boundSubject = payload.sub;
+      rememberToken(accessToken, payload);
       const bytes = new TextEncoder().encode(`${authConfig.domain}\u0000${auth0SessionId}`);
       const digest = new Uint8Array(await window.crypto.subtle.digest('SHA-256', bytes));
       verifiedOfflineBinding = [...digest].map(value => value.toString(16).padStart(2, '0')).join('');
@@ -86,8 +106,15 @@
   };
 
   // Never carry a command body through an authentication redirect or replay it.
+  function rememberToken(token, payload) {
+    verifiedToken = token;
+    // Never extend JWT expiry; signature and revocation remain enforced by the API.
+    verifiedTokenExpiresAt = Number.isFinite(payload.exp) ? payload.exp * 1000 - 5_000 : 0;
+  }
+
   const redirectForRenewal = async () => {
     if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+    if (isBackground()) throw authError('AUTH_RENEWAL_DEFERRED', '返回前景後再更新登入；原操作未送出。');
     if (!redirectStarted) {
       redirectStarted = true;
       try {
@@ -104,30 +131,53 @@
     if (redirectStarted) {
       throw authError('AUTH_REAUTHENTICATION_REQUIRED', '正在更新登入，原操作未送出。');
     }
-    const options = { authorizationParams: { audience: authConfig.audience } };
-    const cached = await client.getTokenSilently({ ...options, cacheMode: 'cache-only' });
-    let token = cached;
-    if (!token) {
-      if (!renewalPromise) {
-        renewalPromise = client.getTokenSilently(options).finally(() => { renewalPromise = undefined; });
-      }
-      try {
-        token = await renewalPromise;
-      } catch (error) {
-        if (silentReauthenticationCodes.has(error?.error || error?.code)) return redirectForRenewal();
+    // Focus is not an auth signal. Reuse the validated, unexpired memory token.
+    if (tokenUsable() && verifiedTokenExpiresAt - Date.now() > 30_000) return verifiedToken;
+    if (isBackground() || Date.now() < renewalRetryAt) {
+      if (tokenUsable()) return verifiedToken;
+      throw authError('AUTH_RENEWAL_DEFERRED', '登入暫時無法續期，畫面已保留；原操作未送出。');
+    }
+    const hadUsableToken = tokenUsable();
+    if (!renewalPromise) {
+      timing('auth-renewal-start');
+      showReconnect(!hadUsableToken);
+      renewalPromise = (async () => {
+        const token = await client.getTokenSilently({
+          authorizationParams: { audience: authConfig.audience }, cacheMode: 'off', timeoutInSeconds: 8
+        });
+        if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+        const { payload, auth0SessionId, verification } = await inspectSessionClaim(token);
+        if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+        if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
+          throw authError('TOKEN_SESSION_INVALID', '登入 session 驗證失敗，原操作未送出。');
+        }
+        if (auth0SessionId !== boundSessionId || payload.sub !== boundSubject) {
+          verifiedToken = '';
+          return redirectForRenewal();
+        }
+        rememberToken(token, payload);
+        renewalRetryAt = 0;
+        showReconnect(false);
+        return token;
+      })().catch(error => {
+        if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
+        if (silentReauthenticationCodes.has(error?.error || error?.code)) {
+          if (!tokenUsable()) return redirectForRenewal();
+          renewalRetryAt = verifiedTokenExpiresAt;
+          return verifiedToken;
+        }
+        const transient = error?.error === 'timeout' || ['AbortError', 'TimeoutError', 'TypeError'].includes(error?.name);
+        if (transient) {
+          renewalRetryAt = Date.now() + 15_000;
+          showReconnect(!tokenUsable());
+          if (tokenUsable()) return verifiedToken;
+          throw authError('AUTH_RENEWAL_TEMPORARILY_UNAVAILABLE', '登入續期暫時逾時，畫面已保留；原操作未送出，請稍後再試。');
+        }
         throw error;
-      }
+      }).finally(() => { renewalPromise = undefined; timing('auth-renewal-end'); });
     }
-    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
-    const { payload, auth0SessionId, verification } = await inspectSessionClaim(token);
-    if (authenticationClosed) throw authError('SESSION_INVALID', '登入已結束，原操作未送出。');
-    if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
-      throw authError('TOKEN_SESSION_INVALID', '登入 session 驗證失敗，原操作未送出。');
-    }
-    // A new Auth0 session must pass the normal callback / establish / bootstrap
-    // path, including the database's revocation checks, before using cached UI.
-    if (auth0SessionId !== boundSessionId || payload.sub !== boundSubject) return redirectForRenewal();
-    if (write && !cached) {
+    const token = await renewalPromise;
+    if (write && !hadUsableToken) {
       throw authError('AUTH_RENEWED_RETRY_REQUIRED', '登入已更新，這次操作尚未送出；請確認內容後再按一次儲存。');
     }
     return token;
@@ -247,11 +297,12 @@
     if (!authConfig?.domain || !authConfig?.clientId || !authConfig?.audience) {
       throw new Error(`${environmentLabel} Auth0 public configuration is incomplete.`);
     }
-    if (typeof auth0Sdk?.createAuth0Client !== 'function') {
+    if (typeof auth0Sdk?.Auth0Client !== 'function') {
       throw new Error('Auth0 SPA SDK failed to load.');
     }
 
-    client = await auth0Sdk.createAuth0Client({
+    timing('auth-init-start');
+    client = new auth0Sdk.Auth0Client({
       domain: authConfig.domain,
       clientId: authConfig.clientId,
       authorizationParams: {
@@ -260,6 +311,7 @@
         scope: 'openid profile'
       },
       useRefreshTokens: false,
+      authorizeTimeoutInSeconds: 8,
       cacheLocation: 'memory'
     });
 
@@ -267,7 +319,11 @@
     if (query.has('code') && query.has('state')) {
       await client.handleRedirectCallback();
       window.history.replaceState({}, document.title, redirectUri);
+    } else {
+      // The factory performs this even before callback processing; do it only on cold loads.
+      await client.checkSession({ timeoutInSeconds: 8 });
     }
+    timing('auth-init-end');
 
     if (await client.isAuthenticated()) {
       const verification = await verifySessionClaim();
@@ -285,6 +341,7 @@
         initializationPhase = 'app-ui';
         await window.shiftAppSession.enter(bootstrap.role, bootstrap.employeeId || '');
         window.shiftPostgresCloud.activateForegroundSync();
+        timing('ui-usable');
         setStatus(`PostgreSQL ${environmentLabel} 資料載入完成。`);
       } else {
         setStatus(`Auth0 ${environmentLabel} login succeeded; the session claim is present and matches the Auth0 session ID.`);
@@ -312,6 +369,9 @@
 
   const resetLoggedOutUi = () => {
     authenticationClosed = true;
+    verifiedToken = '';
+    verifiedTokenExpiresAt = 0;
+    showReconnect(false);
     claimVerification = emptyClaimVerification();
     verifiedOfflineBinding = '';
     boundSessionId = '';

@@ -15,7 +15,16 @@
   let offlineRetryTimer = null;
   let foregroundDebounceTimer = null;
   let foregroundPollTimer = null;
+  let foregroundWindowActive = true;
+  let pollGeneration = 0;
+  let debounceGeneration = 0;
   let foregroundPromise = null;
+  let bootstrapPromise = null;
+  let bootstrapClient = null;
+  let connectPromise = null;
+  let connectProvider = null;
+  let connectionGeneration = 0;
+  const timing = event => window.shiftRuntimeTiming?.mark(event);
   let foregroundFailureReported = false;
   let foregroundSyncActivated = false;
   let lastForegroundCompletedAt = 0;
@@ -25,7 +34,6 @@
   const FOREGROUND_COOLDOWN_MS = 1000;
   const ACTIVE_POLL_INTERVAL_MS = 2_000;
   const IDLE_POLL_INTERVAL_MS = 20_000;
-  const BACKGROUND_POLL_INTERVAL_MS = 60_000;
   const ACTIVE_WINDOW_MS = 30_000;
   const REVISION_SIGNAL_TYPE = 'banke-bootstrap-revision';
   const REVISION_STORAGE_KEY = environment.storageKey('postgres-revision-signal');
@@ -208,7 +216,20 @@
     startForegroundPolling();
   }
 
-  async function refreshBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
+  function refreshBootstrap(options = {}) {
+    if (bootstrapPromise && bootstrapClient === client) return bootstrapPromise;
+    bootstrapClient = client;
+    timing('bootstrap-start');
+    const operation = readBootstrap(options);
+    const tracked = operation.finally(() => {
+      if (bootstrapPromise === tracked) { bootstrapPromise = null; bootstrapClient = null; }
+      timing('bootstrap-end');
+    });
+    bootstrapPromise = tracked;
+    return tracked;
+  }
+
+  async function readBootstrap({ onlyIfChanged = false, source = 'manual' } = {}) {
     if (!client) throw new Error('PostgreSQL 尚未連線。');
     const activeClient = client;
     const activeSession = currentSession;
@@ -241,14 +262,18 @@
     && client
     && currentSession
     && window.navigator?.onLine !== false
+    && document.visibilityState !== 'hidden'
+    && foregroundWindowActive
   );
 
   function cancelForegroundDebounce() {
+    debounceGeneration += 1;
     if (foregroundDebounceTimer !== null) clearTimeout(foregroundDebounceTimer);
     foregroundDebounceTimer = null;
   }
 
   function stopForegroundPolling() {
+    pollGeneration += 1;
     if (foregroundPollTimer !== null) clearTimeout(foregroundPollTimer);
     foregroundPollTimer = null;
   }
@@ -272,6 +297,7 @@
           : { changed: false, revision: nextRevision };
         if (!bootstrap?.stale) {
           foregroundFailureReported = false;
+          timing('ui-usable');
           document.dispatchEvent(new CustomEvent('postgres-foreground-synced', {
             detail: {
               changed: Boolean(bootstrap?.changed),
@@ -304,14 +330,15 @@
     const cooldownRemaining = Math.max(0,
       FOREGROUND_COOLDOWN_MS - (Date.now() - lastForegroundCompletedAt));
     cancelForegroundDebounce();
+    const generation = debounceGeneration;
     foregroundDebounceTimer = setTimeout(() => {
+      if (generation !== debounceGeneration) return;
       foregroundDebounceTimer = null;
       void runForegroundSync();
     }, Math.max(FOREGROUND_DEBOUNCE_MS, cooldownRemaining));
   }
 
   function pollingInterval() {
-    if (document.visibilityState !== 'visible') return BACKGROUND_POLL_INTERVAL_MS;
     return Date.now() - lastUserActivityAt <= ACTIVE_WINDOW_MS
       ? ACTIVE_POLL_INTERVAL_MS
       : IDLE_POLL_INTERVAL_MS;
@@ -320,7 +347,9 @@
   function startForegroundPolling() {
     stopForegroundPolling();
     if (!canRunForegroundSync()) return;
+    const generation = pollGeneration;
     foregroundPollTimer = setTimeout(() => {
+      if (generation !== pollGeneration) return;
       foregroundPollTimer = null;
       void runForegroundSync().finally(startForegroundPolling);
     }, pollingInterval());
@@ -347,8 +376,11 @@
 
   function handleVisibilityChange() {
     cancelForegroundDebounce();
-    if (document.visibilityState === 'visible') handleForegroundEntry();
-    else startForegroundPolling();
+    if (document.visibilityState === 'visible') {
+      foregroundWindowActive = true;
+      timing('visibility-visible');
+      handleForegroundEntry();
+    } else stopForegroundSync();
   }
 
   function initializeRevisionSignals() {
@@ -371,12 +403,25 @@
     });
   }
 
-  async function connect({ getAccessToken, offlineIdentityBinding = '' }) {
+  function connect(options) {
+    if (connectPromise) {
+      if (connectProvider !== options.getAccessToken) return Promise.reject(new Error('PostgreSQL connection identity changed during initialization.'));
+      return connectPromise;
+    }
+    connectProvider = options.getAccessToken;
+    const operation = initializeConnection(options);
+    const tracked = operation.finally(() => { if (connectPromise === tracked) connectPromise = null; });
+    connectPromise = tracked;
+    return tracked;
+  }
+
+  async function initializeConnection({ getAccessToken, offlineIdentityBinding = '' }) {
     if (typeof getAccessToken !== 'function') throw new Error('PostgreSQL 登入缺少 Access Token provider。');
     if (offlineIdentityBinding && !ownerBindingPattern.test(offlineIdentityBinding)) {
       throw new Error('PostgreSQL 離線身份綁定格式不正確。');
     }
     identityBinding = offlineIdentityBinding;
+    const generation = ++connectionGeneration;
     foregroundSyncActivated = false;
     stopForegroundSync();
     client = window.BankePostgresApi.createClient({
@@ -388,8 +433,11 @@
         announceRevision(revision);
       }
     });
-    await client.readiness();
-    await client.establishSession();
+    const connectingClient = client;
+    await connectingClient.readiness();
+    if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
+    await connectingClient.establishSession();
+    if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
     const bootstrap = await refreshBootstrap();
     lastForegroundCompletedAt = Date.now();
     lastUserActivityAt = Date.now();
@@ -662,6 +710,7 @@
   const sendTestPush = endpoint => executeAndRefresh('push.test', { endpoint });
 
   async function logout() {
+    connectionGeneration += 1;
     const activeClient = client;
     foregroundSyncActivated = false;
     stopForegroundSync();
@@ -684,7 +733,8 @@
   initializeRevisionSignals();
   document.addEventListener('visibilitychange', handleVisibilityChange);
   window.addEventListener('pageshow', handleForegroundEntry);
-  window.addEventListener('focus', handleForegroundEntry);
+  window.addEventListener('focus', () => { foregroundWindowActive = true; timing('window-focus'); handleForegroundEntry(); });
+  window.addEventListener('blur', () => { foregroundWindowActive = false; timing('window-blur'); stopForegroundSync(); });
   window.addEventListener('online', () => {
     void drainOfflineQueue().finally(handleForegroundEntry);
   });

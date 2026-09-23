@@ -27,6 +27,7 @@ const sdkSandbox = {
 vm.runInNewContext(localAuth0Sdk, sdkSandbox, { filename: 'auth0-spa-js.production.js' });
 assert.equal(typeof sdkSandbox.auth0?.createAuth0Client, 'function',
   'The same-origin Auth0 browser bundle must expose window.auth0.createAuth0Client.');
+assert.equal(typeof sdkSandbox.auth0?.Auth0Client, 'function', 'The pinned SDK must support callback-first construction.');
 assert.match(stagingIndex, /<script src="staging-auth\.js"><\/script>/);
 
 const sourceIndex = await readFile('index.html', 'utf8');
@@ -67,7 +68,7 @@ assert.doesNotMatch(authSource, /console\.(?:log|info|debug)/, 'Staging auth ent
 
 const sessionId = 'synthetic-session-id';
 const accessTokenPayload = Buffer.from(JSON.stringify({
-  'https://banke.tw/session_id': sessionId
+  'https://banke.tw/session_id': sessionId, exp: Math.floor(Date.now() / 1000) + 300, sub: 'synthetic-user'
 })).toString('base64url');
 const loginButton = { disabled: false, textContent: '', onclick: null };
 const hint = { textContent: '' };
@@ -77,6 +78,7 @@ let providerLogoutCalls = 0;
 let appSessionEntries = 0;
 let foregroundSyncActivations = 0;
 const authClient = {
+  checkSession: async () => {},
   isAuthenticated: async () => true,
   getTokenSilently: async () => `header.${accessTokenPayload}.signature`,
   getIdTokenClaims: async () => ({ sid: sessionId }),
@@ -100,7 +102,7 @@ const sandbox = {
     },
     location: { href: 'https://draft.staging.example/' },
     history: { replaceState() {} },
-    auth0: { createAuth0Client: async () => authClient },
+    auth0: { Auth0Client: function () { return authClient; } },
     shiftPostgresCloud: {
       connect: async () => {
         const error = new Error('Authorization or command validation failed.');
@@ -180,7 +182,7 @@ const successfulSandbox = {
     },
     history: { replaceState: () => successfulOrder.push('history') },
     auth0: {
-      createAuth0Client: async () => {
+      Auth0Client: function () {
         successfulOrder.push('client');
         return successfulAuthClient;
       }
@@ -229,8 +231,6 @@ assert.deepEqual(successfulOrder, [
   'access-token',
   'id-token',
   'connect',
-  'access-token',
-  'id-token',
   'enter-ui',
   'activate-sync'
 ], 'Auth0 callback, App Session, bootstrap UI, and polling activation must remain strictly ordered.');
@@ -246,6 +246,7 @@ let deniedProviderLogoutCalls = 0;
 let deniedAppSessionEntries = 0;
 let deniedForegroundSyncActivations = 0;
 const deniedAuthClient = {
+  checkSession: async () => {},
   isAuthenticated: async () => true,
   getTokenSilently: async () => `header.${accessTokenPayload}.signature`,
   getIdTokenClaims: async () => ({ sid: sessionId }),
@@ -269,7 +270,7 @@ const deniedSandbox = {
     },
     location: { href: 'https://draft.staging.example/' },
     history: { replaceState() {} },
-    auth0: { createAuth0Client: async () => deniedAuthClient },
+    auth0: { Auth0Client: function () { return deniedAuthClient; } },
     shiftPostgresCloud: {
       connect: async () => {
         const error = new Error('Authorization or command validation failed.');
@@ -370,9 +371,10 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
         clipboard: { writeText: async value => copiedUrls.push(value) }
       },
       auth0: {
-        createAuth0Client: async () => {
+        Auth0Client: function () {
           authClientCreations += 1;
           return {
+            checkSession: async () => {},
             isAuthenticated: async () => false,
             loginWithRedirect: async () => {}
           };

@@ -111,7 +111,11 @@ const postgresContext = vm.createContext({
   console
 });
 vm.runInContext(postgresCloudSource, postgresContext, { filename: 'postgres-cloud.js' });
-await postgresWindow.shiftPostgresCloud.connect({ getAccessToken: async () => 'synthetic-token' });
+const initialTokenProvider = async () => 'synthetic-token';
+const connectionOne = postgresWindow.shiftPostgresCloud.connect({ getAccessToken: initialTokenProvider });
+const connectionTwo = postgresWindow.shiftPostgresCloud.connect({ getAccessToken: initialTokenProvider });
+assert.equal(connectionOne, connectionTwo, 'simultaneous initialization must share one Promise');
+await connectionOne;
 bootstrapEvents.length = 0;
 
 await postgresWindow.shiftPostgresCloud.createShift({
@@ -535,7 +539,7 @@ const fireForegroundTimers = async delay => {
   const pending = [...foregroundTimers.entries()].filter(([, timer]) => timer.delay === delay);
   pending.forEach(([id]) => foregroundTimers.delete(id));
   pending.forEach(([, timer]) => timer.callback());
-  for (let index = 0; index < 8; index += 1) await Promise.resolve();
+  for (let index = 0; index < 24; index += 1) await Promise.resolve();
 };
 
 assert.equal(foregroundTimerCount(2_000), 1,
@@ -544,10 +548,10 @@ assert.equal(foregroundTimerCount(2_000), 1,
 resetForegroundObservations();
 foregroundDocument.visibilityState = 'hidden';
 foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
-assert.equal(foregroundTimerCount(60_000), 1, 'a background authenticated view must use the bounded background interval');
+assert.equal(foregroundTimers.size, 0, 'background must cancel polling rather than renew a throttled session');
 foregroundNow += 60_000;
 await fireForegroundTimers(60_000);
-assert.equal(foregroundRevisionCalls, 1, 'background polling must perform only the lightweight revision check');
+assert.equal(foregroundRevisionCalls, 0, 'background must not perform protected requests');
 assert.equal(foregroundBootstrapCalls, 0);
 resetForegroundObservations();
 foregroundNow += 2_000;
@@ -622,7 +626,7 @@ assert.equal(foregroundRevisionCalls, 1, 'in-flight foreground requests must sup
 assert.equal(foregroundBootstrapCalls, 0);
 foregroundGate = null;
 releaseForegroundBootstrap();
-for (let index = 0; index < 8; index += 1) await Promise.resolve();
+for (let index = 0; index < 24; index += 1) await Promise.resolve();
 assert.equal(foregroundBootstrapCalls, 1, 'a changed revision must fetch one full bootstrap');
 assert.equal(foregroundStoredData.sync.revision, 3);
 
@@ -706,6 +710,32 @@ foregroundWindow.dispatchEvent(new TestCustomEvent('pagehide'));
 assert.equal(foregroundTimers.size, 0, 'page unload must stop foreground polling');
 foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
 assert.equal(foregroundTimerCount(2_000), 1, 'a visible page restored from page cache must resume active polling');
+
+// Fake timers cover the requested lifecycle counts; these are not hardware latency measurements.
+for (const [seconds, count] of [[5, 10], [30, 10], [60, 5], [360, 5]]) {
+  for (let i = 0; i < count; i += 1) {
+    resetForegroundObservations();
+    const staleCallbacks = [...foregroundTimers.values()].map(timer => timer.callback);
+    foregroundWindow.dispatchEvent(new TestCustomEvent('blur'));
+    foregroundDocument.visibilityState = 'hidden';
+    foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
+    assert.equal(foregroundTimers.size, 0);
+    foregroundNow += seconds * 1000;
+    foregroundDocument.visibilityState = 'visible';
+    foregroundDocument.dispatchEvent(new TestCustomEvent('visibilitychange'));
+    foregroundWindow.dispatchEvent(new TestCustomEvent('focus'));
+    foregroundWindow.dispatchEvent(new TestCustomEvent('pageshow'));
+    staleCallbacks.forEach(callback => callback());
+    assert.equal(foregroundTimerCount(250), 1);
+    await fireForegroundTimers(250);
+    assert.equal(foregroundRevisionCalls, 1, 'one resume sync; ignore stale background timer callbacks');
+    assert.equal(foregroundBootstrapCalls, 0, 'unchanged data must not bootstrap again');
+    assert.equal(foregroundWrites, 0);
+  }
+}
+resetForegroundObservations();
+await Promise.all(Array.from({ length: 8 }, () => foregroundWindow.shiftPostgresCloud.refreshBootstrap()));
+assert.equal(foregroundBootstrapCalls, 1, 'concurrent bootstrap consumers must share one request');
 
 resetForegroundObservations();
 await foregroundWindow.shiftPostgresCloud.logout();
