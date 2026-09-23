@@ -20,7 +20,8 @@
     'SW_INSTALLED', 'SW_ACTIVATED', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END',
     'AUTH_SESSION_INIT_START', 'AUTH_SESSION_INIT_END', 'API_BOOTSTRAP_START', 'API_BOOTSTRAP_END',
     'API_BOOTSTRAP_TIMEOUT', 'API_BOOTSTRAP_FAIL', 'API_REQUEST_START', 'API_REQUEST_END',
-    'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL', 'TOKEN_READY', 'HOME_RENDER_START', 'HOME_RENDER_END']);
+    'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL', 'TOKEN_READY', 'HOME_RENDER_START', 'HOME_RENDER_END',
+    'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START']);
   const reasons = new Set(['AUTH_AUTHORIZE_RENEWAL', 'USER_LOGIN', 'AUTH_LOGOUT',
     'BACKUP_RESTORE', 'LEGACY_PAYROLL_SAVE', 'LEGACY_ATTENDANCE_SAVE', 'LEGACY_LEAVE_DECISION',
     'LEGACY_STORAGE_ATTENDANCE', 'LEGACY_CLOUD_REFRESH', 'LEGACY_LOGOUT',
@@ -69,7 +70,8 @@
   let persistence = true;
   // Independent of the lifecycle ring: polling cannot evict login measurements.
   const LOGIN_KEY = 'banke:login-performance:v1';
-  const loginStages = ['APP_BOOT', 'AUTH_START', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END', 'TOKEN_READY',
+  const loginStages = ['APP_BOOT', 'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START',
+    'AUTH_START', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END', 'TOKEN_READY',
     'READINESS_START', 'READINESS_END', 'BOOTSTRAP_START', 'BOOTSTRAP_END',
     'FIRST_HOME_DATA_START', 'FIRST_HOME_DATA_END', 'HOME_RENDER_START', 'HOME_RENDER_END', 'UI_USABLE'];
   const loginKinds = ['APP_LOGIN', 'API_RETRY', 'AUTHORIZE_RENEWAL'];
@@ -119,6 +121,10 @@
     const { event, timestamp } = entry;
     if (event === 'BOOT') { currentLogin = newLogin(timestamp); saveLogin(); return; }
     if (!currentLogin) return;
+    if (event === 'LOGIN_SCREEN_USABLE' && (currentLogin.failed || currentLogin.stages.UI_USABLE)) {
+      currentLogin = newLogin(timestamp);
+      currentLogin.run_id = entry.run_id ?? null;
+    }
     if (event === 'AUTHORIZE_REDIRECT_REQUESTED') {
       if (currentLogin.stages.UI_USABLE || currentLogin.failed) currentLogin = newLogin(timestamp,
         entry.reason === 'AUTH_AUTHORIZE_RENEWAL' ? 'AUTHORIZE_RENEWAL' : 'APP_LOGIN');
@@ -151,7 +157,9 @@
     let name = {
       AUTH_INIT_START: 'AUTH_START', AUTH_CALLBACK_START: 'AUTH_CALLBACK_START',
       AUTH_CALLBACK_END: 'AUTH_CALLBACK_END', TOKEN_READY: 'TOKEN_READY',
-      HOME_RENDER_START: 'HOME_RENDER_START', HOME_RENDER_END: 'HOME_RENDER_END'
+      HOME_RENDER_START: 'HOME_RENDER_START', HOME_RENDER_END: 'HOME_RENDER_END',
+      LOGIN_SCREEN_USABLE: 'LOGIN_SCREEN_USABLE', LOGIN_BUTTON_CLICK: 'LOGIN_BUTTON_CLICK',
+      AUTH_REDIRECT_START: 'AUTH_REDIRECT_START'
     }[event];
     if (event === 'UI_USABLE' && entry.caller === 'staging-auth' && entry.run_id === currentLogin.run_id) name = 'UI_USABLE';
     if (event === 'API_REQUEST_START' || event === 'API_REQUEST_END') {
@@ -213,11 +221,20 @@
           token_and_claim_processing_after_callback: diff('AUTH_CALLBACK_END', 'TOKEN_READY'),
           system_after_callback_to_usable: diff('AUTH_CALLBACK_START', 'UI_USABLE'),
           token_ready_to_usable: diff('TOKEN_READY', 'UI_USABLE')
+        },
+        controlled_login_ms: {
+          login_screen_to_click_ms: diff('LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK'),
+          click_to_auth_redirect_ms: diff('LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START'),
+          auth_redirect_to_callback_ms: diff('AUTH_REDIRECT_START', 'AUTH_CALLBACK_START'),
+          callback_to_token_ready_ms: diff('AUTH_CALLBACK_START', 'TOKEN_READY'),
+          token_ready_to_ui_usable_ms: diff('TOKEN_READY', 'UI_USABLE'),
+          click_to_ui_usable_ms: diff('LOGIN_BUTTON_CLICK', 'UI_USABLE')
         } };
     });
     return { version: 1, persistence: loginPersistent ? 'LOCAL_STORAGE' : 'UNAVAILABLE', limit: 10,
       measurement: 'DOCUMENT_START_TO_DOM_USABLE; AUTH_INCLUDES_INTERACTIVE_USER_WAIT_IF_ANY',
       phase_measurement: 'PRE_AUTH_AND_INTERACTIVE_ROUNDTRIP_EXCLUDED_FROM_SYSTEM_AFTER_CALLBACK; ROUNDTRIP_INCLUDES_USER_WAIT_AND_NETWORK; NULL_MEANS_NOT_OBSERVED; INTERVALS_OVERLAP_DO_NOT_SUM',
+      controlled_measurement: 'CLICK_TO_UI_EXCLUDES_LOGIN_SCREEN_WAIT_ONLY; OFF_ORIGIN_USER_WAIT_AND_NETWORK_NOT_SEPARATELY_OBSERVABLE; AUTO_LOGIN_WITHOUT_CLICK_HAS_NULL_CLICK_TIMINGS',
       operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' }, summaries };
   }
   let swNavigation = null;

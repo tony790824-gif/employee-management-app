@@ -341,6 +341,7 @@ const createElement = tagName => {
 const runBrowserScenario = async ({ userAgent, standalone = false }) => {
   let authClientCreations = 0;
   const copiedUrls = [];
+  const loginTimingEvents = [];
   const scenarioLoginButton = { disabled: false, textContent: '', onclick: null, focus() {} };
   const scenarioHint = { textContent: '' };
   const body = createElement('body');
@@ -371,13 +372,20 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
         userAgent,
         clipboard: { writeText: async value => copiedUrls.push(value) }
       },
+      shiftResumeDiagnostics: {
+        mark(event) {
+          if (event === 'LOGIN_SCREEN_USABLE') assert.equal(scenarioLoginButton.disabled, false);
+          loginTimingEvents.push(event);
+        },
+        intent() {}
+      },
       auth0: {
         Auth0Client: function () {
           authClientCreations += 1;
           return {
             checkSession: async () => {},
             isAuthenticated: async () => false,
-            loginWithRedirect: async () => {}
+            loginWithRedirect: async () => { loginTimingEvents.push('SDK_REDIRECT_CALLED'); }
           };
         }
       }
@@ -396,7 +404,8 @@ const runBrowserScenario = async ({ userAgent, standalone = false }) => {
   vm.runInNewContext(authSource, scenarioSandbox, { filename: 'staging-auth.js' });
   await new Promise(resolve => setTimeout(resolve, 0));
   await new Promise(resolve => setTimeout(resolve, 20));
-  return { authClientCreations, body, copiedUrls, loginButton: scenarioLoginButton, hint: scenarioHint };
+  return { authClientCreations, body, copiedUrls, loginTimingEvents,
+    loginButton: scenarioLoginButton, hint: scenarioHint };
 };
 
 const lineScenario = await runBrowserScenario({
@@ -439,6 +448,13 @@ const installedPwa = await runBrowserScenario({
 });
 assert.equal(installedPwa.authClientCreations, 1, 'Installed PWA mode must not be treated as an in-app browser.');
 assert.equal(installedPwa.body.children.length, 0, 'Installed PWA mode must not display the compatibility notice.');
+assert.equal(installedPwa.loginTimingEvents.filter(event => event === 'LOGIN_SCREEN_USABLE').length, 1);
+assert.equal(installedPwa.loginTimingEvents.includes('LOGIN_BUTTON_CLICK'), false);
+await installedPwa.loginButton.onclick({ type: 'click' });
+assert.deepEqual(installedPwa.loginTimingEvents.filter(event => [
+  'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START', 'SDK_REDIRECT_CALLED'
+].includes(event)), ['LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START', 'SDK_REDIRECT_CALLED'],
+  'record real button availability/click/redirect in order without adding auth calls');
 
 console.log('Staging Auth0 PKCE initiation tests passed.');
 await import('./auth0-authorize-renewal.test.mjs');

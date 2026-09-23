@@ -447,20 +447,24 @@
 
     setStatus(`${environmentLabelUpper} 僅使用 Auth0 Authorization Code + PKCE 登入。`);
     setBusy(false);
+    diagnostic('LOGIN_SCREEN_USABLE', { success: true });
   };
 
-  const loginWithRedirect = async () => {
+  const loginWithRedirect = async event => {
+    if (event?.type === 'click') diagnostic('LOGIN_BUTTON_CLICK', { reason: 'USER_LOGIN', success: true });
     if (showInAppBrowserNotice()) return;
     if (!client) return;
     setBusy(true);
     try {
       diagnostic('AUTHORIZE_REDIRECT_REQUESTED', { reason: 'USER_LOGIN', source: 'staging-auth' });
+      diagnostic('AUTH_REDIRECT_START', { reason: 'USER_LOGIN' });
       window.shiftResumeDiagnostics?.intent('USER_LOGIN', 'staging-auth');
       await client.loginWithRedirect();
     } catch (error) {
       diagnostic('NAV_CANCELLED', { reason: 'USER_LOGIN', source: 'staging-auth' });
       setStatus(`Auth0 登入無法啟動：${error instanceof Error ? error.message : '未知錯誤'}`);
       setBusy(false);
+      diagnostic('LOGIN_SCREEN_USABLE', { success: true });
     }
   };
 

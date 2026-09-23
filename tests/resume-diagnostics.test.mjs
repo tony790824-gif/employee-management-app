@@ -175,7 +175,7 @@ assert.deepEqual(measured.phase_breakdown_ms, { pre_auth_and_user_wait: 100,
   token_ready_to_usable: 1491 });
 assert.equal(measured.temperature, 'WARM_AT_READINESS');
 assert.equal(measured.temperature_at_app_open, 'UNKNOWN', 'fast post-login readiness cannot prove warmth before login');
-assert.equal(Object.keys(measured.stages).length, 14);
+assert.equal(Object.keys(measured.stages).length, 17);
 const saved = login.shared.get(loginKey);
 for (let i = 0; i < 350; i++) {
   login.diag.mark('TOKEN_CHECK', { has_token: true });
@@ -188,8 +188,11 @@ assert.deepEqual(summary(login), measured);
 
 const interactive = boot();
 loginMark(interactive, 'AUTH_INIT_START');
-interactive.advance(500);
+interactive.advance(300); loginMark(interactive, 'LOGIN_SCREEN_USABLE', { success: true });
+interactive.advance(190); loginMark(interactive, 'LOGIN_BUTTON_CLICK', { success: true });
+interactive.advance(10);
 loginMark(interactive, 'AUTHORIZE_REDIRECT_REQUESTED', { reason: 'USER_LOGIN' });
+loginMark(interactive, 'AUTH_REDIRECT_START');
 const callback = boot({ shared: interactive.shared, tab: interactive.tab, now: 3500 });
 loginMark(callback, 'AUTH_INIT_START'); loginMark(callback, 'AUTH_CALLBACK_START');
 callback.advance(100); loginMark(callback, 'AUTH_CALLBACK_END', { success: true });
@@ -197,6 +200,17 @@ callback.advance(100); loginMark(callback, 'TOKEN_READY', { success: true });
 assert.equal(callback.snapshot().login_performance.summaries.length, 1, 'callback joins only a pending same-tab redirect');
 assert.equal(summary(callback).durations_ms.auth0_and_claim_validation, 2200);
 assert.equal(summary(callback).stages.TOKEN_READY.elapsed_ms, 2700, 'total retains original document start across redirect');
+callback.advance(500); loginMark(callback, 'UI_USABLE');
+assert.deepEqual(summary(callback).controlled_login_ms, {
+  login_screen_to_click_ms: 190, click_to_auth_redirect_ms: 10,
+  auth_redirect_to_callback_ms: 2000, callback_to_token_ready_ms: 200,
+  token_ready_to_ui_usable_ms: 500, click_to_ui_usable_ms: 2710
+}, 'same-tab callback preserves the real click and excludes the pre-click wait');
+assert.equal(measured.controlled_login_ms.login_screen_to_click_ms, null);
+assert.equal(measured.controlled_login_ms.click_to_ui_usable_ms, null,
+  'auto-login and old records without click markers cannot invent user wait or click totals');
+assert.equal(measured.controlled_login_ms.callback_to_token_ready_ms, 300);
+assert.match(callback.snapshot().login_performance.controlled_measurement, /OFF_ORIGIN_USER_WAIT_AND_NETWORK_NOT_SEPARATELY_OBSERVABLE/);
 const separateTab = boot({ shared: interactive.shared, now: 4000 });
 loginMark(separateTab, 'AUTH_INIT_START'); loginMark(separateTab, 'AUTH_CALLBACK_START');
 assert.equal(summary(separateTab).stages.AUTH_START.elapsed_ms, 0, 'different tabs cannot adopt another login');
@@ -254,6 +268,9 @@ await login.nodes.find(n => n.textContent === '複製登入效能摘要').handle
 assert.equal(JSON.parse(login.copied()).summaries[0].durations_ms.readiness, 231);
 assert.doesNotMatch(login.copied(), /DO_NOT_RECORD/);
 assert.match(auth, /diagnostic\('TOKEN_READY'/);
+assert.match(auth, /setBusy\(false\);\s*diagnostic\('LOGIN_SCREEN_USABLE'/);
+assert.match(auth, /event\?\.type === 'click'\) diagnostic\('LOGIN_BUTTON_CLICK'/);
+assert.match(auth, /diagnostic\('AUTH_REDIRECT_START'[\s\S]*await client\.loginWithRedirect\(\)/);
 assert.match(auth, /diagnostic\('HOME_RENDER_START'/);
 assert.match(auth, /finally\s*\{\s*diagnostic\('HOME_RENDER_END'/);
 console.log('Login performance summaries passed: independent capacity, exact stage durations, same-tab redirects, stale isolation, warm evidence, failures and secret-free copy.');
