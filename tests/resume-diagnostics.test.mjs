@@ -107,6 +107,9 @@ dialog.children.find(n => n.textContent === '關閉').handlers.click();
 assert.equal(dialog.open, false);
 
 const index = await readFile('index.html', 'utf8');
+const loginCss = await readFile('login-screen.css', 'utf8');
+assert.match(loginCss, /body:not\(\.app-authenticated\)>dialog#resumeDiagnosticsDialog\[open\]\{display:block!important\}/,
+  'only the sanitized diagnostic dialog must remain visible above the unauthenticated screen');
 assert.ok(index.indexOf('resume-diagnostics.js') < index.indexOf('postgres-api-client.js'), 'capture boot before authentication');
 for (const file of ['access.js','boss-hours.js','enhancements.js','google-sheets-cloud.js','login.js','management-actions.js']) {
   const code = await readFile(file, 'utf8');
