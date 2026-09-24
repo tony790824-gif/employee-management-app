@@ -459,3 +459,4 @@ assert.deepEqual(installedPwa.loginTimingEvents.filter(event => [
 console.log('Staging Auth0 PKCE initiation tests passed.');
 await import('./auth0-authorize-renewal.test.mjs');
 await import('./auth-initialization-completion.test.mjs');
+await import('./login-button-availability.test.mjs');

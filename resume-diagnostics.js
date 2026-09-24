@@ -129,6 +129,7 @@
       if (currentLogin.stages.UI_USABLE || currentLogin.failed) currentLogin = newLogin(timestamp,
         entry.reason === 'AUTH_AUTHORIZE_RENEWAL' ? 'AUTHORIZE_RENEWAL' : 'APP_LOGIN');
       currentLogin.stages.AUTH_START = { timestamp, success: null };
+      currentLogin.run_id = entry.run_id ?? currentLogin.run_id;
       currentLogin.awaiting_callback = true;
       currentLogin.updated = timestamp;
       saveLogin(); return;

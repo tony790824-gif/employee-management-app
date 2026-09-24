@@ -28,6 +28,7 @@
   let inAppBrowserNotice;
   let initializationPhase = 'auth0';
   let initializationPromise;
+  let interactiveLoginPromise;
   let authGeneration = 0;
   let authRunSequence = 0;
   let activeAuthRun;
@@ -100,13 +101,13 @@
   };
 
   const verifySessionClaim = async run => {
-    diagnostic('SILENT_RENEW_START');
+    diagnostic('SILENT_RENEW_START', runFields(run));
     let accessToken;
     try {
       accessToken = await client.getTokenSilently({ authorizationParams: { audience: authConfig.audience } });
-      diagnostic('SILENT_RENEW_PASS');
+      diagnostic('SILENT_RENEW_PASS', runFields(run));
     } catch (error) {
-      diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
+      diagnostic('SILENT_RENEW_FAIL', { ...runFields(run), ...window.shiftResumeDiagnostics?.authError(error) });
       throw error;
     }
     assertCurrentRun(run);
@@ -379,6 +380,7 @@
       // Explicit API retry may reuse the already verified identity, not restart Auth0.
       if (run.reason === 'API_RETRY' && tokenUsable() && verifiedOfflineBinding) return true;
       const query = new URLSearchParams(window.location.search);
+      let authenticated;
       if (query.get('code') && query.get('state')) {
         diagnostic('AUTH_CALLBACK_DETECTED', runFields(run));
         await runStage(run, 'auth-callback', 'AUTH_CALLBACK', async () => {
@@ -387,21 +389,34 @@
           window.history.replaceState({}, document.title, redirectUri);
         });
         run.stage = 'auth-session';
+        authenticated = await client.isAuthenticated();
+        assertCurrentRun(run);
       } else {
-        // The factory performs this even before callback processing; do it only on cold loads.
-        diagnostic('SILENT_RENEW_START');
+        // Session restoration is optional, not a prerequisite for clicking login.
+        // Callback processing remains blocking and strictly validated as before.
+        setStatus('可直接使用 Auth0 登入；正在背景檢查既有登入狀態。');
+        setBusy(false);
+        diagnostic('LOGIN_SCREEN_USABLE', { ...runFields(run), success: true });
+        run.loginScreenAvailable = true;
+        diagnostic('SILENT_RENEW_START', runFields(run));
         try {
           await client.checkSession({ timeoutInSeconds: 8 });
-          diagnostic('SILENT_RENEW_PASS');
+          assertCurrentRun(run);
+          authenticated = await client.isAuthenticated();
+          assertCurrentRun(run);
         } catch (error) {
-          diagnostic('SILENT_RENEW_FAIL', window.shiftResumeDiagnostics?.authError(error));
-          throw error;
+          diagnostic('SILENT_RENEW_FAIL', { ...runFields(run), ...window.shiftResumeDiagnostics?.authError(error) });
+          assertCurrentRun(run);
+          return false;
         }
+        // checkSession swallows SDK errors; resolution alone is not a restored session.
+        diagnostic(authenticated ? 'SILENT_RENEW_PASS' : 'SILENT_RENEW_FAIL', {
+          ...runFields(run), success: authenticated
+        });
       }
       assertCurrentRun(run);
-      const authenticated = await client.isAuthenticated();
-      assertCurrentRun(run);
       if (!authenticated) return false;
+      setBusy(true);
       const verification = await verifySessionClaim(run);
       if (!verification.exists || !verification.nonEmptyString || !verification.matchesAuth0SessionId) {
         throw new Error('Auth0 session claim validation failed closed.');
@@ -447,30 +462,48 @@
 
     setStatus(`${environmentLabelUpper} 僅使用 Auth0 Authorization Code + PKCE 登入。`);
     setBusy(false);
-    diagnostic('LOGIN_SCREEN_USABLE', { success: true });
+    if (!run.loginScreenAvailable) diagnostic('LOGIN_SCREEN_USABLE', { ...runFields(run), success: true });
   };
 
-  const loginWithRedirect = async event => {
+  const loginWithRedirect = event => {
+    if (interactiveLoginPromise) return interactiveLoginPromise;
+    if (showInAppBrowserNotice() || !client) return Promise.resolve();
     if (event?.type === 'click') diagnostic('LOGIN_BUTTON_CLICK', { reason: 'USER_LOGIN', success: true });
-    if (showInAppBrowserNotice()) return;
-    if (!client) return;
+    // Invalidate the optional restore before any asynchronous redirect preparation.
+    // A late restore must never verify claims, bootstrap, or update this run's UI.
+    const run = { id: ++authRunSequence, generation: ++authGeneration, reason: 'USER_LOGIN',
+      started: Date.now(), stage: 'auth-session' };
+    activeAuthRun = run;
+    authenticationClosed = false;
+    redirectStarted = true;
     setBusy(true);
-    try {
-      diagnostic('AUTHORIZE_REDIRECT_REQUESTED', { reason: 'USER_LOGIN', source: 'staging-auth' });
-      diagnostic('AUTH_REDIRECT_START', { reason: 'USER_LOGIN' });
-      window.shiftResumeDiagnostics?.intent('USER_LOGIN', 'staging-auth');
-      await client.loginWithRedirect();
-    } catch (error) {
-      diagnostic('NAV_CANCELLED', { reason: 'USER_LOGIN', source: 'staging-auth' });
-      setStatus(`Auth0 登入無法啟動：${error instanceof Error ? error.message : '未知錯誤'}`);
-      setBusy(false);
-      diagnostic('LOGIN_SCREEN_USABLE', { success: true });
-    }
+    let failed = false;
+    const operation = (async () => {
+      try {
+        diagnostic('AUTHORIZE_REDIRECT_REQUESTED', { ...runFields(run), source: 'staging-auth' });
+        diagnostic('AUTH_REDIRECT_START', runFields(run));
+        window.shiftResumeDiagnostics?.intent('USER_LOGIN', 'staging-auth');
+        await client.loginWithRedirect();
+      } catch (error) {
+        failed = true;
+        diagnostic('NAV_CANCELLED', { ...runFields(run), source: 'staging-auth' });
+        if (!currentRun(run)) return;
+        redirectStarted = false;
+        setStatus(`Auth0 登入無法啟動：${error instanceof Error ? error.message : '未知錯誤'}`);
+        setBusy(false);
+        diagnostic('LOGIN_SCREEN_USABLE', { ...runFields(run), success: true });
+      }
+    })().finally(() => {
+      if (failed && interactiveLoginPromise === operation) interactiveLoginPromise = undefined;
+    });
+    interactiveLoginPromise = operation;
+    return operation;
   };
 
   const resetLoggedOutUi = () => {
     authenticationClosed = true;
     authGeneration += 1;
+    interactiveLoginPromise = undefined;
     verifiedToken = '';
     verifiedTokenExpiresAt = 0;
     showReconnect(false);
@@ -555,6 +588,7 @@
   window.shiftStagingAuth = publicAuth;
 
   function startInitialization(reason = 'APP_BOOT') {
+    if (interactiveLoginPromise) return interactiveLoginPromise;
     if (initializationPromise) return initializationPromise;
     if (authenticationClosed) return Promise.resolve();
     const run = { id: ++authRunSequence, generation: ++authGeneration, reason, started: Date.now(), stage: 'auth-session' };
