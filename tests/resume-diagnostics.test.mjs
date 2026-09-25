@@ -326,3 +326,83 @@ assert.doesNotMatch(JSON.stringify(trace.snapshot()), /DO_NOT_RECORD/);
 for (let attempt = 2; attempt <= 25; attempt++) trace.diag.mark('READINESS_TIMING', { ...request, attempt, request_phase: 'REQUEST_START' });
 assert.equal(trace.snapshot().login_performance.readiness_requests.length, 20);
 console.log('Startup and readiness measurement passed: exact stages, early button, bounded independent phases, worker correlation and secret-free persistence.');
+
+// Exercise the actual button -> actual client -> persistent export, not a direct client call.
+const apiSource = await readFile('postgres-api-client.js', 'utf8');
+function installProbeClient(page, fetchImpl) {
+  const context = vm.createContext({ window: page.window, document: page.document,
+    navigator: page.window.navigator, crypto: webcrypto, URL, TextEncoder, AbortController,
+    fetch: fetchImpl, setTimeout, clearTimeout });
+  vm.runInContext(apiSource, context);
+  page.window.BankePostgresApi = context.BankePostgresApi;
+  page.window.shiftEnvironment = { postgresApiUrl: 'https://bankeban-production-api.onrender.com/v1' };
+}
+const probePage = boot();
+const probeCalls = [];
+installProbeClient(probePage, async (url, options) => {
+  probeCalls.push({ url, options });
+  return { ok: true, status: 200, headers: { get: () => null }, text: async () => '{"ok":true,"private":"DO_NOT_RECORD"}' };
+});
+probePage.diag.open();
+const button = probePage.nodes.find(node => node.textContent === '唯讀比較 readiness（一次）');
+await button.handlers.click();
+await probePage.nodes.find(node => node.textContent === '複製登入效能摘要').handlers.click();
+const probeExport = JSON.parse(probePage.copied());
+assert.equal(probeCalls.length, 2);
+assert.deepEqual(probeExport.readiness_requests.map(record => record.phases[0].request_mode), ['CLIENT_PROBE', 'DIRECT_PROBE']);
+assert.ok(probeExport.readiness_requests.every(record => record.phases.at(-1).request_phase === 'REQUEST_END'));
+assert.ok(probeCalls.every(call => !call.options.headers.Authorization && call.options.credentials === 'omit'));
+assert.equal(probeExport.readiness_comparison.status, 'COMPLETED');
+assert.deepEqual(probeExport.readiness_comparison.results.map(result => result.status), ['PASS', 'PASS']);
+assert.ok(probeExport.readiness_comparison.results.every(result => result.phases.at(-1).request_phase === 'REQUEST_END'));
+assert.doesNotMatch(probePage.copied(), /DO_NOT_RECORD/);
+await button.handlers.click();
+assert.equal(probeCalls.length, 2, 'no repeated requests from a second click');
+
+const startFailure = boot();
+installProbeClient(startFailure, async () => { throw new Error('fetch must not be called'); });
+startFailure.window.shiftEnvironment.postgresApiUrl = '';
+startFailure.diag.open();
+await startFailure.nodes.find(node => node.textContent === '唯讀比較 readiness（一次）').handlers.click();
+await startFailure.nodes.find(node => node.textContent === '複製登入效能摘要').handlers.click();
+assert.equal(JSON.parse(startFailure.copied()).readiness_comparison?.status, 'START_FAILED',
+  'a caught pre-request failure must be exported, not silently disappear');
+assert.equal(JSON.parse(startFailure.copied()).readiness_comparison.error_code, 'POSTGRES_API_CONFIG_INVALID');
+assert.deepEqual(JSON.parse(startFailure.copied()).readiness_comparison.results.map(result => result.status), ['NOT_STARTED', 'NOT_STARTED']);
+const noMethod = boot();
+noMethod.window.BankePostgresApi = { createClient: () => ({ readiness() { throw new Error('must not fall back to APP_CLIENT'); } }) };
+noMethod.diag.open();
+await noMethod.nodes.find(node => node.textContent === '唯讀比較 readiness（一次）').handlers.click();
+assert.equal(noMethod.snapshot().login_performance.readiness_comparison.error_code, 'PROBE_METHOD_UNAVAILABLE');
+
+const failedRequest = boot();
+installProbeClient(failedRequest, async () => { throw Object.assign(new Error('DO_NOT_RECORD'), { name: 'AbortError' }); });
+failedRequest.diag.open();
+await failedRequest.nodes.find(node => node.textContent === '唯讀比較 readiness（一次）').handlers.click();
+const failedResults = failedRequest.snapshot().login_performance.readiness_comparison.results;
+assert.deepEqual(failedResults.map(result => result.status), ['FAIL', 'FAIL']);
+assert.ok(failedResults.every(result => result.error_code === 'POSTGRES_API_TIMEOUT'));
+assert.ok(failedResults.every(result => result.phases.at(-1).success === false));
+assert.doesNotMatch(JSON.stringify(failedRequest.snapshot()), /DO_NOT_RECORD/);
+
+const pendingProbe = boot();
+let finishProbe;
+const pendingResponse = new Promise(resolve => { finishProbe = resolve; });
+installProbeClient(pendingProbe, () => pendingResponse);
+pendingProbe.diag.open();
+const pendingButton = pendingProbe.nodes.find(node => node.textContent === '唯讀比較 readiness（一次）');
+const pendingClick = pendingButton.handlers.click();
+await pendingProbe.nodes.find(node => node.textContent === '複製登入效能摘要').handlers.click();
+assert.equal(JSON.parse(pendingProbe.copied()).readiness_comparison.status, 'RUNNING');
+assert.deepEqual(JSON.parse(pendingProbe.copied()).readiness_comparison.results.map(result => result.status), ['PENDING', 'PENDING']);
+finishProbe({ ok: true, status: 200, headers: { get: () => null }, text: async () => '{}' });
+await pendingClick;
+for (let i = 0; i < 250; i++) pendingProbe.diag.mark('FOCUS');
+const afterReload = boot({ shared: pendingProbe.shared, tab: pendingProbe.tab, now: 5000 });
+assert.equal(afterReload.snapshot().login_performance.readiness_comparison.status, 'COMPLETED');
+const comparisonKey = 'banke:readiness-comparison:v1';
+const taintedComparison = JSON.parse(pendingProbe.shared.get(comparisonKey));
+taintedComparison.token = 'DO_NOT_RECORD'; taintedComparison.results[0].response = 'DO_NOT_RECORD';
+pendingProbe.shared.set(comparisonKey, JSON.stringify(taintedComparison));
+assert.doesNotMatch(JSON.stringify(afterReload.snapshot()), /DO_NOT_RECORD/);
+console.log('Comparison button/export passed: real client end-to-end, two modes, pre-fetch failures, pending/timeout results, no fallback/replay, reload persistence and privacy.');

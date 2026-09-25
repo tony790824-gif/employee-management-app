@@ -41,6 +41,7 @@
     'TOKEN_SESSION_INVALID', 'SESSION_INVALID', 'AUTH_REAUTHENTICATION_REQUIRED',
     'AUTH_RENEWAL_DEFERRED', 'AUTH_RENEWAL_TEMPORARILY_UNAVAILABLE', 'AUTH_INIT_CANCELLED',
     'POSTGRES_API_TIMEOUT', 'POSTGRES_API_UNAVAILABLE', 'POSTGRES_API_REQUEST_FAILED',
+    'POSTGRES_API_CONFIG_INVALID', 'PROBE_CLIENT_UNAVAILABLE', 'PROBE_METHOD_UNAVAILABLE',
     'missing_transaction', 'state_mismatch', 'OTHER']);
   const errorTypes = new Set(['Error', 'TypeError', 'TimeoutError', 'AbortError',
     'AuthenticationError', 'GenericError', 'PopupTimeoutError', 'PostgresApiError', 'OTHER']);
@@ -289,7 +290,7 @@
       phase_measurement: 'PRE_AUTH_AND_INTERACTIVE_ROUNDTRIP_EXCLUDED_FROM_SYSTEM_AFTER_CALLBACK; ROUNDTRIP_INCLUDES_USER_WAIT_AND_NETWORK; NULL_MEANS_NOT_OBSERVED; INTERVALS_OVERLAP_DO_NOT_SUM',
       controlled_measurement: 'CLICK_TO_UI_EXCLUDES_LOGIN_SCREEN_WAIT_ONLY; OFF_ORIGIN_USER_WAIT_AND_NETWORK_NOT_SEPARATELY_OBSERVABLE; AUTO_LOGIN_WITHOUT_CLICK_HAS_NULL_CLICK_TIMINGS',
       operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' },
-      diagnostic_version: 2, readiness_requests: readReadiness(), summaries };
+      diagnostic_version: 3, readiness_requests: readReadiness(), readiness_comparison: readComparison(), summaries };
   }
   // Request phases must survive polling and the failed-login -> retry transition.
   const READINESS_KEY = 'banke:readiness-timing:v1';
@@ -314,6 +315,42 @@
     if (!record.phases.some(value => value.request_phase === entry.request_phase)) record.phases.push(entry);
     readinessMemory = values.slice(-20);
     try { localStorage.setItem(READINESS_KEY, JSON.stringify(readinessMemory)); } catch { /* Never affect fetch. */ }
+  }
+  // Retain the most recent explicit comparison even if it failed before fetch.
+  // Never persist Promise values, response bodies, exception messages or URLs.
+  const COMPARISON_KEY = 'banke:readiness-comparison:v1';
+  const probeModes = ['CLIENT_PROBE', 'DIRECT_PROBE'];
+  let comparisonMemory = null;
+  function cleanComparison(value) {
+    if (!value || !validId(value.id) || !validId(value.boot_id) || !validId(value.tab_id)
+      || !validTime(value.started) || !['STARTING', 'RUNNING', 'COMPLETED', 'START_FAILED'].includes(value.status)) return null;
+    return { id: value.id, boot_id: value.boot_id, tab_id: value.tab_id, started: value.started,
+      status: value.status, elapsed_ms: validTime(value.elapsed_ms) ? value.elapsed_ms : null,
+      error_code: errorCodes.has(value.error_code) ? value.error_code : null,
+      error_type: errorTypes.has(value.error_type) ? value.error_type : null,
+      results: probeModes.map(request_mode => {
+        const item = value.results?.find?.(entry => entry?.request_mode === request_mode);
+        return { request_mode, status: ['NOT_STARTED', 'PENDING', 'PASS', 'FAIL'].includes(item?.status) ? item.status : 'NOT_STARTED',
+          error_code: errorCodes.has(item?.error_code) ? item.error_code : null };
+      }) };
+  }
+  function readComparison() {
+    let value = comparisonMemory;
+    try {
+      const raw = localStorage.getItem(COMPARISON_KEY);
+      if (raw && raw.length < 10000) value = JSON.parse(raw);
+    } catch { /* Keep this page's result if storage is unavailable. */ }
+    const cleaned = cleanComparison(value);
+    if (!cleaned) return null;
+    const requests = readReadiness();
+    return { ...cleaned, results: cleaned.results.map(result => ({ ...result,
+      phases: requests.findLast(record => record.phases[0].boot_id === cleaned.boot_id
+        && record.phases[0].timestamp >= cleaned.started && record.phases[0].request_mode === result.request_mode)?.phases || []
+    })) };
+  }
+  function saveComparison(value) {
+    comparisonMemory = cleanComparison(value);
+    try { localStorage.setItem(COMPARISON_KEY, JSON.stringify(comparisonMemory)); } catch { /* Local fallback only. */ }
   }
   let swNavigation = null;
   // The SW cannot use localStorage. Its sole openWindow path persists one fixed,
@@ -426,18 +463,37 @@
       probe.addEventListener('click', async () => {
         if (probe.disabled) return;
         probe.disabled = true;
+        const comparison = { id: id(), boot_id: bootId, tab_id: tabId, started: Date.now(),
+          status: 'STARTING', elapsed_ms: null, results: probeModes.map(request_mode => ({ request_mode, status: 'NOT_STARTED' })) };
+        saveComparison(comparison);
         status.textContent = '比較一般 API client 與無自訂標頭的直接 GET；不使用登入憑證、不重試。';
         try {
+          if (typeof window.BankePostgresApi?.createClient !== 'function') throw { code: 'PROBE_CLIENT_UNAVAILABLE' };
           const client = window.BankePostgresApi?.createClient({
             baseUrl: window.shiftEnvironment?.postgresApiUrl,
             getAccessToken: () => { throw new Error('Diagnostic must not use credentials'); },
             getWorkspaceId: () => { throw new Error('Diagnostic must not use workspace'); }
           });
-          if (!client) throw new Error('API client not loaded');
-          await client.compareReadiness();
+          if (typeof client?.compareReadiness !== 'function') throw { code: 'PROBE_METHOD_UNAVAILABLE' };
+          comparison.status = 'RUNNING';
+          comparison.results = probeModes.map(request_mode => ({ request_mode, status: 'PENDING' }));
+          saveComparison(comparison);
+          const results = await client.compareReadiness();
+          comparison.status = 'COMPLETED';
+          comparison.results = probeModes.map((request_mode, index) => ({ request_mode,
+            status: results[index]?.status === 'fulfilled' ? 'PASS' : 'FAIL',
+            error_code: results[index]?.status === 'rejected' ? authError(results[index].reason).error_code : null }));
           status.textContent = '唯讀比較完成。請複製登入效能摘要；兩種請求仍都可能經過目前 Service Worker。';
-        } catch { status.textContent = '比較無法啟動；沒有修改資料。'; }
-        finally { output.value = JSON.stringify(loginSnapshot(), null, 2); }
+        } catch (error) {
+          comparison.status = 'START_FAILED';
+          comparison.error_code = authError(error).error_code;
+          comparison.error_type = authError(error).error_type;
+          status.textContent = `比較無法啟動（${comparison.error_code}）；原因已保存在摘要，沒有修改資料。`;
+        } finally {
+          comparison.elapsed_ms = Date.now() - comparison.started;
+          saveComparison(comparison);
+          output.value = JSON.stringify(loginSnapshot(), null, 2);
+        }
       });
       const copyLogin = document.createElement('button'); copyLogin.type = 'button'; copyLogin.textContent = '複製登入效能摘要';
       copyLogin.addEventListener('click', async () => {
