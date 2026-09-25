@@ -21,7 +21,14 @@
     'AUTH_SESSION_INIT_START', 'AUTH_SESSION_INIT_END', 'API_BOOTSTRAP_START', 'API_BOOTSTRAP_END',
     'API_BOOTSTRAP_TIMEOUT', 'API_BOOTSTRAP_FAIL', 'API_REQUEST_START', 'API_REQUEST_END',
     'API_REQUEST_TIMEOUT', 'API_REQUEST_FAIL', 'TOKEN_READY', 'HOME_RENDER_START', 'HOME_RENDER_END',
-    'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START']);
+    'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START',
+    'APP_SCRIPT_READY', 'AUTH0_SDK_SCRIPT_START', 'AUTH0_SDK_SCRIPT_READY',
+    'AUTH0_CLIENT_CREATE_START', 'AUTH0_CLIENT_CREATE_END', 'LOGIN_BUTTON_ENABLED',
+    'BACKGROUND_CHECKSESSION_START', 'BACKGROUND_CHECKSESSION_END', 'READINESS_TIMING']);
+  const requestPhases = ['REQUEST_START', 'FETCH_DISPATCHED', 'RESPONSE_HEADERS_RECEIVED',
+    'RESPONSE_BODY_DONE', 'ABORT_FIRED', 'REQUEST_END', 'SW_INTERCEPT_START',
+    'SW_CACHE_LOOKUP_START', 'SW_CACHE_LOOKUP_END', 'NETWORK_FETCH_START',
+    'SW_RESPONSE_HEADERS_RECEIVED', 'SW_NETWORK_FAIL'];
   const reasons = new Set(['AUTH_AUTHORIZE_RENEWAL', 'USER_LOGIN', 'AUTH_LOGOUT',
     'BACKUP_RESTORE', 'LEGACY_PAYROLL_SAVE', 'LEGACY_ATTENDANCE_SAVE', 'LEGACY_LEAVE_DECISION',
     'LEGACY_STORAGE_ATTENDANCE', 'LEGACY_CLOUD_REFRESH', 'LEGACY_LOGOUT',
@@ -44,7 +51,7 @@
   const safePath = value => paths.has(value) ? value
     : /^\/announcements\//.test(value || '') ? '/announcements/[redacted]' : '/[redacted]';
   const bools = ['was_discarded', 'online', 'standalone', 'sw_controller', 'persisted', 'has_token', 'success',
-    'stale_result_ignored', 'started_hidden'];
+    'stale_result_ignored', 'started_hidden', 'cache_hit', 'fallback_used', 'service_worker_controlled'];
   function sanitize(value) {
     if (!value || !events.has(value.event) || !Number.isFinite(value.timestamp)
       || !/^[a-f0-9-]{36}$/.test(value.boot_id || '') || !/^[a-f0-9-]{36}$/.test(value.tab_id || '')) return null;
@@ -58,9 +65,15 @@
     if (sources.has(value.caller)) result.caller = value.caller;
     if (operations.has(value.operation)) result.operation = value.operation;
     if (['auth-callback', 'auth-session', 'api-bootstrap', 'api-request', 'app-ui'].includes(value.error_stage)) result.error_stage = value.error_stage;
-    for (const key of ['run_id', 'auth_run_id', 'generation', 'elapsed_ms', 'request_id']) {
+    for (const key of ['run_id', 'auth_run_id', 'generation', 'elapsed_ms', 'request_id', 'attempt', 'http_status']) {
       if (Number.isSafeInteger(value[key]) && value[key] >= 0 && value[key] <= 2147483647) result[key] = value[key];
     }
+    if (/^[a-f0-9-]{36}$/.test(value.network_request_id || '')) result.network_request_id = value.network_request_id;
+    if (Number.isSafeInteger(value.worker_timestamp) && value.worker_timestamp > 0) result.worker_timestamp = value.worker_timestamp;
+    if (requestPhases.includes(value.request_phase)) result.request_phase = value.request_phase;
+    if (['APP_CLIENT', 'CLIENT_PROBE', 'DIRECT_PROBE'].includes(value.request_mode)) result.request_mode = value.request_mode;
+    if (['PRODUCTION_API', 'OTHER_CONFIGURED_API'].includes(value.target)) result.target = value.target;
+    if (value.auth_implementation === 'BUTTON_BEFORE_RESTORE_V1') result.auth_implementation = value.auth_implementation;
     if (errorCodes.has(value.error_code)) result.error_code = value.error_code;
     if (errorTypes.has(value.error_type)) result.error_type = value.error_type;
     if (Number.isFinite(value.seconds_to_expiry)) result.seconds_to_expiry = Math.max(-86400, Math.min(31536000, Math.floor(value.seconds_to_expiry)));
@@ -70,7 +83,10 @@
   let persistence = true;
   // Independent of the lifecycle ring: polling cannot evict login measurements.
   const LOGIN_KEY = 'banke:login-performance:v1';
-  const loginStages = ['APP_BOOT', 'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START',
+  const startupStages = ['APP_SCRIPT_READY', 'AUTH0_SDK_SCRIPT_START', 'AUTH0_SDK_SCRIPT_READY',
+    'AUTH0_CLIENT_CREATE_START', 'AUTH0_CLIENT_CREATE_END', 'LOGIN_BUTTON_ENABLED',
+    'BACKGROUND_CHECKSESSION_START', 'BACKGROUND_CHECKSESSION_END'];
+  const loginStages = ['APP_BOOT', ...startupStages, 'LOGIN_SCREEN_USABLE', 'LOGIN_BUTTON_CLICK', 'AUTH_REDIRECT_START',
     'AUTH_START', 'AUTH_CALLBACK_START', 'AUTH_CALLBACK_END', 'TOKEN_READY',
     'READINESS_START', 'READINESS_END', 'BOOTSTRAP_START', 'BOOTSTRAP_END',
     'FIRST_HOME_DATA_START', 'FIRST_HOME_DATA_END', 'HOME_RENDER_START', 'HOME_RENDER_END', 'UI_USABLE'];
@@ -80,6 +96,25 @@
   const pageStarted = Number.isFinite(performance.timeOrigin) && performance.timeOrigin > 0
     ? Math.min(Date.now(), Math.round(performance.timeOrigin)) : Date.now();
   let loginMemory = [], loginPersistent = true, currentLogin;
+  const resourceNames = new Set(['index.html', 'environment-config.js', 'resume-diagnostics.js',
+    'postgres-api-client.js', 'state-store.js', 'postgres-offline.js', 'postgres-cloud.js',
+    'account-security.js', 'login.js', 'auth0-spa-js.production.js', 'staging-auth.js',
+    'style.css', 'access.css', 'login.css', 'login-screen.css', 'employee-calendar.css',
+    'employee-layout.css', 'time-off-ui.css', 'notification-center.css', 'announcement-center.css', 'environment.css']);
+  const resourceNumbers = ['startTime', 'fetchStart', 'workerStart', 'requestStart', 'responseStart', 'responseEnd', 'duration'];
+  function cleanResources(values) {
+    return (Array.isArray(values) ? values : []).slice(0, 40).flatMap(value => {
+      if (!resourceNames.has(value?.asset)) return [];
+      const result = { asset: value.asset };
+      for (const field of resourceNumbers) if (Number.isFinite(value[field]) && value[field] >= 0 && value[field] < 86400000) result[field] = Math.round(value[field]);
+      return [result];
+    });
+  }
+  function bootResources() {
+    const entries = [...performance.getEntriesByType('navigation'), ...performance.getEntriesByType('resource')];
+    return cleanResources(entries.map(entry => ({ ...Object.fromEntries(resourceNumbers.map(key => [key, entry[key]])),
+      asset: entry.entryType === 'navigation' ? 'index.html' : String(entry.name || '').split('?')[0].split('/').at(-1) })));
+  }
   function cleanLogin(value) {
     if (!value || !validId(value.id) || !validId(value.tab_id) || !validId(value.boot_id)
       || !validTime(value.started) || !validTime(value.updated) || !loginKinds.includes(value.kind)) return null;
@@ -92,6 +127,8 @@
     }
     return { id: value.id, tab_id: value.tab_id, boot_id: value.boot_id, kind: value.kind,
       started: value.started, updated: value.updated, stages,
+      auth_implementation: value.auth_implementation === 'BUTTON_BEFORE_RESTORE_V1' ? value.auth_implementation : null,
+      boot_resources: cleanResources(value.boot_resources),
       run_id: validTime(value.run_id) ? value.run_id : null,
       awaiting_callback: value.awaiting_callback === true,
       failed: value.failed === true,
@@ -121,6 +158,9 @@
     const { event, timestamp } = entry;
     if (event === 'BOOT') { currentLogin = newLogin(timestamp); saveLogin(); return; }
     if (!currentLogin) return;
+    if (event === 'APP_SCRIPT_READY') currentLogin.auth_implementation = entry.auth_implementation;
+    if (event === 'LOGIN_BUTTON_ENABLED') currentLogin.boot_resources = bootResources();
+    if (event === 'READINESS_TIMING' || entry.request_mode === 'CLIENT_PROBE' || entry.request_mode === 'DIRECT_PROBE') return;
     if (event === 'LOGIN_SCREEN_USABLE' && (currentLogin.failed || currentLogin.stages.UI_USABLE)) {
       currentLogin = newLogin(timestamp);
       currentLogin.run_id = entry.run_id ?? null;
@@ -155,7 +195,7 @@
       }
       currentLogin.awaiting_callback = false;
     }
-    let name = {
+    let name = startupStages.includes(event) ? event : {
       AUTH_INIT_START: 'AUTH_START', AUTH_CALLBACK_START: 'AUTH_CALLBACK_START',
       AUTH_CALLBACK_END: 'AUTH_CALLBACK_END', TOKEN_READY: 'TOKEN_READY',
       HOME_RENDER_START: 'HOME_RENDER_START', HOME_RENDER_END: 'HOME_RENDER_END',
@@ -204,6 +244,8 @@
       const home = diff('FIRST_HOME_DATA_START', 'FIRST_HOME_DATA_END');
       const total = diff('APP_BOOT', 'UI_USABLE');
       return { login_id: item.id, kind: item.kind, run_id: item.run_id,
+        auth_implementation: item.auth_implementation,
+        boot_resources: item.boot_resources,
         status: item.stages.UI_USABLE ? 'PASS' : item.failed ? 'FAIL' : 'INCOMPLETE',
         temperature: classification, temperature_basis: basis, temperature_at_app_open: 'UNKNOWN',
         error_code: item.error_code, stages,
@@ -230,13 +272,48 @@
           callback_to_token_ready_ms: diff('AUTH_CALLBACK_START', 'TOKEN_READY'),
           token_ready_to_ui_usable_ms: diff('TOKEN_READY', 'UI_USABLE'),
           click_to_ui_usable_ms: diff('LOGIN_BUTTON_CLICK', 'UI_USABLE')
+        },
+        startup_breakdown_ms: {
+          boot_to_sdk_script_start: diff('APP_BOOT', 'AUTH0_SDK_SCRIPT_START'),
+          sdk_script_load: diff('AUTH0_SDK_SCRIPT_START', 'AUTH0_SDK_SCRIPT_READY'),
+          sdk_loaded_to_auth_script: diff('AUTH0_SDK_SCRIPT_READY', 'APP_SCRIPT_READY'),
+          auth_script_to_client_start: diff('APP_SCRIPT_READY', 'AUTH0_CLIENT_CREATE_START'),
+          sdk_client_constructor: diff('AUTH0_CLIENT_CREATE_START', 'AUTH0_CLIENT_CREATE_END'),
+          client_ready_to_button_enabled: diff('AUTH0_CLIENT_CREATE_END', 'LOGIN_BUTTON_ENABLED'),
+          boot_to_button_enabled: diff('APP_BOOT', 'LOGIN_BUTTON_ENABLED'),
+          background_check_session: diff('BACKGROUND_CHECKSESSION_START', 'BACKGROUND_CHECKSESSION_END')
         } };
     });
     return { version: 1, persistence: loginPersistent ? 'LOCAL_STORAGE' : 'UNAVAILABLE', limit: 10,
       measurement: 'DOCUMENT_START_TO_DOM_USABLE; AUTH_INCLUDES_INTERACTIVE_USER_WAIT_IF_ANY',
       phase_measurement: 'PRE_AUTH_AND_INTERACTIVE_ROUNDTRIP_EXCLUDED_FROM_SYSTEM_AFTER_CALLBACK; ROUNDTRIP_INCLUDES_USER_WAIT_AND_NETWORK; NULL_MEANS_NOT_OBSERVED; INTERVALS_OVERLAP_DO_NOT_SUM',
       controlled_measurement: 'CLICK_TO_UI_EXCLUDES_LOGIN_SCREEN_WAIT_ONLY; OFF_ORIGIN_USER_WAIT_AND_NETWORK_NOT_SEPARATELY_OBSERVABLE; AUTO_LOGIN_WITHOUT_CLICK_HAS_NULL_CLICK_TIMINGS',
-      operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' }, summaries };
+      operations: { BOOTSTRAP: 'session-establish', FIRST_HOME_DATA: 'bootstrap' },
+      diagnostic_version: 2, readiness_requests: readReadiness(), summaries };
+  }
+  // Request phases must survive polling and the failed-login -> retry transition.
+  const READINESS_KEY = 'banke:readiness-timing:v1';
+  let readinessMemory = [];
+  function readReadiness() {
+    let values = readinessMemory;
+    try {
+      const raw = localStorage.getItem(READINESS_KEY);
+      if (raw && raw.length <= 350000) values = JSON.parse(raw);
+    } catch { /* Local-only fallback. */ }
+    return (Array.isArray(values) ? values : []).slice(-20).flatMap(value => {
+      const phases = (Array.isArray(value?.phases) ? value.phases : []).slice(0, 12).map(sanitize)
+        .filter(entry => entry?.event === 'READINESS_TIMING' && requestPhases.includes(entry.request_phase));
+      return phases.length ? [{ phases }] : [];
+    });
+  }
+  function captureReadiness(entry) {
+    if (entry.event !== 'READINESS_TIMING' || !entry.attempt || !requestPhases.includes(entry.request_phase)) return;
+    const values = readReadiness();
+    let record = values.find(value => value.phases[0].boot_id === entry.boot_id && value.phases[0].attempt === entry.attempt);
+    if (!record) { record = { phases: [] }; values.push(record); }
+    if (!record.phases.some(value => value.request_phase === entry.request_phase)) record.phases.push(entry);
+    readinessMemory = values.slice(-20);
+    try { localStorage.setItem(READINESS_KEY, JSON.stringify(readinessMemory)); } catch { /* Never affect fetch. */ }
   }
   let swNavigation = null;
   // The SW cannot use localStorage. Its sole openWindow path persists one fixed,
@@ -265,6 +342,7 @@
     try {
       const entry = sanitize({ ...data, event, timestamp: Date.now(), boot_id: bootId, tab_id: tabId });
       if (!entry) return;
+      try { captureReadiness(entry); } catch { /* Measurement cannot affect requests. */ }
       try { captureLogin(entry); } catch { /* Measurement cannot affect the application. */ }
       memory = [...read(), entry].slice(-LIMIT);
       try { localStorage.setItem(KEY, JSON.stringify(memory)); persistence = true; }
@@ -344,6 +422,23 @@
         catch { output.focus(); output.select(); status.textContent = '請按 Ctrl+C 複製已選取的安全紀錄。'; }
       });
       const close = document.createElement('button'); close.type = 'button'; close.textContent = '關閉';
+      const probe = document.createElement('button'); probe.type = 'button'; probe.textContent = '唯讀比較 readiness（一次）';
+      probe.addEventListener('click', async () => {
+        if (probe.disabled) return;
+        probe.disabled = true;
+        status.textContent = '比較一般 API client 與無自訂標頭的直接 GET；不使用登入憑證、不重試。';
+        try {
+          const client = window.BankePostgresApi?.createClient({
+            baseUrl: window.shiftEnvironment?.postgresApiUrl,
+            getAccessToken: () => { throw new Error('Diagnostic must not use credentials'); },
+            getWorkspaceId: () => { throw new Error('Diagnostic must not use workspace'); }
+          });
+          if (!client) throw new Error('API client not loaded');
+          await client.compareReadiness();
+          status.textContent = '唯讀比較完成。請複製登入效能摘要；兩種請求仍都可能經過目前 Service Worker。';
+        } catch { status.textContent = '比較無法啟動；沒有修改資料。'; }
+        finally { output.value = JSON.stringify(loginSnapshot(), null, 2); }
+      });
       const copyLogin = document.createElement('button'); copyLogin.type = 'button'; copyLogin.textContent = '複製登入效能摘要';
       copyLogin.addEventListener('click', async () => {
         output.value = JSON.stringify(loginSnapshot(), null, 2);
@@ -351,7 +446,7 @@
         catch { output.focus(); output.select(); status.textContent = '請按 Ctrl+C 複製已選取的安全摘要。'; }
       });
       close.addEventListener('click', () => dialog.close());
-      dialog.append(title, help, output, copy, copyLogin, close, status);
+      dialog.append(title, help, output, copy, copyLogin, probe, close, status);
       document.body.append(dialog);
     }
     dialog.querySelector('textarea').value = JSON.stringify(snapshot(), null, 2);
@@ -374,6 +469,24 @@
   document.addEventListener('visibilitychange', () => mark('VISIBILITY', { visibility: document.visibilityState }));
   for (const name of ['freeze', 'resume']) document.addEventListener(name, () => mark(name.toUpperCase()));
   navigator.serviceWorker?.addEventListener?.('controllerchange', () => mark('SW_CONTROLLERCHANGE'));
+  navigator.serviceWorker?.addEventListener?.('message', event => {
+    if (!event.source || event.source !== navigator.serviceWorker.controller) return;
+    const value = event.data;
+    if (value?.type !== 'BANKE_READINESS_TIMING' || !requestPhases.includes(value.request_phase)
+      || !value.request_phase.startsWith('SW_') && value.request_phase !== 'NETWORK_FETCH_START') return;
+    if (!validTime(value.timestamp) || !/^[a-f0-9-]{36}$/.test(value.network_request_id || '')) return;
+    const first = readReadiness().flatMap(item => item.phases.slice(0, 1)).find(item =>
+      item.boot_id === bootId && item.network_request_id === value.network_request_id);
+    if (!first) return; // Never associate an uncorrelated/old-page worker result.
+    mark('READINESS_TIMING', { ...first, request_phase: value.request_phase,
+      worker_timestamp: value.timestamp, elapsed_ms: Math.max(0, value.timestamp - first.timestamp),
+      visibility: document.visibilityState, online: navigator.onLine,
+      service_worker_controlled: true, sw_controller: true,
+      ...(typeof value.cache_hit === 'boolean' ? { cache_hit: value.cache_hit } : {}),
+      ...(typeof value.fallback_used === 'boolean' ? { fallback_used: value.fallback_used } : {}),
+      ...(typeof value.success === 'boolean' ? { success: value.success } : {}),
+      ...(Number.isInteger(value.http_status) ? { http_status: value.http_status } : {}) });
+  });
   document.addEventListener('keydown', event => {
     if (event.ctrlKey && event.shiftKey && event.key?.toLowerCase() === 'd' && !event.repeat) {
       event.preventDefault(); event.stopPropagation(); open();

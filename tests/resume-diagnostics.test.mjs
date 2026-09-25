@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source = await readFile('resume-diagnostics.js', 'utf8');
 const storage = values => ({ getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) });
-function boot({ shared = new Map(), tab = new Map(), now = 1000, type = 'navigate', discarded = false, failingStorage = false, path = '/' } = {}) {
+function boot({ shared = new Map(), tab = new Map(), now = 1000, type = 'navigate', discarded = false, failingStorage = false, path = '/', resources = [] } = {}) {
   const listeners = { window: {}, document: {}, sw: {} };
   const on = target => (name, fn) => (listeners[target][name] ||= []).push(fn);
   const nodes = [];
@@ -25,7 +25,7 @@ function boot({ shared = new Map(), tab = new Map(), now = 1000, type = 'navigat
   const window = { crypto: webcrypto, navigator, document, location: { pathname: path, search: '?code=DO_NOT_RECORD&state=DO_NOT_RECORD' },
     matchMedia: () => ({ matches: true }), addEventListener: on('window') };
   const localStorage = failingStorage ? { getItem() { throw new Error('disabled'); }, setItem() { throw new Error('disabled'); } } : storage(shared);
-  const sandbox = { window, document, navigator, performance: { getEntriesByType: () => [{ type }] },
+  const sandbox = { window, document, navigator, performance: { getEntriesByType: kind => kind === 'resource' ? resources : [{ type }] },
     localStorage, sessionStorage: storage(tab), Date: class extends Date { static now() { return now; } }, queueMicrotask };
   vm.runInNewContext(source, sandbox);
   const emit = (target, event, data = {}) => listeners[target][event]?.forEach(fn => fn(data));
@@ -175,7 +175,7 @@ assert.deepEqual(measured.phase_breakdown_ms, { pre_auth_and_user_wait: 100,
   token_ready_to_usable: 1491 });
 assert.equal(measured.temperature, 'WARM_AT_READINESS');
 assert.equal(measured.temperature_at_app_open, 'UNKNOWN', 'fast post-login readiness cannot prove warmth before login');
-assert.equal(Object.keys(measured.stages).length, 17);
+assert.equal(Object.keys(measured.stages).length, 25);
 const saved = login.shared.get(loginKey);
 for (let i = 0; i < 350; i++) {
   login.diag.mark('TOKEN_CHECK', { has_token: true });
@@ -275,3 +275,54 @@ assert.match(auth, /diagnostic\('AUTH_REDIRECT_START'[\s\S]*await client\.loginW
 assert.match(auth, /diagnostic\('HOME_RENDER_START'/);
 assert.match(auth, /finally\s*\{\s*diagnostic\('HOME_RENDER_END'/);
 console.log('Login performance summaries passed: independent capacity, exact stage durations, same-tab redirects, stale isolation, warm evidence, failures and secret-free copy.');
+
+const startup = boot({ resources: [
+  { name: 'https://app.example/vendor/auth0-spa-js.production.js?DO_NOT_RECORD', startTime: 30, responseEnd: 120, duration: 90 },
+  { name: 'https://auth.example/authorize?DO_NOT_RECORD', duration: 8000 },
+  { name: 'https://app.example/staging-auth.js', duration: 20, token: 'DO_NOT_RECORD' }
+] });
+startup.advance(100); startup.diag.mark('AUTH0_SDK_SCRIPT_START');
+startup.advance(50); startup.diag.mark('AUTH0_SDK_SCRIPT_READY', { success: true });
+startup.advance(20); startup.diag.mark('APP_SCRIPT_READY', { auth_implementation: 'BUTTON_BEFORE_RESTORE_V1' });
+startup.advance(5); loginMark(startup, 'AUTH_INIT_START'); loginMark(startup, 'AUTH0_CLIENT_CREATE_START');
+startup.advance(1); loginMark(startup, 'AUTH0_CLIENT_CREATE_END', { success: true });
+startup.advance(1); loginMark(startup, 'LOGIN_BUTTON_ENABLED', { success: true });
+loginMark(startup, 'LOGIN_SCREEN_USABLE', { success: true });
+loginMark(startup, 'BACKGROUND_CHECKSESSION_START');
+startup.advance(8000); loginMark(startup, 'BACKGROUND_CHECKSESSION_END', { success: false });
+assert.equal(summary(startup).startup_breakdown_ms.boot_to_button_enabled, 177);
+assert.equal(summary(startup).startup_breakdown_ms.background_check_session, 8000);
+assert.equal(summary(startup).startup_breakdown_ms.sdk_client_constructor, 1);
+assert.equal(summary(startup).stages.LOGIN_SCREEN_USABLE.elapsed_ms, 177);
+assert.equal(summary(startup).auth_implementation, 'BUTTON_BEFORE_RESTORE_V1');
+assert.equal(summary(startup).boot_resources.length, 2);
+assert.doesNotMatch(JSON.stringify(summary(startup)), /DO_NOT_RECORD|https:\/\//);
+
+const trace = boot();
+const networkId = '11111111-2222-4333-8444-555555555555';
+const request = { attempt: 1, request_id: 1, network_request_id: networkId, request_mode: 'APP_CLIENT',
+  target: 'PRODUCTION_API', elapsed_ms: 0, visibility: 'visible', online: true, service_worker_controlled: true };
+trace.diag.mark('READINESS_TIMING', { ...request, request_phase: 'REQUEST_START', token: 'DO_NOT_RECORD' });
+trace.advance(50);
+const workerMessage = { source: trace.window.navigator.serviceWorker.controller,
+  data: { type: 'BANKE_READINESS_TIMING', network_request_id: networkId, timestamp: 1020,
+    request_phase: 'SW_CACHE_LOOKUP_START', secret: 'DO_NOT_RECORD' } };
+trace.emit('sw', 'message', workerMessage);
+trace.emit('sw', 'message', { ...workerMessage, source: {}, data: { ...workerMessage.data, request_phase: 'NETWORK_FETCH_START' } });
+trace.diag.mark('READINESS_TIMING', { ...request, request_phase: 'ABORT_FIRED', elapsed_ms: 15000 });
+trace.diag.mark('READINESS_TIMING', { ...request, request_phase: 'REQUEST_END', elapsed_ms: 15009, success: false });
+for (let i = 0; i < 250; i++) trace.diag.mark('FOCUS');
+const phases = trace.snapshot().login_performance.readiness_requests[0].phases;
+assert.deepEqual(phases.map(p => p.request_phase), ['REQUEST_START','SW_CACHE_LOOKUP_START','ABORT_FIRED','REQUEST_END']);
+assert.equal(phases[1].elapsed_ms, 20, 'worker timestamps are captured at occurrence, not message delivery');
+assert.equal(phases[1].worker_timestamp, 1020);
+assert.doesNotMatch(JSON.stringify(phases), /DO_NOT_RECORD/);
+const persistedTrace = boot({ shared: trace.shared, tab: trace.tab, now: 30000 });
+assert.equal(persistedTrace.snapshot().login_performance.readiness_requests.length, 1);
+const readinessKey = 'banke:readiness-timing:v1';
+const taintedTrace = JSON.parse(trace.shared.get(readinessKey)); taintedTrace[0].phases[0].token = 'DO_NOT_RECORD';
+trace.shared.set(readinessKey, JSON.stringify(taintedTrace));
+assert.doesNotMatch(JSON.stringify(trace.snapshot()), /DO_NOT_RECORD/);
+for (let attempt = 2; attempt <= 25; attempt++) trace.diag.mark('READINESS_TIMING', { ...request, attempt, request_phase: 'REQUEST_START' });
+assert.equal(trace.snapshot().login_performance.readiness_requests.length, 20);
+console.log('Startup and readiness measurement passed: exact stages, early button, bounded independent phases, worker correlation and secret-free persistence.');

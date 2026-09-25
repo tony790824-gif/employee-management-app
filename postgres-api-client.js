@@ -26,6 +26,7 @@
   const MAX_REQUEST_BYTES = 1_048_576;
   const MAX_RESPONSE_BYTES = 2_097_152;
   const DEFAULT_TIMEOUT_MS = 15_000;
+  let readinessAttemptSequence = 0;
   const WORKSPACE_PATTERN = /^ws_[a-f0-9]{32}$/;
   const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
   const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
@@ -125,22 +126,40 @@
     async function request(path, options = {}) {
       const operation = operationName(path);
       const started = Date.now();
+      const networkRequestId = cryptoImpl.randomUUID();
       const context = typeof diagnosticContext === 'function' ? diagnosticContext() : {};
       const fields = { ...context, request_id: ++requestSequence, operation, error_stage: 'api-request',
         reason: 'API_REQUEST', caller: 'postgres-api-client',
+        ...(operation === 'readiness' ? { request_mode: options.readinessProbe || 'APP_CLIENT' } : {}),
         started_hidden: globalThis.document?.visibilityState === 'hidden' };
       const mark = (event, data = {}) => globalThis.window?.shiftResumeDiagnostics?.mark(event,
         { ...fields, stale_result_ignored: typeof diagnosticContext === 'function'
           ? diagnosticContext().stale_result_ignored === true : false,
         elapsed_ms: Date.now() - started, ...data });
+      const attempt = operation === 'readiness' ? ++readinessAttemptSequence : 0;
+      const readinessTiming = (request_phase, extra = {}) => {
+        if (!attempt) return;
+        mark('READINESS_TIMING', { request_phase, attempt,
+          network_request_id: networkRequestId,
+          request_mode: options.readinessProbe || 'APP_CLIENT',
+          target: normalizedBaseUrl === 'https://bankeban-production-api.onrender.com/v1' ? 'PRODUCTION_API' : 'OTHER_CONFIGURED_API',
+          visibility: globalThis.document?.visibilityState || 'unknown',
+          online: globalThis.navigator?.onLine === true,
+          standalone: globalThis.window?.matchMedia?.('(display-mode: standalone)')?.matches === true,
+          service_worker_controlled: Boolean(globalThis.navigator?.serviceWorker?.controller),
+          sw_controller: Boolean(globalThis.navigator?.serviceWorker?.controller), ...extra });
+      };
+      readinessTiming('REQUEST_START');
       mark('API_REQUEST_START');
       try {
-        const result = await performRequest(path, options);
+        const result = await performRequest(path, options, readinessTiming, networkRequestId);
+        readinessTiming('REQUEST_END', { success: true });
         mark('API_REQUEST_END', { success: true });
         return result;
       } catch (error) {
         if (error && typeof error === 'object') error.operation = operation;
         const data = { success: false, ...globalThis.window?.shiftResumeDiagnostics?.authError(error) };
+        readinessTiming('REQUEST_END', data);
         mark(error?.code === 'POSTGRES_API_TIMEOUT' ? 'API_REQUEST_TIMEOUT' : 'API_REQUEST_FAIL', data);
         mark('API_REQUEST_END', data);
         throw error;
@@ -152,9 +171,12 @@
       idempotencyKey = '',
       authenticated = true,
       bootstrapRevision = false,
-      commandRevision = false
-    } = {}) {
-      const headers = { Accept: 'application/json', 'X-Request-Id': cryptoImpl.randomUUID() };
+      commandRevision = false,
+      readinessProbe = ''
+    } = {}, readinessTiming = () => {}, networkRequestId) {
+      const headers = { Accept: 'application/json', 'X-Request-Id': networkRequestId };
+      // Explicit diagnostic probe only. Normal application requests are unchanged.
+      if (path === '/readiness' && !authenticated && readinessProbe === 'DIRECT_PROBE') delete headers['X-Request-Id'];
       if (authenticated) {
         const token = String(await getAccessToken({
           write: !['GET', 'HEAD'].includes(method) && !path.startsWith('/auth/')
@@ -189,9 +211,13 @@
       const controller = new AbortController();
       const timing = event => globalThis.window?.shiftRuntimeTiming?.mark(event);
       timing('api-start');
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const timer = setTimeout(() => {
+        readinessTiming('ABORT_FIRED');
+        controller.abort();
+      }, timeoutMs);
       let response;
       try {
+        readinessTiming('FETCH_DISPATCHED');
         response = await fetchImpl(`${normalizedBaseUrl}${path}`, {
           method,
           headers,
@@ -201,6 +227,7 @@
           cache: 'no-store',
           redirect: 'error'
         });
+        readinessTiming('RESPONSE_HEADERS_RECEIVED', { http_status: response.status });
       } catch (error) {
         if (error?.name === 'AbortError') {
           throw new PostgresApiError('PostgreSQL API 連線逾時。', { code: 'POSTGRES_API_TIMEOUT' });
@@ -216,6 +243,7 @@
         throw new PostgresApiError('PostgreSQL API 回應過大。', { code: 'POSTGRES_API_RESPONSE_TOO_LARGE' });
       }
       const text = await response.text();
+      readinessTiming('RESPONSE_BODY_DONE', { http_status: response.status });
       if (byteLength(text) > MAX_RESPONSE_BYTES) {
         throw new PostgresApiError('PostgreSQL API 回應過大。', { code: 'POSTGRES_API_RESPONSE_TOO_LARGE' });
       }
@@ -283,6 +311,11 @@
     return Object.freeze({
       health: () => request('/health', { authenticated: false }),
       readiness: () => request('/readiness', { authenticated: false }),
+      // Called only by the local diagnostic button; never scheduled or retried.
+      compareReadiness: () => Promise.allSettled([
+        request('/readiness', { authenticated: false, readinessProbe: 'CLIENT_PROBE' }),
+        request('/readiness', { authenticated: false, readinessProbe: 'DIRECT_PROBE' })
+      ]),
       establishSession: () => request('/auth/session', { method: 'POST' }),
       logout: () => request('/auth/logout', { method: 'POST' }),
       listEmployees: () => request('/employees'),

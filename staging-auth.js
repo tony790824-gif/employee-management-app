@@ -4,6 +4,9 @@
   const environment = window.shiftEnvironment;
   if (!['staging', 'production'].includes(environment?.name)) return;
   if (window.shiftAuth) return;
+  window.shiftResumeDiagnostics?.mark('APP_SCRIPT_READY', {
+    auth_implementation: 'BUTTON_BEFORE_RESTORE_V1', success: true
+  });
 
   const environmentLabel = environment.name === 'production' ? 'Production' : 'Staging';
   const environmentLabelUpper = environmentLabel.toUpperCase();
@@ -363,7 +366,9 @@
       throw new Error('Auth0 SPA SDK failed to load.');
     }
 
-    if (!client) client = new auth0Sdk.Auth0Client({
+    if (!client) {
+      diagnostic('AUTH0_CLIENT_CREATE_START', runFields(run));
+      client = new auth0Sdk.Auth0Client({
       domain: authConfig.domain,
       clientId: authConfig.clientId,
       authorizationParams: {
@@ -374,7 +379,9 @@
       useRefreshTokens: false,
       authorizeTimeoutInSeconds: 8,
       cacheLocation: 'memory'
-    });
+      });
+      diagnostic('AUTH0_CLIENT_CREATE_END', { ...runFields(run), success: true });
+    }
 
     const authenticated = await runStage(run, 'auth-session', 'AUTH_SESSION_INIT', async () => {
       // Explicit API retry may reuse the already verified identity, not restart Auth0.
@@ -396,18 +403,24 @@
         // Callback processing remains blocking and strictly validated as before.
         setStatus('可直接使用 Auth0 登入；正在背景檢查既有登入狀態。');
         setBusy(false);
+        diagnostic('LOGIN_BUTTON_ENABLED', { ...runFields(run), success: true });
         diagnostic('LOGIN_SCREEN_USABLE', { ...runFields(run), success: true });
         run.loginScreenAvailable = true;
         diagnostic('SILENT_RENEW_START', runFields(run));
+        diagnostic('BACKGROUND_CHECKSESSION_START', runFields(run));
+        let restoreAuthenticated = false;
         try {
           await client.checkSession({ timeoutInSeconds: 8 });
           assertCurrentRun(run);
           authenticated = await client.isAuthenticated();
           assertCurrentRun(run);
+          restoreAuthenticated = authenticated;
         } catch (error) {
           diagnostic('SILENT_RENEW_FAIL', { ...runFields(run), ...window.shiftResumeDiagnostics?.authError(error) });
           assertCurrentRun(run);
           return false;
+        } finally {
+          diagnostic('BACKGROUND_CHECKSESSION_END', { ...runFields(run), success: restoreAuthenticated });
         }
         // checkSession swallows SDK errors; resolution alone is not a restored session.
         diagnostic(authenticated ? 'SILENT_RENEW_PASS' : 'SILENT_RENEW_FAIL', {

@@ -143,11 +143,44 @@ self.addEventListener('pushsubscriptionchange',event=>{
   }));
 });
 const matchCurrentCache=request=>caches.open(CACHE).then(cache=>cache.match(request));
+// Temporary readiness-only timing. No URL/body/credential values are messaged.
+// Reporting never delays or changes the existing cache-first -> network strategy.
+const readinessTrace=event=>{
+  try{
+  if(event.request.url!=='https://bankeban-production-api.onrender.com/v1/readiness')return null;
+  const requestId=event.request.headers?.get?.('X-Request-Id');
+  if(!event.clientId||!/^[a-f0-9-]{36}$/.test(requestId||''))return null;
+  const client=self.clients.get(event.clientId).catch(()=>null);
+  return(request_phase,fields={})=>{
+    try{
+    const data={type:'BANKE_READINESS_TIMING',network_request_id:requestId,request_phase,
+      timestamp:Date.now(),fallback_used:false,...fields};
+    const report=client.then(value=>value?.postMessage(data)).catch(()=>{});
+    event.waitUntil(report);
+    }catch{/* Timing must not alter the response path. */}
+  };
+  }catch{return null;}
+};
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
   if(event.request.mode==='navigate'){
     event.respondWith(fetch(event.request).catch(()=>matchCurrentCache('./index.html')));
     return;
   }
-  event.respondWith(matchCurrentCache(event.request).then(cached=>cached||fetch(event.request)));
+  const trace=readinessTrace(event);
+  if(!trace){
+    event.respondWith(matchCurrentCache(event.request).then(cached=>cached||fetch(event.request)));
+    return;
+  }
+  trace('SW_INTERCEPT_START');
+  trace('SW_CACHE_LOOKUP_START');
+  event.respondWith(matchCurrentCache(event.request).then(cached=>{
+    trace('SW_CACHE_LOOKUP_END',{cache_hit:Boolean(cached),success:true});
+    if(cached)return cached;
+    trace('NETWORK_FETCH_START');
+    return fetch(event.request).then(response=>{
+      trace('SW_RESPONSE_HEADERS_RECEIVED',{http_status:response.status,success:response.ok});
+      return response;
+    },error=>{trace('SW_NETWORK_FAIL',{success:false});throw error;});
+  },error=>{trace('SW_CACHE_LOOKUP_END',{success:false});throw error;}));
 });

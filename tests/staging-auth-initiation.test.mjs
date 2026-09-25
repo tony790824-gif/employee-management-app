@@ -16,7 +16,7 @@ assert.ok(profile.auth.clientId, 'Staging public Client ID is required.');
 
 const stagingIndex = await readFile('dist-staging/index.html', 'utf8');
 const localAuth0Sdk = await readFile('dist-staging/vendor/auth0-spa-js.production.js', 'utf8');
-assert.match(stagingIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js"><\/script>/);
+assert.match(stagingIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js" onload="[^"]+" onerror="[^"]+"><\/script>/);
 assert.doesNotMatch(stagingIndex, /cdn\.auth0\.com|integrity=|crossorigin=/);
 assert.match(localAuth0Sdk, /createAuth0Client/);
 const sdkSandbox = {

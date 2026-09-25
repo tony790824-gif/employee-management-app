@@ -88,7 +88,7 @@ assert.doesNotMatch(productionEnvironment, /script\.google\.com|bankeban-staging
 assert.match(productionHeaders, /https:\/\/production-tenant\.us\.auth0\.com/);
 assert.doesNotMatch(productionHeaders, /https:\/\/cdn\.auth0\.com/);
 assert.doesNotMatch(productionHeaders, /script\.google\.com|bankeban-staging-node-api/);
-assert.match(productionIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js"><\/script>/);
+assert.match(productionIndex, /<script src="\/vendor\/auth0-spa-js\.production\.js" onload="[^"]+" onerror="[^"]+"><\/script>/);
 assert.doesNotMatch(productionIndex, /cdn\.auth0\.com|integrity=|crossorigin=/);
 assert.match(productionAuth0Sdk, /createAuth0Client/);
 assert.match(productionIndex, /<script src="staging-auth\.js"><\/script>/);

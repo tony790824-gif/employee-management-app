@@ -132,7 +132,8 @@ if (builtIndexHtml === originalIndexHtml) {
 
 if (profile.auth) {
   const authScripts = [
-    `    <script src="${auth0SdkPath}"></script>`,
+    '    <script>window.shiftResumeDiagnostics?.mark("AUTH0_SDK_SCRIPT_START");</script>',
+    `    <script src="${auth0SdkPath}" onload="window.shiftResumeDiagnostics?.mark('AUTH0_SDK_SCRIPT_READY',{success:true})" onerror="window.shiftResumeDiagnostics?.mark('AUTH0_SDK_SCRIPT_READY',{success:false})"></script>`,
     '    <script src="staging-auth.js"></script>'
   ].join('\n');
   const authenticatedIndexHtml = builtIndexHtml.replace(
