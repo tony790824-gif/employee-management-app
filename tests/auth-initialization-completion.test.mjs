@@ -45,7 +45,7 @@ async function scenario({ search = '?code=fixture&state=fixture', gate, claimsGa
     clearTimeout(id) { timers.delete(id); } });
   vm.runInContext(apiSource, context);
   browser.shiftPostgresCloud = {
-    async connect({ getAccessToken, assertCurrent, diagnosticContext }) {
+    async connect({ getAccessToken, assertCurrent, diagnosticContext, onReadinessPending, onReadinessReady }) {
       connects++;
       if (gate) { await gate.promise; assertCurrent(); return { role: 'boss' }; }
       const client = context.BankePostgresApi.createClient({ baseUrl: 'https://api.fixture.example/v1',
@@ -56,7 +56,9 @@ async function scenario({ search = '?code=fixture&state=fixture', gate, claimsGa
             () => reject(Object.assign(new Error('fixture abort'), { name: 'AbortError' }))));
           return { ok: true, headers: { get: () => null }, text: async () => '{"ok":true}' };
         } });
+      onReadinessPending();
       await client.readiness(); assertCurrent();
+      onReadinessReady();
       return { role: 'boss' };
     }, activateForegroundSync() { active++; }
   };
@@ -74,7 +76,8 @@ const timeout = await scenario();
 assert.equal(timeout.events.filter(e => e.event === 'AUTH_INIT_END').length, 0, 'callback completion is not whole initialization completion');
 assert.equal(timeout.events.filter(e => e.event === 'AUTH_SESSION_INIT_END' && e.success).length, 1);
 assert.equal(timeout.events.filter(e => e.event === 'AUTH_CALLBACK_END' && e.success).length, 1);
-assert.equal(timeout.button.textContent, '正在載入資料…');
+assert.equal(timeout.button.textContent, '正在喚醒伺服器…');
+assert.equal(timeout.hint.textContent, '正在喚醒伺服器，首次連線可能需要較久…');
 const inFlight = timeout.finish();
 assert.equal(timeout.finish(), inFlight, 'concurrent initialization must return the exact same Promise');
 timeout.duplicateScript();
@@ -83,6 +86,7 @@ await inFlight;
 assert.equal(timeout.timers.size, 0, 'AbortController timeout must be cleared after rejection');
 assert.equal(timeout.button.textContent, '重新連線');
 assert.equal(timeout.button.disabled, false);
+assert.equal(timeout.hint.textContent, '伺服器連線未完成，請確認網路後按「重新連線」。');
 assert.equal(timeout.browser.shiftAuth.getClaimVerification().matchesAuth0SessionId, true, 'API timeout does not invalidate authenticated identity');
 assert.equal(timeout.stats().logoutCalls, 0);
 assert.equal(timeout.events.filter(e => e.event === 'AUTH_INIT_END').length, 1, 'one terminal completion per run');

@@ -24,6 +24,25 @@
   let connectPromise = null;
   let connectProvider = null;
   let connectionGeneration = 0;
+  const productionWarmupEnabled = environment.name === 'production';
+  let readinessWarmup = null;
+
+  // One read-only wakeup per startup, shared by the login gate. Only an explicit
+  // reconnect can replace a failed attempt; focus/visibility never starts one.
+  function productionReadiness({ retry = false } = {}) {
+    if (readinessWarmup && !(retry && readinessWarmup.failed)) return readinessWarmup.promise;
+    const attempt = { failed: false, promise: null };
+    readinessWarmup = attempt;
+    attempt.promise = Promise.resolve().then(() => window.BankePostgresApi.createClient({
+      baseUrl: environment.postgresApiUrl,
+      getAccessToken: async () => { throw new Error('Readiness warmup must not request authentication.'); },
+      getWorkspaceId: async () => { throw new Error('Readiness warmup must not request a workspace.'); },
+      timeoutMs: 60_000
+    }).readiness());
+    // Handle background rejection without converting the gate into a success.
+    void attempt.promise.catch(() => { attempt.failed = true; });
+    return attempt.promise;
+  }
   const timing = event => {
     window.shiftRuntimeTiming?.mark(event);
     const names = { 'bootstrap-start': 'BOOTSTRAP_START', 'bootstrap-end': 'BOOTSTRAP_END', 'ui-usable': 'UI_USABLE' };
@@ -420,7 +439,8 @@
     return tracked;
   }
 
-  async function initializeConnection({ getAccessToken, offlineIdentityBinding = '', assertCurrent = () => {}, diagnosticContext }) {
+  async function initializeConnection({ getAccessToken, offlineIdentityBinding = '', assertCurrent = () => {}, diagnosticContext,
+    retryReadiness = false, onReadinessPending = () => {}, onReadinessReady = () => {} }) {
     assertCurrent();
     if (typeof getAccessToken !== 'function') throw new Error('PostgreSQL 登入缺少 Access Token provider。');
     if (offlineIdentityBinding && !ownerBindingPattern.test(offlineIdentityBinding)) {
@@ -441,9 +461,15 @@
       }
     });
     const connectingClient = client;
-    await connectingClient.readiness();
+    if (productionWarmupEnabled) {
+      onReadinessPending();
+      await productionReadiness({ retry: retryReadiness });
+    } else {
+      await connectingClient.readiness();
+    }
     assertCurrent();
     if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
+    onReadinessReady();
     await connectingClient.establishSession();
     assertCurrent();
     if (generation !== connectionGeneration) throw new Error('PostgreSQL initialization cancelled.');
@@ -828,6 +854,9 @@
     getSession: () => currentSession,
     getCurrentUser: () => currentUser
   });
+
+  // Start without awaiting: SDK setup and the login button remain independent.
+  if (productionWarmupEnabled) void productionReadiness();
 
   const cloudStatus = document.querySelector('#cloudStatus');
   if (cloudStatus) {

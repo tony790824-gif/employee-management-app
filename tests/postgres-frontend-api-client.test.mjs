@@ -1,6 +1,7 @@
 ﻿import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import './login-startup-request-timing.test.mjs';
+import './production-readiness-warmup.test.mjs';
 import { readFile } from 'node:fs/promises';
 import { TextDecoder, TextEncoder } from 'node:util';
 

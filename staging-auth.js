@@ -447,7 +447,18 @@
           getAccessToken,
           offlineIdentityBinding: verifiedOfflineBinding,
           assertCurrent: () => assertCurrentRun(run),
-          diagnosticContext: () => runFields(run)
+          diagnosticContext: () => runFields(run),
+          retryReadiness: run.reason === 'API_RETRY',
+          onReadinessPending: () => {
+            if (!currentRun(run)) return;
+            setStatus('正在喚醒伺服器，首次連線可能需要較久…');
+            if (loginButton) loginButton.textContent = '正在喚醒伺服器…';
+          },
+          onReadinessReady: () => {
+            if (!currentRun(run)) return;
+            setStatus(`Auth0 驗證成功，正在載入 PostgreSQL ${environmentLabel} 資料…`);
+            if (loginButton) loginButton.textContent = '正在載入資料…';
+          }
         }));
         initializationPhase = 'app-ui';
         run.stage = 'app-ui';
@@ -619,7 +630,9 @@
       const system = initializationPhase === 'auth0'
         ? `Auth0 ${environmentLabel}`
         : `PostgreSQL ${environmentLabel}`;
-      setStatus(`${system} 初始化未完成，請稍後重試。`);
+      setStatus(error?.operation === 'readiness'
+        ? '伺服器連線未完成，請確認網路後按「重新連線」。'
+        : `${system} 初始化未完成，請稍後重試。`);
       // A data-connection error must never leave the Auth0 spinner/button stuck.
       const retryApi = run.stage === 'api-bootstrap' &&
         ['POSTGRES_API_TIMEOUT', 'POSTGRES_API_UNAVAILABLE'].includes(error?.code);
