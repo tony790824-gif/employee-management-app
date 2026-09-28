@@ -10,6 +10,7 @@
   const money = value => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(value);
   const manager = () => ['boss', 'manager'].includes(cloud.getCurrentUser?.()?.role);
   let rows = [], generation = 0, busy = false, loadedMonth = '';
+  let pendingRead = null, needsRecovery = false, recoveryAttempted = false;
   const errors = { PAYROLL_UNAVAILABLE: '薪資資料庫更新尚未套用；不顯示未驗證的薪資。',
     REVISION_CONFLICT: '資料已被更新，請重新開啟表單後再修改。', PAYROLL_ITEM_VOIDED: '這筆項目已作廢，請新增正確項目。' };
   panel.querySelector('h2').textContent = '每月應付薪資';
@@ -93,10 +94,21 @@
       return box;
     }));
   }
-  async function refresh() {
-    if (busy) return;
-    const current = ++generation;
+  function refresh({ recovery = false } = {}) {
+    if (busy) return Promise.resolve();
     const month = $('#monthPicker').value;
+    if (pendingRead?.month === month) return pendingRead.promise;
+    if (!recovery) recoveryAttempted = false;
+    const request = { month, promise: null };
+    pendingRead = request;
+    request.promise = readMonth(month).finally(() => {
+      if (pendingRead === request) pendingRead = null;
+    });
+    return request.promise;
+  }
+  async function readMonth(month) {
+    const current = ++generation;
+    needsRecovery = false;
     rows = []; loadedMonth = ''; exportButton.disabled = true; details.replaceChildren();
     dom.replace(body, dom.emptyRow(8,'正在取得薪資…'));
     if (!cloud.getCurrentUser?.()) { body.replaceChildren(); return; }
@@ -107,6 +119,7 @@
       rows = result.data; loadedMonth = month; render(); exportButton.disabled = false;
     } catch (error) {
       if (generation !== current) return;
+      needsRecovery = true;
       dom.replace(body, dom.emptyRow(8,errors[error?.code] || '無法取得薪資，請確認線上登入及連線。'));
     }
   }
@@ -118,7 +131,17 @@
     const link = dom.element('a', { attributes: { href:url, download:`應付薪資-${loadedMonth}.csv` } }); link.click();
     setTimeout(()=>URL.revokeObjectURL(url),0);
   };
-  document.addEventListener('postgres-session-cleared', () => { generation++; rows=[]; loadedMonth=''; body.replaceChildren(); details.replaceChildren(); exportButton.disabled=true; });
+  document.addEventListener('postgres-session-cleared', () => {
+    generation++; pendingRead=null; needsRecovery=false; recoveryAttempted=false;
+    rows=[]; loadedMonth=''; body.replaceChildren(); details.replaceChildren(); exportButton.disabled=true;
+  });
+  document.addEventListener('postgres-foreground-synced', () => {
+    // A successful revision check may not emit bootstrap-refreshed when nothing
+    // changed. Recover a failed read once, without polling payroll or replaying writes.
+    if (!needsRecovery || recoveryAttempted || pendingRead || busy || !cloud.getCurrentUser?.()) return;
+    recoveryAttempted = true;
+    void refresh({ recovery: true });
+  });
   document.querySelector('[data-tab="payroll"]')?.addEventListener('click',()=>void refresh());
   document.addEventListener('boss-hours-updated',()=>void refresh());
   document.addEventListener('postgres-bootstrap-refreshed',()=>void refresh());

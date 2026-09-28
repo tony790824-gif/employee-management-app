@@ -27,11 +27,11 @@ const make=(tag='',options={},children=[])=>({tag,text:options.text||'',value:op
  showModal(){this.open=true;},close(){this.open=false;},remove(){this.removed=true;}});
 const tbody=make(),detailsPanel=make(),header=make(),heading=make(),description=make(),exportButton=make(),monthPicker={value:'2026-09'},docBody=make();
 detailsPanel.querySelector=s=>s==='h2'?heading:s==='thead tr'?header:description;
-const listeners=new Map();let role='boss',fail=false,submitted;
+const listeners=new Map();let role='boss',fail=false,submitted,readCount=0,writeCount=0,nextRead=null;
 const row={employeeId:'e_test',name:'員工甲',month:'2026-09',baseMode:'fixed',baseSalary:30000,commission:2000,
  basePay:30000,additions:1000,deductions:500,payable:32500,revision:1,note:'',adjustments:[]};
-const cloud={getCurrentUser:()=>role?{role}:null,payroll:async month=>{if(fail)throw new Error('offline');return{ok:true,month,data:[{...row,month}]};},
- saveMonthlyPayroll:async input=>{submitted=input;}};
+const cloud={getCurrentUser:()=>role?{role}:null,payroll:async month=>{readCount++;if(nextRead){const promise=nextRead;nextRead=null;return promise;}if(fail)throw new Error('offline');return{ok:true,month,data:[{...row,month}]};},
+ saveMonthlyPayroll:async input=>{writeCount++;submitted=input;}};
 const window={shiftEnvironment:{dataBackend:'postgres'},shiftPostgresCloud:cloud,
  shiftDomSafety:{element:make,cell:text=>make('td',{text}),option:(value,text)=>make('option',{value,text}),emptyRow:(n,text)=>make('tr',{text}),replace:(node,...items)=>node.replaceChildren(...items)}};
 const document={body:docBody,querySelector:s=>({'#payrollBody':tbody,'#payroll':detailsPanel,'#exportBtn':exportButton,'#monthPicker':monthPicker}[s]||null),addEventListener:(name,fn)=>listeners.set(name,fn)};
@@ -45,5 +45,42 @@ assert.equal(submitted.baseSalary,30000);assert.equal(submitted.commission,2000)
 assert.equal(submitted.baseRevision,1);assert.equal(dialog.removed,true);
 role='employee';await window.shiftPayroll.refresh();assert.equal(tbody.children[0].children[7].children.length,0);
 fail=true;await window.shiftPayroll.refresh();assert.equal(exportButton.disabled,true);assert.match(tbody.children[0].text,/無法取得薪資/);
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+const defer=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
+const response=month=>({ok:true,month,data:[{...row,month}]});
+const recovered=listeners.get('postgres-foreground-synced');
+const beforeRecovery=readCount,beforeWrites=writeCount;
+fail=false;recovered({detail:{changed:false}});await flush();
+assert.equal(readCount,beforeRecovery+1,'unchanged bootstrap revision must still recover a failed payroll read');
+assert.equal(exportButton.disabled,false);assert.match(tbody.children[0].children[6].text,/32,500/);
+for(let i=0;i<10;i++)recovered({detail:{changed:false}});
+await flush();assert.equal(readCount,beforeRecovery+1,'healthy payroll is not polled on every foreground sync');
+assert.equal(writeCount,beforeWrites,'reconnect only reads; never repeats a save');
+
+const pending=defer();nextRead=pending.promise;
+const first=window.shiftPayroll.refresh();
+assert.equal(window.shiftPayroll.refresh(),first,'same-month overlapping reads share the same promise');
+recovered({detail:{changed:false}});
+pending.resolve(response('2026-09'));await first;
+
+fail=true;await window.shiftPayroll.refresh();
+const beforeFailedRecovery=readCount;
+recovered({detail:{changed:false}});await flush();
+for(let i=0;i<10;i++)recovered({detail:{changed:false}});
+await flush();assert.equal(readCount,beforeFailedRecovery+1,'persistent errors do not cause a payroll retry storm');
+
+fail=false;const stale=defer();nextRead=stale.promise;
+const september=window.shiftPayroll.refresh();
+monthPicker.value='2026-10';await window.shiftPayroll.refresh();
+stale.resolve(response('2026-09'));await september;
+assert.equal(tbody.children[0].children[1].text,'2026-10','late old-month response cannot overwrite current month');
+
+const logoutRead=defer();nextRead=logoutRead.promise;
+const pendingLogout=window.shiftPayroll.refresh();
 listeners.get('postgres-session-cleared')();assert.equal(tbody.children.length,0);
+role=null;logoutRead.resolve(response('2026-10'));await pendingLogout;
+recovered({detail:{changed:false}});await flush();
+assert.equal(tbody.children.length,0,'late read after logout cannot repopulate salary data');
+assert.equal(writeCount,beforeWrites,'all recovery and stale-response checks are read-only');
 console.log('Payroll UI monthly form, server totals, readonly employee, failed fetch and logout clearing passed.');
+console.log('Payroll reconnect recovery passed: unchanged revision, single-flight, bounded retry, month/logout stale guards, no write replay.');
