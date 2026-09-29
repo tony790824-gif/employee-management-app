@@ -24,6 +24,7 @@
   let connectPromise = null;
   let connectProvider = null;
   let connectionGeneration = 0;
+  let committedRefreshPending = false;
   const productionWarmupEnabled = environment.name === 'production';
   let readinessWarmup = null;
 
@@ -269,6 +270,7 @@
     const changedSections = changedBootstrapSections(previousData, bootstrap.data);
     const currentUserChanged = stableJson(currentUser) !== stableJson(bootstrap.currentUser);
     stateStore.write(mergeBootstrapSections(previousData, bootstrap.data, changedSections));
+    committedRefreshPending = false;
     currentSession = Object.freeze({ role: bootstrap.role, employeeId: bootstrap.employeeId || '' });
     currentUser = bootstrap.currentUser;
     bindOfflineOwner();
@@ -316,7 +318,7 @@
           return { changed: false, revision: nextRevision, stale: true };
         }
         const changed = !Number.isSafeInteger(previousRevision) || previousRevision !== nextRevision;
-        const bootstrap = changed
+        const bootstrap = changed || committedRefreshPending
           ? await refreshBootstrap({ source: 'foreground' })
           : { changed: false, revision: nextRevision };
         if (!bootstrap?.stale) {
@@ -584,17 +586,31 @@
 
   async function executeAndRefresh(commandName, input) {
     if (!client || !currentSession) throw new Error('PostgreSQL 登入狀態已失效，請重新登入。');
+    const activeClient = client;
+    const activeSession = currentSession;
     const idempotencyKey = offlineRuntime ? window.crypto.randomUUID() : '';
     if (window.navigator?.onLine === false) return enqueueOfflineCommand(commandName, input, idempotencyKey);
+    let result;
     try {
-      const result = await client.executeCommand(commandName, input,
+      result = await activeClient.executeCommand(commandName, input,
         idempotencyKey ? { idempotencyKey } : undefined);
-      await refreshBootstrap();
-      return result;
     } catch (error) {
       if (offlineRuntime?.isNetworkError(error)) return enqueueOfflineCommand(commandName, input, idempotencyKey);
       throw error;
     }
+    // The server has acknowledged this command. A later read/renewal failure
+    // must not report a failed save or enqueue this committed write for replay.
+    if (activeClient !== client || activeSession !== currentSession) return result;
+    try {
+      await refreshBootstrap();
+    } catch {
+      if (activeClient === client && activeSession === currentSession) {
+        committedRefreshPending = true;
+        window.alert?.('資料已成功儲存，但最新畫面尚未同步。請勿重複儲存；連線恢復後會重新讀取資料。');
+      }
+      return { ...result, syncPending: true };
+    }
+    return result;
   }
 
   const saveEmployeeLeave = (month, dates) => executeAndRefresh('leaves.replace-month', { month, dates });
@@ -759,6 +775,7 @@
     identityBinding = '';
     commandRevision = null;
     foregroundFailureReported = false;
+    committedRefreshPending = false;
     sessionStorage.removeItem(environment.storageKey('shift-postgres-auth'));
     sessionStorage.removeItem(OFFLINE_OWNER_KEY);
     stateStore.clearSensitive();
