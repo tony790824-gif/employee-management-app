@@ -92,6 +92,7 @@
       if (result?.ok !== true || !Array.isArray(result.data) || !Array.isArray(result.accounts)) throw new Error('INVALID_RESPONSE');
       staff = result.data; accounts = result.accounts; available = true;
       render();
+      document.dispatchEvent(new CustomEvent('employee-history-refreshed'));
     } catch (error) {
       if (current !== generation || !isManager()) return;
       const warning = dom.element('p', { text: messages[error?.code] || '無法取得員工登入狀態，請確認連線。', attributes: { role: 'status' } });
@@ -103,7 +104,11 @@
     }
   }
   window.shiftEmployeeAdministration = Object.freeze({
-    find: id => editing?.id === id ? editing : staff.find(item => item.id === id), refresh
+    find: id => editing?.id === id ? editing : staff.find(item => item.id === id), refresh,
+    historicalEmployees: () => isManager() && available
+      ? staff.filter(item => ['inactive', 'departed'].includes(item.status))
+        .map(({ id, name, role, rate, status }) => ({ id, name, role, rate, status }))
+      : []
   });
   const help = document.querySelector('#employeeForm .cloud-help');
   if (help) help.textContent = '員工資料與登入帳號分開管理。新增後請在員工卡片確認登入狀態並連結已核准的 Auth0 帳號；不使用 PIN 啟用碼。';

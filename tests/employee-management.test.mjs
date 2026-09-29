@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import './committed-command-refresh.test.mjs';
+import './schedule-history.test.mjs';
 import { validateCommand, employeeCommandNames, commandNames } from '../server/validation.mjs';
 import { createCommandService } from '../server/commands.mjs';
 
@@ -44,7 +45,7 @@ const make=(tag='',options={},children=[])=>({tag,text:options.text||'',children
   addEventListener(type,fn){this[type]=fn;}});
 const cards=make(),removed=make(),tab=make(),help={};
 const doc={querySelector:s=>s==='#employeeCards'?cards:s==='#removedEmployees'?removed:s.includes('cloud-help')?help:tab,
-  addEventListener:(type,fn)=>listeners.set(type,fn)};
+  addEventListener:(type,fn)=>listeners.set(type,fn),dispatchEvent:event=>listeners.get(event.type)?.(event)};
 let role='boss',readCalls=0,statusCalls=0,linkedCalls=0,fail=false;
 const staff=[{...update,id:'e_test',role:'門市',rate:200,revision:1,status:'active',accountStatus:'UNLINKED'}];
 const cloud={getCurrentUser:()=>({role}),employeeAdministration:async()=>{readCalls++;if(fail)throw new Error('offline');return{ok:true,data:staff,accounts:[]};},
@@ -52,9 +53,13 @@ const cloud={getCurrentUser:()=>({role}),employeeAdministration:async()=>{readCa
 let opened;
 const window={openEmployeeDialog:employee=>{opened=employee;},shiftEnvironment:{dataBackend:'postgres'},shiftDomSafety:{element:make,option:(value,text)=>({...make('option',{text}),value}),
   replace:(node,...items)=>node.replaceChildren(...items)},shiftPostgresCloud:cloud};
-vm.runInNewContext(source,{window,document:doc,alert(){},confirm:()=>true});
+vm.runInNewContext(source,{window,document:doc,CustomEvent:class {constructor(type){this.type=type;}},alert(){},confirm:()=>true});
 await new Promise(resolve=>setImmediate(resolve));
 assert.equal(readCalls,1);
+assert.equal(window.shiftEmployeeAdministration.historicalEmployees().length,0);
+staff.push({...staff[0],id:'e_inactive',status:'inactive'},{...staff[0],id:'e_departed',status:'departed'});
+assert.equal(window.shiftEmployeeAdministration.historicalEmployees().length,2);
+assert.equal(window.shiftEmployeeAdministration.historicalEmployees()[0].phone,undefined,'History roster must not expose account/contact inventory');
 assert.ok(cards.children[0].children.some(item=>item.text.includes('尚未連結')));
 assert.ok(cards.children[0].children.find(item=>item.text==='連結登入帳號').disabled);
 cards.children[0].children.find(item=>item.text==='編輯資料').click();
@@ -65,9 +70,11 @@ await cards.children[0].children.find(item=>item.text==='停用').click();
 await new Promise(resolve=>setImmediate(resolve));
 assert.equal(statusCalls,1);assert.equal(linkedCalls,0);
 role='employee'; await window.shiftEmployeeAdministration.refresh();
+assert.equal(window.shiftEmployeeAdministration.historicalEmployees().length,0);
 assert.equal(cards.children.length,0);
 assert.equal(readCalls,2,'Employee must not request manager-only account inventory');
 role='boss';fail=true;await window.shiftEmployeeAdministration.refresh();
+assert.equal(window.shiftEmployeeAdministration.historicalEmployees().length,0);
 assert.equal(window.shiftEmployeeAdministration.find('e_test').revision,1,'Refresh must not silently change an open form revision');
 assert.match(cards.children[0].text,/無法取得/);
 listeners.get('postgres-session-cleared')();
