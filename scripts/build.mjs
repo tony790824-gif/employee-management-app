@@ -1,5 +1,5 @@
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { createHash, ECDH } from 'node:crypto';
 import { deployFiles } from './project-files.mjs';
 import { getEnvironmentProfile } from '../config/environments.mjs';
 import { createSecurityHeaders } from '../config/security-headers.mjs';
@@ -12,6 +12,21 @@ const postgresRehearsal = requestedEnvironment === 'staging' && process.argv.inc
 const rehearsalApiUrl = String(process.env.BANKE_STAGING_POSTGRES_API_URL || '').trim();
 const rehearsalWorkspaceId = String(process.env.BANKE_STAGING_WORKSPACE_ID || '').trim();
 const webPushPublicKey = String(process.env.BANK_WEB_PUSH_PUBLIC_KEY || '').trim();
+// Validate the optional public key in every environment before creating build output.
+// Only this explicit public field is allowed into the browser configuration.
+if (webPushPublicKey) {
+  let valid = false;
+  try {
+    const bytes = Buffer.from(webPushPublicKey, 'base64url');
+    valid = /^[A-Za-z0-9_-]{87}$/.test(webPushPublicKey)
+      && bytes.length === 65 && bytes[0] === 4
+      && bytes.toString('base64url') === webPushPublicKey
+      && ECDH.convertKey(bytes, 'prime256v1', undefined, undefined, 'uncompressed').equals(bytes);
+  } catch {
+    // Do not include the configured value or raw crypto errors in build logs.
+  }
+  if (!valid) throw new Error('BANK_WEB_PUSH_PUBLIC_KEY format is invalid.');
+}
 if (postgresRehearsal) {
   const url = new URL(rehearsalApiUrl);
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
@@ -19,9 +34,6 @@ if (postgresRehearsal) {
   }
   if (!/^ws_[a-f0-9]{32}$/.test(rehearsalWorkspaceId)) {
     throw new Error('BANKE_STAGING_WORKSPACE_ID format is invalid.');
-  }
-  if (webPushPublicKey && !/^[A-Za-z0-9_-]{80,120}$/.test(webPushPublicKey)) {
-    throw new Error('BANK_WEB_PUSH_PUBLIC_KEY format is invalid.');
   }
 }
 const effectiveProfile = postgresRehearsal ? Object.freeze({
@@ -60,7 +72,7 @@ const runtimeConfig = `(() => {
     backendUrl: effectiveProfile.backendUrl,
     postgresApiUrl: effectiveProfile.postgresApiUrl,
     ...(effectiveProfile.postgresWorkspaceId ? { postgresWorkspaceId: effectiveProfile.postgresWorkspaceId } : {}),
-    ...(postgresRehearsal && webPushPublicKey ? { webPushPublicKey } : {}),
+    ...(webPushPublicKey ? { webPushPublicKey } : {}),
     storagePrefix: effectiveProfile.storagePrefix,
     serviceWorkerUrl: './service-worker.js',
     ...(profile.auth ? { auth: profile.auth } : {})

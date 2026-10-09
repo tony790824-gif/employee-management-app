@@ -7,6 +7,13 @@ import { spawnSync } from 'node:child_process';
 import { environmentProfiles, getEnvironmentProfile } from '../config/environments.mjs';
 import { deployFiles } from '../scripts/project-files.mjs';
 
+// Standard P-256 generator point: public test data, not a generated VAPID key pair.
+const testPublicKey = Buffer.from(
+  '04' + '6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296'
+  + '4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5',
+  'hex'
+).toString('base64url');
+
 const build = (environment, env = process.env) => {
   const result = spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`], { encoding: 'utf8', env });
   assert.equal(result.status, 0, result.stderr || `Failed to build ${environment}`);
@@ -44,7 +51,7 @@ const rehearsalBuild = spawnSync(process.execPath, ['scripts/build.mjs', '--envi
     ...process.env,
     BANKE_STAGING_POSTGRES_API_URL: 'https://api.staging.example/v1',
     BANKE_STAGING_WORKSPACE_ID: `ws_${'a'.repeat(32)}`,
-    BANK_WEB_PUSH_PUBLIC_KEY: 'B'.repeat(87)
+    BANK_WEB_PUSH_PUBLIC_KEY: testPublicKey
   }
 });
 assert.equal(rehearsalBuild.status, 0, rehearsalBuild.stderr || 'Failed to build isolated PostgreSQL rehearsal');
@@ -175,7 +182,7 @@ assert.doesNotMatch(rehearsalWorker, /banke-production-/);
 assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION/);
 assert.match(rehearsalWorker, /BANKE_BOOTSTRAP_REVISION_AVAILABLE/);
 assert.match(rehearsalWorker, /__banke_bootstrap_revision__/);
-assert.match(rehearsalEnvironment, /"webPushPublicKey": "B{87}"/);
+assert.ok(rehearsalEnvironment.includes(`"webPushPublicKey": "${testPublicKey}"`));
 assert.match(rehearsalWorker, /addEventListener\('push'/);
 assert.match(rehearsalWorker, /addEventListener\('notificationclick'/);
 assert.match(rehearsalWorker, /addEventListener\('pushsubscriptionchange'/);
@@ -392,6 +399,70 @@ try {
   previous = await fixtureBuild();
   fixtureEnv.BANKE_PRODUCTION_POSTGRES_API_URL = 'https://replacement.production.example/v1';
   assert.notEqual(await fixtureBuild(), previous, 'API route changes must invalidate installed caches');
+
+  // All builds must inject only a valid, explicitly allowed public key. Server-only
+  // values are synthetic sentinels; no real credentials are read by these tests.
+  const publicKeyEnv = {
+    ...fixtureEnv,
+    BANK_WEB_PUSH_PRIVATE_KEY: 'SYNTHETIC_PRIVATE_DO_NOT_SHIP',
+    DATABASE_PUSH_URL: 'postgresql://test:secret@push.invalid/neondb',
+    BANKE_STAGING_POSTGRES_API_URL: 'https://api.staging.example/v1',
+    BANKE_STAGING_WORKSPACE_ID: `ws_${'a'.repeat(32)}`
+  };
+  delete publicKeyEnv.BANK_WEB_PUSH_PUBLIC_KEY;
+  const publicKeyBuild = (environment, rehearsal, key) => {
+    const env = { ...publicKeyEnv };
+    if (key !== undefined) env.BANK_WEB_PUSH_PUBLIC_KEY = key;
+    return spawnSync(process.execPath, ['scripts/build.mjs', `--environment=${environment}`,
+      ...(rehearsal ? ['--postgres-rehearsal'] : [])], {
+      cwd: fixtureRoot, env, encoding: 'utf8'
+    });
+  };
+  const readRuntime = source => {
+    const context = {
+      window: { addEventListener() {} },
+      document: { documentElement: { dataset: {} }, title: '' }
+    };
+    vm.runInNewContext(source, context);
+    const { storageKey, ...config } = context.window.shiftEnvironment;
+    return JSON.parse(JSON.stringify(config));
+  };
+  for (const [environment, rehearsal, directory] of [
+    ['production', false, 'dist'], ['local', false, 'dist-local'],
+    ['staging', false, 'dist-staging'], ['staging', true, 'dist-staging-postgres']
+  ]) {
+    const configPath = path.join(fixtureRoot, directory, 'environment-config.js');
+    assert.equal(publicKeyBuild(environment, rehearsal).status, 0);
+    const absentSource = await readFile(configPath, 'utf8');
+    const baseline = readRuntime(absentSource);
+    assert.equal(Object.hasOwn(baseline, 'webPushPublicKey'), false);
+    assert.equal(publicKeyBuild(environment, rehearsal, '   ').status, 0);
+    assert.equal(await readFile(configPath, 'utf8'), absentSource, 'Blank key is omitted');
+
+    assert.equal(publicKeyBuild(environment, rehearsal, ` ${testPublicKey} `).status, 0);
+    const validSource = await readFile(configPath, 'utf8');
+    const { webPushPublicKey: injected, ...unchanged } = readRuntime(validSource);
+    assert.equal(injected, testPublicKey);
+    assert.deepEqual(unchanged, baseline, 'Other runtime configuration must not change');
+    for (const forbidden of ['BANK_WEB_PUSH_PRIVATE_KEY', publicKeyEnv.BANK_WEB_PUSH_PRIVATE_KEY,
+      'DATABASE_PUSH_URL', publicKeyEnv.DATABASE_PUSH_URL]) {
+      assert.equal(validSource.includes(forbidden), false, 'Server-only data must not be injected');
+    }
+
+    for (const invalid of ['invalid-key', 'B'.repeat(87), `${testPublicKey}=`,
+      `${testPublicKey.slice(0, -1)}!`, 'A'.repeat(120)]) {
+      const failed = publicKeyBuild(environment, rehearsal, invalid);
+      assert.notEqual(failed.status, 0);
+      assert.match(failed.stderr, /BANK_WEB_PUSH_PUBLIC_KEY format is invalid/);
+      assert.equal(failed.stderr.includes(invalid), false, 'Invalid value must not be logged');
+      assert.equal(await readFile(configPath, 'utf8'), validSource,
+        'Invalid configuration must fail before changing any existing build output');
+    }
+  }
+  const buildSource = await readFile('scripts/build.mjs', 'utf8');
+  assert.doesNotMatch(buildSource, /BANK_WEB_PUSH_PRIVATE_KEY|DATABASE_PUSH_URL/,
+    'Frontend builder must not read server-only credentials');
+  console.log('Web Push public-key build injection: production/local/staging/rehearsal PASS.');
 } finally {
   await rm(fixtureRoot, { recursive: true, force: true });
 }
